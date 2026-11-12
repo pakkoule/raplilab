@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#0d2039">
-  <meta name="description" content="Rapli Archives, Rapli Stickers Lab et Rapli Tools, réunis dans un même espace personnel.">
-  <title>RAPLI TRIO V3.0 — Archives, Stickers Lab & Tools</title>
+  <meta name="description" content="Rapli Archives, Sports, Time, Refs, Stickers Lab et Tools, réunis dans un même espace personnel.">
+  <title>RAPLI LAB — 6 espaces personnels</title>
   <link rel="icon" type="image/webp" href="assets/archives-logo.webp">
   <style>
 
@@ -70,6 +70,38 @@ body[data-active="tools"] .portal-header{background:linear-gradient(120deg,#2f37
 .product-tab:focus-visible{outline:2px solid #fff;outline-offset:4px}
 @media(max-width:800px){.product-tab[aria-selected="true"]::after{bottom:-7px}}
 @media(max-width:420px){.product-tab[aria-selected="true"]::after{left:9px;right:9px;bottom:-7px}.product-tab[aria-selected="true"]::before{top:5px;right:5px;width:6px;height:6px}}
+
+/* RAPLI LAB / six applications. The three new apps keep their own brand identity. */
+body[data-active="sports"]{--accent:#277de7;--frame-bg:#e9f1fc;--frame-border:#b3cde9}
+body[data-active="time"]{--accent:#d1a45d;--frame-bg:#f0eee9;--frame-border:#d6c8ae}
+body[data-active="refs"]{--accent:#32b8a8;--frame-bg:#e7f0f0;--frame-border:#b5dad4}
+body[data-active="time"] .portal-header{background:linear-gradient(115deg,#293348,#475067 52%,#293348)}
+body[data-active="sports"] .portal-header{background:linear-gradient(115deg,#0b2344,#123d73 52%,#0b2344)}
+body[data-active="refs"] .portal-header{background:linear-gradient(115deg,#112d3e,#173e58 52%,#112d3e)}
+.product-tabs{grid-template-columns:repeat(6,minmax(0,1fr));width:min(100%,1110px);gap:8px}
+.product-tab{min-width:0;padding:4px 7px;height:56px}
+.product-tab img,.product-tab[data-product="archives"] img,.product-tab[data-product="stickers"] img,.product-tab[data-product="tools"] img{
+  width:100%;max-width:100%!important;max-height:47px!important;object-fit:contain
+}
+@media(max-width:800px){
+ .portal-header{min-height:119px;padding:7px 8px 10px}
+ .product-tabs{grid-template-columns:repeat(3,minmax(0,1fr));width:min(100%,640px);gap:7px}
+ .product-tab{height:46px}
+ .product-tab img,.product-tab[data-product="archives"] img,.product-tab[data-product="stickers"] img,.product-tab[data-product="tools"] img{
+   max-height:39px!important
+ }
+ .app-frame{height:calc(100dvh - 119px);min-height:0}
+}
+@media(max-width:420px){
+ .portal-header{min-height:111px;padding:5px 6px 9px}
+ .product-tabs{gap:5px}
+ .product-tab{height:43px;padding:3px 4px}
+ .product-tab img,.product-tab[data-product="archives"] img,.product-tab[data-product="stickers"] img,.product-tab[data-product="tools"] img{
+   max-height:35px!important
+ }
+ .app-frame{height:calc(100dvh - 111px);min-height:0}
+}
+
 </style>
 </head>
 <body data-active="tools">
@@ -78,6 +110,15 @@ body[data-active="tools"] .portal-header{background:linear-gradient(120deg,#2f37
       <nav class="product-tabs" role="tablist" aria-label="Choisir le projet Rapli">
         <button type="button" id="tab-archives" class="product-tab" data-product="archives" role="tab" aria-selected="false" aria-controls="panel-archives" tabindex="-1" title="Rapli Archives">
           <img src="assets/archives-logo.webp" alt="Rapli Archives" width="100" height="57" draggable="false">
+        </button>
+        <button type="button" id="tab-sports" class="product-tab" data-product="sports" role="tab" aria-selected="false" aria-controls="panel-sports" tabindex="-1" title="Rapli Sports — collection de cartes">
+          <img src="sports/assets/logo.png" alt="Rapli Sports" draggable="false">
+        </button>
+        <button type="button" id="tab-time" class="product-tab" data-product="time" role="tab" aria-selected="false" aria-controls="panel-time" tabindex="-1" title="Rapli Time — collection de montres">
+          <img src="time/assets/logo.png" alt="Rapli Time" draggable="false">
+        </button>
+        <button type="button" id="tab-refs" class="product-tab" data-product="refs" role="tab" aria-selected="false" aria-controls="panel-refs" tabindex="-1" title="Rapli Refs — carnet de références">
+          <img src="refs/assets/logo.png" alt="Rapli Refs" draggable="false">
         </button>
         <button type="button" id="tab-stickers" class="product-tab" data-product="stickers" role="tab" aria-selected="false" aria-controls="panel-stickers" tabindex="-1" title="Rapli Stickers Lab">
           <img src="assets/stickers-logo.webp" alt="Rapli Stickers Lab" width="218" height="58" draggable="false">
@@ -91,6 +132,15 @@ body[data-active="tools"] .portal-header{background:linear-gradient(120deg,#2f37
       <section id="panel-archives" role="tabpanel" aria-labelledby="tab-archives" hidden>
         <iframe id="frame-archives" class="app-frame" data-src="archives/index.html" title="Rapli Archives — catalogue Dragon Blanc aux Yeux Bleus" allow="clipboard-read; clipboard-write" loading="eager"></iframe>
       </section>
+      <section id="panel-sports" role="tabpanel" aria-labelledby="tab-sports" hidden>
+        <iframe id="frame-sports" class="app-frame" data-src="sports/index.html" title="Rapli Sports — cartes de sport" loading="lazy"></iframe>
+      </section>
+      <section id="panel-time" role="tabpanel" aria-labelledby="tab-time" hidden>
+        <iframe id="frame-time" class="app-frame" data-src="time/index.html" title="Rapli Time — montres personnelles" loading="lazy"></iframe>
+      </section>
+      <section id="panel-refs" role="tabpanel" aria-labelledby="tab-refs" hidden>
+        <iframe id="frame-refs" class="app-frame" data-src="refs/index.html" title="Rapli Refs — carnet de références" loading="lazy"></iframe>
+      </section>
       <section id="panel-stickers" role="tabpanel" aria-labelledby="tab-stickers" hidden>
         <iframe id="frame-stickers" class="app-frame" data-src="stickers/index.html" title="Rapli Stickers Lab — éditeur de stickers" allow="clipboard-read; clipboard-write" loading="lazy"></iframe>
       </section>
@@ -102,7 +152,7 @@ body[data-active="tools"] .portal-header{background:linear-gradient(120deg,#2f37
   <script>
   (() => {
     'use strict';
-    const projects=['archives','stickers','tools'];
+    const projects=['archives','sports','time','refs','stickers','tools'];
     const tabs=Object.fromEntries(projects.map(name=>[name,document.getElementById('tab-'+name)]));
     const panels=Object.fromEntries(projects.map(name=>[name,document.getElementById('panel-'+name)]));
     const frames=Object.fromEntries(projects.map(name=>[name,document.getElementById('frame-'+name)]));
@@ -125,7 +175,7 @@ body[data-active="tools"] .portal-header{background:linear-gradient(120deg,#2f37
         frames[project].hidden=!active;
         sendActivity(project,active);
       }
-      document.title=({archives:'RAPLI — Archives · Dragon Blanc aux Yeux Bleus',stickers:'RAPLI — Stickers Lab',tools:'RAPLI — Tools'})[name];
+      document.title=({archives:'RAPLI — Archives · Dragon Blanc aux Yeux Bleus',sports:'RAPLI — Sports',time:'RAPLI — Time',refs:'RAPLI — Refs',stickers:'RAPLI — Stickers Lab',tools:'RAPLI — Tools'})[name];
       if(updateHash && location.hash !=='#'+name)history.pushState({project:name},'', '#'+name);
       if(focus)tabs[name].focus();
     }

@@ -41,3 +41,45 @@ Dans Time, Sports et Refs :
 6. Exporter des JSON sur chaque appareil avant le premier test de conflit.
 
 **Important :** le bouton de rechargement ↻ ne remplace jamais silencieusement une version locale modifiée, et l'utilisation de sessions anonymes nécessite de conserver au moins un appareil principal associé.
+
+
+## Synchronisation globale RapliLab — 6 espaces
+
+La barre supérieure principale de RapliLab possède deux commandes centralisées :
+
+- **☁️ Enregistrer tout RapliLab :** lance une sauvegarde de **Archives, Sports, Time, Refs, Stickers Lab et Tools** en un clic.
+- **↻ Actualiser tout RapliLab :** recherche les nouveautés dans les six espaces, et les restaure quand aucun changement local concurrent ne risque d'être perdu.
+
+### Détail des espaces
+
+| Espace | Contenu synchronisé | Backend |
+| --- | --- | --- |
+| Archives | Catalogue Dragon Blanc, éditions, OWN, images, paramètres | \`rapli_archive_collections\` / Storage privé |
+| Sports | Fiches de cartes, OWN, photos, logos | \`rapli_module_collections.module='sports'\` / Storage privé |
+| Time | Montres, références, photos, logos | \`rapli_module_collections.module='time'\` / Storage privé |
+| Refs | Articles, statuts, marques, photos, logos | \`rapli_module_collections.module='refs'\` / Storage privé |
+| Stickers Lab | Projets de stickers, images, cartouches, réglages et polices importées | \`rapli_module_collections.module='stickers'\` / Storage privé (images) |
+| Tools | **Presets photo sauvegardés uniquement** | \`rapli_module_collections.module='tools'\` |
+
+Les fichiers PDF/JPG importés temporairement dans **Tools**, les résultats non enregistrés et l'historique d'annulation ne sont pas persistés par Tools : la synchronisation globale ne les transfère pas.
+
+### Sécurité / fonctionnement
+
+- Un appel depuis le portail déclenche l'opération **dans chaque iframe**, via un message \`postMessage\` vérifiant l'origine et la fenêtre parente. Le portail reçoit seulement succès/échec et statut, **jamais les données privées**.
+- Le portail charge les applications non visitées pour inclure tous les modules, y compris ceux qui ne sont pas actuellement visibles.
+- Les appels sont **séquentiels** : une erreur sur un module ne bloque pas les cinq autres.
+- Le bilan affiche **X/6** et détaille précisément les modules en échec ou en conflit ; **pas de fausse confirmation globale**.
+- Chaque module conserve ses contrôles locaux, sa sauvegarde hors ligne, le contrôle de version Supabase et sa protection contre les écrasements.
+- La sauvegarde globale n'autorise pas les écrasements forcés d'une version cloud modifiée par un autre appareil. Résoudre chaque conflit manuellement dans le module concerné, après export JSON.
+- Au premier lancement depuis un second appareil, associer celui-ci au propriétaire via **Archives → Sauvegardes** avant de synchroniser les six espaces.
+
+### Tests de validation UI restant à réaliser sur la Deploy Preview
+
+1. Préparer un exemple non démo dans chaque catalogue, une vraie création Stickers et un preset enregistré Tools.
+2. Cliquer une seule fois sur ☁️ depuis le header du PC, **sans ouvrir individuellement** les six onglets : vérifier le bilan 6/6.
+3. Sur iPhone associé, cliquer ↻ depuis le header : vérifier que les six modules reflètent les sauvegardes (fiches, logos, créations et presets).
+4. Couper le réseau et sauvegarder : vérifier l'échec visible et la conservation locale ; réessayer en ligne.
+5. Modifier une même collection sur PC et iPhone : vérifier qu'un conflit bloque l'envoi global **uniquement pour le module concerné** et apparaît dans le bilan.
+6. Vérifier l'affichage de la barre sur Safari iPhone en portrait et sur ordinateur.
+
+Cette fonctionnalité est sur la PR #1 ; **aucun déploiement production ni test réel PC/iPhone n'est revendiqué**.

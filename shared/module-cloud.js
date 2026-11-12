@@ -15,7 +15,7 @@
   const el = id => document.getElementById(id);
   let client, userId, ownerId, revision = 0, exists = false, ready = false, busy = false;
   let dirty = false, conflict = false, error = false, hydratedBaseline = null;
-  let timer, message = 'Connexion cloud…', bootPromise = null;
+  let timer, message = 'Connexion cloud…', bootPromise = null, bootComplete = false;
   const uploadCache = new Map(), downloadCache = new Map();
   const baselineKey = 'rapli-cloud-'+MODULE+'-ack-v1';
   function snapshot() {
@@ -170,7 +170,7 @@
   }
   async function saveNow(fromAuto=false) {
     if(!bridge.ready){setStatus('Application non initialisée','error');return false;}
-    if(bootPromise&&!ready)await bootPromise;
+    if(bootPromise&&!bootComplete)await bootPromise;
     if(busy)return false;
     busy=true;paint();
     try{
@@ -191,7 +191,7 @@
           conflict=true;setStatus('Conflit de versions — ↻ pour récupérer', 'error');
           return false;
         }
-      } else if(row && !saved && hasPersonalData(local) && !isLocalClean(local)) {
+      } else if(row && !saved && !isLocalClean(local)) {
         if(fromAuto){conflict=true;setStatus('Deux collections présentes — ↻ pour choisir','error');return false;}
         if(!confirm('Une collection existe déjà dans Supabase. La remplacer par celle de cet appareil ?'))return false;
       }
@@ -223,7 +223,7 @@
   }
   async function refresh(manual=true) {
     if(!bridge.ready){setStatus('Application non initialisée','error');return false;}
-    if(bootPromise&&!ready)await bootPromise;
+    if(manual&&bootPromise&&!bootComplete)await bootPromise;
     if(busy)return false;
     busy=true;paint();
     try{
@@ -295,13 +295,39 @@
   document.addEventListener('visibilitychange',()=>{if(!document.hidden&&ready&&!dirty&&!busy)void refresh(false);});
   window.addEventListener('focus',()=>{if(ready&&!dirty&&!busy)void refresh(false);});
   function startBoot(){
-    if(!bootPromise)bootPromise=boot();
+    if(!bootPromise)bootPromise=boot().finally(()=>{bootComplete=true;});
     return bootPromise;
   }
   window.RapliModuleCloud={
     changed,saveNow,refresh,
     getStatus:()=>({ready,busy,dirty,conflict,error,exists,message,module:MODULE,localReady:!!bridge.ready})
   };
+  // The portal only exchanges status messages. Raw records never leave the iframe
+  // except through its own authenticated, revision-checked Supabase client.
+  window.addEventListener('message',event=>{
+    if(event.source!==window.parent||event.origin!==location.origin ||
+       event.data?.type!=='RAPLI_GLOBAL_SYNC_REQUEST')return;
+    const {id,operation,module}=event.data;
+    if(typeof id!=='string'||id.length>90||module!==MODULE||
+       !['save','refresh'].includes(operation))return;
+    void(async()=>{
+      let success=false;
+      try{
+        if(bridge.ready){
+          // Global save never asks to force-overwrite another device's newer data.
+          success=operation==='save'?await saveNow(true):await refresh(true);
+        }else{
+          setStatus('Application non initialisée','error');
+        }
+      }catch(e){
+        setStatus('Synchronisation impossible : '+(e?.message||'erreur inconnue'),'error');
+      }
+      window.parent.postMessage({
+        type:'RAPLI_GLOBAL_SYNC_RESULT',id,module:MODULE,operation,
+        success:!!success,message,conflict:!!conflict
+      },location.origin);
+    })();
+  });
   paint();
   if(bridge.ready)void startBoot();
   else window.addEventListener('rapli-module-ready',()=>void startBoot(),{once:true});

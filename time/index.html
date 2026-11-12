@@ -495,11 +495,39 @@ body::before{display:none!important}
 }
 
 </style>
-</head>
+<style id="rapli-cloud-module-controls">
+.rapli-utility-strip .rapli-cloud-module-group{display:flex;align-items:center;gap:6px;margin-right:auto;min-width:0}
+.rapli-cloud-module-group .rapli-cloud-module-btn{display:grid;place-items:center;min-width:38px;width:38px;height:38px;border:1px solid #b9c9d0;border-radius:10px;background:#fff;color:#537283;cursor:pointer;transition:background .15s,box-shadow .15s}
+.rapli-cloud-module-btn svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.85;stroke-linecap:round;stroke-linejoin:round}
+.rapli-cloud-module-btn:hover:not(:disabled){background:#e7f5fb;box-shadow:0 1px 7px #19324b18}
+.rapli-cloud-module-btn:focus-visible{outline:2px solid #558fdd;outline-offset:2px}
+.rapli-cloud-module-btn:disabled{opacity:.64;cursor:wait}
+.rapli-cloud-module-btn[data-cloud-state="synced"]{color:#25855b;border-color:#9fcdb5}
+.rapli-cloud-module-btn[data-cloud-state="pending"]{color:#bd8826;border-color:#e0c28d}
+.rapli-cloud-module-btn[data-cloud-state="busy"]{color:#307fb8}
+.rapli-cloud-module-btn[data-cloud-state="conflict"],.rapli-cloud-module-btn[data-cloud-state="error"]{color:#c0414f;border-color:#e1a5ab}
+.rapli-cloud-module-btn.is-refreshing svg{animation:rapli-cloud-module-rotate 1s linear infinite}
+@keyframes rapli-cloud-module-rotate{to{transform:rotate(360deg)}}
+#rapli-module-cloud-status{font:700 10px/1.25 Poppins,system-ui,sans-serif;color:#587488;display:block;max-width:290px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#rapli-module-cloud-status[data-cloud-state="error"],#rapli-module-cloud-status[data-cloud-state="conflict"]{color:#b04250}
+@media(max-width:780px){#rapli-module-cloud-status{max-width:135px;font-size:9px}}
+@media(max-width:580px){#rapli-module-cloud-status{display:none}.rapli-utility-strip{gap:6px}.rapli-cloud-module-group .rapli-cloud-module-btn{min-width:36px;width:36px;height:36px;border-radius:9px}}
+@media(prefers-reduced-motion:reduce){.rapli-cloud-module-btn.is-refreshing svg{animation:none}}
+</style></head>
 <body>
 <div class="app-shell">
   <div class="topline"></div>
-  <div class="rapli-utility-strip" aria-label="Gestion des sauvegardes"><div class="header-tools">
+  <div class="rapli-utility-strip" aria-label="Gestion des sauvegardes">
+    <div class="rapli-cloud-module-group" aria-label="Synchronisation avec Supabase">
+      <button type="button" class="rapli-cloud-module-btn" id="rapli-module-cloud-save" aria-label="Enregistrer dans le cloud" title="Enregistrer dans Supabase">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18h10a4 4 0 0 0 .65-7.95A6.2 6.2 0 0 0 6 8.6 4.7 4.7 0 0 0 7 18Z"/><path d="M12 10v8m-3-3 3 3 3-3"/></svg>
+      </button>
+      <button type="button" class="rapli-cloud-module-btn" id="rapli-module-cloud-refresh" aria-label="Actualiser depuis le cloud" title="Récupérer les modifications de l’autre appareil">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14.25-5L3 8.5"/><path d="M3 3.5v5h5"/><path d="M4 13a8 8 0 0 0 14.25 5L21 15.5"/><path d="M21 20.5v-5h-5"/></svg>
+      </button>
+      <span id="rapli-module-cloud-status" role="status" aria-live="polite">Connexion cloud…</span>
+    </div>
+    <div class="header-tools">
       <button class="button button-ghost" id="importBtn" type="button" title="Restaurer une sauvegarde JSON">↥ Importer</button>
       <button class="button button-ghost" id="exportBtn" type="button" title="Exporter la collection au format JSON">↧ Exporter</button>
     </div></div>
@@ -574,10 +602,10 @@ const txAll=store=>new Promise((resolve,reject)=>{let r=db.transaction(store,'re
 const txGet=(store,id)=>new Promise((resolve,reject)=>{let r=db.transaction(store,'readonly').objectStore(store).get(id);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)});
 function openDb(){return new Promise((resolve,reject)=>{let r=indexedDB.open('rapli-time-v1',1);r.onupgradeneeded=()=>{let d=r.result;for(let s of ['watches','logos','meta'])if(!d.objectStoreNames.contains(s))d.createObjectStore(s,{keyPath:s==='meta'?'key':'id'})};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);r.onblocked=()=>reject(new Error('Base de données bloquée'))})}
 function backupFallback(){try{localStorage.setItem('rapli-time-fallback',JSON.stringify({watches,logos,initialized:true}))}catch(e){console.warn(e);toast('Stockage local indisponible : exporte tes données JSON.')}}
-async function putWatch(w){if(db)await txPut('watches',w);watches=watches.filter(x=>x.id!==w.id);watches.push(w);if(!db)backupFallback()}
-async function delWatch(id){if(db)await txDel('watches',id);watches=watches.filter(x=>x.id!==id);if(!db)backupFallback()}
-async function putLogo(l){if(db)await txPut('logos',l);logos=logos.filter(x=>x.id!==l.id);logos.push(l);if(!db)backupFallback()}
-async function delLogo(id){if(db)await txDel('logos',id);logos=logos.filter(x=>x.id!==id);if(!db)backupFallback()}
+async function putWatch(w){if(db)await txPut('watches',w);watches=watches.filter(x=>x.id!==w.id);watches.push(w);if(!db)backupFallback();window.RapliModuleCloud?.changed?.()}
+async function delWatch(id){if(db)await txDel('watches',id);watches=watches.filter(x=>x.id!==id);if(!db)backupFallback();window.RapliModuleCloud?.changed?.()}
+async function putLogo(l){if(db)await txPut('logos',l);logos=logos.filter(x=>x.id!==l.id);logos.push(l);if(!db)backupFallback();window.RapliModuleCloud?.changed?.()}
+async function delLogo(id){if(db)await txDel('logos',id);logos=logos.filter(x=>x.id!==id);if(!db)backupFallback();window.RapliModuleCloud?.changed?.()}
 async function initialize(){try{db=await openDb();[watches,logos]=await Promise.all([txAll('watches'),txAll('logos')]);let ready=await txGet('meta','initialized');if(!ready){watches=sample();for(let w of watches)await txPut('watches',w);await txPut('meta',{key:'initialized',value:true})}}catch(e){console.warn('IndexedDB unavailable',e);db=null;try{let s=localStorage.getItem('rapli-time-fallback');if(s){let data=JSON.parse(s);watches=Array.isArray(data.watches)?data.watches:[];logos=Array.isArray(data.logos)?data.logos:[]}else{watches=sample();backupFallback()}}catch(_){watches=sample();logos=[]}toast('Mode de stockage local activé : pense à exporter.')}render()}
 function brandLogo(brand){let l=logos.find(x=>norm(x.name)===norm(brand));return l&&goodImage(l.image)?l.image:''}
 function brandBadge(brand){const l=brandLogo(brand);const letters=String(brand||'?').split(/\s+/).slice(0,2).map(v=>v[0]).join('').toUpperCase();return l?`<img class="logo-tiny has-image" src="${l}" alt="Logo ${esc(brand)}">`:`<span class="logo-tiny">${esc(letters)}</span>`}
@@ -618,8 +646,45 @@ $('logoList').addEventListener('click',async e=>{let b=e.target.closest('[data-r
 $('exportBtn').addEventListener('click',exportData);$('importBtn').addEventListener('click',()=>$('importFile').click());$('importFile').addEventListener('change',e=>{if(e.target.files[0])importData(e.target.files[0])});
 $('clearDemoBtn').addEventListener('click',async()=>{if(!confirm('Supprimer les montres d’exemple ?'))return;for(let w of watches.filter(x=>x.demo))await delWatch(w.id);render();toast('Exemples supprimés')});
 document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'&&!document.querySelector('dialog[open]')){e.preventDefault();$('filterSearch').focus();$('filterSearch').select()}});
-initialize();
+
+// Shared cloud bridge: independent local state, synced through the RapliLab session.
+const rapliBridge = window.RapliModuleBridge = {
+ module:'time',
+ ready:false,
+ getState:()=>({records:watches,logos}),
+ notify:msg=>toast(msg),
+ replaceState:async next=>{
+   if(!next||!Array.isArray(next.records)||!Array.isArray(next.logos)||
+     next.records.length>20000||next.logos.length>5000||
+     [...next.records,...next.logos].some(item=>!item||typeof item.id!=='string'||item.id.length>180))
+     throw Error('Collection cloud invalide.');
+   if(db){
+     await new Promise((resolve,reject)=>{
+       const tr=db.transaction(['watches','logos'],'readwrite');
+       const recordsStore=tr.objectStore('watches');
+       const logosStore=tr.objectStore('logos');
+       recordsStore.clear();logosStore.clear();
+       next.records.forEach(row=>recordsStore.put(row));
+       next.logos.forEach(row=>logosStore.put(row));
+       tr.oncomplete=resolve;
+       tr.onerror=()=>reject(tr.error||Error('Restauration IndexedDB interrompue.'));
+       tr.onabort=()=>reject(tr.error||Error('Restauration IndexedDB annulée.'));
+     });
+   }
+   watches=next.records.map(x=>({...x}));
+   logos=next.logos.map(x=>({...x}));
+   if(!db){try{localStorage.setItem('rapli-time-fallback',JSON.stringify({watches,logos,initialized:true}));}catch(e){console.warn('Stockage local saturé',e);}}
+   render();
+ }
+};
+function rapliModuleReady(){
+ rapliBridge.ready=true;
+ window.dispatchEvent(new Event('rapli-module-ready'));
+}
+
+initialize().then(rapliModuleReady).catch(err=>console.warn('Rapli module startup',err));
 })();
 </script>
 
+<script src="../shared/module-cloud.js" defer></script>
 </body></html>

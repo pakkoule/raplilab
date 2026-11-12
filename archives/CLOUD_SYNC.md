@@ -75,3 +75,20 @@ Deux sessions anonymes Supabase, même sur le même site Netlify, créent **deux
 - Après liaison, **KA-05 doit récupérer la même photo privée** sur l'iPhone après validation du remplacement cloud.
 - Modifier une métadonnée/une photo sur le PC, revenir dans l'onglet iPhone et confirmer que la nouvelle valeur se charge **si aucune modification locale divergente n'existe**.
 - Si les deux appareils ont modifié leur copie depuis la dernière synchronisation, afficher un **choix de version** au lieu de remplacer silencieusement.
+
+## Actions rapides sur le catalogue (nuage + actualisation)
+
+Deux petits boutons sont désormais affichés directement dans la barre supérieure du catalogue Rapli Archives (PC et Safari iPhone).
+
+- **Nuage avec flèche descendante** : force l'**enregistrement des modifications locales vers Supabase**, sans ouvrir la disquette. Le statut confirme la réussite ou signale une erreur.
+- **Flèches circulaires** : **interroge Supabase** pour vérifier si un autre appareil a modifié la collection. Si la version distante a changé et que la version locale n'a pas de modifications concurrentes, elle est restaurée et le catalogue se redessine (images, éditions et tuiles comprises). Si rien n'a changé, une confirmation « Catalogue déjà à jour » s'affiche, sans recharger la page.
+- **Conflits** : si le cloud a changé mais que l'appareil possède aussi des modifications locales, le bouton de rafraîchissement **n'écrase pas les données** : il conduit vers Sauvegardes pour choisir la version à conserver.
+- **Statut** : gris = local, vert = synchronisé, orange = modifications en attente, bleu = opération, rouge = erreur ou conflit. Les contrôles ont des intitulés accessibles et restent visibles en affichage mobile.
+- Les sauvegardes automatiques existantes restent actives ; les boutons apportent un contrôle manuel immédiat.
+
+### Tests ajoutés à la validation
+1. Modifier KA-05 sur PC puis cliquer **nuage** : confirmation de l'envoi.
+2. Sur iPhone associé au même catalogue, cliquer **flèches circulaires** : KA-05 se met à jour sur place, sans perdre le scroll par un rechargement navigateur intégral.
+3. Reclique immédiatement sur **flèches circulaires** : « Catalogue déjà à jour ».
+4. Modifier séparément les deux appareils avant leur synchronisation, cliquer **flèches circulaires** et vérifier la détection de conflit (aucun écrasement).
+5. Tester sur Safari iPhone en portrait et sur un écran étroit : les deux commandes doivent être visibles, distinctes, et activables au toucher.

@@ -10,12 +10,12 @@
   const REF_PREFIX = 'rapli-private://';
   const MAX_IMAGE = 10 * 1024 * 1024;
   const bridge = window.RapliModuleBridge;
-  if (!bridge || !['time','sports','refs'].includes(bridge.module)) return;
+  if (!bridge || !['time','sports','refs','stickers','tools'].includes(bridge.module)) return;
   const MODULE = bridge.module;
   const el = id => document.getElementById(id);
   let client, userId, ownerId, revision = 0, exists = false, ready = false, busy = false;
   let dirty = false, conflict = false, error = false, hydratedBaseline = null;
-  let timer, message = 'Connexion cloud…';
+  let timer, message = 'Connexion cloud…', bootPromise = null;
   const uploadCache = new Map(), downloadCache = new Map();
   const baselineKey = 'rapli-cloud-'+MODULE+'-ack-v1';
   function snapshot() {
@@ -169,6 +169,8 @@
     return true;
   }
   async function saveNow(fromAuto=false) {
+    if(!bridge.ready){setStatus('Application non initialisée','error');return false;}
+    if(bootPromise&&!ready)await bootPromise;
     if(busy)return false;
     busy=true;paint();
     try{
@@ -220,6 +222,8 @@
     }finally{busy=false;paint();}
   }
   async function refresh(manual=true) {
+    if(!bridge.ready){setStatus('Application non initialisée','error');return false;}
+    if(bootPromise&&!ready)await bootPromise;
     if(busy)return false;
     busy=true;paint();
     try{
@@ -290,8 +294,15 @@
   el('rapli-module-cloud-refresh')?.addEventListener('click',()=>{void refresh(true).then(ok=>{if(ok)notify('Synchronisation vérifiée ✓','ok');});});
   document.addEventListener('visibilitychange',()=>{if(!document.hidden&&ready&&!dirty&&!busy)void refresh(false);});
   window.addEventListener('focus',()=>{if(ready&&!dirty&&!busy)void refresh(false);});
-  window.RapliModuleCloud={changed,saveNow,refresh};
+  function startBoot(){
+    if(!bootPromise)bootPromise=boot();
+    return bootPromise;
+  }
+  window.RapliModuleCloud={
+    changed,saveNow,refresh,
+    getStatus:()=>({ready,busy,dirty,conflict,error,exists,message,module:MODULE,localReady:!!bridge.ready})
+  };
   paint();
-  if(bridge.ready)void boot();
-  else window.addEventListener('rapli-module-ready',()=>void boot(),{once:true});
+  if(bridge.ready)void startBoot();
+  else window.addEventListener('rapli-module-ready',()=>void startBoot(),{once:true});
 })();

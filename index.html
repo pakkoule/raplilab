@@ -102,6 +102,59 @@ body[data-active="refs"] .portal-header{background:linear-gradient(115deg,#112d3
  .app-frame{height:calc(100dvh - 111px);min-height:0}
 }
 
+
+/* RAPLI LAB — one site-wide Cloud Save / Refresh pair for every workspace */
+.portal-header{gap:12px}
+.product-tabs{flex:1 1 auto;min-width:0;max-width:1110px}
+.global-cloud-controls{
+  display:flex;flex:0 0 auto;align-items:center;justify-content:center;
+  gap:6px;position:relative;z-index:2;
+}
+.global-cloud-controls button{
+  display:grid;place-items:center;width:42px;height:42px;
+  border-radius:11px;border:1px solid #7894b4;
+  background:rgba(250,253,255,.12);color:#e7f2ff;
+  cursor:pointer;transition:background .16s,border-color .16s,transform .16s;
+}
+.global-cloud-controls button:hover:not(:disabled){background:rgba(222,240,255,.25);border-color:#c3dcf8;transform:translateY(-1px)}
+.global-cloud-controls button:focus-visible{outline:2px solid #fff;outline-offset:3px}
+.global-cloud-controls button:disabled{cursor:wait;opacity:.6}
+.global-cloud-controls button svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.global-cloud-controls button.is-busy svg{animation:rapli-global-spin 1s linear infinite}
+@keyframes rapli-global-spin{to{transform:rotate(360deg)}}
+.global-cloud-controls .cloud-controls-caption{font:700 9px/1.3 Inter,system-ui,sans-serif;color:#d0e3f5;max-width:93px;overflow-wrap:anywhere}
+#global-cloud-feedback{
+  background:#eaf4ff;border-bottom:1px solid #b8d4f1;
+  color:#173b5c;font:700 12px/1.5 Inter,system-ui,sans-serif;
+  padding:8px 18px;text-align:center;position:relative;z-index:2;
+}
+#global-cloud-feedback[hidden]{display:none}
+#global-cloud-feedback[data-status="error"]{background:#fff0f1;color:#963440;border-color:#e8b6bc}
+#global-cloud-feedback details{margin:4px auto 0;max-width:720px;text-align:left;font-weight:500}
+#global-cloud-feedback details summary{cursor:pointer;font-weight:700}
+#global-cloud-feedback ul{margin:5px 0 4px;padding-left:20px}
+@media(max-width:1120px){
+ .portal-header{flex-wrap:wrap;gap:7px}
+ .product-tabs{flex:1 1 100%;max-width:100%}
+ .global-cloud-controls{flex:1 1 100%;justify-content:center}
+ .global-cloud-controls button{width:36px;height:36px}
+ .global-cloud-controls button svg{width:21px;height:21px}
+ .global-cloud-controls .cloud-controls-caption{max-width:none}
+ .app-frame{height:calc(100dvh - 163px);min-height:0}
+}
+@media(max-width:800px){
+ .portal-header{padding:6px 8px 9px}
+ .app-frame{height:calc(100dvh - 166px)}
+}
+@media(max-width:420px){
+ .portal-header{padding:5px 6px 8px;gap:6px}
+ .global-cloud-controls button{width:34px;height:34px;border-radius:9px}
+ .global-cloud-controls .cloud-controls-caption{font-size:8px}
+ .app-frame{height:calc(100dvh - 161px)}
+ #global-cloud-feedback{font-size:11px;padding:7px 10px}
+}
+@media(prefers-reduced-motion:reduce){.global-cloud-controls button.is-busy svg{animation:none}}
+
 </style>
 </head>
 <body data-active="tools">
@@ -127,7 +180,18 @@ body[data-active="refs"] .portal-header{background:linear-gradient(115deg,#112d3
           <img src="assets/tools-logo.webp" alt="Rapli Tools" width="172" height="80" draggable="false">
         </button>
       </nav>
+
+      <div class="global-cloud-controls" role="group" aria-label="Synchronisation globale RapliLab">
+        <button id="global-cloud-save" type="button" title="Enregistrer les six espaces dans Supabase" aria-label="Enregistrer tous les espaces RapliLab dans le cloud">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18h10a4 4 0 0 0 .65-7.95A6.2 6.2 0 0 0 6 8.6 4.7 4.7 0 0 0 7 18Z"/><path d="M12 10v8m-3-3 3 3 3-3"/></svg>
+        </button>
+        <button id="global-cloud-refresh" type="button" title="Actualiser les six espaces depuis Supabase" aria-label="Récupérer les modifications de tous les espaces RapliLab depuis le cloud">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14.25-5L3 8.5"/><path d="M3 3.5v5h5"/><path d="M4 13a8 8 0 0 0 14.25 5L21 15.5"/><path d="M21 20.5v-5h-5"/></svg>
+        </button>
+        <span class="cloud-controls-caption">TOUT RAPLILAB</span>
+      </div>
     </header>
+    <div id="global-cloud-feedback" role="status" aria-live="polite" hidden></div>
     <div class="frame-wrap">
       <section id="panel-archives" role="tabpanel" aria-labelledby="tab-archives" hidden>
         <iframe id="frame-archives" class="app-frame" data-src="archives/index.html" title="Rapli Archives — catalogue Dragon Blanc aux Yeux Bleus" allow="clipboard-read; clipboard-write" loading="eager"></iframe>
@@ -195,6 +259,109 @@ body[data-active="refs"] .portal-header{background:linear-gradient(115deg,#112d3
     // Re-send state once iframes have finished their first load.
     for(const name of projects)frames[name].addEventListener('load',()=>sendActivity(name,name===current));
     select(fromHash());
+
+    // One global action, executed separately for each isolated private collection.
+    // Lazy iframes are loaded on demand, including the inactive modules.
+    const cloudNames={archives:'Archives',sports:'Sports',time:'Time',refs:'Refs',stickers:'Stickers Lab',tools:'Tools'};
+    const cloudSave=document.getElementById('global-cloud-save');
+    const cloudRefresh=document.getElementById('global-cloud-refresh');
+    const cloudFeedback=document.getElementById('global-cloud-feedback');
+    let globalCloudBusy=false,requestSequence=0;
+    const cloudPause=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+    const cloudTimeout=async(promise,ms)=>{
+      let timer;try{return await Promise.race([
+        promise,
+        new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('Délai de synchronisation dépassé')),ms);})
+      ]);}finally{clearTimeout(timer);}
+    };
+    async function ensureCloudFrame(name) {
+      const frame=frames[name];
+      if(!frame)throw Error('Onglet introuvable.');
+      if(!frame.src&&frame.dataset.src){
+        frame.loading='eager';
+        frame.src=frame.dataset.src;
+        delete frame.dataset.src;
+      }
+      const started=Date.now();
+      while(Date.now()-started<45000) {
+        try{
+          const app=frame.contentWindow;
+          const initialized=name==='archives'
+            ? app?.RapliCloud?.isInitialized?.()
+            : app?.RapliModuleBridge?.ready && !!app?.RapliModuleCloud;
+          if(initialized)return frame;
+        }catch(e){ /* Same-origin check, retry while iframe initializes. */ }
+        await cloudPause(200);
+      }
+      throw Error('Application non initialisée. Ouvre cet onglet et réessaie.');
+    }
+    async function syncCloudModule(name,operation) {
+      const frame=await ensureCloudFrame(name);
+      const id='global-'+Date.now().toString(36)+'-'+(++requestSequence)+'-'+name;
+      return cloudTimeout(new Promise((resolve,reject)=>{
+        function receive(event){
+          const data=event.data;
+          if(event.origin!==location.origin||event.source!==frame.contentWindow||
+             data?.type!=='RAPLI_GLOBAL_SYNC_RESULT'||data.id!==id||
+             data.module!==name||data.operation!==operation)return;
+          window.removeEventListener('message',receive);
+          resolve({success:!!data.success,message:String(data.message||''),conflict:!!data.conflict});
+        }
+        window.addEventListener('message',receive);
+        try{
+          frame.contentWindow.postMessage({type:'RAPLI_GLOBAL_SYNC_REQUEST',id,module:name,operation},location.origin);
+        }catch(e){window.removeEventListener('message',receive);reject(e);}
+      }),120000);
+    }
+    const escapeCloud=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','"':'&quot;'}[c]));
+    function reportGlobalCloud(operation,completed,results) {
+      const errors=results.filter(r=>!r.success);
+      const successes=results.length-errors.length;
+      const title=operation==='save'?'Sauvegarde':'Actualisation';
+      const progress=completed<projects.length;
+      cloudFeedback.hidden=false;
+      cloudFeedback.dataset.status=errors.length?'error':'ok';
+      if(progress){
+        cloudFeedback.textContent=title+' globale : '+completed+'/'+projects.length+' espaces vérifiés…';
+      }else{
+        const summary=title+' globale · '+successes+'/'+projects.length+
+          ' espaces '+(successes===projects.length?'synchronisés ✓':'réussis');
+        const detail=errors.length
+          ? '<details open><summary>'+errors.length+' espace(s) à vérifier</summary><ul>'+
+              errors.map(e=>'<li><strong>'+escapeCloud(cloudNames[e.name])+'</strong> : '+escapeCloud(e.message)+'</li>').join('')+
+            '</ul></details>'
+          : '<details><summary>Afficher le détail des six espaces</summary><ul>'+
+              results.map(e=>'<li>'+escapeCloud(cloudNames[e.name])+' : '+escapeCloud(e.message)+'</li>').join('')+
+            '</ul></details>';
+        cloudFeedback.innerHTML='<strong>'+escapeCloud(summary)+'</strong>'+detail;
+      }
+    }
+    async function runGlobalCloud(operation) {
+      if(globalCloudBusy)return;
+      globalCloudBusy=true;
+      cloudSave.disabled=cloudRefresh.disabled=true;
+      const active=operation==='save'?cloudSave:cloudRefresh;
+      active.classList.add('is-busy');
+      active.setAttribute('aria-busy','true');
+      const results=[];
+      try{
+        reportGlobalCloud(operation,0,results);
+        for(const name of projects){
+          let response;
+          try{response=await syncCloudModule(name,operation);}
+          catch(e){response={success:false,message:e?.message||'Synchronisation indisponible'};}
+          results.push({name,...response});
+          reportGlobalCloud(operation,results.length,results);
+        }
+      }finally{
+        globalCloudBusy=false;
+        cloudSave.disabled=cloudRefresh.disabled=false;
+        active.classList.remove('is-busy');
+        active.removeAttribute('aria-busy');
+      }
+    }
+    cloudSave.addEventListener('click',()=>void runGlobalCloud('save'));
+    cloudRefresh.addEventListener('click',()=>void runGlobalCloud('refresh'));
   })();
   </script>
 </body>

@@ -472,11 +472,39 @@ body::before{display:none!important}
 }
 
 </style>
-</head>
+<style id="rapli-cloud-module-controls">
+.rapli-utility-strip .rapli-cloud-module-group{display:flex;align-items:center;gap:6px;margin-right:auto;min-width:0}
+.rapli-cloud-module-group .rapli-cloud-module-btn{display:grid;place-items:center;min-width:38px;width:38px;height:38px;border:1px solid #b9c9d0;border-radius:10px;background:#fff;color:#537283;cursor:pointer;transition:background .15s,box-shadow .15s}
+.rapli-cloud-module-btn svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.85;stroke-linecap:round;stroke-linejoin:round}
+.rapli-cloud-module-btn:hover:not(:disabled){background:#e7f5fb;box-shadow:0 1px 7px #19324b18}
+.rapli-cloud-module-btn:focus-visible{outline:2px solid #558fdd;outline-offset:2px}
+.rapli-cloud-module-btn:disabled{opacity:.64;cursor:wait}
+.rapli-cloud-module-btn[data-cloud-state="synced"]{color:#25855b;border-color:#9fcdb5}
+.rapli-cloud-module-btn[data-cloud-state="pending"]{color:#bd8826;border-color:#e0c28d}
+.rapli-cloud-module-btn[data-cloud-state="busy"]{color:#307fb8}
+.rapli-cloud-module-btn[data-cloud-state="conflict"],.rapli-cloud-module-btn[data-cloud-state="error"]{color:#c0414f;border-color:#e1a5ab}
+.rapli-cloud-module-btn.is-refreshing svg{animation:rapli-cloud-module-rotate 1s linear infinite}
+@keyframes rapli-cloud-module-rotate{to{transform:rotate(360deg)}}
+#rapli-module-cloud-status{font:700 10px/1.25 Poppins,system-ui,sans-serif;color:#587488;display:block;max-width:290px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#rapli-module-cloud-status[data-cloud-state="error"],#rapli-module-cloud-status[data-cloud-state="conflict"]{color:#b04250}
+@media(max-width:780px){#rapli-module-cloud-status{max-width:135px;font-size:9px}}
+@media(max-width:580px){#rapli-module-cloud-status{display:none}.rapli-utility-strip{gap:6px}.rapli-cloud-module-group .rapli-cloud-module-btn{min-width:36px;width:36px;height:36px;border-radius:9px}}
+@media(prefers-reduced-motion:reduce){.rapli-cloud-module-btn.is-refreshing svg{animation:none}}
+</style></head>
 <body>
   <div class="app-shell">
     <div class="topline"></div>
-    <div class="rapli-utility-strip" aria-label="Gestion des sauvegardes"><div class="header-tools">
+    <div class="rapli-utility-strip" aria-label="Gestion des sauvegardes">
+    <div class="rapli-cloud-module-group" aria-label="Synchronisation avec Supabase">
+      <button type="button" class="rapli-cloud-module-btn" id="rapli-module-cloud-save" aria-label="Enregistrer dans le cloud" title="Enregistrer dans Supabase">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18h10a4 4 0 0 0 .65-7.95A6.2 6.2 0 0 0 6 8.6 4.7 4.7 0 0 0 7 18Z"/><path d="M12 10v8m-3-3 3 3 3-3"/></svg>
+      </button>
+      <button type="button" class="rapli-cloud-module-btn" id="rapli-module-cloud-refresh" aria-label="Actualiser depuis le cloud" title="Récupérer les modifications de l’autre appareil">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14.25-5L3 8.5"/><path d="M3 3.5v5h5"/><path d="M4 13a8 8 0 0 0 14.25 5L21 15.5"/><path d="M21 20.5v-5h-5"/></svg>
+      </button>
+      <span id="rapli-module-cloud-status" role="status" aria-live="polite">Connexion cloud…</span>
+    </div>
+    <div class="header-tools">
                 <button id="importBtn" class="button button-ghost" type="button" title="Importer une sauvegarde JSON"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V3m-5 5 5-5 5 5M4 16v4h16v-4"/></svg> Importer</button>
         <button id="exportBtn" class="button button-ghost" type="button" title="Exporter une sauvegarde JSON"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13m-5-5 5 5 5-5M4 17v4h16v-4"/></svg> Exporter</button>
       </div></div>
@@ -579,10 +607,10 @@ body::before{display:none!important}
       function transactionGet(store,key){return new Promise((resolve,reject)=>{let r=db.transaction(store,'readonly').objectStore(store).get(key);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
       async function openDb(){return new Promise((resolve,reject)=>{const r=indexedDB.open('rapli-sports-v1',1);r.onupgradeneeded=()=>{const database=r.result;database.createObjectStore('cards',{keyPath:'id'});database.createObjectStore('logos',{keyPath:'id'});database.createObjectStore('meta',{keyPath:'key'})};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);r.onblocked=()=>reject(new Error('Base bloquée'))})}
       async function saveFallback(){try{localStorage.setItem('rapli-sports-fallback',JSON.stringify({cards,logos,initialized:true}))}catch(e){console.warn('Stockage local indisponible',e);showToast('Stockage local indisponible : exporte une sauvegarde JSON.')}}
-      async function saveCard(record){if(db)await transactionPut('cards',record);cards=cards.filter(x=>x.id!==record.id);cards.push(record);if(!db)await saveFallback()}
-      async function removeCard(id){if(db)await transactionDelete('cards',id);cards=cards.filter(x=>x.id!==id);if(!db)await saveFallback()}
-      async function saveLogo(record){if(db)await transactionPut('logos',record);logos=logos.filter(x=>x.id!==record.id);logos.push(record);if(!db)await saveFallback()}
-      async function removeLogo(id){if(db)await transactionDelete('logos',id);logos=logos.filter(x=>x.id!==id);if(!db)await saveFallback()}
+      async function saveCard(record){if(db)await transactionPut('cards',record);cards=cards.filter(x=>x.id!==record.id);cards.push(record);if(!db)await saveFallback();window.RapliModuleCloud?.changed?.()}
+      async function removeCard(id){if(db)await transactionDelete('cards',id);cards=cards.filter(x=>x.id!==id);if(!db)await saveFallback();window.RapliModuleCloud?.changed?.()}
+      async function saveLogo(record){if(db)await transactionPut('logos',record);logos=logos.filter(x=>x.id!==record.id);logos.push(record);if(!db)await saveFallback();window.RapliModuleCloud?.changed?.()}
+      async function removeLogo(id){if(db)await transactionDelete('logos',id);logos=logos.filter(x=>x.id!==id);if(!db)await saveFallback();window.RapliModuleCloud?.changed?.()}
       function sampleCards(){let ts=Date.now();return [
         {id:'demo-maxey',status:'wishlist',brand:'Topps',player:'Tyrese Maxey',sport:'Basketball',team:'Philadelphia 76ers',reference:'2025–26 · Chrome · #EXEMPLE',tags:['Chrome','Refractor'],numbered:false,serial:'',printRun:'',photo:'',demo:true,createdAt:ts-15000,updatedAt:ts-15000},
         {id:'demo-embiid',status:'own',brand:'Panini',player:'Joel Embiid',sport:'Basketball',team:'Philadelphia 76ers',reference:'Prizm · #EXEMPLE',tags:['Prizm','Silver'],numbered:true,serial:'12',printRun:'99',photo:'',demo:true,createdAt:ts-13000,updatedAt:ts-13000},
@@ -635,8 +663,45 @@ body::before{display:none!important}
       $('exportBtn').addEventListener('click',exportData);$('importBtn').addEventListener('click',()=>$('importFile').click());$('importFile').addEventListener('change',e=>{if(e.target.files[0])importData(e.target.files[0])});
       $('clearDemoBtn').addEventListener('click',async()=>{if(!confirm('Supprimer toutes les cartes de démonstration ?'))return;try{for(const c of cards.filter(c=>c.demo))await removeCard(c.id);renderAll();showToast('Exemples supprimés')}catch(e){showToast('Impossible de supprimer les exemples')}});
       document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();if(!document.querySelector('dialog[open]')){$('filterSearch').focus();$('filterSearch').select()}}});
-      initialize();
+
+// Shared cloud bridge: independent local state, synced through the RapliLab session.
+const rapliBridge = window.RapliModuleBridge = {
+ module:'sports',
+ ready:false,
+ getState:()=>({records:cards,logos}),
+ notify:msg=>showToast(msg),
+ replaceState:async next=>{
+   if(!next||!Array.isArray(next.records)||!Array.isArray(next.logos)||
+     next.records.length>20000||next.logos.length>5000||
+     [...next.records,...next.logos].some(item=>!item||typeof item.id!=='string'||item.id.length>180))
+     throw Error('Collection cloud invalide.');
+   if(db){
+     await new Promise((resolve,reject)=>{
+       const tr=db.transaction(['cards','logos'],'readwrite');
+       const recordsStore=tr.objectStore('cards');
+       const logosStore=tr.objectStore('logos');
+       recordsStore.clear();logosStore.clear();
+       next.records.forEach(row=>recordsStore.put(row));
+       next.logos.forEach(row=>logosStore.put(row));
+       tr.oncomplete=resolve;
+       tr.onerror=()=>reject(tr.error||Error('Restauration IndexedDB interrompue.'));
+       tr.onabort=()=>reject(tr.error||Error('Restauration IndexedDB annulée.'));
+     });
+   }
+   cards=next.records.map(x=>({...x}));
+   logos=next.logos.map(x=>({...x}));
+   if(!db){try{localStorage.setItem('rapli-sports-fallback',JSON.stringify({cards,logos,initialized:true}));}catch(e){console.warn('Stockage local saturé',e);}}
+   renderAll();
+ }
+};
+function rapliModuleReady(){
+ rapliBridge.ready=true;
+ window.dispatchEvent(new Event('rapli-module-ready'));
+}
+
+      initialize().then(rapliModuleReady).catch(err=>console.warn('Rapli module startup',err));
     })();
   </script>
+<script src="../shared/module-cloud.js" defer></script>
 </body>
 </html>

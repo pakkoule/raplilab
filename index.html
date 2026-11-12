@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0d2039">
+  <meta name="description" content="Rapli Archives, Rapli Stickers Lab et Rapli Tools, réunis dans un même espace personnel.">
+  <title>RAPLI TRIO V3.0 — Archives, Stickers Lab & Tools</title>
+  <link rel="icon" type="image/webp" href="assets/archives-logo.webp">
+  <style>
+
+:root{font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;--frame-max:1360px;--accent:#4d9af6;--frame-bg:#e7eff8;--frame-border:#b9cee5;color-scheme:light}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;min-height:100%;}
+body{background:radial-gradient(ellipse 880px 340px at 50% 0%,rgba(94,155,225,.13),transparent 75%),var(--frame-bg);color:#142036;transition:background-color .25s ease}
+body[data-active="stickers"]{--accent:#7fe2b8;--frame-bg:#e8f3ef;--frame-border:#aecfc4}
+body[data-active="tools"]{--accent:#ff951e;--frame-bg:#e5e8eb;--frame-border:#bcc2c9}
+.portal{width:min(calc(100% - 48px),var(--frame-max));margin:20px auto 28px;border:1px solid var(--frame-border);border-radius:20px;overflow:hidden;background:#fff;box-shadow:0 18px 60px rgba(18,46,85,.13),0 1px 5px rgba(18,46,85,.05)}
+.portal-header{position:relative;display:flex;align-items:center;justify-content:center;min-height:72px;padding:5px 12px 8px;background:linear-gradient(120deg,#09182c,#102e56 54%,#09182c);border-bottom:3px solid var(--accent)}
+body[data-active="stickers"] .portal-header{background:linear-gradient(120deg,#0a2534,#153c49 50%,#162638)}
+body[data-active="tools"] .portal-header{background:linear-gradient(120deg,#2f373e,#495159 50%,#2f373e)}
+.portal-header::before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,transparent 23%,rgba(255,255,255,.045) 52%,transparent 83%)}
+.product-tabs{position:relative;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:min(100%,656px);gap:9px;align-items:center;justify-content:center}
+.product-tab{position:relative;display:flex;align-items:center;justify-content:center;min-width:0;width:100%;height:54px;padding:3px 8px;background:rgba(255,255,255,.055);border:1px solid rgba(226,239,251,.23);border-radius:11px;cursor:pointer;transition:transform .16s ease,border-color .16s ease,background-color .16s ease,box-shadow .16s ease}
+.product-tab:hover{background:rgba(255,255,255,.13);transform:translateY(-1px)}
+.product-tab:focus-visible{outline:3px solid #fff;outline-offset:2px}
+.product-tab[aria-selected="true"]{border-color:var(--accent);background:rgba(255,255,255,.12);box-shadow:inset 0 0 0 1px var(--accent),0 4px 18px rgba(0,0,0,.17)}
+.product-tab[aria-selected="true"]::after{content:"";position:absolute;left:35%;right:35%;bottom:-10px;height:3px;border-radius:4px;background:var(--accent)}
+.product-tab img{display:block;max-width:100%;height:auto;max-height:46px;object-fit:contain;pointer-events:none}
+.product-tab[data-product="archives"] img{max-width:93px;max-height:45px}
+.product-tab[data-product="stickers"] img{max-width:182px;max-height:46px}
+.product-tab[data-product="tools"] img{max-width:172px;max-height:46px}
+.product-tab[data-product="stickers"]{background-color:rgba(16,30,40,.35)}
+.product-tab[data-product="stickers"][aria-selected="true"]{background-color:rgba(48,104,104,.27)}
+.product-tab[data-product="tools"][aria-selected="true"]{background-color:rgba(255,137,9,.12)}
+.frame-wrap{width:100%;min-width:0;background:#fff}
+.app-frame{display:block;width:100%;height:calc(100dvh - 123px);min-height:560px;border:0;background:#fff}
+.app-frame[hidden]{display:none!important}
+.sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+@media(max-width:800px){
+  .portal{width:100%;margin:0;min-height:100dvh;border:0;border-radius:0;box-shadow:none}
+  .portal-header{min-height:60px;padding:4px 8px 7px}
+  .product-tabs{gap:7px;width:min(100%,625px)}
+  .product-tab{height:48px;border-radius:10px;padding:3px 6px}
+  .product-tab img{max-height:41px}
+  .product-tab[data-product="archives"] img{max-width:76px;max-height:40px}
+  .product-tab[data-product="stickers"] img{max-width:175px;max-height:41px}
+  .product-tab[data-product="tools"] img{max-width:168px;max-height:41px}
+  .product-tab[aria-selected="true"]::after{bottom:-9px}
+  .app-frame{height:calc(100dvh - 60px);min-height:0}
+}
+@media(max-width:420px){
+  .portal-header{min-height:54px;padding:3px 6px 6px}
+  .product-tabs{gap:5px}
+  .product-tab{height:44px;border-radius:8px;padding:3px 4px}
+  .product-tab[data-product="archives"] img{max-width:68px;max-height:35px}
+  .product-tab[data-product="stickers"] img{max-width:146px;max-height:36px}
+  .product-tab[data-product="tools"] img{max-width:146px;max-height:36px}
+  .app-frame{height:calc(100dvh - 54px)}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+
+
+/* V3.0 — Stronger active-tab affordance, designed around each brand accent */
+.product-tab{overflow:visible;opacity:.78;filter:saturate(.72);border-width:2px;transition:transform .17s ease,opacity .17s ease,filter .17s ease,border-color .17s ease,background-color .17s ease,box-shadow .17s ease}
+.product-tab:hover{opacity:1;filter:saturate(1);transform:translateY(-1px)}
+.product-tab[aria-selected="true"]{opacity:1;filter:none;transform:translateY(-1px);border:2px solid var(--accent);background:rgba(255,255,255,.18)!important;box-shadow:0 0 0 1px rgba(255,255,255,.30) inset,0 0 0 2px color-mix(in srgb,var(--accent) 30%,transparent),0 6px 18px rgba(0,0,0,.18),0 0 22px color-mix(in srgb,var(--accent) 22%,transparent)}
+.product-tab[aria-selected="true"]::after{content:"";position:absolute;left:14px;right:14px;width:auto;height:4px;bottom:-8px;border-radius:4px;background:var(--accent);box-shadow:0 0 12px var(--accent)}
+.product-tab[aria-selected="true"]::before{content:"";position:absolute;right:9px;top:8px;width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 3px rgba(255,255,255,.12),0 0 10px var(--accent)}
+.product-tab:focus-visible{outline:2px solid #fff;outline-offset:4px}
+@media(max-width:800px){.product-tab[aria-selected="true"]::after{bottom:-7px}}
+@media(max-width:420px){.product-tab[aria-selected="true"]::after{left:9px;right:9px;bottom:-7px}.product-tab[aria-selected="true"]::before{top:5px;right:5px;width:6px;height:6px}}
+</style>
+</head>
+<body data-active="tools">
+  <div class="portal">
+    <header class="portal-header">
+      <nav class="product-tabs" role="tablist" aria-label="Choisir le projet Rapli">
+        <button type="button" id="tab-archives" class="product-tab" data-product="archives" role="tab" aria-selected="false" aria-controls="panel-archives" tabindex="-1" title="Rapli Archives">
+          <img src="assets/archives-logo.webp" alt="Rapli Archives" width="100" height="57" draggable="false">
+        </button>
+        <button type="button" id="tab-stickers" class="product-tab" data-product="stickers" role="tab" aria-selected="false" aria-controls="panel-stickers" tabindex="-1" title="Rapli Stickers Lab">
+          <img src="assets/stickers-logo.webp" alt="Rapli Stickers Lab" width="218" height="58" draggable="false">
+        </button>
+        <button type="button" id="tab-tools" class="product-tab" data-product="tools" role="tab" aria-selected="true" aria-controls="panel-tools" tabindex="0" title="Rapli Tools">
+          <img src="assets/tools-logo.webp" alt="Rapli Tools" width="172" height="80" draggable="false">
+        </button>
+      </nav>
+    </header>
+    <div class="frame-wrap">
+      <section id="panel-archives" role="tabpanel" aria-labelledby="tab-archives" hidden>
+        <iframe id="frame-archives" class="app-frame" data-src="archives/index.html" title="Rapli Archives — catalogue Dragon Blanc aux Yeux Bleus" allow="clipboard-read; clipboard-write" loading="eager"></iframe>
+      </section>
+      <section id="panel-stickers" role="tabpanel" aria-labelledby="tab-stickers" hidden>
+        <iframe id="frame-stickers" class="app-frame" data-src="stickers/index.html" title="Rapli Stickers Lab — éditeur de stickers" allow="clipboard-read; clipboard-write" loading="lazy"></iframe>
+      </section>
+      <section id="panel-tools" role="tabpanel" aria-labelledby="tab-tools">
+        <iframe id="frame-tools" class="app-frame" data-src="tools/index.html" title="Rapli Tools — PDF, détourage, upscale et retouche photo" allow="clipboard-read; clipboard-write" loading="lazy"></iframe>
+      </section>
+    </div>
+  </div>
+  <script>
+  (() => {
+    'use strict';
+    const projects=['archives','stickers','tools'];
+    const tabs=Object.fromEntries(projects.map(name=>[name,document.getElementById('tab-'+name)]));
+    const panels=Object.fromEntries(projects.map(name=>[name,document.getElementById('panel-'+name)]));
+    const frames=Object.fromEntries(projects.map(name=>[name,document.getElementById('frame-'+name)]));
+    let current='tools';
+    // Inactive apps can pause noncritical thumbnail/pixel work without losing state.
+    const sendActivity=(project,isActive)=>{const frame=frames[project];if(frame?.contentWindow&&frame?.src)try{frame.contentWindow.postMessage({type:'RAPLI_APP_ACTIVITY',active:isActive},location.origin)}catch(e){}};
+    const fromHash=()=>{const name=location.hash.slice(1).toLowerCase();return projects.includes(name)?name:'tools';};
+    function select(name, updateHash=false, focus=false) {
+      if(!projects.includes(name))name='tools';
+      current=name;
+      // Do not launch the heavyweight editors (and their model libraries) until visited.
+      const frame=frames[name];
+      if(!frame.src && frame.dataset.src){frame.src=frame.dataset.src;delete frame.dataset.src;}
+      document.body.dataset.active=name;
+      for(const project of projects){
+        const active=project===name;
+        tabs[project].setAttribute('aria-selected',String(active));
+        tabs[project].tabIndex=active?0:-1;
+        panels[project].hidden=!active;
+        frames[project].hidden=!active;
+        sendActivity(project,active);
+      }
+      document.title=({archives:'RAPLI — Archives · Dragon Blanc aux Yeux Bleus',stickers:'RAPLI — Stickers Lab',tools:'RAPLI — Tools'})[name];
+      if(updateHash && location.hash !=='#'+name)history.pushState({project:name},'', '#'+name);
+      if(focus)tabs[name].focus();
+    }
+    for(const name of projects){
+      tabs[name].addEventListener('click',()=>select(name,true));
+      tabs[name].addEventListener('keydown',e=>{
+        let next;
+        if(e.key==='ArrowRight')next=projects[(projects.indexOf(name)+1)%projects.length];
+        else if(e.key==='ArrowLeft')next=projects[(projects.indexOf(name)+projects.length-1)%projects.length];
+        else if(e.key==='Home')next=projects[0];
+        else if(e.key==='End')next=projects[projects.length-1];
+        if(next){e.preventDefault();select(next,true,true);}
+      });
+    }
+    addEventListener('popstate',()=>select(fromHash()));
+    addEventListener('hashchange',()=>select(fromHash()));
+    // Re-send state once iframes have finished their first load.
+    for(const name of projects)frames[name].addEventListener('load',()=>sendActivity(name,name===current));
+    select(fromHash());
+  })();
+  </script>
+</body>
+</html>

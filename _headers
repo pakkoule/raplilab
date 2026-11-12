@@ -1,0 +1,11 @@
+# RAPLI TRIO V2.6 — safe cache policy for Netlify static hosting
+/*.html
+  Cache-Control: public, max-age=0, must-revalidate
+/*/index.html
+  Cache-Control: public, max-age=0, must-revalidate
+/archives/assets/perf/*
+  Cache-Control: public, max-age=31536000, immutable
+/stickers/assets/perf/*
+  Cache-Control: public, max-age=31536000, immutable
+/tools/assets/perf/*
+  Cache-Control: public, max-age=31536000, immutable

@@ -90,9 +90,9 @@
       '<span id="rapli-cloud-status" aria-live="polite">' + safeText(status) + '</span></div>' +
       '<p id="rapli-cloud-details">Sauvegarde des cartes OWNED et des personnalisations des tuiles et éditions.</p>' +
       '<div class="rapli-cloud-buttons">' +
-      '<button type="button" id="rapli-cloud-start" class="primary-button small" data-rapli-cloud="start">Activer la sauvegarde cloud</button>' +
-      '<button type="button" id="rapli-cloud-sync" class="secondary-button small" data-rapli-cloud="sync" hidden>Synchroniser maintenant</button></div>' +
-      '<div id="rapli-cloud-conflict" hidden><p><strong>Deux versions différentes détectées.</strong> ' +
+      '<button type="button" id="rapli-cloud-start"' + (ready || connecting ? ' hidden' : '') + ' class="primary-button small" data-rapli-cloud="start">Activer la sauvegarde cloud</button>' +
+      '<button type="button" id="rapli-cloud-sync"' + (ready && !conflict ? '' : ' hidden') + ' class="secondary-button small" data-rapli-cloud="sync">Synchroniser maintenant</button></div>' +
+      '<div id="rapli-cloud-conflict"' + (conflict ? '' : ' hidden') + '><p><strong>Deux versions différentes détectées.</strong> ' +
       'Exporte d’abord ton JSON de sauvegarde. Choisis ensuite quelle version conserver : ' +
       'l’autre sera remplacée, sans fusion automatique.</p>' +
       '<div class="rapli-cloud-buttons"><button type="button" class="secondary-button small" data-rapli-cloud="local">' +
@@ -100,8 +100,8 @@
       'data-rapli-cloud="remote">Restaurer le cloud (remplacer cet appareil)</button></div></div>' +
       '<div class="rapli-cloud-pairing" style="margin-top:15px;padding-top:13px;border-top:1px solid #dbe7e1">' +
       '<strong style="display:block;margin-bottom:6px">📱 Même collection sur PC et téléphone</strong>' +
-      '<p id="rapli-cloud-linked-status" style="font-size:12px;margin-bottom:8px">Cloud non connecté</p>' +
-      '<button type="button" id="rapli-cloud-issue" data-rapli-cloud="issue" class="secondary-button small">Générer un code sur cet appareil</button>' +
+      '<p id="rapli-cloud-linked-status" style="font-size:12px;margin-bottom:8px">' + (ready ? (ownerId === userId ? 'Appareil principal' : 'Appareil associé à une collection partagée') : 'Cloud non connecté') + '</p>' +
+      '<button type="button" id="rapli-cloud-issue"' + (ready && ownerId === userId ? '' : ' hidden') + ' data-rapli-cloud="issue" class="secondary-button small">Générer un code sur cet appareil</button>' +
       '<div id="rapli-cloud-pair-code" style="font-weight:850;letter-spacing:1px;overflow-wrap:anywhere;margin:8px 0" aria-live="polite"></div>' +
       '<div class="rapli-cloud-buttons" style="margin-top:10px"><input type="text" id="rapli-cloud-pair-input" maxlength="35" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="Code de liaison du PC" aria-label="Code de liaison" style="padding:8px;min-width:180px;max-width:280px;border:1px solid #bccfca;border-radius:8px;font:inherit" />' +
       '<button type="button" id="rapli-cloud-redeem" data-rapli-cloud="redeem" class="primary-button small">Associer cet appareil</button></div>' +

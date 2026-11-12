@@ -47,3 +47,31 @@ Les autres modules RapliLab, Stickers Lab et Tools, restent inchangés.
 - Contrôler RLS (un utilisateur anonyme ne doit pas lire un autre `user_id`) et le caractère privé des images.
 
 **Ne pas fusionner cette PR avant validation sur Deploy Preview.**
+
+
+## Liaison sécurisée entre PC et iPhone (KA-05)
+
+Deux sessions anonymes Supabase, même sur le même site Netlify, créent **deux collections indépendantes**. Pour partager tes données, associe explicitement les appareils :
+
+1. Sur le **PC ayant la nouvelle image KA-05**, ouvre la dernière Deploy Preview de RapliLab et **Rapli Archives → Sauvegardes**. Confirme que **« Toutes les données sont synchronisées ✓ »** s'affiche (sinon, clique « Synchroniser maintenant »).
+2. Clique **« Générer un code sur cet appareil »**. Le code est à usage unique, **valide 10 minutes**.
+3. Sur l'**iPhone**, ouvre la **même Deploy Preview** et **Rapli Archives → Sauvegardes**. Active le cloud si nécessaire, puis **exporte un JSON** avant la liaison si la collection locale du téléphone contient des données à préserver.
+4. Saisis le code du PC dans **« Code de liaison du PC »**, puis clique **« Associer cet appareil »**.
+5. Vérifie l'indication « Appareil associé ». Le système **ne remplace pas automatiquement les données locales existantes**. Clique **« Restaurer le cloud (remplacer cet appareil) »** pour afficher la collection du PC et sa nouvelle image KA-05. Confirme la restauration après avoir exporté le JSON.
+6. Lors des utilisations suivantes, les données sont enregistrées dans la **même collection** ; un appareil dont la copie locale est inchangée peut récupérer automatiquement les nouvelles versions depuis Supabase à l'ouverture ou au retour sur l'onglet. Un conflit ne doit jamais effacer silencieusement une modification locale.
+
+### Protection du code
+
+- Une Edge Function Supabase (`rapli-archives-pair`) authentifie la session ; aucun secret de service n'est présent côté navigateur.
+- Code aléatoire hexadécimal de **96 bits**, stocké **uniquement sous forme de hash SHA-256**, expiration 10 minutes, consommation unique.
+- Limite **12 essais par heure et par session anonyme** (cette limite n'est pas une défense contre un attaquant créant de multiples comptes, le secret aléatoire long est la défense principale).
+- Les rattachements sont persistés dans `rapli_archive_members`. RLS autorise le membre à lire et modifier uniquement la collection du propriétaire lié ; les images sont protégées par dossier propriétaire. La première session du téléphone conserve son identité mais accède à la collection du PC.
+- La suppression/révocation des appareils associés n'est pas encore disponible dans l'interface ; il faudra l'ajouter avant de considérer l'association comme une gestion de compte complète.
+
+### Vérifications supplémentaires avant fusion
+
+- Deux comptes anonymes doivent voir des collections **différentes avant** liaison.
+- Un code invalide/expiré/usagé doit être refusé.
+- Après liaison, **KA-05 doit récupérer la même photo privée** sur l'iPhone après validation du remplacement cloud.
+- Modifier une métadonnée/une photo sur le PC, revenir dans l'onglet iPhone et confirmer que la nouvelle valeur se charge **si aucune modification locale divergente n'existe**.
+- Si les deux appareils ont modifié leur copie depuis la dernière synchronisation, afficher un **choix de version** au lieu de remplacer silencieusement.

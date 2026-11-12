@@ -621,11 +621,39 @@ body::before{display:none!important}
 }
 
 </style>
-</head>
+<style id="rapli-cloud-module-controls">
+.rapli-utility-strip .rapli-cloud-module-group{display:flex;align-items:center;gap:6px;margin-right:auto;min-width:0}
+.rapli-cloud-module-group .rapli-cloud-module-btn{display:grid;place-items:center;min-width:38px;width:38px;height:38px;border:1px solid #b9c9d0;border-radius:10px;background:#fff;color:#537283;cursor:pointer;transition:background .15s,box-shadow .15s}
+.rapli-cloud-module-btn svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.85;stroke-linecap:round;stroke-linejoin:round}
+.rapli-cloud-module-btn:hover:not(:disabled){background:#e7f5fb;box-shadow:0 1px 7px #19324b18}
+.rapli-cloud-module-btn:focus-visible{outline:2px solid #558fdd;outline-offset:2px}
+.rapli-cloud-module-btn:disabled{opacity:.64;cursor:wait}
+.rapli-cloud-module-btn[data-cloud-state="synced"]{color:#25855b;border-color:#9fcdb5}
+.rapli-cloud-module-btn[data-cloud-state="pending"]{color:#bd8826;border-color:#e0c28d}
+.rapli-cloud-module-btn[data-cloud-state="busy"]{color:#307fb8}
+.rapli-cloud-module-btn[data-cloud-state="conflict"],.rapli-cloud-module-btn[data-cloud-state="error"]{color:#c0414f;border-color:#e1a5ab}
+.rapli-cloud-module-btn.is-refreshing svg{animation:rapli-cloud-module-rotate 1s linear infinite}
+@keyframes rapli-cloud-module-rotate{to{transform:rotate(360deg)}}
+#rapli-module-cloud-status{font:700 10px/1.25 Poppins,system-ui,sans-serif;color:#587488;display:block;max-width:290px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#rapli-module-cloud-status[data-cloud-state="error"],#rapli-module-cloud-status[data-cloud-state="conflict"]{color:#b04250}
+@media(max-width:780px){#rapli-module-cloud-status{max-width:135px;font-size:9px}}
+@media(max-width:580px){#rapli-module-cloud-status{display:none}.rapli-utility-strip{gap:6px}.rapli-cloud-module-group .rapli-cloud-module-btn{min-width:36px;width:36px;height:36px;border-radius:9px}}
+@media(prefers-reduced-motion:reduce){.rapli-cloud-module-btn.is-refreshing svg{animation:none}}
+</style></head>
 <body>
 <div class="app-shell">
   <div class="topline"></div>
-  <div class="rapli-utility-strip" aria-label="Gestion des sauvegardes"><div class="header-tools">
+  <div class="rapli-utility-strip" aria-label="Gestion des sauvegardes">
+    <div class="rapli-cloud-module-group" aria-label="Synchronisation avec Supabase">
+      <button type="button" class="rapli-cloud-module-btn" id="rapli-module-cloud-save" aria-label="Enregistrer dans le cloud" title="Enregistrer dans Supabase">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18h10a4 4 0 0 0 .65-7.95A6.2 6.2 0 0 0 6 8.6 4.7 4.7 0 0 0 7 18Z"/><path d="M12 10v8m-3-3 3 3 3-3"/></svg>
+      </button>
+      <button type="button" class="rapli-cloud-module-btn" id="rapli-module-cloud-refresh" aria-label="Actualiser depuis le cloud" title="Récupérer les modifications de l’autre appareil">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14.25-5L3 8.5"/><path d="M3 3.5v5h5"/><path d="M4 13a8 8 0 0 0 14.25 5L21 15.5"/><path d="M21 20.5v-5h-5"/></svg>
+      </button>
+      <span id="rapli-module-cloud-status" role="status" aria-live="polite">Connexion cloud…</span>
+    </div>
+    <div class="header-tools">
       <button id="importBtn" type="button" class="button button-ghost" title="Importer une sauvegarde JSON" aria-label="Importer une sauvegarde"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V3m-5 5 5-5 5 5M4 16v4h16v-4"/></svg> Importer</button>
       <button id="exportBtn" type="button" class="button button-ghost" title="Exporter une sauvegarde JSON" aria-label="Exporter une sauvegarde"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13m-5-5 5 5 5-5M4 17v4h16v-4"/></svg> Exporter</button>
     </div></div>
@@ -738,10 +766,10 @@ body::before{display:none!important}
   function get(store,key){return new Promise((res,rej)=>{const r=db.transaction(store,'readonly').objectStore(store).get(key);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
   function openDB(){return new Promise((res,rej)=>{const q=indexedDB.open('rapli-refs-v1',1);q.onupgradeneeded=()=>{const d=q.result;d.createObjectStore('refs',{keyPath:'id'});d.createObjectStore('logos',{keyPath:'id'});d.createObjectStore('meta',{keyPath:'key'})};q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error);q.onblocked=()=>rej(new Error('Base bloquée'))})}
   async function fallback(){try{localStorage.setItem('rapli-refs-fallback',JSON.stringify({refs,logos}))}catch(e){console.warn(e);storageWarning=true;toast('Stockage saturé : exporte un JSON pour conserver tes données.')}}
-  async function saveRef(c){if(db)await put('refs',c);refs=refs.filter(x=>x.id!==c.id).concat(c);if(!db)await fallback()}
-  async function deleteRef(id){if(db)await del('refs',id);refs=refs.filter(x=>x.id!==id);if(!db)await fallback()}
-  async function saveLogo(c){if(db)await put('logos',c);logos=logos.filter(x=>x.id!==c.id).concat(c);if(!db)await fallback()}
-  async function deleteLogo(id){if(db)await del('logos',id);logos=logos.filter(x=>x.id!==id);if(!db)await fallback()}
+  async function saveRef(c){if(db)await put('refs',c);refs=refs.filter(x=>x.id!==c.id).concat(c);if(!db)await fallback();window.RapliModuleCloud?.changed?.()}
+  async function deleteRef(id){if(db)await del('refs',id);refs=refs.filter(x=>x.id!==id);if(!db)await fallback();window.RapliModuleCloud?.changed?.()}
+  async function saveLogo(c){if(db)await put('logos',c);logos=logos.filter(x=>x.id!==c.id).concat(c);if(!db)await fallback();window.RapliModuleCloud?.changed?.()}
+  async function deleteLogo(id){if(db)await del('logos',id);logos=logos.filter(x=>x.id!==id);if(!db)await fallback();window.RapliModuleCloud?.changed?.()}
   function exampleRefs(){const t=Date.now();return [
     {id:'refs-example-1',status:'valid',name:'T-shirt heavyweight',brand:'Stanley/Stella',category:'T-shirts',reference:'Freestyler · EXEMPLE',size:'XL',color:'Blanc',shop:'',price:'',url:'',essential:true,tags:['Coton épais','Coupe ample'],notes:'Exemple à personnaliser : tu peux préciser ici la coupe, le tissu et les préférences de taille.',photo:'',demo:true,createdAt:t-20000,updatedAt:t-20000},
     {id:'refs-example-2',status:'valid',name:'Chaussettes du quotidien',brand:'Ma marque',category:'Chaussettes',reference:'À compléter',size:'39–42',color:'Noir',shop:'',price:'',url:'',essential:false,tags:['Quotidien'],notes:'Exemple fictif à modifier ou supprimer.',photo:'',demo:true,createdAt:t-10000,updatedAt:t-10000},
@@ -791,8 +819,45 @@ body::before{display:none!important}
   $('exportBtn').addEventListener('click',exportData);$('importBtn').addEventListener('click',()=>$('importFile').click());$('importFile').addEventListener('change',e=>{if(e.target.files[0])importData(e.target.files[0])});
   $('clearDemoBtn').addEventListener('click',async()=>{if(!confirm('Supprimer les exemples de démonstration ?'))return;try{for(const r of refs.filter(x=>x.demo))await deleteRef(r.id);renderAll();toast('Exemples supprimés')}catch{toast('Suppression impossible')}});
   document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'&&!document.querySelector('dialog[open]')){e.preventDefault();$('filterSearch').focus();$('filterSearch').select()}});
-  init();
+
+// Shared cloud bridge: independent local state, synced through the RapliLab session.
+const rapliBridge = window.RapliModuleBridge = {
+ module:'refs',
+ ready:false,
+ getState:()=>({records:refs,logos}),
+ notify:msg=>toast(msg),
+ replaceState:async next=>{
+   if(!next||!Array.isArray(next.records)||!Array.isArray(next.logos)||
+     next.records.length>20000||next.logos.length>5000||
+     [...next.records,...next.logos].some(item=>!item||typeof item.id!=='string'||item.id.length>180))
+     throw Error('Collection cloud invalide.');
+   if(db){
+     await new Promise((resolve,reject)=>{
+       const tr=db.transaction(['refs','logos'],'readwrite');
+       const recordsStore=tr.objectStore('refs');
+       const logosStore=tr.objectStore('logos');
+       recordsStore.clear();logosStore.clear();
+       next.records.forEach(row=>recordsStore.put(row));
+       next.logos.forEach(row=>logosStore.put(row));
+       tr.oncomplete=resolve;
+       tr.onerror=()=>reject(tr.error||Error('Restauration IndexedDB interrompue.'));
+       tr.onabort=()=>reject(tr.error||Error('Restauration IndexedDB annulée.'));
+     });
+   }
+   refs=next.records.map(x=>({...x}));
+   logos=next.logos.map(x=>({...x}));
+   if(!db){try{localStorage.setItem('rapli-refs-fallback',JSON.stringify({refs,logos,initialized:true}));}catch(e){console.warn('Stockage local saturé',e);}}
+   renderAll();
+ }
+};
+function rapliModuleReady(){
+ rapliBridge.ready=true;
+ window.dispatchEvent(new Event('rapli-module-ready'));
+}
+
+  init().then(rapliModuleReady).catch(err=>console.warn('Rapli module startup',err));
 })();
 </script>
+<script src="../shared/module-cloud.js" defer></script>
 </body>
 </html>

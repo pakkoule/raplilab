@@ -268,12 +268,6 @@ body[data-active="refs"] .portal-header{background:linear-gradient(115deg,#112d3
     const cloudFeedback=document.getElementById('global-cloud-feedback');
     let globalCloudBusy=false,requestSequence=0;
     const cloudPause=ms=>new Promise(resolve=>setTimeout(resolve,ms));
-    const cloudTimeout=async(promise,ms)=>{
-      let timer;try{return await Promise.race([
-        promise,
-        new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('Délai de synchronisation dépassé')),ms);})
-      ]);}finally{clearTimeout(timer);}
-    };
     async function ensureCloudFrame(name) {
       const frame=frames[name];
       if(!frame)throw Error('Onglet introuvable.');
@@ -298,22 +292,25 @@ body[data-active="refs"] .portal-header{background:linear-gradient(115deg,#112d3
     async function syncCloudModule(name,operation) {
       const frame=await ensureCloudFrame(name);
       const id='global-'+Date.now().toString(36)+'-'+(++requestSequence)+'-'+name;
-      return cloudTimeout(new Promise((resolve,reject)=>{
+      return new Promise((resolve,reject)=>{
+        let timeout;
+        function cleanup(){clearTimeout(timeout);window.removeEventListener('message',receive);}
         function receive(event){
           const data=event.data;
           if(event.origin!==location.origin||event.source!==frame.contentWindow||
              data?.type!=='RAPLI_GLOBAL_SYNC_RESULT'||data.id!==id||
              data.module!==name||data.operation!==operation)return;
-          window.removeEventListener('message',receive);
+          cleanup();
           resolve({success:!!data.success,message:String(data.message||''),conflict:!!data.conflict});
         }
         window.addEventListener('message',receive);
+        timeout=setTimeout(()=>{cleanup();reject(Error('Délai de synchronisation dépassé'));},120000);
         try{
           frame.contentWindow.postMessage({type:'RAPLI_GLOBAL_SYNC_REQUEST',id,module:name,operation},location.origin);
-        }catch(e){window.removeEventListener('message',receive);reject(e);}
-      }),120000);
+        }catch(e){cleanup();reject(e);}
+      });
     }
-    const escapeCloud=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','"':'&quot;'}[c]));
+    const escapeCloud=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
     function reportGlobalCloud(operation,completed,results) {
       const errors=results.filter(r=>!r.success);
       const successes=results.length-errors.length;

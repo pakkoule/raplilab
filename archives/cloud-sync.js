@@ -565,5 +565,5 @@
     try { if (localStorage.getItem(FLAG) === '1') void start(); } catch (_) {}
     ui();
   }
-  window.RapliCloud = { init, changed, card, ui };
+  window.RapliCloud = { init, changed, card, ui, isInitialized:()=>!!context };
 })();

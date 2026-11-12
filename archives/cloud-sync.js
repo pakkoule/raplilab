@@ -17,6 +17,22 @@
   let error = false, remote = null, remoteRevision = 0, rowExists = false;
   let lastConfirmed = '', storageReady = false;
   const uploadedImages = new Set();
+  const SYNC_MARK = 'rapli-archives-last-successful-cloud-v1';
+  function fingerprint(value) {
+    // Fast non-cryptographic change detector. RLS/session security does not use this.
+    const str=stable(value);let a=2166136261,b=0x9e3779b9;
+    for(let i=0;i<str.length;i++) { a=Math.imul(a^str.charCodeAt(i),16777619); b=Math.imul(b^str.charCodeAt(i),2246822519); }
+    return str.length+':'+(a>>>0).toString(36)+':'+(b>>>0).toString(36);
+  }
+  function rememberSynced(value) {
+    try { localStorage.setItem(SYNC_MARK,JSON.stringify({owner:ownerId,signature:fingerprint(value)})); }catch(_){}
+  }
+  function isLocallyUnchanged(value) {
+    try{
+      const marker=JSON.parse(localStorage.getItem(SYNC_MARK)||'null');
+      return !!marker&&marker.owner===ownerId&&marker.signature===fingerprint(value);
+    }catch(_){return false;}
+  }
 
   function state() {
     const a = context.get();
@@ -208,7 +224,12 @@
         const localPacked = await convertImages(state(), false);
         if (equal(localPacked, remote)) {
           lastConfirmed = stable(localPacked);
+          rememberSynced(remote);
           show('Toutes les données sont synchronisées ✓');
+        } else if (isLocallyUnchanged(localPacked)) {
+          // A different device saved a newer version while this one was idle.
+          // Only overwrite when we can prove the local archive has not changed.
+          await restoreCloud(true);
         } else {
           conflict = true;
           show('Deux versions différentes : sélection nécessaire', true);
@@ -244,6 +265,7 @@
       const sameRemote = remote && equal(packed, remote);
       if (sameRemote && !pending) {
         lastConfirmed = stable(packed);
+        rememberSynced(packed);
         show('Toutes les données sont synchronisées ✓');
         return;
       }
@@ -274,6 +296,7 @@
       remoteRevision = Number(output.state_revision);
       remote = packed;
       lastConfirmed = stable(packed);
+      rememberSynced(packed);
       // Detect a local edit made during image uploads; schedule another push.
       const latest = await convertImages(state(), false);
       if (!equal(latest, packed)) pending = true;
@@ -292,9 +315,9 @@
     }
   }
 
-  async function restoreCloud() {
+  async function restoreCloud(silent=false) {
     if (!ready || !remote || !context) return;
-    if (!confirm('Restaurer la version Supabase ? Les modifications locales non exportées seront remplacées. Fais d’abord une sauvegarde JSON.')) return;
+    if (!silent && !confirm('Restaurer la version Supabase ? Les modifications locales non exportées seront remplacées. Fais d’abord une sauvegarde JSON.')) return;
     suspended = true;
     show('Restauration du catalogue et des images…');
     try {
@@ -311,6 +334,7 @@
       conflict = false;
       pending = false;
       lastConfirmed = stable(remote);
+      rememberSynced(remote);
       show('Catalogue et personnalisations restaurés ✓');
     } catch(e) {
       console.warn('Rapli Archives cloud restore error:', e);
@@ -372,6 +396,18 @@
       if(input)input.value='';
     } catch(e){show('Liaison impossible : '+e.message,true);}
   }
+  async function checkRemoteChanges() {
+    if(!ready||uploading||connecting||conflict||pending||suspended)return;
+    const latest=await client.from(TABLE).select('archive_state,state_revision').eq('user_id',ownerId).maybeSingle();
+    if(latest.error||!latest.data?.archive_state)return;
+    const newer=Number(latest.data.state_revision||0);
+    if(newer<=remoteRevision)return;
+    remoteRevision=newer;remote=normalize(latest.data.archive_state);rowExists=true;
+    const localPacked=await convertImages(state(),false);
+    if(equal(localPacked,remote)){rememberSynced(remote);return;}
+    if(isLocallyUnchanged(localPacked))await restoreCloud(true);
+    else{conflict=true;show('Le cloud a changé : choisis la version à garder',true);}
+  }
   function changed() {
     if (!ready || conflict || suspended) return;
     pending = true;
@@ -398,7 +434,9 @@
       else if (pending && !conflict) void flush();
     });
     document.addEventListener('visibilitychange', () => {
-      if (!document.hidden && ready && pending && !conflict) void flush();
+      if (document.hidden || !ready) return;
+      if (pending && !conflict) void flush();
+      else void checkRemoteChanges().catch(e => console.warn('Cloud refresh:',e));
     });
     try { if (localStorage.getItem(FLAG) === '1') void start(); } catch (_) {}
     ui();

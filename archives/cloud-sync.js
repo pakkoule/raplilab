@@ -13,7 +13,7 @@
   const FIELDS = ['groups', 'variants', 'copies', 'wishlist', 'settings', 'createdAt', 'version'];
 
   let context, client, userId, ownerId, ready = false, connecting = false, uploading = false;
-  let suspended = false, conflict = false, pending = false, timer, status = 'Local uniquement';
+  let suspended = false, conflict = false, pending = false, refreshing = false, timer, status = 'Local uniquement';
   let error = false, remote = null, remoteRevision = 0, rowExists = false;
   let lastConfirmed = '', storageReady = false;
   const uploadedImages = new Set();
@@ -58,6 +58,26 @@
     return String(value).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   }
   function ui() {
+    const headerSave = document.getElementById('rapli-header-cloud-save');
+    const headerRefresh = document.getElementById('rapli-header-cloud-refresh');
+    const stateKind = !ready ? (error ? 'error' : 'local')
+      : conflict ? 'conflict' : (uploading || connecting || refreshing) ? 'busy'
+      : error ? 'error' : pending ? 'pending' : 'synced';
+    if (headerSave) {
+      headerSave.dataset.cloudState = stateKind;
+      headerSave.disabled = uploading || connecting || refreshing;
+      headerSave.title = status + ' — cliquer pour enregistrer sur Supabase';
+      headerSave.setAttribute('aria-label', 'Enregistrer la collection dans le cloud. ' + status);
+    }
+    if (headerRefresh) {
+      headerRefresh.dataset.cloudState = stateKind;
+      headerRefresh.classList.toggle('is-refreshing', refreshing);
+      headerRefresh.disabled = uploading || connecting || refreshing;
+      headerRefresh.title = 'Récupérer les modifications des autres appareils — ' + status;
+      headerRefresh.setAttribute('aria-label', 'Actualiser depuis le cloud. ' + status);
+    }
+    const headerStatus = document.getElementById('rapli-header-cloud-status');
+    if (headerStatus) headerStatus.textContent = status;
     const label = document.getElementById('rapli-cloud-status');
     if (label) { label.textContent = status; label.style.color = error ? '#b64d56' : '#3c7966'; }
     const start = document.getElementById('rapli-cloud-start');
@@ -316,8 +336,8 @@
   }
 
   async function restoreCloud(silent=false) {
-    if (!ready || !remote || !context) return;
-    if (!silent && !confirm('Restaurer la version Supabase ? Les modifications locales non exportées seront remplacées. Fais d’abord une sauvegarde JSON.')) return;
+    if (!ready || !remote || !context) return false;
+    if (!silent && !confirm('Restaurer la version Supabase ? Les modifications locales non exportées seront remplacées. Fais d’abord une sauvegarde JSON.')) return false;
     suspended = true;
     show('Restauration du catalogue et des images…');
     try {
@@ -336,9 +356,11 @@
       lastConfirmed = stable(remote);
       rememberSynced(remote);
       show('Catalogue et personnalisations restaurés ✓');
+      return true;
     } catch(e) {
       console.warn('Rapli Archives cloud restore error:', e);
       show('Restauration interrompue · données locales conservées : ' + (e.message || ''), true);
+      return false;
     } finally { suspended = false; ui(); }
   }
   async function keepLocal() {
@@ -396,17 +418,82 @@
       if(input)input.value='';
     } catch(e){show('Liaison impossible : '+e.message,true);}
   }
+  // Read the server before replacing anything. Local edits never get discarded silently.
   async function checkRemoteChanges() {
-    if(!ready||uploading||connecting||conflict||pending||suspended)return;
-    const latest=await client.from(TABLE).select('archive_state,state_revision').eq('user_id',ownerId).maybeSingle();
-    if(latest.error||!latest.data?.archive_state)return;
-    const newer=Number(latest.data.state_revision||0);
-    if(newer<=remoteRevision)return;
-    remoteRevision=newer;remote=normalize(latest.data.archive_state);rowExists=true;
-    const localPacked=await convertImages(state(),false);
-    if(equal(localPacked,remote)){rememberSynced(remote);return;}
-    if(isLocallyUnchanged(localPacked))await restoreCloud(true);
-    else{conflict=true;show('Le cloud a changé : choisis la version à garder',true);}
+    if (!ready || !client) return 'offline';
+    if (uploading || connecting || refreshing || suspended) return 'busy';
+    if (conflict) return 'conflict';
+    refreshing = true;
+    ui();
+    try {
+      const latest = await client.from(TABLE).select('archive_state,state_revision')
+        .eq('user_id',ownerId).maybeSingle();
+      if (latest.error) throw latest.error;
+      if (!latest.data?.archive_state) return 'unchanged';
+      const newer = Number(latest.data.state_revision || 0);
+      if (newer <= remoteRevision) return 'unchanged';
+      const cloudState = normalize(latest.data.archive_state);
+      const localPacked = await convertImages(state(), false);
+      rowExists = true;
+      remoteRevision = newer;
+      remote = cloudState;
+      if (equal(localPacked, cloudState)) {
+        rememberSynced(cloudState);
+        return 'unchanged';
+      }
+      if (!pending && isLocallyUnchanged(localPacked)) {
+        const restored = await restoreCloud(true);
+        return restored ? 'updated' : 'error';
+      }
+      conflict = true;
+      clearTimeout(timer);
+      show('Modifications locales et cloud différentes : choisis la version dans Sauvegardes', true);
+      return 'conflict';
+    } catch (e) {
+      console.warn('Rapli Archives refresh error:', e);
+      show('Actualisation cloud impossible : ' + (e.message || 'réseau indisponible'), true);
+      return 'error';
+    } finally { refreshing = false; ui(); }
+  }
+  function notify(message, bad=false) {
+    if(context?.notify) context.notify(message,bad);
+  }
+  async function headerSaveNow() {
+    if (!ready) {
+      await start();
+      if (!ready) { notify('Cloud indisponible. Ouvre Sauvegardes pour le configurer.',true); return; }
+    }
+    if (conflict) {
+      notify('Conflit de versions : choisis dans Sauvegardes avant d’enregistrer.',true);
+      context?.openBackups?.();
+      return;
+    }
+    if (uploading || connecting || refreshing) {
+      notify('Une synchronisation est déjà en cours.');
+      return;
+    }
+    clearTimeout(timer);
+    pending = true;
+    await flush();
+    notify(conflict ? 'Conflit cloud : ouvre Sauvegardes pour choisir une version.'
+      : error || pending ? 'Sauvegarde cloud en attente : vérifie l’état du nuage.'
+      : 'Collection enregistrée dans Supabase ✓', conflict || error || pending);
+  }
+  async function headerRefreshNow() {
+    if (!ready) {
+      await start();
+      if (!ready) { notify('Cloud indisponible : active-le depuis Sauvegardes.',true); return; }
+    }
+    const result = await checkRemoteChanges();
+    if (result === 'updated') notify('Modifications de l’autre appareil récupérées ✓');
+    else if (result === 'unchanged') notify(pending
+      ? 'Aucun nouveau changement cloud. Tes modifications locales restent à envoyer.'
+      : 'Catalogue déjà à jour ✓');
+    else if (result === 'conflict') {
+      notify('Deux versions différentes : ouvre Sauvegardes pour choisir.',true);
+      context?.openBackups?.();
+    } else if(result === 'busy') notify('Sauvegarde ou actualisation déjà en cours.');
+    else notify('Actualisation cloud indisponible.',true);
   }
   function changed() {
     if (!ready || conflict || suspended) return;
@@ -428,6 +515,8 @@
       else if (action === 'local') void keepLocal();
       else if (action === 'issue') void issueCode();
       else if (action === 'redeem') void redeemCode();
+      else if (action === 'header-save') void headerSaveNow();
+      else if (action === 'header-refresh') void headerRefreshNow();
     }, true);
     window.addEventListener('online', () => {
       if (!ready) { try { if (localStorage.getItem(FLAG)==='1') void start(); } catch (_) {} }

@@ -402,19 +402,107 @@ html{background:#f1f0ed}body{background:#f1f0ed;color:#272622;font-family:'Poppi
 @media(max-width:540px){.header{gap:8px}.logo-art{width:165px!important;height:92px!important}.header-tools{gap:5px}.header-tools .button{font-size:9px;padding:8px 9px}.filters{grid-template-columns:repeat(2,minmax(0,1fr))}.search-field{grid-column:span 2}.card-item{grid-template-columns:137px minmax(0,1fr);min-height:235px}.card-photo{min-height:218px}.card-info{padding:10px 9px}.player{font-size:16px}.watch-meta span{font-size:8px}.stat-top{font-size:8px}.stat strong{font-size:18px}.nav-actions .button{font-size:10px;padding:9px}.tab{padding:14px 8px;font-size:10px}.stat-icon{width:24px;height:24px}}
 @media(max-width:380px){.logo-art{width:138px!important;height:80px!important}.card-item{grid-template-columns:121px minmax(0,1fr)}.brand-lockup{font-size:9px}.watch-meta{margin-top:5px}.watch-meta span{font-size:7px}.card-photo{min-height:215px}}
 
-  </style>
+  
+/* RapliLab V3 — full-bleed module; one shared brand header lives in the portal. */
+:root{
+  --rapli-gradient-top:#fff4de;
+  --rapli-gradient-middle:#f5ead9;
+  --rapli-gradient-bottom:#dfcba6;
+  --rapli-glow-left:rgba(214,153,59,.34);
+  --rapli-glow-right:rgba(99,79,56,.21);
+  --rapli-panel-soft:#fff8ea;
+  --rapli-panel-mid:#e8d1a1;
+  --rapli-panel-edge:#dac49b;
+  --rapli-card-plain:#fffdf9;
+  --rapli-card-tint:#f6ebd6;
+  --rapli-new-accent:#a47429;
+}
+html,body{width:100%;max-width:100%;min-height:100%;overflow-x:hidden}
+body{
+  padding:0!important;
+  background:linear-gradient(135deg,var(--rapli-gradient-top),var(--rapli-gradient-middle) 55%,var(--rapli-gradient-bottom))!important;
+}
+body::before{display:none!important}
+.app-shell{
+  box-sizing:border-box!important;width:100%!important;max-width:none!important;
+  margin:0!important;padding:0 clamp(12px,2.7vw,36px) 34px!important;
+  min-height:100dvh;border:0!important;border-radius:0!important;box-shadow:none!important;
+  background:
+    radial-gradient(ellipse 57% 36% at 0% 2%,var(--rapli-glow-left),transparent 79%),
+    radial-gradient(ellipse 55% 45% at 100% 13%,var(--rapli-glow-right),transparent 80%),
+    linear-gradient(137deg,var(--rapli-gradient-top) 0%,var(--rapli-gradient-middle) 50%,var(--rapli-gradient-bottom) 100%)!important;
+}
+.app-shell>.topline{
+  box-sizing:content-box;height:5px;max-width:none;
+  margin:0 calc(-1 * clamp(12px,2.7vw,36px))!important;
+  background:linear-gradient(90deg,#211d18 0%,#be8b38 43%,#efe1c2 66%,#887039 100%)!important;
+  border-radius:0!important;box-shadow:none!important;
+}
+/* Header logo removed; preserve the working import/export actions in a slim utility row. */
+.rapli-utility-strip{
+  display:flex;align-items:center;justify-content:flex-end;
+  min-height:52px;margin:0 0 6px;padding:8px 0 5px;
+  border-bottom:1px solid color-mix(in srgb,var(--rapli-new-accent) 20%,transparent);
+}
+.rapli-utility-strip .header-tools{
+  display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:8px;
+}
+.rapli-utility-strip .header-tools .button{
+  background:linear-gradient(160deg,#fff, var(--rapli-panel-soft));
+  border:1px solid var(--rapli-panel-edge);color:var(--rapli-new-accent);
+  box-shadow:0 2px 8px rgba(16,39,44,.04);
+}
+.rapli-utility-strip .header-tools .button:hover{
+  background:linear-gradient(160deg,#fff,var(--rapli-panel-mid));
+  border-color:var(--rapli-new-accent);
+}
+.app-shell main{width:100%;max-width:none;min-width:0;margin:0 auto}
+.app-shell .stats{
+  padding:clamp(8px,1.15vw,15px);border:1px solid var(--rapli-panel-edge);
+  border-radius:16px;
+  background:linear-gradient(122deg,var(--rapli-panel-mid) 0%,var(--rapli-panel-soft) 46%,#fff 75%,var(--rapli-panel-mid) 100%);
+  box-shadow:0 7px 19px rgba(30,51,62,.07);
+}
+.app-shell .stat{
+  background:linear-gradient(140deg,#fff 0%,var(--rapli-panel-soft) 60%,var(--rapli-panel-mid) 100%)!important;
+  border-color:var(--rapli-panel-edge)!important;
+}
+.app-shell .filters{
+  background:linear-gradient(118deg,var(--rapli-panel-mid) 0%,var(--rapli-panel-soft) 50%,#fff 82%,var(--rapli-panel-mid) 100%)!important;
+  border-color:var(--rapli-panel-edge)!important;
+  box-shadow:0 8px 21px rgba(23,48,56,.09)!important;
+}
+.app-shell .card-item{
+  background:linear-gradient(139deg,var(--rapli-card-plain) 0%,var(--rapli-card-plain) 55%,var(--rapli-card-tint) 100%)!important;
+  border-color:var(--rapli-panel-edge)!important;
+  box-shadow:0 7px 22px rgba(22,47,56,.075)!important;
+}
+.app-shell .card-item:hover{
+  border-color:var(--rapli-new-accent)!important;
+  box-shadow:0 12px 27px rgba(22,47,56,.12)!important;
+}
+@media(max-width:750px){
+  .app-shell{padding:0 14px 26px!important}
+  .app-shell>.topline{margin:0 -14px!important}
+  .rapli-utility-strip{min-height:46px;margin-bottom:3px;padding:6px 0 5px}
+  .app-shell .stats{padding:8px;border-radius:13px}
+}
+@media(max-width:400px){
+  .app-shell{padding:0 10px 20px!important}
+  .app-shell>.topline{margin:0 -10px!important}
+  .rapli-utility-strip{min-height:43px}
+  .app-shell .stats{padding:6px}
+}
+
+</style>
 </head>
 <body>
 <div class="app-shell">
   <div class="topline"></div>
-  <header class="header">
-    <div class="header-logo"><img class="logo-art" src="assets/logo.png" alt="Rapli Time, logo or et noir avec deux mascottes"></div>
-    <div class="header-tools">
+  <div class="rapli-utility-strip" aria-label="Gestion des sauvegardes"><div class="header-tools">
       <button class="button button-ghost" id="importBtn" type="button" title="Restaurer une sauvegarde JSON">↥ Importer</button>
       <button class="button button-ghost" id="exportBtn" type="button" title="Exporter la collection au format JSON">↧ Exporter</button>
-    </div>
-  </header>
-  <main>
+    </div></div>\n  <main>
     <div class="stats" aria-label="Statistiques de ma collection">
       <div class="stat"><div class="stat-top"><span>Montres répertoriées</span><span class="stat-icon" id="statIconAll"></span></div><strong id="statTotal">0</strong></div>
       <div class="stat"><div class="stat-top"><span>Possédées</span><span class="stat-icon" id="statIconOwn"></span></div><strong id="statOwn">0</strong></div>

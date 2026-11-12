@@ -1206,6 +1206,55 @@ main#main-content {
   .reference-info > strong,.quick-preview .quick-code{font-size:12px}
 }
 </style>
+<style id="rapli-catalogue-illustrated-stats">
+/* Illustrated counters share the existing vintage vortex and the real yellow 0–9 image assets.
+   The filtered-results counter remains in the header; the two catalogue totals sit below it. */
+.catalogue-stats{
+  display:flex;align-items:flex-start;justify-content:center;
+  flex-wrap:nowrap;gap:clamp(18px,3.5vw,34px);
+  margin:6px auto 18px;padding:2px 6px 0;width:max-content;max-width:100%;
+}
+.catalogue-stat{
+  display:flex;flex-direction:column;align-items:center;
+  justify-content:flex-start;gap:7px;min-width:0;
+}
+.catalogue-stat .catalogue-stat-vortex.filter-counter{
+  display:grid;place-items:center;
+  width:78px;height:78px;min-width:78px;min-height:78px;
+  border:1.5px solid #303741;border-radius:7px;
+  background-image:url("assets/compteur_vortex.webp");
+  background-size:cover;background-position:center;
+  box-shadow:0 4px 11px rgba(21,43,75,.16),inset 0 0 0 1px rgba(255,255,255,.25);
+  overflow:hidden;flex:none;
+}
+.catalogue-stat .filter-counter-digits{width:88%;height:67%;gap:0}
+.catalogue-stat .filter-counter-digits[data-digits="1"]{width:65%;height:70%}
+.catalogue-stat .filter-counter-digits[data-digits="2"]{width:88%;height:69%}
+.catalogue-stat .filter-counter-digits[data-digits="3"]{width:96%;height:62%}
+.catalogue-stat .filter-counter-digits[data-digits="4"]{width:98%;height:57%}
+.catalogue-stat .filter-counter-digits[data-digits="5"],
+.catalogue-stat .filter-counter-digits[data-digits="6"],
+.catalogue-stat .filter-counter-digits[data-digits="7"],
+.catalogue-stat .filter-counter-digits[data-digits="8"]{width:98%;height:51%}
+.catalogue-stat .catalogue-stat-label{
+  color:#294765;font:800 10px/1.3 Poppins,Inter,system-ui,sans-serif;
+  letter-spacing:.11em;text-transform:uppercase;text-align:center;white-space:nowrap;
+}
+@media(max-width:650px){
+  .catalogue-stats{gap:20px;margin:3px auto 14px}
+  .catalogue-stat{gap:5px}
+  .catalogue-stat .catalogue-stat-vortex.filter-counter{
+    width:62px;height:62px;min-width:62px;min-height:62px;border-radius:6px;
+  }
+  .catalogue-stat .catalogue-stat-label{font-size:9px;letter-spacing:.08em}
+}
+@media(max-width:360px){
+  .catalogue-stats{gap:16px}
+  .catalogue-stat .catalogue-stat-vortex.filter-counter{
+    width:56px;height:56px;min-width:56px;min-height:56px;
+  }
+}
+</style>
 </head>
 <body>
 <div class="app-shell">
@@ -1511,16 +1560,27 @@ const RAPLI_COUNTER_DIGITS = [
   'assets/digits/8.webp',
   'assets/digits/9.webp'
 ];
+function rapliIllustratedDigits(count){
+ const n=Math.max(0,Math.floor(Number(count)||0));
+ const figures=String(n);
+ const images=[...figures].map(c=>`<img class="counter-glyph" src="${RAPLI_COUNTER_DIGITS[Number(c)]}" alt="" decoding="async" draggable="false">`).join('');
+ return `<span class="filter-counter-digits" data-digits="${Math.min(8,figures.length)}" aria-hidden="true">${images}</span>`;
+}
 function filteredCardCounter(count){
  const n=Math.max(0,Math.floor(Number(count)||0));
- const characters=String(n).split('');
- const images=characters.map(c=>`<img class="counter-glyph" src="${RAPLI_COUNTER_DIGITS[Number(c)]}" alt="" decoding="async" draggable="false">`).join('');
- return `<div class="filter-counter-wrap"><div class="filter-counter" role="status" aria-live="polite" aria-label="${n} carte${n!==1?'s':''} correspondant aux filtres"><span class="filter-counter-digits" data-digits="${Math.min(8,characters.length)}" aria-hidden="true">${images}</span></div></div>`;
+ return `<div class="filter-counter-wrap"><div class="filter-counter" role="status" aria-live="polite" aria-label="${n} carte${n!==1?'s':''} correspondant aux filtres">${rapliIllustratedDigits(n)}</div></div>`;
+}
+function catalogueStatCounter(label,count){
+ const n=Math.max(0,Math.floor(Number(count)||0));
+ return `<div class="catalogue-stat" aria-label="${n} ${label==='OWN'?'références possédées':'références au catalogue'}"><span class="catalogue-stat-vortex filter-counter">${rapliIllustratedDigits(n)}</span><span class="catalogue-stat-label">${label}</span></div>`;
 }
 let rapliVisibleLimit=60;
 function dashboardView(){const entries=dragonVariants();const owned=entries.filter(v=>ownedCount(v.id)).length;const list=dragonFilter(entries);
  return `
- <div class="compact-summary"><span><strong>${entries.length}</strong> références</span><span><strong>${owned}</strong> possédées</span></div>
+ <div class="catalogue-stats" role="group" aria-label="Compteurs du catalogue Dragon Blanc">
+   ${catalogueStatCounter('Références',entries.length)}
+   ${catalogueStatCounter('OWN',owned)}
+ </div>
  ${filteredCardCounter(list.length)}
  <div class="archive-module-heading dragon-heading"><div><h2>Catalogue</h2><span>${list.length} cartes affichées sur ${entries.length}</span></div></div>
  <div class="toolbar dragon-toolbar">${searchBar('Chercher une carte, une édition, une langue…')}${dragonFilterControls(entries)}</div>

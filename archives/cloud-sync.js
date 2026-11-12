@@ -504,6 +504,41 @@
   }
   function init(ctx) {
     context = ctx;
+    // RapliLab parent header can trigger Archives without opening its own backup screen.
+    // Only same-origin parent messages are accepted. No catalogue records are posted back.
+    window.addEventListener('message',event=>{
+      if(event.source!==window.parent || event.origin!==location.origin ||
+         event.data?.type!=='RAPLI_GLOBAL_SYNC_REQUEST' || event.data.module!=='archives')return;
+      const {id,operation}=event.data;
+      if(typeof id!=='string'||id.length>90||!['save','refresh'].includes(operation))return;
+      void(async()=>{
+        let success=false;
+        try{
+          if(!ready&&!connecting)await start();
+          for(let k=0;k<120&&(connecting||uploading);k++)
+            await new Promise(resolve=>setTimeout(resolve,100));
+          if(!ready||connecting||uploading||conflict) {
+            if(conflict)show('Conflit Archives : ouvre Sauvegardes pour choisir',true);
+            else if(!ready)show('Cloud Archives indisponible : active-le dans Sauvegardes',true);
+          }else if(operation==='save'){
+            clearTimeout(timer);
+            pending=true;
+            await flush();
+            success=ready&&!pending&&!conflict&&!error&&!uploading;
+          }else{
+            const outcome=await checkRemoteChanges();
+            success=(outcome==='unchanged'||outcome==='updated')&&!pending&&!conflict&&!error;
+            if(outcome==='conflict')show('Conflit Archives : ouvre Sauvegardes pour choisir',true);
+          }
+        }catch(e){
+          show('Synchro Archives impossible : '+(e?.message||'erreur inconnue'),true);
+        }
+        window.parent.postMessage({
+          type:'RAPLI_GLOBAL_SYNC_RESULT',id,module:'archives',operation,success,
+          message:status,conflict:!!conflict
+        },location.origin);
+      })();
+    });
     document.addEventListener('click', event => {
       const button = event.target.closest('[data-rapli-cloud]');
       if (!button) return;

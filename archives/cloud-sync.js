@@ -12,7 +12,7 @@
   const MAX_IMAGE_SIZE = 10 * 1024 * 1024;
   const FIELDS = ['groups', 'variants', 'copies', 'wishlist', 'settings', 'createdAt', 'version'];
 
-  let context, client, userId, ready = false, connecting = false, uploading = false;
+  let context, client, userId, ownerId, ready = false, connecting = false, uploading = false;
   let suspended = false, conflict = false, pending = false, timer, status = 'Local uniquement';
   let error = false, remote = null, remoteRevision = 0, rowExists = false;
   let lastConfirmed = '', storageReady = false;
@@ -54,6 +54,14 @@
     if (sync) { sync.hidden = !ready || conflict; sync.disabled = uploading || connecting; }
     const choices = document.getElementById('rapli-cloud-conflict');
     if (choices) choices.hidden = !conflict;
+    const pairCode = document.getElementById('rapli-cloud-pair-code');
+    const ownerLabel = document.getElementById('rapli-cloud-linked-status');
+    if (ownerLabel) ownerLabel.textContent = !ready ? 'Cloud non connecté'
+      : ownerId !== userId ? 'Appareil associé à une collection partagée' : 'Appareil principal';
+    const issue = document.getElementById('rapli-cloud-issue');
+    if (issue) { issue.hidden = !ready || ownerId !== userId; issue.disabled = connecting || uploading; }
+    const redeem = document.getElementById('rapli-cloud-redeem');
+    if (redeem) redeem.disabled = !ready || connecting || uploading;
     const details = document.getElementById('rapli-cloud-details');
     if (details) details.textContent = ready
       ? 'Catalogue, tuiles, éditions, paramètres et images personnelles. Session liée à ce navigateur.'
@@ -74,6 +82,14 @@
       '<div class="rapli-cloud-buttons"><button type="button" class="secondary-button small" data-rapli-cloud="local">' +
       'Conserver cet appareil (remplacer le cloud)</button><button type="button" class="secondary-button small" ' +
       'data-rapli-cloud="remote">Restaurer le cloud (remplacer cet appareil)</button></div></div>' +
+      '<div class="rapli-cloud-pairing" style="margin-top:15px;padding-top:13px;border-top:1px solid #dbe7e1">' +
+      '<strong style="display:block;margin-bottom:6px">📱 Même collection sur PC et téléphone</strong>' +
+      '<p id="rapli-cloud-linked-status" style="font-size:12px;margin-bottom:8px">Cloud non connecté</p>' +
+      '<button type="button" id="rapli-cloud-issue" data-rapli-cloud="issue" class="secondary-button small">Générer un code sur cet appareil</button>' +
+      '<div id="rapli-cloud-pair-code" style="font-weight:850;letter-spacing:1px;overflow-wrap:anywhere;margin:8px 0" aria-live="polite"></div>' +
+      '<div class="rapli-cloud-buttons" style="margin-top:10px"><input type="text" id="rapli-cloud-pair-input" maxlength="35" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="Code de liaison du PC" aria-label="Code de liaison" style="padding:8px;min-width:180px;max-width:280px;border:1px solid #bccfca;border-radius:8px;font:inherit" />' +
+      '<button type="button" id="rapli-cloud-redeem" data-rapli-cloud="redeem" class="primary-button small">Associer cet appareil</button></div>' +
+      '<small>Code à usage unique, valable 10 minutes. Exporte ton JSON avant de restaurer la collection du PC. Ne partage jamais ce code publiquement.</small></div>' +
       '<small>Les références du site restent disponibles hors ligne. Les images personnalisées sont sauvegardées ' +
       'dans un espace privé Supabase. Exporte régulièrement aussi ton JSON. ' +
       'Un autre appareil ne partage pas automatiquement cette session sans appairage.</small></section>';
@@ -97,7 +113,7 @@
     const digest = await crypto.subtle.digest('SHA-256', await blob.arrayBuffer());
     const hex = Array.from(new Uint8Array(digest), b => b.toString(16).padStart(2,'0')).join('');
     const ext = {jpeg:'jpg',png:'png',webp:'webp',gif:'gif'}[match[1].toLowerCase()];
-    return {path: userId + '/' + hex + '.' + ext, blob};
+    return {path: ownerId + '/' + hex + '.' + ext, blob};
   }
   async function uploadOne(path, blob) {
     if (uploadedImages.has(path)) return;
@@ -138,7 +154,7 @@
   async function restoreImages(value) {
     if (typeof value === 'string' && value.startsWith(PRIVATE_REF)) {
       const path = value.slice(PRIVATE_REF.length);
-      if (!path.startsWith(userId + '/') || path.includes('..'))
+      if (!path.startsWith(ownerId + '/') || path.includes('..'))
         throw new Error('Référence image cloud incorrecte');
       const {data, error: problem} = await client.storage.from(BUCKET).download(path);
       if (problem || !data) throw problem || new Error('Image cloud introuvable : ' + path);
@@ -176,8 +192,12 @@
       }
       if (!user?.id) throw new Error('Session anonyme indisponible');
       userId = user.id;
+      const member = await client.from('rapli_archive_members').select('owner_id')
+        .eq('member_id',userId).maybeSingle();
+      if (member.error) throw member.error;
+      ownerId = member.data?.owner_id || userId;
       const result = await client.from(TABLE)
-        .select('archive_state,payload,state_revision,updated_at').eq('user_id',userId).maybeSingle();
+        .select('archive_state,payload,state_revision,updated_at').eq('user_id',ownerId).maybeSingle();
       if (result.error) throw result.error;
       rowExists = !!result.data;
       remoteRevision = Number(result.data?.state_revision || 0);
@@ -194,6 +214,7 @@
           show('Deux versions différentes : sélection nécessaire', true);
         }
       } else {
+        if (ownerId !== userId) throw new Error('Collection principale introuvable');
         // Migration from the legacy copies-only row, or first opt-in on this browser.
         // Never replace a populated local catalogue with the old copies-only payload.
         pending = true;
@@ -229,7 +250,7 @@
       let output;
       if (!rowExists) {
         const result = await client.from(TABLE)
-          .insert({user_id:userId,archive_state:packed,
+          .insert({user_id:ownerId,archive_state:packed,
             payload:{copies:snapshot.copies,wishlist:snapshot.wishlist},state_revision:1,
             updated_at:new Date().toISOString()})
           .select('state_revision').single();
@@ -240,7 +261,7 @@
           .update({archive_state:packed,
             payload:{copies:snapshot.copies,wishlist:snapshot.wishlist},
             state_revision:remoteRevision+1,updated_at:new Date().toISOString()})
-          .eq('user_id',userId).eq('state_revision',remoteRevision)
+          .eq('user_id',ownerId).eq('state_revision',remoteRevision)
           .select('state_revision').maybeSingle();
         if (result.error) throw result.error;
         output = result.data;
@@ -301,7 +322,7 @@
     if (!confirm('Remplacer la version Supabase par toutes les données de cet appareil ? Exporte le JSON avant de continuer.')) return;
     // Re-read latest revision before editing, so concurrent writes cannot silently disappear.
     const result = await client.from(TABLE).select('archive_state,state_revision')
-      .eq('user_id',userId).maybeSingle();
+      .eq('user_id',ownerId).maybeSingle();
     if (result.error) { show('Impossible de vérifier la version cloud : ' + result.error.message, true); return; }
     if (Number(result.data?.state_revision || 0) !== remoteRevision) {
       remoteRevision = Number(result.data?.state_revision || 0);
@@ -312,6 +333,44 @@
     conflict = false;
     pending = true;
     void flush();
+  }
+  async function issueCode() {
+    if (!ready || ownerId !== userId || uploading) {
+      show('Synchronise d’abord la collection principale sur cet appareil.',true);
+      return;
+    }
+    try {
+      show('Création du code de liaison…');
+      const {data,error:problem}=await client.functions.invoke('rapli-archives-pair',{body:{action:'issue'}});
+      if(problem||!data?.code)throw new Error(data?.error||problem?.message||'Code indisponible');
+      const el=document.getElementById('rapli-cloud-pair-code');
+      if(el)el.textContent=data.code+' · valable 10 minutes';
+      show('Code créé : saisis-le sur ton téléphone');
+    } catch(e){show('Impossible de créer le code : '+e.message,true);}
+  }
+  async function redeemCode() {
+    if(!ready || uploading) return;
+    const input=document.getElementById('rapli-cloud-pair-input');
+    const code=(input?.value||'').trim().toUpperCase();
+    if(!code){show('Saisis le code affiché sur ton PC',true);return;}
+    const consent=confirm('Associer cet appareil à la collection du PC ? Fais une sauvegarde JSON avant de restaurer les données du PC. Les données actuelles du téléphone resteront locales tant que tu ne choisis pas de restaurer le cloud.');
+    if(!consent)return;
+    try {
+      show('Association des appareils…');
+      const {data,error:problem}=await client.functions.invoke('rapli-archives-pair',{body:{action:'redeem',code}});
+      if(problem || !data?.linked || !data?.owner_id)throw new Error(data?.error||problem?.message||'Code invalide');
+      ownerId=data.owner_id;
+      // Never send the phone's local state automatically to the newly linked owner.
+      clearTimeout(timer); pending=false; conflict=true; remote=null; rowExists=false;
+      const result=await client.from(TABLE).select('archive_state,payload,state_revision')
+        .eq('user_id',ownerId).maybeSingle();
+      if(result.error || !result.data?.archive_state)throw new Error(result.error?.message||'Collection principale introuvable');
+      rowExists=true;
+      remoteRevision=Number(result.data.state_revision||0);
+      remote=normalize(result.data.archive_state);
+      show('Appareil associé ✓ · choisis « Restaurer le cloud » pour afficher la même collection.');
+      if(input)input.value='';
+    } catch(e){show('Liaison impossible : '+e.message,true);}
   }
   function changed() {
     if (!ready || conflict || suspended) return;
@@ -331,6 +390,8 @@
       else if (action === 'sync') { pending = true; void flush(); }
       else if (action === 'remote') void restoreCloud();
       else if (action === 'local') void keepLocal();
+      else if (action === 'issue') void issueCode();
+      else if (action === 'redeem') void redeemCode();
     }, true);
     window.addEventListener('online', () => {
       if (!ready) { try { if (localStorage.getItem(FLAG)==='1') void start(); } catch (_) {} }

@@ -1114,10 +1114,10 @@ main#main-content {
 /* Edit logo below card number. A saved logo REPLACES the text completely. */
 .archive-tile.module-dragons .tile-edition-feature{
  display:flex;align-items:center;justify-content:flex-start;min-width:0;
- width:100%;min-height:32px;margin-top:4px;overflow:hidden;
+ width:100%;min-height:26px;margin-top:4px;overflow:hidden;
 }
 .archive-tile.module-dragons .tile-edition-logo{
- display:block;width:min(100%,230px);max-width:100%;height:54px;max-height:54px;
+ display:block;width:auto;max-width:min(100%,164px);height:auto;max-height:32px;
  object-fit:contain;object-position:left center;filter:none;flex:none;
 }
 .archive-tile.module-dragons .tile-edition-name{
@@ -1154,7 +1154,7 @@ main#main-content {
 .artwork-settings-control .artwork-remove-preview{flex:0 0 30px;min-width:30px;height:38px}
 @media(max-width:650px){
  .archive-tile.module-dragons .tile-edition-name{font-size:12px}
- .archive-tile.module-dragons .tile-edition-logo{height:48px;max-height:48px;width:min(100%,205px);max-width:100%}
+ .archive-tile.module-dragons .tile-edition-logo{width:auto;height:auto;max-height:29px;max-width:min(100%,145px)}
  .tax-row-artwork>.artwork-settings-control{flex:1 1 100%;max-width:100%}
  .artwork-settings-control .artwork-file-label{min-height:53px;flex:1 1 auto}
 }
@@ -1566,7 +1566,9 @@ function enhanceLegacyEditionLogo(img){
   const source=img.getAttribute('src')||'';
   if(!/^data:image\/png;base64,/i.test(source)||img.naturalWidth!==100||img.naturalHeight!==100)return;
   if(editionLogoTrimCache.has(source)){
-    const corrected=editionLogoTrimCache.get(source);
+    const {src:corrected,width}=editionLogoTrimCache.get(source);
+    img.style.width=Math.min(142,Math.max(1,Math.round(width*1.25)))+'px';
+    img.style.height='auto';
     if(corrected!==source)img.src=corrected;
     return;
   }
@@ -1576,7 +1578,11 @@ function enhanceLegacyEditionLogo(img){
     canvas.getContext('2d').drawImage(img,0,0);
     const trimmed=cropTransparentLogo(canvas);
     const corrected=trimmed===canvas?source:trimmed.toDataURL('image/png');
-    editionLogoTrimCache.set(source,corrected);
+    editionLogoTrimCache.set(source,{src:corrected,width:trimmed.width});
+    // Old 100px-square uploads can NEVER regain lost resolution.
+    // Limit them to ~1.25x their true content width; do not stretch to fill the tile.
+    img.style.width=Math.min(142,Math.max(1,Math.round(trimmed.width*1.25)))+'px';
+    img.style.height='auto';
     if(corrected!==source)img.src=corrected;
   }catch(error){console.warn('Logo édition : suppression des marges ignorée',error);}
 }

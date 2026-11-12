@@ -231,8 +231,8 @@
       ready=true;
       const row=await remoteRow();
       if(!row){
-        revision=0;exists=false;setStatus('Aucune sauvegarde cloud pour cet onglet','ok');
-        return false;
+        revision=0;exists=false;setStatus('Aucune nouvelle sauvegarde cloud pour cet onglet','ok');
+        return true; // No remote copy is a successful no-op, never delete local records.
       }
       const serverRev=Number(row.state_revision||0);
       const local=snapshot();

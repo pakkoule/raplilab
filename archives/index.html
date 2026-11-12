@@ -1090,6 +1090,26 @@ main#main-content {
   .archive-tile .tile-quick-btn{width:30px;height:32px}
 }
 </style>
+<style id="rapli-cloud-catalogue-controls">
+/* Two independent, accessible cloud actions in the compact catalogue topbar. */
+.rapli-cloud-quick{display:flex;align-items:center;justify-content:flex-end;gap:7px;flex:0 0 auto}
+.rapli-cloud-quick .cloud-quick-btn{display:inline-flex;align-items:center;justify-content:center;width:35px;height:35px;min-width:35px;border:1px solid #a7c8df;border-radius:10px;background:#f6fbff;color:#547994;position:relative;transition:background .15s,border-color .15s,color .15s,box-shadow .15s}
+.rapli-cloud-quick .cloud-quick-btn svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.85}
+.rapli-cloud-quick .cloud-quick-btn:hover:not(:disabled),.rapli-cloud-quick .cloud-quick-btn:focus-visible{background:#e1f3fd;border-color:#579fc7;box-shadow:0 0 0 2px #b3def766;outline:none}
+.rapli-cloud-quick .cloud-quick-btn[data-cloud-state="synced"]{color:#29865e;border-color:#90cfac}
+.rapli-cloud-quick .cloud-quick-btn[data-cloud-state="pending"]{color:#aa7c21;border-color:#ebca83}
+.rapli-cloud-quick .cloud-quick-btn[data-cloud-state="busy"]{color:#398fbb}
+.rapli-cloud-quick .cloud-quick-btn[data-cloud-state="conflict"],.rapli-cloud-quick .cloud-quick-btn[data-cloud-state="error"]{color:#bc4a57;border-color:#dea2a5}
+.rapli-cloud-quick .cloud-quick-btn:disabled{opacity:.68;cursor:wait}
+.rapli-cloud-quick .cloud-quick-btn.is-refreshing svg{animation:rapli-cloud-spinning 1s linear infinite}
+.rapli-cloud-quick .cloud-quick-btn[data-cloud-state="busy"]:first-child svg{animation:rapli-cloud-pulse 1.25s ease-in-out infinite}
+@keyframes rapli-cloud-spinning{to{transform:rotate(360deg)}}
+@keyframes rapli-cloud-pulse{50%{opacity:.45}}
+.rapli-cloud-quick #rapli-header-cloud-status{font-size:10px;line-height:1.3;font-weight:700;color:#577b98;max-width:158px;text-align:right}
+@media(max-width:680px){.rapli-cloud-quick #rapli-header-cloud-status{display:none}.rapli-cloud-quick{gap:5px}.rapli-cloud-quick .cloud-quick-btn{width:32px;height:32px;min-width:32px;border-radius:9px}.rapli-cloud-quick .cloud-quick-btn svg{width:19px;height:19px}.topbar-right{display:flex!important;align-items:center!important;justify-content:flex-end!important;gap:5px!important}}
+@media(max-width:360px){.rapli-cloud-quick .cloud-quick-btn{width:30px;height:30px;min-width:30px}}
+@media(prefers-reduced-motion:reduce){.rapli-cloud-quick .cloud-quick-btn svg{animation:none!important}}
+</style>
 </head>
 <body>
 <div class="app-shell">
@@ -1121,7 +1141,17 @@ main#main-content {
   <div class="main-column">
     <div class="topbar" aria-label="Contexte de navigation">
       <div class="topbar-left"><span class="crumb-root">ARCHIVES PERSONNELLES</span><span class="crumb-divider">/</span><span id="breadcrumb">CATALOGUE</span></div>
-      <div class="topbar-right"><span class="sync-status"><span class="tiny-led"></span> DONNÉES LOCALES</span></div>
+      <div class="topbar-right">
+  <div class="rapli-cloud-quick" aria-label="Synchronisation Rapli Archives">
+    <button type="button" id="rapli-header-cloud-save" class="cloud-quick-btn" data-rapli-cloud="header-save" data-cloud-state="local" title="Enregistrer la collection dans Supabase" aria-label="Enregistrer la collection dans le cloud">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18h10a4 4 0 0 0 .65-7.95A6.2 6.2 0 0 0 6 8.6 4.7 4.7 0 0 0 7 18Z"/><path d="M12 10v8m-3-3 3 3 3-3"/></svg>
+    </button>
+    <button type="button" id="rapli-header-cloud-refresh" class="cloud-quick-btn" data-rapli-cloud="header-refresh" data-cloud-state="local" title="Récupérer les modifications des autres appareils" aria-label="Actualiser le catalogue depuis Supabase">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14.25-5L3 8.5"/><path d="M3 3.5v5h5"/><path d="M4 13a8 8 0 0 0 14.25 5L21 15.5"/><path d="M21 20.5v-5h-5"/></svg>
+    </button>
+    <span id="rapli-header-cloud-status" role="status" aria-live="polite">Local uniquement</span>
+  </div>
+</div>
     </div>
     <main id="main-content" tabindex="-1"><div class="loading">Ouverture de tes archives…</div></main>
   </div>
@@ -1616,7 +1646,9 @@ initialize().then(() => {
   window.RapliCloud?.init({
     get: () => archive,
     persist: () => rapliOriginalSave(),
-    refresh: () => render()
+    refresh: () => render(),
+    notify: (message, isError=false) => toast(message,isError),
+    openBackups: () => navigate('tools')
   });
 }).catch(error => console.error('Initialisation Rapli Archives:', error));
 </script>

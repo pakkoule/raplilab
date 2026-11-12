@@ -48,23 +48,24 @@
           blocked=true;setStatus('Conflit : choisis la collection à conserver',true);
         }else setStatus('Collection synchronisée ✓');
       }else if(hasData(local)){
-        await flush(true);
+        pending=true;
+        setStatus('Sauvegarde initiale programmée…');
       }else setStatus('Cloud activé · collection vide');
     }catch(e){
       ready=false;client=null;userId=null;blocked=false;
       try{localStorage.removeItem(FLAG);}catch(_){}
       console.warn('Rapli cloud indisponible',e);
       setStatus('Cloud indisponible : '+(e.message||'activer Anonymous Sign-Ins dans Supabase'),true);
-    }finally{busy=false;ui();}
+    }finally{busy=false;ui();if(ready&&pending&&!blocked) setTimeout(()=>flush(),1200);}
   }
   async function apply(data){
     if(!context)return;
     suspended=true;
     try{
-      const arc=context.get(),ids=new Set(arc.variants.map(v=>v.id));
-      // Ne restaurer que les exemplaires dont la référence existe déjà dans le catalogue local.
-      arc.copies=normalize(data).copies.filter(c=>c&&typeof c.id==='string'&&ids.has(c.variantId));
-      arc.wishlist=normalize(data).wishlist.filter(w=>w&&typeof w.id==='string'&&ids.has(w.variantId));
+      const arc=context.get();
+      // Préserver les données utilisateur même si un identifiant ne figure plus dans le catalogue courant.
+      arc.copies=normalize(data).copies.filter(c=>c&&typeof c.id==='string'&&typeof c.variantId==='string');
+      arc.wishlist=normalize(data).wishlist.filter(w=>w&&typeof w.id==='string'&&typeof w.variantId==='string');
       await context.persist();
       context.refresh();
     }finally{suspended=false;}
@@ -77,7 +78,7 @@
       const payload=getData();
       const write=await client.from(TABLE).upsert({user_id:userId,payload,updated_at:new Date().toISOString()},{onConflict:'user_id'});
       if(write.error)throw write.error;
-      remoteData=normalize(payload);pending=false;setStatus('Collection synchronisée ✓');
+      remoteData=normalize(payload);pending=!matches(getData(),payload);setStatus(pending?'Nouvelles modifications en attente':'Collection synchronisée ✓');
     }catch(e){
       pending=true;
       console.warn('Échec synchronisation Rapli',e);

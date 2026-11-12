@@ -7,7 +7,7 @@
   <meta name="description" content="Rapli Sports — Collection personnelle de cartes de sport.">
   <title>Rapli Sports — Collection</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Poppins:wght@700;800;900&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Courier+Prime:wght@400;700&family=IBM+Plex+Mono:wght@600;700&family=Poppins:wght@700;800;900&family=Special+Elite&display=swap');
     :root { color-scheme: dark; --bg:#080e1c; --panel:#101b30; --panel-2:#13213a; --panel-3:#172846; --stroke:#2a3e60; --ink:#f6f8ff; --muted:#8799b9; --blue:#2d84ff; --blue-2:#0970f7; --cyan:#52d4ff; --red:#f12e47; --radius:20px; --shadow:0 18px 48px rgba(0,0,0,.25); }
     * {box-sizing:border-box}
     html {scroll-behavior:smooth}
@@ -497,6 +497,12 @@ body::before{display:none!important}
 .collector-row.is-premium .collector-badge{background:linear-gradient(135deg,color-mix(in srgb,var(--collector-bg) 78%,white),var(--collector-bg) 43%,color-mix(in srgb,var(--collector-bg) 85%,black));box-shadow:0 3px 10px #102b492b,inset 0 1px 0 #ffffff48,inset 0 0 0 1px #ffffff16;text-shadow:0 1px 1px #ffffff26}
 .collector-badge-main{display:flex;align-items:center;justify-content:center;white-space:nowrap;max-width:100%;min-height:27px;font-family:'Cormorant Garamond',Georgia,serif;font-size:26px;font-weight:700;line-height:.92;font-variant-numeric:lining-nums tabular-nums;letter-spacing:.015em}
 .collector-badge.font-baskerville .collector-badge-main{font-family:Baskerville,Georgia,serif;font-size:20px;letter-spacing:-.04em}
+.collector-badge.font-special-elite .collector-badge-main{font-family:'Special Elite','Courier New',monospace;font-size:19px;font-weight:400;letter-spacing:-.045em;line-height:1.15}
+.collector-badge.font-courier-prime .collector-badge-main{font-family:'Courier Prime','Courier New',monospace;font-size:20px;font-weight:700;letter-spacing:-.065em}
+.collector-badge.font-ibm-plex-mono .collector-badge-main{font-family:'IBM Plex Mono','Courier New',monospace;font-size:18px;font-weight:700;letter-spacing:-.055em}
+.collector-badge.font-american-typewriter .collector-badge-main{font-family:'American Typewriter','Courier Prime',Courier,monospace;font-size:19px;font-weight:700;letter-spacing:-.045em}
+.collector-badge.font-special-elite .collector-badge-caption{letter-spacing:.04em}
+@media(max-width:750px){.collector-badge.font-special-elite .collector-badge-main,.collector-badge.font-courier-prime .collector-badge-main,.collector-badge.font-american-typewriter .collector-badge-main{font-size:18px}.collector-badge.font-ibm-plex-mono .collector-badge-main{font-size:17px}}
 .collector-badge .collector-slash{padding:0 2px;font-size:.8em;opacity:.83}
 .collector-badge-caption{font:800 7px/1.2 Poppins,sans-serif;letter-spacing:.09em;opacity:.91;text-transform:uppercase;margin-top:3px}
 .collector-badge.has-logo{min-width:65px;padding:4px 7px}
@@ -604,8 +610,8 @@ body::before{display:none!important}
       <div id="collectorSettingsPanel" hidden>
         <p class="logo-help">Style des badges de numérotation et Rookie, avec aperçu avant enregistrement.</p>
         <div class="collector-settings-grid">
-          <div class="input-group"><label for="collectorNumberFont">Police numérotation</label><select class="select" id="collectorNumberFont"><option value="cormorant">Cormorant Garamond · collector</option><option value="baskerville">Baskerville · classique</option></select></div>
-          <div class="input-group"><label for="collectorRookieFont">Police Rookie</label><select class="select" id="collectorRookieFont"><option value="cormorant">Cormorant Garamond · collector</option><option value="baskerville">Baskerville · classique</option></select></div>
+          <div class="input-group"><label for="collectorNumberFont">Police numérotation</label><select class="select" id="collectorNumberFont"><option value="cormorant">Cormorant Garamond · collector</option><option value="baskerville">Baskerville · classique</option><optgroup label="Machine à écrire / Typewriter"><option value="special-elite">Special Elite · vintage</option><option value="courier-prime">Courier Prime · machine classique</option><option value="ibm-plex-mono">IBM Plex Mono · mécanique nette</option><option value="american-typewriter">American Typewriter · rétro</option></optgroup></select></div>
+          <div class="input-group"><label for="collectorRookieFont">Police Rookie</label><select class="select" id="collectorRookieFont"><option value="cormorant">Cormorant Garamond · collector</option><option value="baskerville">Baskerville · classique</option><optgroup label="Machine à écrire / Typewriter"><option value="special-elite">Special Elite · vintage</option><option value="courier-prime">Courier Prime · machine classique</option><option value="ibm-plex-mono">IBM Plex Mono · mécanique nette</option><option value="american-typewriter">American Typewriter · rétro</option></optgroup></select></div>
           <div class="input-group"><label for="collectorBackground">Fond du badge</label><input id="collectorBackground" type="color" value="#192d4e"></div>
           <div class="input-group"><label for="collectorForeground">Lettres / contour</label><input id="collectorForeground" type="color" value="#edcf87"></div>
         </div>
@@ -663,12 +669,14 @@ body::before{display:none!important}
 
       const COLLECTOR_STYLE_ID='collector:style';
       const COLLECTOR_DEFAULTS=Object.freeze({numberFont:'cormorant',rookieFont:'cormorant',background:'#192d4e',foreground:'#edcf87',premium:true});
+      const COLLECTOR_FONTS=new Set(['cormorant','baskerville','special-elite','courier-prime','ibm-plex-mono','american-typewriter']);
+      function collectorFont(value){return COLLECTOR_FONTS.has(value)?value:'cormorant'}
       function collectorStyle(){
         const saved=logos.find(x=>x.id===COLLECTOR_STYLE_ID)?.settings||{};
         const validColor=(value,fallback)=>typeof value==='string'&&/^#[0-9a-f]{6}$/i.test(value)?value:fallback;
         return {
-          numberFont:saved.numberFont==='baskerville'?'baskerville':'cormorant',
-          rookieFont:saved.rookieFont==='baskerville'?'baskerville':'cormorant',
+          numberFont:collectorFont(saved.numberFont),
+          rookieFont:collectorFont(saved.rookieFont),
           background:validColor(saved.background,COLLECTOR_DEFAULTS.background),
           foreground:validColor(saved.foreground,COLLECTOR_DEFAULTS.foreground),
           premium:saved.premium!==false
@@ -680,11 +688,11 @@ body::before{display:none!important}
         if(!numbered&&!rookie)return '<span class="collector-no-number">Non numérotée</span>';
         let badges='';
         if(numbered){
-          badges+=`<span class="collector-badge collector-badge--number ${style.numberFont==='baskerville'?'font-baskerville':''}" aria-label="Carte numérotée ${safeText(card.serial)} sur ${safeText(card.printRun)}"><span class="collector-badge-main"><span>${safeText(card.serial)}</span><span class="collector-slash">/</span><span>${safeText(card.printRun)}</span></span><span class="collector-badge-caption">SERIAL NUMBER</span></span>`;
+          badges+=`<span class="collector-badge collector-badge--number ${'font-'+collectorFont(style.numberFont)}" aria-label="Carte numérotée ${safeText(card.serial)} sur ${safeText(card.printRun)}"><span class="collector-badge-main"><span>${safeText(card.serial)}</span><span class="collector-slash">/</span><span>${safeText(card.printRun)}</span></span><span class="collector-badge-caption">SERIAL NUMBER</span></span>`;
         }
         if(rookie){
           const logo=logoFor('rookie',card.sport);
-          badges+=`<span class="collector-badge collector-badge--rookie ${logo?'has-logo ':''}${style.rookieFont==='baskerville'?'font-baskerville':''}" aria-label="Rookie Card ${safeText(card.sport||'')}"><span class="collector-badge-main">${logo?`<img class="collector-badge-logo" src="${logo}" alt="Logo Rookie ${safeText(card.sport||'')}">`:'RC'}</span><span class="collector-badge-caption">ROOKIE CARD</span></span>`;
+          badges+=`<span class="collector-badge collector-badge--rookie ${logo?'has-logo ':''}${'font-'+collectorFont(style.rookieFont)}" aria-label="Rookie Card ${safeText(card.sport||'')}"><span class="collector-badge-main">${logo?`<img class="collector-badge-logo" src="${logo}" alt="Logo Rookie ${safeText(card.sport||'')}">`:'RC'}</span><span class="collector-badge-caption">ROOKIE CARD</span></span>`;
         }
         return `<div class="collector-row ${style.premium?'is-premium':''}" style="--collector-bg:${style.background};--collector-ink:${style.foreground}">${badges}</div>`;
       }
@@ -707,8 +715,8 @@ body::before{display:none!important}
       }
       async function saveCollectorSettings(){
         const settings={
-          numberFont:$('collectorNumberFont').value==='baskerville'?'baskerville':'cormorant',
-          rookieFont:$('collectorRookieFont').value==='baskerville'?'baskerville':'cormorant',
+          numberFont:collectorFont($('collectorNumberFont').value),
+          rookieFont:collectorFont($('collectorRookieFont').value),
           background:$('collectorBackground').value,foreground:$('collectorForeground').value,
           premium:$('collectorPremium').checked
         };
@@ -765,8 +773,8 @@ body::before{display:none!important}
             const p=x.settings;
             const color=(value,fallback)=>typeof value==='string'&&/^#[0-9a-f]{6}$/i.test(value)?value:fallback;
             await saveLogo({id:COLLECTOR_STYLE_ID,type:'collector',name:'Style des badges',
-              settings:{numberFont:p.numberFont==='baskerville'?'baskerville':'cormorant',
-                rookieFont:p.rookieFont==='baskerville'?'baskerville':'cormorant',
+              settings:{numberFont:collectorFont(p.numberFont),
+                rookieFont:collectorFont(p.rookieFont),
                 background:color(p.background,COLLECTOR_DEFAULTS.background),
                 foreground:color(p.foreground,COLLECTOR_DEFAULTS.foreground),
                 premium:p.premium!==false}

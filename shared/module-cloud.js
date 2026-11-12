@@ -55,7 +55,7 @@
   function paint() {
     const save=el('rapli-module-cloud-save'),refresh=el('rapli-module-cloud-refresh'),status=el('rapli-module-cloud-status');
     const state=busy?'busy':conflict?'conflict':error?'error':dirty?'pending':ready?'synced':'local';
-    [save,refresh].forEach(b=>{if(!b)return;b.dataset.cloudState=state;b.disabled=busy;});
+    [save,refresh].forEach(b=>{if(!b)return;b.dataset.cloudState=state;b.disabled=busy||!bridge.ready;});
     if(refresh)refresh.classList.toggle('is-refreshing',busy);
     if(status){status.textContent=message;status.title=message;status.dataset.cloudState=state;}
     if(save)save.title='Enregistrer sur Supabase — '+message;
@@ -154,7 +154,7 @@
     if(!row?.state || !Array.isArray(row.state.records) || !Array.isArray(row.state.logos))
       throw Error('Sauvegarde Supabase invalide.');
     const local=snapshot();
-    if(!isLocalClean(local) && hasPersonalData(local)){
+    if(!isLocalClean(local) && (hasPersonalData(local) || !!getAck())){
       if(!manual){
         conflict=true;setStatus('Versions différentes — choisis ↻ pour confirmer','error');
         return false;
@@ -237,9 +237,6 @@
         revision=serverRev;exists=true;conflict=false;dirty=false;
         setStatus('Déjà à jour ✓','ok');return true;
       }
-      if(revision===serverRev && isLocalClean(local)){
-        setStatus('Déjà à jour ✓','ok');return true;
-      }
       return await loadRemote(row,manual);
     }catch(e){
       console.warn('Rapli '+MODULE+' cloud refresh:',e);
@@ -268,7 +265,15 @@
       if(row){
         if(known?.revision===revision && known.hash===fingerprint(local)){
           ack(local);dirty=false;setStatus('Cloud synchronisé ✓','ok');
+        }else if(known?.revision===revision){
+          // Offline edits: the cloud has not changed since the last acknowledged sync.
+          // Upload locally modified records, including deletions, rather than restoring over them.
+          dirty=true;conflict=false;
+          setStatus('Modifications locales hors ligne — envoi en attente','pending');
+          queueSave();
         }else{
+          // Remote revision changed, or a new device has no acknowledged baseline.
+          // Restore only if there is no real local collection to overwrite.
           await refresh(false);
         }
       }else if(hasPersonalData(local)){

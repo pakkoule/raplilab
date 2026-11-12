@@ -1117,7 +1117,7 @@ main#main-content {
  width:100%;min-height:32px;margin-top:4px;overflow:hidden;
 }
 .archive-tile.module-dragons .tile-edition-logo{
- display:block;max-width:min(100%,180px);width:auto;height:auto;max-height:54px;
+ display:block;width:min(100%,230px);max-width:100%;height:54px;max-height:54px;
  object-fit:contain;object-position:left center;filter:none;flex:none;
 }
 .archive-tile.module-dragons .tile-edition-name{
@@ -1154,7 +1154,7 @@ main#main-content {
 .artwork-settings-control .artwork-remove-preview{flex:0 0 30px;min-width:30px;height:38px}
 @media(max-width:650px){
  .archive-tile.module-dragons .tile-edition-name{font-size:12px}
- .archive-tile.module-dragons .tile-edition-logo{max-height:47px;max-width:150px}
+ .archive-tile.module-dragons .tile-edition-logo{height:48px;max-height:48px;width:min(100%,205px);max-width:100%}
  .tax-row-artwork>.artwork-settings-control{flex:1 1 100%;max-width:100%}
  .artwork-settings-control .artwork-file-label{min-height:53px;flex:1 1 auto}
 }
@@ -1531,7 +1531,76 @@ function showSettingsContent(){
  const numbering=`<section class="settings-section"><h3>Numérotation des cartes Dragon Blanc</h3><p class="settings-intro">Définis le titre affiché sur les tuiles, puis choisis de montrer ou non le numéro.</p><div class="settings-number"><input type="text" data-setting-number="label" value="${attr(settings.numberLabel||'N° de carte')}" aria-label="Titre du numéro"><label><input type="checkbox" data-setting-number="visible" ${settings.showNumber?'checked':''}> Afficher le numéro sur la tuile</label></div></section>`;
  root.innerHTML=`${numbering}${sections}<div class="settings-footer"><button class="secondary-button" type="button" data-action="close-modal">Annuler</button><button class="primary-button" type="button" data-action="save-module-settings">Enregistrer les réglages</button></div>`;
 }
-async function badgeLogo(file){if(!file.type.startsWith('image/'))throw Error('Ce fichier n’est pas une image');if(file.size>5*1024*1024)throw Error('Logo limité à 5 Mo');const image=await new Promise((resolve,reject)=>{const i=new Image(),url=URL.createObjectURL(file);i.onload=()=>{URL.revokeObjectURL(url);resolve(i);};i.onerror=()=>{URL.revokeObjectURL(url);reject(Error('Logo illisible'));};i.src=url;});const canvas=document.createElement('canvas');const size=100;canvas.width=size;canvas.height=size;const ctx=canvas.getContext('2d');ctx.clearRect(0,0,size,size);const ratio=Math.min(size/image.width,size/image.height);const w=image.width*ratio,h=image.height*ratio;ctx.drawImage(image,(size-w)/2,(size-h)/2,w,h);return canvas.toDataURL('image/png');}
+// Crop only truly transparent padding; never stretch/distort uploaded logos.
+function cropTransparentLogo(source){
+  const width=source.width,height=source.height;
+  if(!width||!height)return source;
+  const ctx=source.getContext('2d',{willReadFrequently:true});
+  const pixels=ctx.getImageData(0,0,width,height).data;
+  let minX=width,minY=height,maxX=-1,maxY=-1;
+  for(let y=0;y<height;y++){
+    for(let x=0;x<width;x++){
+      if(pixels[(y*width+x)*4+3]>12){
+        minX=Math.min(minX,x); minY=Math.min(minY,y);
+        maxX=Math.max(maxX,x); maxY=Math.max(maxY,y);
+      }
+    }
+  }
+  if(maxX<0)return source;
+  const pad=2;
+  minX=Math.max(0,minX-pad);minY=Math.max(0,minY-pad);
+  maxX=Math.min(width-1,maxX+pad);maxY=Math.min(height-1,maxY+pad);
+  if(minX===0&&minY===0&&maxX===width-1&&maxY===height-1)return source;
+  const trimmed=document.createElement('canvas');
+  trimmed.width=maxX-minX+1;trimmed.height=maxY-minY+1;
+  trimmed.getContext('2d').drawImage(source,minX,minY,trimmed.width,trimmed.height,0,0,trimmed.width,trimmed.height);
+  return trimmed;
+}
+const editionLogoTrimCache=new Map();
+// Older logos were forced into a transparent 100x100 square. Fix their display
+// without mutating the user's original cloud data or requiring re-upload.
+function enhanceLegacyEditionLogo(img){
+  if(!(img instanceof HTMLImageElement)||img.dataset.editionLogoChecked)return;
+  if(!img.complete||!img.naturalWidth)return;
+  img.dataset.editionLogoChecked='1';
+  const source=img.getAttribute('src')||'';
+  if(!/^data:image\/png;base64,/i.test(source)||img.naturalWidth!==100||img.naturalHeight!==100)return;
+  if(editionLogoTrimCache.has(source)){
+    const corrected=editionLogoTrimCache.get(source);
+    if(corrected!==source)img.src=corrected;
+    return;
+  }
+  try{
+    const canvas=document.createElement('canvas');
+    canvas.width=100;canvas.height=100;
+    canvas.getContext('2d').drawImage(img,0,0);
+    const trimmed=cropTransparentLogo(canvas);
+    const corrected=trimmed===canvas?source:trimmed.toDataURL('image/png');
+    editionLogoTrimCache.set(source,corrected);
+    if(corrected!==source)img.src=corrected;
+  }catch(error){console.warn('Logo édition : suppression des marges ignorée',error);}
+}
+document.addEventListener('load',e=>{
+  if(e.target?.matches?.('img.tile-edition-logo'))enhanceLegacyEditionLogo(e.target);
+},true);
+async function badgeLogo(file){
+  if(!file.type.startsWith('image/'))throw Error('Ce fichier n’est pas une image');
+  if(file.size>5*1024*1024)throw Error('Logo limité à 5 Mo');
+  const image=await new Promise((resolve,reject)=>{
+    const img=new Image(),url=URL.createObjectURL(file);
+    img.onload=()=>{URL.revokeObjectURL(url);resolve(img);};
+    img.onerror=()=>{URL.revokeObjectURL(url);reject(Error('Logo illisible'));};
+    img.src=url;
+  });
+  const maxWidth=640,maxHeight=260;
+  const ratio=Math.min(1,maxWidth/image.naturalWidth,maxHeight/image.naturalHeight);
+  const canvas=document.createElement('canvas');
+  canvas.width=Math.max(1,Math.round(image.naturalWidth*ratio));
+  canvas.height=Math.max(1,Math.round(image.naturalHeight*ratio));
+  canvas.getContext('2d').drawImage(image,0,0,canvas.width,canvas.height);
+  // Preserve the real shape (including wide horizontal edition logos).
+  return cropTransparentLogo(canvas).toDataURL('image/png');
+}
 async function saveModuleSettings(){if(!draftModuleSettings)return;for(const [cat,cfg] of Object.entries(draftModuleSettings)){if(cat!=='dragons')continue;for(const [key,entries] of Object.entries(cfg.taxonomies)){const seen=new Set();cfg.taxonomies[key]=entries.filter(entry=>entry.label?.trim()).map(entry=>({...entry,label:entry.label.trim(),color:/^#[0-9a-f]{6}$/i.test(entry.color)?entry.color:'#99b9aa',icon:(entry.icon||'').trim()})).filter(entry=>{const k=entry.label.toLowerCase();if(seen.has(k))return false;seen.add(k);return true;});}cfg.numberLabel=String(cfg.numberLabel||'N° de carte').trim().slice(0,40);}
 const old=moduleSettings();for(const cat of Object.keys(MODULES)){for(const [key] of MODULES[cat].fields){const before=old[cat]?.taxonomies?.[key]||[],after=draftModuleSettings[cat]?.taxonomies?.[key]||[];for(const prev of before){const renamed=after.find(x=>x.id===prev.id);if(renamed&&prev.label!==renamed.label&&renamed.label){for(const v of archive.variants){if(catForGroup(v.groupId)===cat&&v[key]===prev.label)v[key]=renamed.label;}}}}}archive.settings=structuredClone(draftModuleSettings);const saved=await save();closeModal();render();if(saved)toast('Réglages des modules enregistrés ✓');}
 // Non-destructive event handlers: one compact settings UI, all data stays local.

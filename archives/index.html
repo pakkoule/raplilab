@@ -1110,6 +1110,55 @@ main#main-content {
 @media(max-width:360px){.rapli-cloud-quick .cloud-quick-btn{width:30px;height:30px;min-width:30px}}
 @media(prefers-reduced-motion:reduce){.rapli-cloud-quick .cloud-quick-btn svg{animation:none!important}}
 </style>
+<style id="rapli-edition-logo-and-artwork-upload">
+/* Edit logo below card number. A saved logo REPLACES the text completely. */
+.archive-tile.module-dragons .tile-edition-feature{
+ display:flex;align-items:center;justify-content:flex-start;min-width:0;
+ width:100%;min-height:32px;margin-top:4px;overflow:hidden;
+}
+.archive-tile.module-dragons .tile-edition-logo{
+ display:block;max-width:min(100%,180px);width:auto;height:auto;max-height:54px;
+ object-fit:contain;object-position:left center;filter:none;flex:none;
+}
+.archive-tile.module-dragons .tile-edition-name{
+ display:flex;align-items:center;gap:7px;max-width:100%;
+ color:#173c65;font-size:14px;font-weight:800;line-height:1.27;overflow:hidden;
+}
+.archive-tile.module-dragons .tile-edition-name>.mark{flex:none}
+.archive-tile.module-dragons .tile-edition-name>span:last-child{
+ display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;
+ white-space:normal;overflow-wrap:anywhere;
+}
+.archive-tile.module-dragons .tile-facts{overflow:visible}
+.archive-tile.module-dragons .tile-data{overflow:hidden}
+.tax-row-artwork .artwork-settings-control{flex:1 1 170px;min-width:150px}
+.artwork-settings-control .artwork-file-label{
+ display:flex;position:relative;align-items:center;justify-content:flex-start;
+ gap:8px;min-height:52px;min-width:0;padding:3px 9px;
+ border-radius:9px;border:1px dashed #9cb6ce;background:#f6faff;
+ cursor:pointer;white-space:normal;touch-action:manipulation;
+}
+.artwork-settings-control .artwork-file-label:hover,
+.artwork-settings-control .artwork-file-label:focus-within{
+ background:#e8f4ff;border-color:#428db8;outline:2px solid transparent;
+}
+.artwork-settings-control .artwork-file-label .artwork-choose-text{
+ font-size:11px;font-weight:800;color:#245b81;line-height:1.15;
+}
+.artwork-settings-control .artwork-file-label input[type=file]{
+ position:absolute!important;inset:0!important;z-index:1;
+ display:block!important;width:100%!important;height:100%!important;
+ opacity:0!important;pointer-events:auto!important;cursor:pointer;
+}
+.artwork-settings-control .artwork-settings-thumb{flex:0 0 46px}
+.artwork-settings-control .artwork-remove-preview{flex:0 0 30px;min-width:30px;height:38px}
+@media(max-width:650px){
+ .archive-tile.module-dragons .tile-edition-name{font-size:12px}
+ .archive-tile.module-dragons .tile-edition-logo{max-height:47px;max-width:150px}
+ .tax-row-artwork>.artwork-settings-control{flex:1 1 100%;max-width:100%}
+ .artwork-settings-control .artwork-file-label{min-height:53px;flex:1 1 auto}
+}
+</style>
 </head>
 <body>
 <div class="app-shell">
@@ -1306,6 +1355,18 @@ function tagInfo(module,key,value){if(!value)return null;return taxonomy(module,
 function tagMark(module,key,value){const x=tagInfo(module,key,value);if(!x)return '';if(key==='artwork'&&(/^(?:data:image\/(?:png|jpeg|webp);base64,)/.test(x.preview||'')||/^assets\/artworks\/(?:A\d{2}|R0[1-4](?:-X)?)\.webp$/i.test(x.preview||'')))return `<span class="mark"><img src="${attr(x.preview)}" alt=""></span>`;if(/^data:image\/(?:png|jpeg|webp);base64,/.test(x.logo||''))return `<span class="mark"><img src="${attr(x.logo)}" alt=""></span>`;if(x.icon)return `<span class="mark" aria-hidden="true">${h(x.icon)}</span>`;const color=/^#[0-9a-f]{6}$/i.test(x.color||'')?x.color:'#aabcb4';return `<span class="mark mark-dot" style="background:${color}" aria-hidden="true"></span>`;}
 function tagFact(module,key,label,value){if(!value)return '';return `<div class="tile-fact" title="${attr(label+' : '+value)}"><span class="fact-label">${h(label)}</span><span class="fact-value">${tagMark(module,key,value)}${h(value)}</span></div>`;}
 function textFact(label,value){if(!value)return '';return `<div class="tile-fact" title="${attr(label+' : '+value)}"><span class="fact-label">${h(label)}</span><span class="fact-value">${h(value)}</span></div>`;}
+function prominentEdition(value){
+ if(!value)return '';
+ const info=tagInfo('dragons','edition',value);
+ const logo=String(info?.logo||'');
+ const hasLogo=/^data:image\/(?:png|jpe?g|webp);base64,/i.test(logo);
+ // A custom edition logo fully replaces the visible edition name on catalogue tiles.
+ const title=attr('Édition : '+value);
+ return `<div class="tile-edition-feature ${hasLogo?'has-logo':'has-text'}" title="${title}" aria-label="${title}">${hasLogo?
+   `<img class="tile-edition-logo" src="${attr(logo)}" alt="Logo de l’édition ${attr(value)}" decoding="async">`:
+   `<span class="tile-edition-name">${tagMark('dragons','edition',value)}<span>${h(value)}</span></span>`}
+ </div>`;
+}
 
 /* V1.7 — Actions rapides des tuiles Dragon Blanc */
 const bundledArtworkPattern=/^assets\/artworks\/(A\d{2}|R0[1-4](?:-X)?)\.webp$/i;
@@ -1380,7 +1441,7 @@ function referenceCard(v){
  const cat=catForGroup(v.groupId),own=ownedCount(v.id);let facts='';
  if(cat==='watches'){facts=tagFact(cat,'color','Couleur',v.color)+tagFact(cat,'caseMaterial','Matière',v.caseMaterial||v.strap);}
  else if(cat==='cards'){facts=textFact('Nom',v.label&&v.label!==v.reference?v.label:'')+tagFact(cat,'edition','Édition',v.edition||getGroup(v.groupId)?.name)+tagFact(cat,'brand','Marque',v.brand||getGroup(v.groupId)?.brand)+textFact('Joueur',v.player)+tagFact(cat,'rarity','Variation',v.rarity||v.parallel)+tagFact(cat,'sport','Sport',v.sport||getGroup(v.groupId)?.sport)+tagFact(cat,'team','Équipe',v.team);}
- else {facts=tagFact(cat,'edition','Édition',v.edition||getGroup(v.groupId)?.name)+tagFact(cat,'rarity','Rareté',v.rarity)+tagFact(cat,'artwork','Artwork',v.artwork)+tagFact(cat,'language','Langue',v.language)+textFact('Nom',v.nameColor||'');const cfg=moduleSettings().dragons;if(cfg.showNumber&&v.dragonNumber)facts+=textFact(cfg.numberLabel||'N°',v.dragonNumber);}
+ else {facts=tagFact(cat,'rarity','Rareté',v.rarity)+tagFact(cat,'artwork','Artwork',v.artwork)+tagFact(cat,'language','Langue',v.language)+textFact('Nom',v.nameColor||'');const cfg=moduleSettings().dragons;if(cfg.showNumber&&v.dragonNumber)facts+=textFact(cfg.numberLabel||'N°',v.dragonNumber);facts+=prominentEdition(v.edition||getGroup(v.groupId)?.name);}
  return `<article class="archive-tile module-${cat} ${own?'is-owned':''}" data-reference-id="${attr(v.id)}"><button class="tile-open" data-action="open-variant" data-id="${attr(v.id)}" aria-label="Ouvrir ${attr(v.reference)}"><span class="tile-picture">${imageFor(v)}</span><span class="tile-data"><strong class="tile-ref" title="${attr(v.reference)}">${h(v.reference)}</strong><span class="tile-facts">${facts}</span></span></button><div class="tile-quick-actions" aria-label="Actions rapides de la carte"><button type="button" class="tile-quick-btn" data-action="copy-reference" data-id="${attr(v.id)}" title="Copier la référence ${attr(v.reference||'')}" aria-label="Copier la référence ${attr(v.reference||'')}"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg></button>${canDownloadArtwork(v)?`<button type="button" class="tile-quick-btn" data-action="download-artwork" data-id="${attr(v.id)}" title="Télécharger l’artwork en PNG ou JPG" aria-label="Télécharger l’artwork de ${attr(v.reference||'')} en PNG ou JPG"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4"/><path d="M4 17v3h16v-3"/></svg></button>`:''}</div><button class="tile-owned" data-action="tile-own" data-id="${attr(v.id)}" aria-pressed="${!!own}" title="${own?'Retirer de ma collection':'Marquer comme possédée'}"><span class="owned-led" aria-hidden="true"></span>OWNED${own>1?' ×'+own:''}</button></article>`;
 }
 function dragonVariants(){return archive.variants.filter(v=>catForGroup(v.groupId)==='dragons');}
@@ -1461,7 +1522,7 @@ function showSettingsContent(){
  const sections=MODULES[editingModule].fields.map(([field,label])=>{
   const entries=settings.taxonomies[field]||[];
   const rows=entries.map((item,i)=>{
-   const imageControl=field==='artwork'?`<div class="artwork-settings-control"><label class="artwork-file-label" title="Choisir ou remplacer la miniature"><span class="artwork-thumb artwork-settings-thumb">${artworkThumbMarkup(item)}</span><span>Miniature</span><input type="file" accept="image/png,image/jpeg,image/webp,image/heic,image/heif" data-artwork-file="${i}" aria-label="Miniature de ${attr(item.label||'cet artwork')}"></label>${item.preview?`<button type="button" class="artwork-remove-preview" data-action="artwork-preview-remove" data-index="${i}" title="Retirer la miniature" aria-label="Retirer la miniature de ${attr(item.label)}">×</button>`:''}</div>`:'';
+   const imageControl=field==='artwork'?`<div class="artwork-settings-control"><label class="artwork-file-label" title="Choisir ou remplacer la miniature"><span class="artwork-thumb artwork-settings-thumb">${artworkThumbMarkup(item)}</span><span class="artwork-choose-text">Changer miniature</span><input type="file" accept="image/*,.heic,.heif" data-artwork-file="${i}" aria-label="Choisir ou remplacer la miniature de ${attr(item.label||'cet artwork')}"></label>${item.preview?`<button type="button" class="artwork-remove-preview" data-action="artwork-preview-remove" data-index="${i}" title="Retirer la miniature" aria-label="Retirer la miniature de ${attr(item.label)}">×</button>`:''}</div>`:'';
    return `<div class="tax-row ${field==='artwork'?'tax-row-artwork':''}"><input type="text" data-setting-field="${field}" data-index="${i}" data-setting-part="label" value="${attr(item.label)}" placeholder="Nom" aria-label="Nom ${h(label)}"><input type="text" data-setting-field="${field}" data-index="${i}" data-setting-part="icon" value="${attr(item.icon||'')}" placeholder="Icône" aria-label="Icône ou drapeau" maxlength="16"><input type="color" data-setting-field="${field}" data-index="${i}" data-setting-part="color" value="${/^#[a-f0-9]{6}$/i.test(item.color||'')?item.color:'#99b9aa'}" aria-label="Couleur"><label class="file-logo" title="Importer un logo">${item.logo?'✓ Logo':'↑ Logo'}<input type="file" accept="image/*" data-setting-logo="${field}" data-index="${i}"></label>${imageControl}<button type="button" class="tax-remove" data-action="tax-remove" data-field="${field}" data-index="${i}" title="Supprimer la valeur">×</button></div>`;
   }).join('');
   const intro=field==='artwork'?'Importe une miniature carrée pour chaque artwork : elle apparaîtra dans le filtre et sur les cartes.':'Les icônes peuvent être des emoji (🇫🇷, ★…) ou remplacées par un logo téléchargé.';
@@ -1517,18 +1578,24 @@ function setArtworkMenuOpen(open){
 }
 function artworkSquarePreview(file){
  return new Promise((resolve,reject)=>{
-  if(!file||!file.type.startsWith('image/'))return reject(Error('Sélectionne une image valide.'));
-  if(file.size>6*1024*1024)return reject(Error('Image limitée à 6 Mo.'));
-  const img=new Image(),url=URL.createObjectURL(file);
-  img.onerror=()=>{URL.revokeObjectURL(url);reject(Error('Image illisible.'));};
+  if(!file||(!file.type.startsWith('image/')&&!/\.(?:png|jpe?g|webp|heic|heif)$/i.test(file.name||'')))return reject(Error('Sélectionne une image PNG, JPG, WebP ou HEIC.'));
+  if(file.size>10*1024*1024)return reject(Error('Image limitée à 10 Mo.'));
+  const img=new Image();
+  const url=URL.createObjectURL(file);
+  const clean=()=>URL.revokeObjectURL(url);
+  img.onerror=()=>{clean();reject(Error('Image illisible dans ce navigateur. Essaie un PNG ou JPG si la photo est au format HEIC.'));};
   img.onload=()=>{
-   URL.revokeObjectURL(url);
-   const canvas=document.createElement('canvas');canvas.width=canvas.height=160;
-   const ctx=canvas.getContext('2d');ctx.fillStyle='#f4f9ff';ctx.fillRect(0,0,160,160);
-   // square crop centered on the artwork; the original uploaded file is not modified
-   const side=Math.min(img.naturalWidth,img.naturalHeight);
-   ctx.drawImage(img,(img.naturalWidth-side)/2,(img.naturalHeight-side)/2,side,side,0,0,160,160);
-   resolve(canvas.toDataURL('image/webp',.85));
+   try{
+    clean();
+    const canvas=document.createElement('canvas');canvas.width=canvas.height=176;
+    const ctx=canvas.getContext('2d');if(!ctx)throw Error('Canvas indisponible.');
+    ctx.fillStyle='#f4f9ff';ctx.fillRect(0,0,176,176);
+    const side=Math.min(img.naturalWidth,img.naturalHeight);
+    if(!side)throw Error('Image sans dimensions lisibles.');
+    ctx.drawImage(img,(img.naturalWidth-side)/2,(img.naturalHeight-side)/2,side,side,0,0,176,176);
+    // JPEG is consistently supported by Safari iOS; small enough for Supabase sync.
+    resolve(canvas.toDataURL('image/jpeg',.88));
+   }catch(error){reject(error);}
   };
   img.src=url;
  });
@@ -1580,8 +1647,30 @@ document.addEventListener('change',async e=>{
  if(!fileInput?.files?.length||!draftModuleSettings)return;
  const rows=draftModuleSettings.dragons?.taxonomies?.artwork;
  const item=rows?.[Number(fileInput.dataset.artworkFile)];if(!item)return;
- try{item.preview=await artworkSquarePreview(fileInput.files[0]);showSettingsContent();toast('Miniature prête : enregistre les réglages.');}
- catch(error){toast(error.message,true);}
+ try{
+  const preview=await artworkSquarePreview(fileInput.files[0]);
+  item.preview=preview;
+  // Update only the affected row: keeping the modal and its scroll position intact
+  // makes repeated thumbnail replacements work on touch devices.
+  const control=fileInput.closest('.artwork-settings-control');
+  const thumb=control?.querySelector('.artwork-settings-thumb');
+  if(thumb)thumb.innerHTML=artworkThumbMarkup(item);
+  const remove=control?.querySelector('.artwork-remove-preview');
+  if(!remove&&control){
+    const button=document.createElement('button');
+    button.type='button';
+    button.className='artwork-remove-preview';
+    button.dataset.action='artwork-preview-remove';
+    button.dataset.index=String(fileInput.dataset.artworkFile);
+    button.title='Retirer la miniature';
+    button.setAttribute('aria-label','Retirer la miniature de '+(item.label||'cet artwork'));
+    button.textContent='×';
+    control.appendChild(button);
+  }
+  // Allows the same file to be selected again after a failed / cancelled edit.
+  fileInput.value='';
+  toast('Nouvelle miniature prête : enregistre les réglages ✓');
+ }catch(error){fileInput.value='';toast(error.message,true);}
 });
 
 

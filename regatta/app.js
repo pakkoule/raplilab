@@ -293,36 +293,75 @@ async function exportPNG(r){
  try{
   if(document.fonts?.ready)await document.fonts.ready;
   const [im,ranking,route]=await Promise.all(imageKeys.map(k=>picture(r[k])));
-  const w=1200,extra=ranking||route?450:0,h=130+675+360+extra+42,c=document.createElement('canvas');c.width=w;c.height=h;const ctx=c.getContext('2d');if(!ctx)throw Error('Canvas indisponible');
-  ctx.fillStyle='#fff';ctx.fillRect(0,0,w,h);ctx.fillStyle='#15384a';ctx.fillRect(0,0,w,130);ctx.fillStyle='#00c6c8';ctx.fillRect(0,0,900,8);ctx.fillStyle='#f30082';ctx.fillRect(900,0,300,8);
-  ctx.fillStyle='#fff';ctx.font='900 51px Poppins,sans-serif';ctx.fillText('RAPLI REGATTA',49,88);
-  if(validEquipment(r.equipment)){ctx.textAlign='right';ctx.fillStyle='#cbf6f4';ctx.font='800 22px Poppins,sans-serif';ctx.fillText('ÉQUIPEMENT · '+equipmentModes[r.equipment],1147,85);ctx.textAlign='left';}
-  ctx.fillStyle='#e4f4f3';ctx.fillRect(0,130,w,675);contain(ctx,im,0,130,w,675);
-  const y=805;ctx.fillStyle='#007d98';ctx.font='800 20px Poppins,sans-serif';ctx.fillText([r.boatClass,r.edition].filter(Boolean).join(' · ').toUpperCase()||'VIRTUAL REGATTA',48,y+38);
-  ctx.fillStyle='#14364a';ctx.font='900 42px Poppins,sans-serif';wrap(ctx,r.name,1100,2).forEach((line,i)=>ctx.fillText(line,48,y+96+i*51));
-  ctx.fillStyle='#567985';ctx.font='700 18px Poppins,sans-serif';
-  if(r.boat)wrap(ctx,r.boat,1100,1).forEach(t=>ctx.fillText(t,48,y+194));
-  ctx.fillStyle='#174c5a';ctx.font='800 18px Poppins,sans-serif';
-  if(r.start)ctx.fillText('DÉPART · '+dateTimeFR(r.start,r.startTime),48,y+220);
-  if(r.end)ctx.fillText('ARRIVÉE · '+dateTimeFR(r.end,r.endTime),48,y+249);
-  if(r.duration){ctx.fillStyle='#587786';ctx.font='700 17px Poppins,sans-serif';wrap(ctx,'DURÉE · '+r.duration,485,1).forEach(t=>ctx.fillText(t,657,y+249));}
-  const rankingData=[['GÉNÉRAL',r.rank],['DÉPARTEMENTAL',r.rankDepartment],['NATIONAL',r.rankNational]];
-  for(let i=0;i<rankingData.length;i++){
-    const [label,value]=rankingData[i],x=48+i*372,boxY=y+278;
-    ctx.fillStyle=i===1?'#e9f7f6':i===2?'#f8eef3':'#eff7f9';
-    ctx.fillRect(x,boxY,352,58);
-    ctx.fillStyle='#557785';ctx.font='800 13px Poppins,sans-serif';ctx.fillText(label,x+11,boxY+19);
-    ctx.fillStyle='#163a50';ctx.font='800 22px Poppins,sans-serif';
-    let shown=String(value||'—');while(ctx.measureText(shown).width>326&&shown.length>2)shown=shown.slice(0,-2)+'…';
-    ctx.fillText(shown,x+11,boxY+45);
+  const W=1200,HEADER=130,PHOTO=675,INFO=620,EXTRA=(ranking||route)?450:0,FOOT=46;
+  const height=HEADER+PHOTO+INFO+EXTRA+FOOT,c=document.createElement('canvas');
+  c.width=W;c.height=height;const ctx=c.getContext('2d');if(!ctx)throw Error('Canvas indisponible');
+  ctx.fillStyle='#fff';ctx.fillRect(0,0,W,height);
+  ctx.fillStyle='#15384a';ctx.fillRect(0,0,W,HEADER);
+  ctx.fillStyle='#00c6c8';ctx.fillRect(0,0,900,8);ctx.fillStyle='#f30082';ctx.fillRect(900,0,300,8);
+  ctx.fillStyle='#fff';ctx.font='900 49px Poppins,sans-serif';ctx.fillText('RAPLI REGATTA',49,82);
+  ctx.textAlign='right';ctx.font='800 19px Poppins,sans-serif';ctx.fillStyle='#caecf2';
+  if(VSR[r.vsr])ctx.fillText(VSR[r.vsr],1151,62);
+  if(equipmentModes[r.equipment]){ctx.font='700 15px Poppins,sans-serif';ctx.fillText('ÉQUIPEMENT · '+equipmentModes[r.equipment],1151,92);}
+  ctx.textAlign='left';
+  ctx.fillStyle='#e4f4f3';ctx.fillRect(0,HEADER,W,PHOTO);contain(ctx,im,0,HEADER,W,PHOTO);
+  if(r.upcoming||r.live){
+   ctx.fillStyle=r.upcoming?'#176cce':'#eb007c';ctx.fillRect(32,HEADER+24,330,43);
+   ctx.font='900 19px Poppins,sans-serif';ctx.fillStyle='#fff';ctx.fillText(r.upcoming?'🔵 À VENIR':'COURSE EN COURS',46,HEADER+53);
   }
-  if(extra){const yy=1165;ctx.fillStyle='#e7f3f5';ctx.fillRect(0,yy,w,450);for(const [idx,im,label] of [[0,ranking,'CLASSEMENT FINAL'],[1,route,'TRACÉ DE COURSE']]){const xx=30+idx*582;ctx.fillStyle='#244b5e';ctx.font='800 20px Poppins,sans-serif';ctx.fillText(label,xx,yy+31);ctx.fillStyle='#d0e5e7';ctx.fillRect(xx,yy+43,556,377);contain(ctx,im,xx,yy+43,556,377);}}
-  ctx.fillStyle='#15384a';ctx.fillRect(0,h-42,w,42);ctx.fillStyle='#d6f0f0';ctx.font='700 14px Poppins,sans-serif';ctx.fillText('RAPLI REGATTA  ·  '+(r.live?'COURSE EN COURS':'JOURNAL DE COURSE'),37,h-16);
+  const y=HEADER+PHOTO;
+  const tag=colorSafe(r.classColor);
+  ctx.fillStyle=tag;ctx.fillRect(48,y+24,Math.min(560,Math.max(140,ctx.measureText(r.boatClass||'VIRTUAL REGATTA').width+45)),36);
+  ctx.fillStyle='#fff';ctx.font='800 18px Poppins,sans-serif';ctx.fillText((r.boatClass||'VIRTUAL REGATTA').toUpperCase().slice(0,28),61,y+49);
+  ctx.fillStyle='#73909e';ctx.textAlign='right';ctx.font='700 17px Poppins,sans-serif';ctx.fillText((r.edition||'').slice(0,40),1151,y+49);ctx.textAlign='left';
+  ctx.fillStyle='#123648';ctx.font='900 43px Poppins,sans-serif';wrap(ctx,r.name,1090,2).forEach((line,i)=>ctx.fillText(line,48,y+111+i*51));
+  if(r.boat){ctx.fillStyle='#7a919d';ctx.font='700 18px Poppins,sans-serif';wrap(ctx,r.boat,1050,1).forEach(t=>ctx.fillText(t,48,y+202));}
+  ctx.fillStyle='#245c6c';ctx.font='800 17px Poppins,sans-serif';
+  if(r.start)ctx.fillText('DÉPART · '+dateTimeFR(r.start,r.startTime),48,y+238);
+  if(r.end)ctx.fillText('ARRIVÉE · '+dateTimeFR(r.end,r.endTime),48,y+270);
+  if(r.duration){
+   ctx.font='700 21px "Courier Prime","American Typewriter",monospace';ctx.fillStyle='#1a5368';
+   wrap(ctx,'DURÉE · '+r.duration,590,1).forEach(t=>ctx.fillText(t,555,y+270));
+  }
+  const ranks=[
+   ['🏆','CLASSEMENT GÉNÉRAL',r.rank,r.rankTotal],
+   ['🇫🇷','NATIONAL',r.rankNational,r.rankNationalTotal],
+   ['🇨🇶','DÉPARTEMENTAL',r.rankDepartment,r.rankDepartmentTotal],
+   ['🏙️','VILLE',r.rankCity,r.rankCityTotal],
+   ['🏴‍☠️','TEAM',r.rankTeam,r.rankTeamTotal]
+  ];
+  const drawRank=(i,x,top,width,h)=>{
+   const [emoji,label,place,total]=ranks[i];
+   ctx.fillStyle=i===0?'#135772':i===1?'#eef5fc':i===2?'#edf9f5':i===3?'#f7f3f9':'#f7f4ef';
+   ctx.fillRect(x,top,width,h);
+   ctx.strokeStyle=i===0?'#0f7690':'#d1e3e6';ctx.lineWidth=2;ctx.strokeRect(x,top,width,h);
+   ctx.fillStyle=i===0?'#fff':'#244b5e';
+   ctx.font='24px "Apple Color Emoji","Segoe UI Emoji",sans-serif';ctx.fillText(emoji,x+13,top+33);
+   ctx.fillStyle=i===0?'#b1e6ef':'#7d929e';ctx.font='800 14px Poppins,sans-serif';ctx.fillText(label,x+56,top+28);
+   ctx.font=(i===0?'700 33px':'700 27px')+' Georgia,serif';ctx.fillStyle=i===0?'#fff':'#193e57';
+   let value=rankDisplay(place,total)||'—';
+   while(ctx.measureText(value).width>width-75&&value.length>2)value=value.slice(0,-2)+'…';
+   ctx.fillText(value,x+56,top+h-14);
+  };
+  drawRank(0,48,y+313,1104,80);
+  for(let i=1;i<5;i++){
+   const x=48+(i%2===0?564:0),row=Math.floor((i-1)/2),yy=y+406+row*82;
+   drawRank(i,x,yy,540,72);
+  }
+  if(EXTRA){
+   const y2=y+INFO;ctx.fillStyle='#e7f3f5';ctx.fillRect(0,y2,W,EXTRA);
+   for(const [i,image,label] of [[0,ranking,'CLASSEMENT FINAL'],[1,route,'TRACÉ DE COURSE']]){
+    const x=30+i*582;ctx.fillStyle='#244b5e';ctx.font='800 20px Poppins,sans-serif';ctx.fillText(label,x,y2+31);
+    ctx.fillStyle='#d0e5e7';ctx.fillRect(x,y2+43,556,377);contain(ctx,image,x,y2+43,556,377);
+   }
+  }
+  ctx.fillStyle='#15384a';ctx.fillRect(0,height-FOOT,W,FOOT);
+  ctx.fillStyle='#d6f0f0';ctx.font='700 15px Poppins,sans-serif';
+  ctx.fillText('RAPLI REGATTA · '+(r.upcoming?'À VENIR':r.live?'COURSE EN COURS':'JOURNAL DE COURSE'),37,height-18);
   const blob=await new Promise((yes,no)=>c.toBlob(b=>b?yes(b):no(Error('Export PNG impossible')),'image/png'));
   download(blob,'Rapli_Regatta_'+r.name.replace(/[^a-z0-9-]+/gi,'_').slice(0,65)+'.png');toast('PNG exporté ✓');
  }catch(err){console.error(err);toast('Export PNG : '+err.message,true);}
 }
-
 function calendarEscape(input){
  return String(input??'').replace(/\r\n?/g,'\n').replace(/\\/g,'\\\\')
    .replace(/\n/g,'\\n').replace(/;/g,'\\;').replace(/,/g,'\\,').slice(0,6000);

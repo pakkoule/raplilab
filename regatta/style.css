@@ -74,3 +74,7 @@ dialog form{border-radius:18px;background:#fff;display:flex;flex-direction:colum
 [hidden]{display:none!important}
 /* 16px fields prevent Safari iOS from zooming when typing. */
 @media(max-width:800px){.filters input,.filters select,.fields input,.fields select,.notes textarea{font-size:16px}}
+
+/* Rangs à trois niveaux : repérage discret sans alourdir la carte. */
+.stat-chip.regional{background:#eaf8f6;border-color:#a4dcd8;color:#136c75}
+.stat-chip.national{background:#fdf0f7;border-color:#f4c6e0;color:#a22a70}

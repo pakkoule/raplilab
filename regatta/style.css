@@ -69,3 +69,8 @@ dialog form{border-radius:18px;background:#fff;display:flex;flex-direction:colum
 @media(max-width:780px){.shell{width:100%;margin:0;border-radius:0;border:none;box-shadow:none;min-height:100dvh}.utility{padding:11px 14px;flex-wrap:wrap}.utility-title{font-size:12px}.cloud-actions{width:100%;justify-content:flex-start}.summary{padding:19px 14px;align-items:stretch;flex-wrap:wrap}.counters{flex:1}.summary>.btn{min-width:150px}.filters{grid-template-columns:repeat(2,minmax(0,1fr));padding:14px}.filters .search{grid-column:1/-1}.cards{padding:0 14px 28px;gap:11px}.collection-head{padding:19px 14px 12px}.empty{margin:0 14px 28px}}
 @media(max-width:580px){.cards{grid-template-columns:1fr}.counter{min-width:0;gap:5px;padding-right:10px}.counter strong{font-size:24px}.counter span{font-size:8px}.summary>.btn{width:100%}.card h2{font-size:18px}.fields{grid-template-columns:1fr}.uploads{grid-template-columns:1fr 1fr}.upload:first-child{grid-column:1/-1}.dialog-scroll{padding:14px}.dialog-head,.dialog-footer{padding:13px 15px}.dialog-footer .btn{padding:8px 10px;font-size:10px}.utility-title small{display:none}.filters input,.filters select,.fields input,.fields select,.notes textarea{font-size:16px}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* Explicit hidden controls: Safari must not show unloaded photos or dialogs. */
+[hidden]{display:none!important}
+/* 16px fields prevent Safari iOS from zooming when typing. */
+@media(max-width:800px){.filters input,.filters select,.fields input,.fields select,.notes textarea{font-size:16px}}

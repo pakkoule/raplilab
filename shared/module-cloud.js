@@ -10,7 +10,7 @@
   const REF_PREFIX = 'rapli-private://';
   const MAX_IMAGE = 10 * 1024 * 1024;
   const bridge = window.RapliModuleBridge;
-  if (!bridge || !['time','sports','refs','stickers','tools','tiers','top10','coach'].includes(bridge.module)) return;
+  if (!bridge || !['time','sports','refs','stickers','tools','tiers','top10','coach','lp'].includes(bridge.module)) return;
   const MODULE = bridge.module;
   const manualOnly = ['tiers','top10','coach'].includes(MODULE);
   const el = id => document.getElementById(id);

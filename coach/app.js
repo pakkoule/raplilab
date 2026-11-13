@@ -242,6 +242,11 @@ function pickCandidate(slotIndex){
  };
 }
 function startReassignment(next){
+ // Formation changes are strictly football-only. Basketball always uses its fixed 1-2-2 layout.
+ if(current.sport!=='football' || !Object.hasOwn(ROWS,next)){
+   $('#formation').value='4-3-3';
+   return;
+ }
  if(next===current.formation)return;
  const prev=clone(current),candidates=current.slots.map(x=>x.player).filter(Boolean);
  reassign={prev,queue:candidates};current.formation=next;current.slots=makeSlots('football',next);render();
@@ -307,7 +312,7 @@ function wire(){
  $('#comp-title').addEventListener('focus',e=>{e.target.dataset.before=current.title;});
  $('#comp-title').addEventListener('change',e=>{const name=e.target.value.trim().slice(0,140)||'Mon XI';if(current.title!==name)edit(()=>current.title=name);});
  $('#mode').addEventListener('change',e=>edit(()=>{current.mode=e.target.value;}));
- $('#formation').addEventListener('change',e=>startReassignment(e.target.value));
+ $('#formation').addEventListener('change',e=>{if(current.sport==='football')startReassignment(e.target.value);});
  $('#new').onclick=newComposition;$('#save').onclick=()=>void save();$('#export').onclick=()=>void requestExport();
  $('#undo').onclick=()=>history('undo');$('#redo').onclick=()=>history('redo');
  $('#clear').onclick=()=>{if(!current.slots.some(s=>s.player))return;if(confirm('Vider tous les joueurs de cette composition ? Le titre, le style et la formation seront conservés.'))edit(()=>current.slots.forEach(s=>s.player=null));};

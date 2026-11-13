@@ -193,31 +193,138 @@ function render(){
  $('empty').hidden=rows.length!==0;
  renderStatistics();
 }
-function renderStatistics(){
- const total=rows.length,finished=rows.filter(r=>raceStatus(r)==='finished'),
-       future=rows.filter(r=>r.upcoming),live=rows.filter(r=>r.live);
- const completedRanks=finished.filter(r=>Number(r.rank)>0),best=[...completedRanks].sort((a,b)=>Number(a.rank)-Number(b.rank))[0];
- const durations=finished.map(r=>parseRaceDuration(r.duration)).filter(x=>x.status==='valid');
- const avg=durations.length?Math.round(durations.reduce((a,b)=>a+b.seconds,0)/durations.length):null;
- const formatAverage=seconds=>{if(seconds===null)return '—';const d=Math.floor(seconds/86400),h=Math.floor(seconds%86400/3600),m=Math.floor(seconds%3600/60);return (d?d+'j ':'')+String(h).padStart(2,'0')+'h '+String(m).padStart(2,'0')+'m';};
- const metrics=[
-   ['COURSES',total],['TERMINÉES',finished.length],['EN COURS',live.length],['À VENIR',future.length],
-   ['MEILLEUR CLASSEMENT',best?'#'+Number(best.rank).toLocaleString('fr-FR'):'—'],
-   ['DURÉE MOYENNE',formatAverage(avg)]
- ];
- $('stats-summary').textContent=total+' courses recensées';
- const section=(title,entries)=>{
-   if(!entries.length)return '<div class="stats-empty">Aucune donnée pour cette catégorie.</div>';
-   const max=Math.max(1,...entries.map(x=>x[1]));
-   return '<div class="stats-breakdown"><h3>'+title+'</h3>'+
-     entries.map(([key,count])=>'<div class="stat-breakdown-row"><span>'+safe(key)+'</span><div class="stat-bar-track"><div class="stat-bar-fill" style="width:'+Math.round(count/max*100)+'%"></div></div><strong>'+count+'</strong></div>').join('')+'</div>';
+const statInt=n=>Number(n).toLocaleString('fr-FR');
+const statDecimal=(n,digits=1)=>Number(n).toLocaleString('fr-FR',{minimumFractionDigits:0,maximumFractionDigits:digits});
+const statRank=r=>{
+ const rank=Number(r.rank),total=Number(r.rankTotal);
+ return Number.isSafeInteger(rank)&&rank>0&&(!r.rankTotal||(Number.isSafeInteger(total)&&total>=rank))?rank:null;
+};
+const statRelative=r=>{
+ const rank=statRank(r),total=Number(r.rankTotal);
+ return rank!==null&&Number.isSafeInteger(total)&&total>=rank&&total>0?100*rank/total:null;
+};
+const statDuration=sec=>{
+ if(sec===null||!Number.isFinite(sec)||sec<0)return '—';
+ const days=Math.floor(sec/86400),hours=Math.floor((sec%86400)/3600),minutes=Math.floor((sec%3600)/60);
+ return (days?statInt(days)+' j ':'')+String(hours).padStart(2,'0')+' h '+String(minutes).padStart(2,'0')+' min';
+};
+function computeRaceStatistics(items){
+ const total=items.length,finished=items.filter(r=>raceStatus(r)==='finished');
+ const live=items.filter(r=>r.live&&!r.upcoming);
+ const upcoming=items.filter(r=>r.upcoming);
+ const ranked=finished.filter(r=>statRank(r)!==null);
+ const sortedRanks=ranked.map(r=>statRank(r)).sort((a,b)=>a-b);
+ const best=ranked.reduce((acc,r)=>!acc||statRank(r)<statRank(acc)?r:acc,null);
+ const relative=ranked.map(r=>({race:r,value:statRelative(r)})).filter(x=>x.value!==null);
+ const bestRelative=relative.reduce((acc,x)=>!acc||x.value<acc.value?x:acc,null);
+ const durationRows=finished.map(r=>({race:r,value:parseRaceDuration(r.duration)}))
+   .filter(x=>x.value.status==='valid'&&x.value.seconds>0)
+   .map(x=>({race:x.race,seconds:x.value.seconds}));
+ const totalSeconds=durationRows.reduce((sum,x)=>sum+x.seconds,0);
+ const shortest=durationRows.reduce((acc,x)=>!acc||x.seconds<acc.seconds?x:acc,null);
+ const longest=durationRows.reduce((acc,x)=>!acc||x.seconds>acc.seconds?x:acc,null);
+ const years=new Map();
+ for(const r of items){
+   const year=/^(\d{4})-\d{2}-\d{2}$/.exec(r.start||'')?.[1]||'Sans date';
+   if(!years.has(year))years.set(year,{year,count:0,finished:0,top10:0});
+   const bucket=years.get(year);
+   bucket.count++;
+   if(raceStatus(r)==='finished'){bucket.finished++;if(statRank(r)!==null&&statRank(r)<=10)bucket.top10++;}
+ }
+ const yearly=[...years.values()].sort((x,y)=>
+   x.year==='Sans date'?1:y.year==='Sans date'?-1:Number(y.year)-Number(x.year));
+ return {
+   total,finished,live,upcoming,ranked,relative,best,bestRelative,durationRows,totalSeconds,
+   shortest,longest,yearly,
+   winners:ranked.filter(r=>statRank(r)===1).length,
+   podiums:ranked.filter(r=>statRank(r)<=3).length,
+   top10:ranked.filter(r=>statRank(r)<=10).length,
+   top100:ranked.filter(r=>statRank(r)<=100).length,
+   meanRank:sortedRanks.length?sortedRanks.reduce((a,b)=>a+b,0)/sortedRanks.length:null,
+   medianRank:sortedRanks.length?(sortedRanks[(sortedRanks.length-1)>>1]+sortedRanks[sortedRanks.length>>1])/2:null,
+   meanRelative:relative.length?relative.reduce((sum,x)=>sum+x.value,0)/relative.length:null,
+   meanDuration:durationRows.length?totalSeconds/durationRows.length:null
  };
- const buckets=key=>[...new Set(rows.map(r=>key(r)).filter(Boolean))]
-   .map(name=>[name,rows.filter(r=>key(r)===name).length]).sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0],'fr'));
- $('stats-content').innerHTML='<div class="stats-metrics">'+metrics.map(([key,value])=>'<div class="stats-metric"><span>'+safe(key)+'</span><strong>'+safe(value)+'</strong></div>').join('')+'</div>'+
-   '<div class="stats-breakdowns">'+section('CATÉGORIE VSR',buckets(r=>VSR[r.vsr]||'Non renseignée'))+
-   section('CLASSES DE BATEAUX',buckets(r=>r.boatClass||'Non renseignée'))+
-   section('ÉQUIPEMENTS',buckets(r=>equipmentModes[r.equipment]||'Non renseigné'))+'</div>';
+}
+function renderStatistics(){
+ const stats=computeRaceStatistics(rows);
+ const statValue=(value)=>value===null?'—':statInt(value);
+ const percent=value=>value===null?'—':statDecimal(value,2)+' %';
+ const blocks=[
+   {title:'TABLEAU DE BORD',items:[
+     ['COURSES RECENSÉES',statInt(stats.total),'Toutes les fiches'],
+     ['TERMINÉES',statInt(stats.finished.length),'Selon le statut de course'],
+     ['EN COURS',statInt(stats.live.length),'Halo turquoise'],
+     ['À VENIR',statInt(stats.upcoming.length),'Halo bleu']
+   ]},
+   {title:'PALMARÈS',items:[
+     ['VICTOIRES 🥇',statInt(stats.winners),'1re place au général'],
+     ['PODIUMS 🏆',statInt(stats.podiums),'Top 3 au général, victoires incluses'],
+     ['TOP 10',statInt(stats.top10),'Top 10 au général'],
+     ['TOP 100',statInt(stats.top100),'Top 100 au général'],
+     ['MEILLEURE PLACE',stats.best?'#'+statInt(statRank(stats.best)):'—',stats.best?.name||'Aucun résultat enregistré'],
+     ['PLACE MOYENNE',stats.meanRank===null?'—':statDecimal(stats.meanRank,1),stats.ranked.length+' courses classées'],
+     ['PLACE MÉDIANE',stats.medianRank===null?'—':statDecimal(stats.medianRank,1),'Résultats au général'],
+     ['MEILLEUR TOP %',stats.bestRelative?'Top '+percent(stats.bestRelative.value):'—',stats.bestRelative?stats.bestRelative.race.name:'Renseigne aussi les participants'],
+     ['TOP % MOYEN',stats.meanRelative===null?'—':percent(stats.meanRelative),'Place ÷ nombre de participants']
+   ]},
+   {title:'TEMPS DE NAVIGATION',items:[
+     ['TEMPS CUMULÉ',stats.durationRows.length?statDuration(stats.totalSeconds):'—',stats.durationRows.length+' courses terminées avec durée'],
+     ['DURÉE MOYENNE',statDuration(stats.meanDuration),'Courses terminées renseignées'],
+     ['COURSE LA PLUS COURTE',stats.shortest?statDuration(stats.shortest.seconds):'—',stats.shortest?.race.name||'Durée indisponible'],
+     ['COURSE LA PLUS LONGUE',stats.longest?statDuration(stats.longest.seconds):'—',stats.longest?.race.name||'Durée indisponible']
+   ]}
+ ];
+ $('stats-summary').textContent=statInt(stats.total)+' courses · '+statInt(stats.ranked.length)+' classées au général';
+ const counterSection=block=>
+  '<section class="stats-metric-section"><h3>'+safe(block.title)+'</h3><div class="stats-metrics">'+
+  block.items.map(([label,value,hint])=>
+   '<div class="stats-metric"><span>'+safe(label)+'</span><strong>'+safe(value)+'</strong><small title="'+safe(hint)+'">'+safe(hint)+'</small></div>'
+  ).join('')+'</div></section>';
+ const distribution=(title,entries)=>{
+  if(!entries.length)return '<div class="stats-breakdown"><h3>'+safe(title)+'</h3><p class="stats-empty">Aucune donnée.</p></div>';
+  const max=Math.max(1,...entries.map(x=>x[1]));
+  return '<div class="stats-breakdown"><h3>'+safe(title)+'</h3>'+
+   entries.map(([label,count])=>
+    '<div class="stat-breakdown-row"><span title="'+safe(label)+'">'+safe(label)+'</span><div class="stat-bar-track"><div class="stat-bar-fill" style="width:'+Math.round(count/max*100)+'%"></div></div><strong>'+statInt(count)+'</strong></div>'
+   ).join('')+'</div>';
+ };
+ const group=(items,fn)=>[...items.reduce((acc,r)=>{const name=fn(r)||'Non renseigné';acc.set(name,(acc.get(name)||0)+1);return acc;},new Map()).entries()]
+  .sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0],'fr'));
+ const maxYear=Math.max(1,...stats.yearly.map(x=>x.count));
+ const annual=stats.yearly.length?
+  '<div class="stats-years">'+stats.yearly.map(x=>
+   '<div class="stats-year-row"><strong>'+safe(x.year)+'</strong><div class="stats-year-track"><div class="stats-year-total" style="width:'+Math.round(x.count/maxYear*100)+'%"><div class="stats-year-finished" style="width:'+Math.round(x.finished/x.count*100)+'%"></div></div></div><span>'+statInt(x.count)+' <small>('+statInt(x.finished)+' terminées, '+statInt(x.top10)+' Top 10)</small></span></div>'
+  ).join('')+'</div>':'<p class="stats-empty">Ajoute des courses pour voir l’évolution annuelle.</p>';
+ const performance=(name,field)=>{
+  const groups=new Map();
+  for(const race of stats.ranked){
+   const key=field(race);if(!key)continue;
+   if(!groups.has(key))groups.set(key,{label:key,count:0,top10:0,relativeSum:0,relativeCount:0});
+   const entry=groups.get(key);entry.count++;
+   if(statRank(race)<=10)entry.top10++;
+   const relative=statRelative(race);
+   if(relative!==null){entry.relativeSum+=relative;entry.relativeCount++;}
+  }
+  const list=[...groups.values()].sort((a,b)=>b.count-a.count||a.label.localeCompare(b.label,'fr'));
+  return '<div class="stats-breakdown stats-performance"><h3>'+safe(name)+'</h3>'+
+   (list.length?'<div class="performance-table"><div class="performance-head"><span>GROUPE</span><span>COURSES</span><span>TOP 10</span><span>TOP % MOY.</span></div>'+
+    list.map(x=>'<div class="performance-row"><strong>'+safe(x.label)+'</strong><span>'+statInt(x.count)+'</span><span>'+statInt(x.top10)+'</span><span>'+(x.relativeCount?percent(x.relativeSum/x.relativeCount):'—')+'</span></div>').join('')+'</div>':
+    '<p class="stats-empty">Aucun classement général enregistré pour ce groupe.</p>')+'</div>';
+ };
+ $('stats-content').innerHTML=blocks.map(counterSection).join('')+
+  '<section class="stats-metric-section"><h3>ÉVOLUTION PAR ANNÉE</h3><p class="stats-caption">Nombre de courses selon la date de départ ; la partie foncée représente les courses terminées.</p>'+annual+'</section>'+
+  '<section class="stats-metric-section"><h3>MES HABITUDES DE COURSE</h3><div class="stats-breakdowns">'+
+    distribution('CATÉGORIES VSR',group(rows,r=>VSR[r.vsr]||'Non renseignée'))+
+    distribution('CLASSES DE BATEAUX',group(rows,r=>r.boatClass||'Non renseignée'))+
+    distribution('ÉQUIPEMENTS',group(rows,r=>equipmentModes[r.equipment]||'Non renseigné'))+
+    distribution('STATUTS',group(rows,r=>statusTitle[raceStatus(r)]))+
+  '</div></section>'+
+  '<section class="stats-metric-section"><h3>PERFORMANCES PAR TYPE DE COURSE</h3><p class="stats-caption">Sur les courses terminées avec classement général. Top % = place divisée par le nombre de participants ; plus bas signifie mieux classé. « — » lorsqu’il manque les participants.</p><div class="stats-breakdowns">'+
+    performance('PAR CATÉGORIE VSR',r=>VSR[r.vsr]||'Non renseignée')+
+    performance('PAR CLASSE DE BATEAU',r=>r.boatClass||'Non renseignée')+
+    performance('PAR ÉQUIPEMENT',r=>equipmentModes[r.equipment]||'Non renseigné')+
+  '</div></section>';
 }
 function selectWorkspace(view){
  const showStats=view==='stats';

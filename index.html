@@ -229,12 +229,12 @@ body[data-active="lp"] .portal-header{background:linear-gradient(115deg,#101114,
       radial-gradient(ellipse 45% 55% at 100% 12%,color-mix(in srgb,var(--side-theme) 65%,#899598) 0%,transparent 76%),
       linear-gradient(180deg,color-mix(in srgb,var(--side-theme) 88%,#0a1012) 0%,color-mix(in srgb,var(--side-theme) 55%,#080b10) 34%,#101417 66%,#040506 100%);
   }
-  /* Large repeated translucent silhouettes, fading as the gradient darkens.
-     This is decorative only: no content is covered and clicks pass through. */
+  /* Large repeated original-color logos: retain their artwork details, with
+     lower opacity and a gentle fade; never cover the app or intercept clicks. */
   body::after {
     background-image:var(--side-logo);background-repeat:repeat;
     background-position:center 36px;background-size:clamp(350px,29vw,500px) auto;
-    filter:grayscale(1) brightness(0) invert(1);opacity:.19;
+    opacity:.15;
     -webkit-mask-image:linear-gradient(180deg,#000 0%,rgba(0,0,0,.95) 24%,rgba(0,0,0,.65) 67%,rgba(0,0,0,.22) 100%);
     mask-image:linear-gradient(180deg,#000 0%,rgba(0,0,0,.95) 24%,rgba(0,0,0,.65) 67%,rgba(0,0,0,.22) 100%);
   }

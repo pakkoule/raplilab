@@ -5,7 +5,7 @@ const safe=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'
 const clean=(v,n=150)=>String(v??'').trim().slice(0,n);
 const uid=()=>crypto.randomUUID?crypto.randomUUID():'race-'+Date.now().toString(36)+Math.random().toString(36).slice(2);
 const now=()=>new Date().toISOString();
-const props={name:180,boatClass:100,boat:140,start:20,startTime:8,end:20,endTime:8,rank:40,rankTotal:12,rankDepartment:40,rankDepartmentTotal:12,rankNational:40,rankNationalTotal:12,rankCity:40,rankCityTotal:12,rankTeam:40,rankTeamTotal:12,duration:100,durationDays:4,durationHours:2,durationMinutes:2,durationSeconds:2,vsr:5};
+const props={name:180,boatClass:100,boat:140,start:20,startTime:8,end:20,endTime:8,rank:40,rankTotal:12,rankDepartment:40,rankDepartmentTotal:12,rankNational:40,rankNationalTotal:12,rankCity:40,rankCityTotal:12,rankTeam:40,rankTeamTotal:12,duration:100,durationDays:4,durationHours:2,durationMinutes:2,durationSeconds:2,vsr:5,gainPoints:9,gainCredits:9};
 const imageKeys=['icon','result','route'];
 
 /* A date and clock time represent the course's own civil time.
@@ -92,12 +92,17 @@ const equipmentModes=Object.freeze({pdd:'PDD','half-fp':'1/2 FP','full-pack':'FU
 const validEquipment=value=>Object.prototype.hasOwnProperty.call(equipmentModes,value)?value:'';
 const equipmentInputs=()=>[...document.querySelectorAll('input[name="race-equipment"]')];
 const VSR=Object.freeze({hc:'HORS CATÉGORIE',vsr1:'VSR 1',vsr2:'VSR 2',vsr3:'VSR 3'});
+const VSR_ORDER=Object.freeze(['hc','vsr1','vsr2','vsr3']);
+const VSR_PRIORITY=value=>{const n=VSR_ORDER.indexOf(value);return n===-1?VSR_ORDER.length:n;};
+const DEFAULT_VSR_COLORS=Object.freeze({hc:'#d4a339',vsr1:'#dfeef5',vsr2:'#dfe8f2',vsr3:'#eaeef1'});
+const moneyNumber=v=>{const raw=String(v??'').trim();return /^\d{1,9}$/.test(raw)&&Number.isSafeInteger(Number(raw))?raw:'';};
+const rewardValue=v=>moneyNumber(v)?Number(v):0;
 const colorSafe=v=>/^#[a-f0-9]{6}$/i.test(v||'')?v:'#008fa1';
 
 const COLOR_SETTINGS_ID='regatta-class-colors-v1';
 const COLOR_STORAGE_KEY='rapli-regatta-class-colors-v1';
 const DEFAULT_TAG_COLOR='#008fa1';
-const defaultClassSettings=()=>({id:COLOR_SETTINGS_ID,defaultColor:DEFAULT_TAG_COLOR,classColors:{}});
+const defaultClassSettings=()=>({id:COLOR_SETTINGS_ID,defaultColor:DEFAULT_TAG_COLOR,classColors:{},vsrColors:{...DEFAULT_VSR_COLORS}});
 const classKey=value=>String(value||'').trim().normalize('NFKC').toLocaleUpperCase('fr').slice(0,100);
 function normalizeClassSettings(input){
  const source=input&&typeof input==='object'?input:{};
@@ -111,7 +116,9 @@ function normalizeClassSettings(input){
    }
   }
  }
- return {id:COLOR_SETTINGS_ID,defaultColor:colorSafe(source.defaultColor),classColors};
+ const vsrColors=Object.create(null);
+ for(const key of VSR_ORDER)vsrColors[key]=/^#[a-f0-9]{6}$/i.test(source.vsrColors?.[key]||'')?colorSafe(source.vsrColors[key]):DEFAULT_VSR_COLORS[key];
+ return {id:COLOR_SETTINGS_ID,defaultColor:colorSafe(source.defaultColor),classColors,vsrColors};
 }
 function readClassSettings(){
  try{
@@ -125,8 +132,10 @@ function getClassTagColor(boatClass){
  return key&&Object.prototype.hasOwnProperty.call(classSettings.classColors,key)?
   classSettings.classColors[key]:classSettings.defaultColor;
 }
+function getVSRTagColor(key){return classSettings.vsrColors?.[key]||DEFAULT_VSR_COLORS[key]||'#e8f2fa';}
 function settingsAreCustom(){
- return classSettings.defaultColor!==DEFAULT_TAG_COLOR||Object.keys(classSettings.classColors).length>0;
+ return classSettings.defaultColor!==DEFAULT_TAG_COLOR||Object.keys(classSettings.classColors).length>0||
+   VSR_ORDER.some(key=>getVSRTagColor(key)!==DEFAULT_VSR_COLORS[key]);
 }
 function colorSettingsState(){
  return settingsAreCustom()?[classSettings]:[];
@@ -176,6 +185,7 @@ function normalizeRanking(r){
 }
 function normal(x={}){const r={id:typeof x.id==='string'&&x.id.length<130?x.id:uid(),createdAt:x.createdAt||now(),updatedAt:x.updatedAt||now(),live:!!x.live,upcoming:!!x.upcoming&&!x.live,equipment:validEquipment(x.equipment),edition:clean(x.edition,100)};for(const [k,n] of Object.entries(props))r[k]=clean(x[k],n);
  r.classColor=colorSafe(x.classColor);r.notes=clean(x.notes,2500);r.vsr=VSR[r.vsr]?r.vsr:'';
+ for(const key of ['gainPoints','gainCredits'])r[key]=moneyNumber(r[key]);
  normalizeRanking(r);
  const durationKeys=['durationDays','durationHours','durationMinutes','durationSeconds'];
  if(durationKeys.every(k=>r[k]==='')){
@@ -186,7 +196,7 @@ function normal(x={}){const r={id:typeof x.id==='string'&&x.id.length<130?x.id:u
  if(formatted!==null&&formatted!=='')r.duration=formatted;
  for(const k of imageKeys)r[k]=validImage(x[k])?x[k]:'';const arrival=calculateArrival(r.start,r.startTime,r.duration);if(arrival.status==='ready'){r.end=arrival.end;r.endTime=arrival.endTime;}return r;}
 let rows=[],db=null,editId='',pictures={icon:'',result:'',route:''},uploads=0,writeBusy=false,timer;
-const dialog=$('race-dialog'),getField=k=>$('race-'+({boatClass:'class',startTime:'start-time',endTime:'end-time',rankDepartment:'rank-department',rankNational:'rank-national',rankTotal:'rank-total',rankNationalTotal:'rank-national-total',rankDepartmentTotal:'rank-department-total',rankCity:'rank-city',rankCityTotal:'rank-city-total',rankTeam:'rank-team',rankTeamTotal:'rank-team-total',durationDays:'days',durationHours:'hours',durationMinutes:'minutes',durationSeconds:'seconds'}[k]||k));
+const dialog=$('race-dialog'),getField=k=>$('race-'+({boatClass:'class',startTime:'start-time',endTime:'end-time',rankDepartment:'rank-department',rankNational:'rank-national',rankTotal:'rank-total',rankNationalTotal:'rank-national-total',rankDepartmentTotal:'rank-department-total',rankCity:'rank-city',rankCityTotal:'rank-city-total',rankTeam:'rank-team',rankTeamTotal:'rank-team-total',durationDays:'days',durationHours:'hours',durationMinutes:'minutes',durationSeconds:'seconds',gainPoints:'gain-points',gainCredits:'gain-credits'}[k]||k));
 function toast(t,error=false){$('notice').textContent=t;$('notice').dataset.error=String(error);clearTimeout(timer);timer=setTimeout(()=>{$('notice').textContent='';},7000);}
 const req=r=>new Promise((yes,no)=>{r.onsuccess=()=>yes(r.result);r.onerror=()=>no(r.error||Error('IndexedDB inaccessible'));});
 const done=tx=>new Promise((yes,no)=>{tx.oncomplete=yes;tx.onerror=()=>no(tx.error||Error('Sauvegarde locale impossible'));tx.onabort=()=>no(tx.error||Error('Stockage local annulé'));});
@@ -200,22 +210,24 @@ const raceStatus=r=>{if(r.upcoming)return 'planned';if(r.live)return 'live';if(r
 const dateFR=v=>/^\d{4}-\d{2}-\d{2}$/.test(v)?v.slice(8)+'/'+v.slice(5,7)+'/'+v.slice(0,4):'';
 const imageTag=(src,alt)=>validImage(src)?'<img loading="lazy" draggable="false" alt="'+safe(alt)+'" src="'+safe(src)+'">':'<span class="shot-empty">PAS DE CAPTURE</span>';
 function card(r){
- const status=raceStatus(r),tag=getClassTagColor(r.boatClass),mode=VSR[r.vsr]||'';
+ const status=raceStatus(r),tag=getClassTagColor(r.boatClass),vsrTag=getVSRTagColor(r.vsr),mode=VSR[r.vsr]||'';
  const rankBlocks=rankHtml('🏆','CLASSEMENT GÉNÉRAL',r.rank,r.rankTotal,'rank-main',podiumMedalFor(r,'rank','rankTotal'))+
    rankHtml('🇫🇷','NATIONAL',r.rankNational,r.rankNationalTotal,'rank-national',podiumMedalFor(r,'rankNational','rankNationalTotal'))+
    rankHtml('🇨🇶','DÉPARTEMENTAL',r.rankDepartment,r.rankDepartmentTotal,'rank-department',podiumMedalFor(r,'rankDepartment','rankDepartmentTotal'))+
    rankHtml('🏙️','VILLE',r.rankCity,r.rankCityTotal,'rank-city',podiumMedalFor(r,'rankCity','rankCityTotal'))+
    rankHtml('🏴‍☠️','TEAM',r.rankTeam,r.rankTeamTotal,'rank-team',podiumMedalFor(r,'rankTeam','rankTeamTotal'));
- return '<article class="card'+(r.live?' live':'')+(r.upcoming?' upcoming':'')+'" data-id="'+safe(r.id)+'" style="--class-tag:'+tag+';--class-ink:'+classTextColor(tag)+'">'+
+ return '<article class="card'+(r.live?' live':'')+(r.upcoming?' upcoming':'')+'" data-id="'+safe(r.id)+'" style="--class-tag:'+tag+';--class-ink:'+classTextColor(tag)+';--vsr-color:'+vsrTag+';--vsr-ink:'+classTextColor(vsrTag)+'">'+
  '<div class="card-top"><div class="race-icon card-photo">'+(validImage(r.icon)?imageTag(r.icon,'Affiche '+r.name):'<div class="icon-placeholder">⛵</div>')+'</div><span class="badge-status">'+statusTitle[status]+'</span></div>'+
  '<div class="card-content"><div class="card-title-row"><h2 title="'+safe(r.name)+'">'+safe(r.name)+'</h2>'+
  '<div class="card-tag-row"><span class="class-tag" title="'+safe(r.boatClass||'VIRTUAL REGATTA')+'">'+safe(r.boatClass||'VIRTUAL REGATTA')+'</span>'+
- (mode?'<span class="vsr-badge'+(r.vsr==='hc'?' hc':'')+'">'+safe(mode)+'</span>':'')+'</div></div>'+
+ (mode?'<span class="vsr-badge vsr-'+r.vsr+(r.vsr==='hc'?' hc':'')+'" title="Importance VSR : '+(VSR_PRIORITY(r.vsr)+1)+' sur 4">'+safe(mode)+'</span>':'')+'</div></div>'+
  '<div class="card-boat">'+safe(r.boat)+'</div>'+
  '<div class="card-stats">'+(r.start?'<span class="stat-chip">DÉPART '+safe(dateTimeFR(r.start,r.startTime))+'</span>':'')+
  (r.end?'<span class="stat-chip arrival-chip">ARRIVÉE '+safe(dateTimeFR(r.end,r.endTime))+'</span>':'')+
  (r.duration?'<span class="stat-chip duration-chip">⏱ '+safe(r.duration)+'</span>':'')+
- (validEquipment(r.equipment)?'<span class="stat-chip equipment">ÉQUIPEMENT · '+safe(equipmentModes[r.equipment])+'</span>':'')+'</div>'+
+ (validEquipment(r.equipment)?'<span class="stat-chip equipment">ÉQUIPEMENT · '+safe(equipmentModes[r.equipment])+'</span>':'')+
+ (moneyNumber(r.gainPoints)?'<span class="stat-chip reward-points">⭐ +'+safe(Number(r.gainPoints).toLocaleString('fr-FR'))+' POINTS VSR</span>':'')+
+ (moneyNumber(r.gainCredits)?'<span class="stat-chip reward-credits">🪙 +'+safe(Number(r.gainCredits).toLocaleString('fr-FR'))+' CRÉDITS VR</span>':'')+'</div>'+
  (rankBlocks?'<div class="rank-grid">'+rankBlocks+'</div>':'')+
  '<div class="shots"><div class="shot"><label>CLASSEMENT FINAL</label><div class="shot-box image-preview">'+imageTag(r.result,'Classement '+r.name)+'</div></div>'+
  '<div class="shot"><label>TRACÉ</label><div class="shot-box image-preview">'+imageTag(r.route,'Tracé '+r.name)+'</div></div></div>'+
@@ -237,6 +249,7 @@ function render(){
  out.sort((a,b)=>sort==='name'?a.name.localeCompare(b.name,'fr'):
   sort==='old'?a.createdAt.localeCompare(b.createdAt):
   sort==='recent'?b.updatedAt.localeCompare(a.updatedAt):
+  sort==='vsr'?VSR_PRIORITY(a.vsr)-VSR_PRIORITY(b.vsr)||chronological(b).localeCompare(chronological(a)):
   chronological(b).localeCompare(chronological(a))||b.createdAt.localeCompare(a.createdAt));
  $('count-total').textContent=rows.length;$('count-live').textContent=rows.filter(r=>r.live).length;
  $('count-finished').textContent=rows.filter(r=>raceStatus(r)==='finished').length;
@@ -544,6 +557,11 @@ async function saveEditor(e){
  const arrival=updateArrival();if(arrival.status==='invalid-duration'||arrival.status==='invalid-date'){toast('Corrige la durée ou les horaires avant d’enregistrer.',true);getField(arrival.status==='invalid-duration'?'durationDays':'start').focus();return;}
  if(syncDurationInput()==='invalid'){toast('Durée incorrecte : vérifie les jours, heures, minutes et secondes.',true);getField('durationDays').focus();return;}
  for(const k of Object.keys(props))r[k]=clean(getField(k).value,props[k]);
+ for(const key of ['gainPoints','gainCredits']){
+   const value=String(getField(key).value||'').trim();
+   if(value&&!moneyNumber(value)){toast('Les gains doivent être des nombres entiers positifs.',true);getField(key).focus();return;}
+   r[key]=moneyNumber(value);
+ }
  for(const [place,total] of rankPairs){
    const input=getField(place),run=getField(total);
    const placeText=input.value.trim(),totalText=run.value.trim();

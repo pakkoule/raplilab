@@ -21,7 +21,7 @@ function dimensions(e,s,ctx){
  if(s.ratio==='portrait')h=Math.round(w*4/3);else if(s.ratio==='landscape')h=Math.round(w*3/4);
  else if(s.ratio==='original'&&e.type==='image'&&e.w&&e.h)h=Math.round(w*e.h/e.w);
  if(e.type==='text'){const f=fitText(ctx,e.text,w-4,10000,16,9);h=Math.max(h,Math.ceil(f.lines.length*f.lh)+6);}
- return {w,h:Math.min(1600,Math.max(35,h))};
+ return {w,h:Math.max(35,h)};
 }
 function rowsFor(rank,s,ctx,itemsMap){
  const left=Math.round(1000*s.rankWidth/100),maxWidth=1000-left-3;

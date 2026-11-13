@@ -125,7 +125,7 @@ export async function generateGeneralPDF({races,filters={},settings={},outputNam
  });
  const colWidths=[21,56,24,23,19,19,19,15,15,28,17,17];
  const headers=['DATE','COURSE / BATEAU','VSR','CLASSE','GENERAL','NATIONAL','DEPT.','VILLE','TEAM','DUREE','PTS VSR','CR VR'];
- const startX=margin,tableMax=276,tableY=34,rowH=11,rowsPerPage=14;
+ const startX=margin,tableMax=276,tableY=34,rowH=11,rowsPerPage=12;
  const startPages=Math.ceil(selection.length/rowsPerPage);
  for(let page=0;page<startPages;page++){
   doc.addPage();header('DETAIL DES COURSES · '+(page+1)+' / '+startPages);

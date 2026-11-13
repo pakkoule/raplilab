@@ -148,7 +148,14 @@ const classTextColor=color=>{
 const intString=v=>{const raw=String(v??'').trim().replace(/\s|\u00a0/g,'');return /^\d{1,12}$/.test(raw)?String(Number(raw)):'';};
 const rankPairs=[['rank','rankTotal'],['rankNational','rankNationalTotal'],['rankDepartment','rankDepartmentTotal'],['rankCity','rankCityTotal'],['rankTeam','rankTeamTotal']];
 const rankDisplay=(rank,total)=>rank?rank+(total?' / '+Number(total).toLocaleString('fr-FR'):''):'';
-const rankHtml=(emoji,label,rank,total,kind='')=>rank?'<div class="rank-plate '+kind+'"><span class="rank-icon" aria-hidden="true">'+emoji+'</span><div class="rank-value"><span class="rank-type">'+label+'</span><strong>'+safe(rankDisplay(rank,total))+'</strong></div></div>':'';
+const podiumMedalFor=(r,key,totalKey)=>{
+ if(raceStatus(r)!=='finished')return '';
+ const rank=rankForPodium(r,key,totalKey);
+ return rank===1?'🥇':rank===2?'🥈':rank===3?'🥉':'';
+};
+const rankHtml=(emoji,label,rank,total,kind='',medal='')=>rank?'<div class="rank-plate '+kind+'"><span class="rank-icon" aria-hidden="true">'+emoji+'</span><div class="rank-value"><span class="rank-type">'+label+'</span><div class="rank-line"><strong>'+safe(rankDisplay(rank,total))+'</strong>'+
+ (medal?'<span class="rank-medal" role="img" aria-label="'+(medal==='🥇'?'Médaille d’or':medal==='🥈'?'Médaille d’argent':'Médaille de bronze')+'">'+medal+'</span>':'')+
+ '</div></div></div>':'';
 const validImage=v=>typeof v==='string'&&/^data:image\/(png|webp|jpeg|gif);base64,[a-z0-9+/=]+$/i.test(v);
 
 function syncDurationInput(){
@@ -194,11 +201,11 @@ const dateFR=v=>/^\d{4}-\d{2}-\d{2}$/.test(v)?v.slice(8)+'/'+v.slice(5,7)+'/'+v.
 const imageTag=(src,alt)=>validImage(src)?'<img loading="lazy" draggable="false" alt="'+safe(alt)+'" src="'+safe(src)+'">':'<span class="shot-empty">PAS DE CAPTURE</span>';
 function card(r){
  const status=raceStatus(r),tag=getClassTagColor(r.boatClass),mode=VSR[r.vsr]||'';
- const rankBlocks=rankHtml('🏆','CLASSEMENT GÉNÉRAL',r.rank,r.rankTotal,'rank-main')+
-   rankHtml('🇫🇷','NATIONAL',r.rankNational,r.rankNationalTotal,'rank-national')+
-   rankHtml('🇨🇶','DÉPARTEMENTAL',r.rankDepartment,r.rankDepartmentTotal,'rank-department')+
-   rankHtml('🏙️','VILLE',r.rankCity,r.rankCityTotal,'rank-city')+
-   rankHtml('🏴‍☠️','TEAM',r.rankTeam,r.rankTeamTotal,'rank-team');
+ const rankBlocks=rankHtml('🏆','CLASSEMENT GÉNÉRAL',r.rank,r.rankTotal,'rank-main',podiumMedalFor(r,'rank','rankTotal'))+
+   rankHtml('🇫🇷','NATIONAL',r.rankNational,r.rankNationalTotal,'rank-national',podiumMedalFor(r,'rankNational','rankNationalTotal'))+
+   rankHtml('🇨🇶','DÉPARTEMENTAL',r.rankDepartment,r.rankDepartmentTotal,'rank-department',podiumMedalFor(r,'rankDepartment','rankDepartmentTotal'))+
+   rankHtml('🏙️','VILLE',r.rankCity,r.rankCityTotal,'rank-city',podiumMedalFor(r,'rankCity','rankCityTotal'))+
+   rankHtml('🏴‍☠️','TEAM',r.rankTeam,r.rankTeamTotal,'rank-team',podiumMedalFor(r,'rankTeam','rankTeamTotal'));
  return '<article class="card'+(r.live?' live':'')+(r.upcoming?' upcoming':'')+'" data-id="'+safe(r.id)+'" style="--class-tag:'+tag+';--class-ink:'+classTextColor(tag)+'">'+
  '<div class="card-top"><div class="race-icon card-photo">'+(validImage(r.icon)?imageTag(r.icon,'Affiche '+r.name):'<div class="icon-placeholder">⛵</div>')+'</div><span class="badge-status">'+statusTitle[status]+'</span></div>'+
  '<div class="card-content"><div class="card-title-row"><h2 title="'+safe(r.name)+'">'+safe(r.name)+'</h2>'+
@@ -627,14 +634,14 @@ async function exportPNG(r){
    wrap(ctx,'DURÉE · '+r.duration,590,1).forEach(t=>ctx.fillText(t,555,y+270));
   }
   const ranks=[
-   ['🏆','CLASSEMENT GÉNÉRAL',r.rank,r.rankTotal],
-   ['🇫🇷','NATIONAL',r.rankNational,r.rankNationalTotal],
-   ['🇨🇶','DÉPARTEMENTAL',r.rankDepartment,r.rankDepartmentTotal],
-   ['🏙️','VILLE',r.rankCity,r.rankCityTotal],
-   ['🏴‍☠️','TEAM',r.rankTeam,r.rankTeamTotal]
+   ['🏆','CLASSEMENT GÉNÉRAL',r.rank,r.rankTotal,podiumMedalFor(r,'rank','rankTotal')],
+   ['🇫🇷','NATIONAL',r.rankNational,r.rankNationalTotal,podiumMedalFor(r,'rankNational','rankNationalTotal')],
+   ['🇨🇶','DÉPARTEMENTAL',r.rankDepartment,r.rankDepartmentTotal,podiumMedalFor(r,'rankDepartment','rankDepartmentTotal')],
+   ['🏙️','VILLE',r.rankCity,r.rankCityTotal,podiumMedalFor(r,'rankCity','rankCityTotal')],
+   ['🏴‍☠️','TEAM',r.rankTeam,r.rankTeamTotal,podiumMedalFor(r,'rankTeam','rankTeamTotal')]
   ];
   const drawRank=(i,x,top,width,h)=>{
-   const [emoji,label,place,total]=ranks[i];
+   const [emoji,label,place,total,medal]=ranks[i];
    ctx.fillStyle=i===0?'#135772':i===1?'#eef5fc':i===2?'#edf9f5':i===3?'#f7f3f9':'#f7f4ef';
    ctx.fillRect(x,top,width,h);
    ctx.strokeStyle=i===0?'#0f7690':'#d1e3e6';ctx.lineWidth=2;ctx.strokeRect(x,top,width,h);
@@ -643,8 +650,13 @@ async function exportPNG(r){
    ctx.fillStyle=i===0?'#b1e6ef':'#7d929e';ctx.font='800 14px Poppins,sans-serif';ctx.fillText(label,x+56,top+28);
    ctx.font=(i===0?'800 39px':'800 34px')+' "Barlow Condensed","Arial Narrow",sans-serif';ctx.fillStyle=i===0?'#fff':'#193e57';
    let value=rankDisplay(place,total)||'—';
-   while(ctx.measureText(value).width>width-75&&value.length>2)value=value.slice(0,-2)+'…';
-   ctx.fillText(value,x+56,top+h-14);
+   const available=width-75-(medal?42:0);
+   while(ctx.measureText(value).width>available&&value.length>2)value=value.slice(0,-2)+'…';
+   ctx.fillText(value,x+56,top+h-14,available);
+   if(medal){
+     ctx.font='27px "Apple Color Emoji","Segoe UI Emoji",sans-serif';
+     ctx.fillText(medal,x+width-40,top+h-14);
+   }
   };
   drawRank(0,48,y+313,1104,80);
   for(let i=1;i<5;i++){

@@ -107,7 +107,7 @@ dialog form{border-radius:18px;background:#fff;display:flex;flex-direction:colum
 .class-edit{display:grid;grid-template-columns:minmax(0,1fr) 68px;gap:8px;align-items:end;min-width:0}
 .class-edit label{min-width:0}
 .class-edit .class-color input[type=color]{height:42px;min-height:42px;width:100%;padding:3px;border:1px solid #c5dadd;border-radius:9px;background:#fff;cursor:pointer}
-.class-tag{color:var(--class-tag,#008fa1);font-weight:900;font-size:10px;line-height:1.2;letter-spacing:.045em;text-transform:uppercase;border:1px solid color-mix(in srgb,var(--class-tag,#008fa1) 43%,#fff);background:color-mix(in srgb,var(--class-tag,#008fa1) 12%,#fff);border-radius:6px;padding:6px 9px;max-width:100%;overflow-wrap:anywhere}
+.class-tag{color:var(--class-ink,#fff);font-weight:900;font-size:10px;line-height:1.2;letter-spacing:.045em;text-transform:uppercase;border:1px solid color-mix(in srgb,var(--class-tag,#008fa1) 75%,#000);background:var(--class-tag,#008fa1);border-radius:6px;padding:6px 9px;max-width:100%;overflow-wrap:anywhere}
 .card-eyebrow{align-items:center}.card-category{display:flex;gap:7px;flex-wrap:wrap;margin:3px 0 8px}
 .vsr-badge{font-size:9px;letter-spacing:.07em;font-weight:900;border-radius:6px;padding:5px 9px;background:#e8f2fa;color:#386480;border:1px solid #c9dbe7}
 .vsr-badge.hc{background:linear-gradient(135deg,#fff1b6,#f6d886 53%,#f3edce);border-color:#d6a642;color:#9f7116;font-weight:900;box-shadow:0 1px 5px #caa13b33}

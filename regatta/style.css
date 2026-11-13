@@ -101,3 +101,73 @@ dialog form{border-radius:18px;background:#fff;display:flex;flex-direction:colum
 .arrival-feedback[data-state="ok"]{background:#e7f8f4;border-color:#a5dcda;color:#06747f}
 .arrival-feedback[data-state="error"]{background:#fff1f4;border-color:#f2c4d1;color:#a73854}
 .stat-chip.arrival-chip{background:#ecf9f6;border-color:#b2e0d6;color:#26786c}
+
+/* Rapli Regatta — compact collector rankings, exact timer, VSR and statistics. */
+.filters{grid-template-columns:minmax(180px,1.3fr) repeat(4,minmax(116px,.82fr))}
+.class-edit{display:grid;grid-template-columns:minmax(0,1fr) 68px;gap:8px;align-items:end;min-width:0}
+.class-edit label{min-width:0}
+.class-edit .class-color input[type=color]{height:42px;min-height:42px;width:100%;padding:3px;border:1px solid #c5dadd;border-radius:9px;background:#fff;cursor:pointer}
+.class-tag{color:var(--class-tag,#008fa1);font-weight:900;font-size:10px;line-height:1.2;letter-spacing:.045em;text-transform:uppercase;border:1px solid color-mix(in srgb,var(--class-tag,#008fa1) 43%,#fff);background:color-mix(in srgb,var(--class-tag,#008fa1) 12%,#fff);border-radius:6px;padding:6px 9px;max-width:100%;overflow-wrap:anywhere}
+.card-eyebrow{align-items:center}.card-category{display:flex;gap:7px;flex-wrap:wrap;margin:3px 0 8px}
+.vsr-badge{font-size:9px;letter-spacing:.07em;font-weight:900;border-radius:6px;padding:5px 9px;background:#e8f2fa;color:#386480;border:1px solid #c9dbe7}
+.vsr-badge.hc{background:linear-gradient(135deg,#fff1b6,#f6d886 53%,#f3edce);border-color:#d6a642;color:#9f7116;font-weight:900;box-shadow:0 1px 5px #caa13b33}
+.card.upcoming{border-color:#3785e2;box-shadow:0 0 0 2px #3a83f432,0 0 22px #267fff50,0 8px 22px #18404a1a}
+.card.upcoming::after{content:"";position:absolute;inset:0;border:2px solid #3d85fa9c;border-radius:inherit;box-shadow:inset 0 0 20px #2074ff14;pointer-events:none}
+.card.upcoming .badge-status{background:#1668cb;color:#fff;box-shadow:0 0 13px #3284ff66}
+.stat-chip.duration-chip{font-family:'Courier Prime','American Typewriter','Courier New',monospace;font-size:12px;letter-spacing:.005em;font-weight:700;background:#f2f7f8;color:#244f62}
+.rank-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:15px}
+.rank-plate{min-width:0;display:flex;align-items:center;gap:8px;padding:9px 10px;border:1px solid #d8e4e8;background:#f7fafb;border-radius:9px}
+.rank-plate .rank-icon{font-size:22px;line-height:1.2;flex:none}
+.rank-value{display:flex;flex-direction:column;min-width:0;gap:2px}
+.rank-type{font:900 8px/1.3 Poppins,sans-serif;letter-spacing:.06em;color:#728993}
+.rank-plate strong{display:block;max-width:100%;font:700 19px/1.2 Georgia,'Baskerville',serif;color:#1f3d52;overflow-wrap:anywhere;font-variant-numeric:lining-nums tabular-nums}
+.rank-plate.rank-main{grid-column:1/-1;background:linear-gradient(110deg,#103e54,#146f83);border-color:#087d9a;box-shadow:0 3px 12px #086e9f25;padding:11px 14px}
+.rank-main .rank-icon{font-size:30px;filter:drop-shadow(0 1px 3px #06182466)}
+.rank-main .rank-type{color:#b6e5ee;font-size:10px}
+.rank-main strong{font-size:29px;color:#fff;letter-spacing:.025em}
+.rank-plate.rank-national{background:#f3f8fc;border-color:#cbdfef}
+.rank-plate.rank-department{background:#eef8f4;border-color:#cde2d6}
+.rank-plate.rank-city{background:#f7f4fa;border-color:#e1d9e7}
+.rank-plate.rank-team{background:#f8f5f0;border-color:#e9ded0}
+.calendar-btn{background:#e9f2ff;color:#175fae;border-color:#b4d2f9;font-weight:900}
+.calendar-btn:hover{background:#d9eaff;color:#084c9a;border-color:#619aea}
+.fields .check-upcoming{display:flex;flex-direction:row;align-items:center;background:#f0f6ff;border:1px solid #bcd4fb;border-radius:10px;padding:13px 15px;gap:10px;cursor:pointer;letter-spacing:0}
+.check-upcoming input[type=checkbox]{width:20px;min-height:20px;min-width:20px;padding:0;accent-color:#2674ec;flex:none}
+.upcoming-indicator{background:#3c8afd;width:14px;height:14px;border-radius:50%;box-shadow:0 0 0 5px #337aff20,0 0 14px #1975ed55;flex:none}
+.check-upcoming span:last-child{display:flex;flex-direction:column;gap:3px}.check-upcoming strong{font-size:12px;color:#2058ad}.check-upcoming small{font-size:10px;font-weight:500;color:#7797c5}
+.duration-field,.rankings-editor{min-width:0;margin:0;padding:14px;border:1px solid #cbdfe4;border-radius:11px;background:#f8fbfb}
+.duration-field legend,.rankings-editor legend{font-size:10px;color:#52798a;font-weight:900;letter-spacing:.07em;padding:0 7px}
+.duration-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
+.duration-grid label{min-width:0;display:flex;flex-direction:column;gap:5px;font-weight:900;color:#6e8792;font-size:9px}
+.duration-grid input[type=number]{width:100%;min-width:0;min-height:44px;font-family:'Courier Prime','American Typewriter','Courier New',monospace;font-weight:700;font-size:19px;text-align:center;padding:8px 4px;font-variant-numeric:tabular-nums}
+.duration-field .field-help{margin:8px 0 0}
+.rankings-editor{padding:14px;background:#f8fafc}
+.rankings-help{font-size:9px;color:#8c9aa3;font-weight:500;letter-spacing:0}
+.ranking-inputs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.ranking-input{min-width:0;padding:9px;border:1px solid #dce7ea;border-radius:9px;background:#fff}
+.ranking-input-main{grid-column:1/-1;background:#f1f7fa;border-color:#9bcbd9;padding:12px}
+.ranking-label{display:block;font-size:10px;letter-spacing:.045em;font-weight:900;color:#507383;margin-bottom:8px}
+.ranking-input-main .ranking-label{color:#0a7389;font-size:12px}
+.ranking-pair{display:grid;grid-template-columns:minmax(0,1fr) 18px minmax(0,1fr);gap:5px;align-items:center}
+.ranking-pair span{text-align:center;font:700 23px Georgia,serif;color:#8da2aa}
+.ranking-pair input{min-width:0!important;width:100%!important;min-height:42px!important;padding:8px 5px!important;text-align:center;font:700 19px Georgia,'Baskerville',serif!important;color:#25485c}
+.ranking-input-main .ranking-pair input{font-size:23px!important;color:#134a66}
+.workspace-tabs{display:flex;gap:0;margin:0 26px 0;border-bottom:1px solid #d6e6e9}
+.workspace-tab{padding:15px 20px;border:0;background:transparent;color:#7f9da7;position:relative;font:900 12px Poppins,sans-serif;letter-spacing:.055em;cursor:pointer}
+.workspace-tab.active{color:#007e97}.workspace-tab.active::after{content:"";position:absolute;left:12px;right:12px;bottom:-1px;height:3px;background:#04a9b9;border-radius:3px}
+.stats-panel{padding:22px 26px 36px}
+.stats-intro{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:20px}
+.stats-intro strong{font-size:13px;color:#244d60}.stats-intro span{font-size:11px;color:#8aa0a9}
+.stats-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px}
+.stats-metric{padding:20px 17px;border:1px solid #d8e9ec;background:#f6fbfb;border-radius:11px;display:flex;flex-direction:column;gap:8px}
+.stats-metric span{font-size:9px;color:#698a96;font-weight:900;letter-spacing:.055em}
+.stats-metric strong{font-size:27px;line-height:1.1;color:#0b7f95;font-weight:900;overflow-wrap:anywhere}
+.stats-breakdowns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;margin-top:20px}
+.stats-breakdown{border:1px solid #d6e6e9;border-radius:11px;padding:17px;background:#fff;min-width:0}
+.stats-breakdown h3{font-size:11px;letter-spacing:.055em;margin:0 0 15px;color:#376376}
+.stat-breakdown-row{display:grid;grid-template-columns:minmax(75px,1fr) 1.3fr auto;align-items:center;gap:10px;margin:9px 0;font-size:10px;color:#506c79;font-weight:700}
+.stat-breakdown-row>span{overflow-wrap:anywhere}.stat-breakdown-row>strong{min-width:23px;text-align:right}
+.stat-bar-track{height:8px;background:#ebf2f4;border-radius:8px;overflow:hidden}.stat-bar-fill{height:100%;border-radius:inherit;background:linear-gradient(90deg,#00a2b4,#39bbaf)}
+.stats-empty{font-size:11px;color:#97a7ae;padding:10px}
+@media(max-width:780px){.filters{grid-template-columns:repeat(2,minmax(0,1fr))}.workspace-tabs{margin:0 14px}.stats-panel{padding:18px 14px 25px}.stats-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.stats-breakdowns{grid-template-columns:1fr}}
+@media(max-width:580px){.ranking-inputs{gap:7px}.ranking-input{padding:8px 7px}.rank-plate strong{font-size:18px}.rank-main strong{font-size:26px}.duration-grid{gap:5px}.duration-field,.rankings-editor{padding:10px}.duration-grid input[type=number]{font-size:17px}.ranking-pair{gap:2px}.ranking-pair input{font-size:17px!important}.ranking-input-main .ranking-pair input{font-size:20px!important}.rankings-help{display:block;margin-top:3px}.stats-metric strong{font-size:23px}.workspace-tab{padding:13px 14px;font-size:11px}}

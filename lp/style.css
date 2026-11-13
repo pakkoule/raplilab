@@ -52,6 +52,9 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .card-bottom{margin-top:auto;display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;padding-top:10px;flex-wrap:wrap}
 .status-pill{font-size:9px;letter-spacing:.06em;border:1px solid #566b5e;background:#273d30;color:#c5e7cf;border-radius:6px;padding:5px 7px;font-weight:800}
 .status-pill.wish{border-color:#6a6357;background:#3c3730;color:#e7d3b2}
+.card-bottom-actions{display:flex;align-items:center;justify-content:flex-end;gap:5px;flex-wrap:wrap}
+.card-to-own{border:1px solid #728e79;background:#2e4335;color:#d6f1d9;border-radius:7px;padding:6px 8px;font-size:10px;font-weight:900;letter-spacing:.02em}
+.card-to-own:hover:not(:disabled){background:#405c48;border-color:#9dbaa3;color:#ffffff}
 .card-edit{border:1px solid #52545b;background:transparent;color:#c6c9cf;border-radius:7px;padding:6px 9px;font-size:10px;font-weight:800}
 .card-edit:hover{color:#fff;background:#3d3f45}
 .empty{text-align:center;padding:44px 20px;font-size:12px;color:#a6a9b2;border:1px dashed #45464c;border-radius:12px}

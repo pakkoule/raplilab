@@ -113,3 +113,13 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 }
 @media(max-width:360px){.btn.primary{font-size:8px}.waiting-actions{gap:3px}.mini{padding:4px}.tool-btn{font-size:8px}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+/* Editor-only, non-exportable rank controls */
+.tier-name .rank-count{position:absolute;right:3px;top:3px;font:600 9px/1 Poppins,system-ui,sans-serif;opacity:.68;background:#ffffff5c;border-radius:5px;padding:2px 4px}
+.tier-name .rank-grip{position:absolute;left:3px;top:3px;color:inherit;opacity:.65;font:700 13px/1 system-ui,sans-serif;cursor:grab;touch-action:none}
+.tier-name .rank-grip:hover{opacity:1}
+.selection-active .tile-x,.selection-active .tile-edit,.selection-active .tile-grip{display:none}
+@media(max-width:670px){
+ .tile .tile-edit{opacity:.96}
+ .tile .tile-grip{width:20px;height:20px}
+ .tier-name .rank-count{font-size:8px;padding:1px 3px}
+}

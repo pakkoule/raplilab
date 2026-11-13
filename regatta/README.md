@@ -29,7 +29,14 @@ Module intégré à la PR #1 de RapliLab, non fusionnée.
 
 - **Tri par défaut : date de départ récente → ancienne**, avec autres modes facultatifs.
 - Filtres par statut, classe de bateau, **catégorie VSR** ; recherche texte.
-- Nouvel onglet interne **STATISTIQUES** : total, courses terminées, en cours et à venir, meilleur classement général, durée moyenne des courses terminées, répartitions par VSR/classe/équipement.
+- Onglet interne **STATISTIQUES** enrichi, calculé directement à partir des courses de la collection :
+  - **Tableau de bord** : total, terminées, en cours, à venir.
+  - **Palmarès** : victoires, podiums, Top 10, Top 100, taux de podiums/Top 10 parmi les courses classées, meilleur classement général, moyenne et médiane des places, meilleur et moyen « Top % » (place / participants), records nationaux, départementaux, ville et team.
+  - **Temps de navigation** : durée cumulée, moyenne, course la plus courte et la plus longue ; précision à la seconde.
+  - **Évolution annuelle** : histogrammes des courses selon l’année de départ, portion terminées et décompte Top 10.
+  - **Habitudes** : répartitions des courses par VSR, bateau, équipement et statut.
+  - **Performances comparées** : par VSR, classe de bateau et équipement, avec nombre de courses classées, Top 10 et Top % moyen.
+  - Les statistiques de performance ne comptabilisent pas les courses « À venir » ou « En cours ». Les métriques nécessitant des classements / participants affichent « — » lorsqu’il manque les données. Les moyennes de durée utilisent uniquement des courses terminées avec durée positive. Aucun nouveau champ ni migration Supabase nécessaire.
 - **PNG par course** : affiche 16:9, métadonnées, classe colorée, VSR, date/heure, durée en Courier Prime, **cinq classements (avec position et total)** et les deux captures.
 - Pour une **course cochée À venir**, bouton **📅 CALENDRIER** produisant un fichier `.ics` compatible avec l’import dans Apple Calendrier : horaires de départ/arrivée si connus, journée entière si heure manquante, ou plage indicative d’une heure si durée absente. Le téléchargement ne crée pas directement un événement sans l’action d’importation de l’utilisateur.
 - Sauvegarde locale automatique dans IndexedDB `rapli-regatta-v1` ; synchronisation Supabase via `RapliModuleBridge`, bucket privé et RLS existants. Aucune nouvelle table ; migration contrainte `regatta/migrations/20261113_add_regatta_module.sql` déjà appliquée.
@@ -37,6 +44,7 @@ Module intégré à la PR #1 de RapliLab, non fusionnée.
 ## Vérifications
 
 - Syntaxe JavaScript contrôlée, champs HTML recoupés.
+- Tableau de statistiques testé avec des courses de différentes années, des courses en cours/à venir, des places sans participants et une collection vide. Les podiums et ratios excluent les courses non terminées.
 - Scénario simulé de création de course : cinq classements, catégorie VSR, classe colorée, choix « À venir », durée jours/heures/minutes/secondes, calcul d’arrivée, sauvegarde et export ICS.
 - Cas de durée vérifiés : `12 j 08 h 35 min`, `8h35`, `1 j 2 h 3 min 4 s`, `00 h 00 min 31 s`, `01:02:03`.
 - À tester **dans la vraie Deploy Preview** avant fusion : glisser-déposer d’images, photos et rendu Canvas/PNG, iPhone Safari, ouverture du fichier ICS dans Apple Calendrier, accès Supabase PC ↔ iPhone et conflit de révision, affichage éventuel du drapeau de Sark.

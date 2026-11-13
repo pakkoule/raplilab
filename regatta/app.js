@@ -136,30 +136,88 @@ async function load(){return db?(await req(db.transaction('races').objectStore('
 async function saveRow(row){if(!db){localStorage.setItem('rapli-regatta-v1',JSON.stringify([...rows.filter(x=>x.id!==row.id),row]));return;}const tx=db.transaction('races','readwrite');tx.objectStore('races').put(row);await done(tx);}
 async function deleteRow(id){if(!db){localStorage.setItem('rapli-regatta-v1',JSON.stringify(rows.filter(x=>x.id!==id)));return;}const tx=db.transaction('races','readwrite');tx.objectStore('races').delete(id);await done(tx);}
 async function replaceRows(next){if(!db){localStorage.setItem('rapli-regatta-v1',JSON.stringify(next));}else{const tx=db.transaction('races','readwrite'),store=tx.objectStore('races');store.clear();next.forEach(x=>store.put(x));await done(tx);}rows=next.map(normal);render();}
-const raceStatus=r=>{if(r.live)return 'live';if(r.rank)return 'finished';if(!r.end)return 'planned';if(!r.endTime)return 'finished';const current=new Date();const local=[current.getFullYear(),String(current.getMonth()+1).padStart(2,'0'),String(current.getDate()).padStart(2,'0')].join('-')+'T'+String(current.getHours()).padStart(2,'0')+':'+String(current.getMinutes()).padStart(2,'0');return (r.end+'T'+r.endTime)<=local?'finished':'planned';},statusTitle={live:'COURSE EN COURS',finished:'TERMINÉE',planned:'À VENIR'};
+const raceStatus=r=>{if(r.upcoming)return 'planned';if(r.live)return 'live';if(r.rank)return 'finished';if(!r.end)return 'planned';if(!r.endTime)return 'finished';const current=new Date();const local=[current.getFullYear(),String(current.getMonth()+1).padStart(2,'0'),String(current.getDate()).padStart(2,'0')].join('-')+'T'+String(current.getHours()).padStart(2,'0')+':'+String(current.getMinutes()).padStart(2,'0');return (r.end+'T'+r.endTime)<=local?'finished':'planned';},statusTitle={live:'COURSE EN COURS',finished:'TERMINÉE',planned:'À VENIR'};
 const dateFR=v=>/^\d{4}-\d{2}-\d{2}$/.test(v)?v.slice(8)+'/'+v.slice(5,7)+'/'+v.slice(0,4):'';
 const imageTag=(src,alt)=>validImage(src)?'<img loading="lazy" draggable="false" alt="'+safe(alt)+'" src="'+safe(src)+'">':'<span class="shot-empty">PAS DE CAPTURE</span>';
 function card(r){
- const status=raceStatus(r);
- return '<article class="card'+(r.live?' live':'')+'" data-id="'+safe(r.id)+'"><div class="card-top"><div class="race-icon card-photo">'+(validImage(r.icon)?imageTag(r.icon,'Affiche '+r.name):'<div class="icon-placeholder">⛵</div>')+'</div><span class="badge-status">'+statusTitle[status]+'</span></div><div class="card-content">'+
- '<div class="card-eyebrow"><span>'+safe(r.boatClass||'VIRTUAL REGATTA')+'</span><span class="year">'+safe(r.edition)+'</span></div>'+
+ const status=raceStatus(r),tag=colorSafe(r.classColor),mode=VSR[r.vsr]||'';
+ const rankBlocks=rankHtml('🏆','CLASSEMENT GÉNÉRAL',r.rank,r.rankTotal,'rank-main')+
+   rankHtml('🇫🇷','NATIONAL',r.rankNational,r.rankNationalTotal,'rank-national')+
+   rankHtml('🇨🇶','DÉPARTEMENTAL',r.rankDepartment,r.rankDepartmentTotal,'rank-department')+
+   rankHtml('🏙️','VILLE',r.rankCity,r.rankCityTotal,'rank-city')+
+   rankHtml('🏴‍☠️','TEAM',r.rankTeam,r.rankTeamTotal,'rank-team');
+ return '<article class="card'+(r.live?' live':'')+(r.upcoming?' upcoming':'')+'" data-id="'+safe(r.id)+'" style="--class-tag:'+tag+'">'+
+ '<div class="card-top"><div class="race-icon card-photo">'+(validImage(r.icon)?imageTag(r.icon,'Affiche '+r.name):'<div class="icon-placeholder">⛵</div>')+'</div><span class="badge-status">'+statusTitle[status]+'</span></div>'+
+ '<div class="card-content"><div class="card-eyebrow"><span class="class-tag">'+safe(r.boatClass||'VIRTUAL REGATTA')+'</span><span class="year">'+safe(r.edition)+'</span></div>'+
+ '<div class="card-category">'+(mode?'<span class="vsr-badge'+(r.vsr==='hc'?' hc':'')+'">'+safe(mode)+'</span>':'')+'</div>'+
  '<h2>'+safe(r.name)+'</h2><div class="card-boat">'+safe(r.boat)+'</div>'+
- '<div class="card-stats">'+(r.start?'<span class="stat-chip">DÉPART '+safe(dateTimeFR(r.start,r.startTime))+'</span>':'')+(r.end?'<span class="stat-chip arrival-chip">ARRIVÉE '+safe(dateTimeFR(r.end,r.endTime))+'</span>':'')+(r.rank?'<span class="stat-chip">GÉNÉRAL · '+safe(r.rank)+'</span>':'')+(r.rankDepartment?'<span class="stat-chip regional">DÉPARTEMENTAL · '+safe(r.rankDepartment)+'</span>':'')+(r.rankNational?'<span class="stat-chip national">NATIONAL · '+safe(r.rankNational)+'</span>':'')+(r.duration?'<span class="stat-chip">TEMPS '+safe(r.duration)+'</span>':'')+(validEquipment(r.equipment)?'<span class="stat-chip equipment">ÉQUIPEMENT · '+safe(equipmentModes[r.equipment])+'</span>':'')+'</div>'+
- '<div class="shots"><div class="shot"><label>CLASSEMENT FINAL</label><div class="shot-box image-preview">'+imageTag(r.result,'Classement '+r.name)+'</div></div><div class="shot"><label>TRACÉ</label><div class="shot-box image-preview">'+imageTag(r.route,'Tracé '+r.name)+'</div></div></div>'+
+ '<div class="card-stats">'+(r.start?'<span class="stat-chip">DÉPART '+safe(dateTimeFR(r.start,r.startTime))+'</span>':'')+
+ (r.end?'<span class="stat-chip arrival-chip">ARRIVÉE '+safe(dateTimeFR(r.end,r.endTime))+'</span>':'')+
+ (r.duration?'<span class="stat-chip duration-chip">⏱ '+safe(r.duration)+'</span>':'')+
+ (validEquipment(r.equipment)?'<span class="stat-chip equipment">ÉQUIPEMENT · '+safe(equipmentModes[r.equipment])+'</span>':'')+'</div>'+
+ (rankBlocks?'<div class="rank-grid">'+rankBlocks+'</div>':'')+
+ '<div class="shots"><div class="shot"><label>CLASSEMENT FINAL</label><div class="shot-box image-preview">'+imageTag(r.result,'Classement '+r.name)+'</div></div>'+
+ '<div class="shot"><label>TRACÉ</label><div class="shot-box image-preview">'+imageTag(r.route,'Tracé '+r.name)+'</div></div></div>'+
  (r.notes?'<p class="card-note">'+safe(r.notes)+'</p>':'')+
- '<div class="card-actions"><button type="button" class="btn secondary" data-action="edit">MODIFIER</button><button type="button" class="btn subtle" data-action="png">↓ PNG</button><button type="button" class="btn subtle" data-action="delete">×</button></div></div></article>';
+ '<div class="card-actions"><button type="button" class="btn secondary" data-action="edit">MODIFIER</button><button type="button" class="btn subtle" data-action="png">↓ PNG</button>'+
+ (r.upcoming?'<button type="button" class="btn calendar-btn" data-action="calendar" title="Ajouter cette course à Apple Calendrier">📅 CALENDRIER</button>':'')+
+ '<button type="button" class="btn subtle" data-action="delete">×</button></div></div></article>';
 }
 function render(){
- let selected=$('filter-class').value;const classes=[...new Set(rows.map(x=>x.boatClass).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'fr'));
+ const selected=$('filter-class').value;
+ const classes=[...new Set(rows.map(x=>x.boatClass).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'fr'));
  $('filter-class').innerHTML='<option value="">Toutes les classes</option>'+classes.map(x=>'<option value="'+safe(x)+'">'+safe(x)+'</option>').join('');
  if(classes.includes(selected))$('filter-class').value=selected;
- const q=$('search').value.toLocaleLowerCase('fr').trim(),status=$('filter-status').value,cls=$('filter-class').value;
- let out=rows.filter(r=>(!status||raceStatus(r)===status)&&(!cls||r.boatClass===cls)&&(!q||[r.name,r.edition,r.boatClass,r.boat,r.rank,r.rankDepartment,r.rankNational,r.startTime,r.end,r.endTime,equipmentModes[r.equipment]||'',r.notes].some(v=>v.toLocaleLowerCase('fr').includes(q))));
- const sort=$('sort').value;
- out.sort((a,b)=>sort==='name'?a.name.localeCompare(b.name,'fr'):sort==='old'?a.createdAt.localeCompare(b.createdAt):sort==='start'?b.start.localeCompare(a.start):b.updatedAt.localeCompare(a.updatedAt));
- $('count-total').textContent=rows.length;$('count-live').textContent=rows.filter(r=>r.live).length;$('count-finished').textContent=rows.filter(r=>raceStatus(r)==='finished').length;$('result-count').textContent=out.length+' / '+rows.length;
+ const q=$('search').value.toLocaleLowerCase('fr').trim(),status=$('filter-status').value,cls=$('filter-class').value,vsr=$('filter-vsr').value;
+ const filtered=rows.filter(r=>(!status||raceStatus(r)===status)&&(!cls||r.boatClass===cls)&&(!vsr||r.vsr===vsr)&&
+   (!q||[r.name,r.edition,r.boatClass,r.boat,r.rank,r.rankNational,r.rankDepartment,r.rankCity,r.rankTeam,
+           r.startTime,r.end,r.endTime,VSR[r.vsr]||'',equipmentModes[r.equipment]||'',r.notes].some(v=>String(v||'').toLocaleLowerCase('fr').includes(q))));
+ const out=[...filtered],sort=$('sort').value;
+ const chronological=r=>(r.start?r.start+'T'+(r.startTime||'00:00'):r.createdAt||'');
+ out.sort((a,b)=>sort==='name'?a.name.localeCompare(b.name,'fr'):
+  sort==='old'?a.createdAt.localeCompare(b.createdAt):
+  sort==='recent'?b.updatedAt.localeCompare(a.updatedAt):
+  chronological(b).localeCompare(chronological(a))||b.createdAt.localeCompare(a.createdAt));
+ $('count-total').textContent=rows.length;$('count-live').textContent=rows.filter(r=>r.live).length;
+ $('count-finished').textContent=rows.filter(r=>raceStatus(r)==='finished').length;
+ $('result-count').textContent=out.length+' / '+rows.length;
  $('cards').innerHTML=out.map(card).join('')||(rows.length?'<p>Aucune course ne correspond aux filtres.</p>':'');
  $('empty').hidden=rows.length!==0;
+ renderStatistics();
+}
+function renderStatistics(){
+ const total=rows.length,finished=rows.filter(r=>raceStatus(r)==='finished'),
+       future=rows.filter(r=>r.upcoming),live=rows.filter(r=>r.live);
+ const completedRanks=finished.filter(r=>Number(r.rank)>0),best=[...completedRanks].sort((a,b)=>Number(a.rank)-Number(b.rank))[0];
+ const durations=finished.map(r=>parseRaceDuration(r.duration)).filter(x=>x.status==='valid');
+ const avg=durations.length?Math.round(durations.reduce((a,b)=>a+b.seconds,0)/durations.length):null;
+ const formatAverage=seconds=>{if(seconds===null)return '—';const d=Math.floor(seconds/86400),h=Math.floor(seconds%86400/3600),m=Math.floor(seconds%3600/60);return (d?d+'j ':'')+String(h).padStart(2,'0')+'h '+String(m).padStart(2,'0')+'m';};
+ const metrics=[
+   ['COURSES',total],['TERMINÉES',finished.length],['EN COURS',live.length],['À VENIR',future.length],
+   ['MEILLEUR CLASSEMENT',best?'#'+Number(best.rank).toLocaleString('fr-FR'):'—'],
+   ['DURÉE MOYENNE',formatAverage(avg)]
+ ];
+ $('stats-summary').textContent=total+' courses recensées';
+ const section=(title,entries)=>{
+   if(!entries.length)return '<div class="stats-empty">Aucune donnée pour cette catégorie.</div>';
+   const max=Math.max(1,...entries.map(x=>x[1]));
+   return '<div class="stats-breakdown"><h3>'+title+'</h3>'+
+     entries.map(([key,count])=>'<div class="stat-breakdown-row"><span>'+safe(key)+'</span><div class="stat-bar-track"><div class="stat-bar-fill" style="width:'+Math.round(count/max*100)+'%"></div></div><strong>'+count+'</strong></div>').join('')+'</div>';
+ };
+ const buckets=key=>[...new Set(rows.map(r=>key(r)).filter(Boolean))]
+   .map(name=>[name,rows.filter(r=>key(r)===name).length]).sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0],'fr'));
+ $('stats-content').innerHTML='<div class="stats-metrics">'+metrics.map(([key,value])=>'<div class="stats-metric"><span>'+safe(key)+'</span><strong>'+safe(value)+'</strong></div>').join('')+'</div>'+
+   '<div class="stats-breakdowns">'+section('CATÉGORIE VSR',buckets(r=>VSR[r.vsr]||'Non renseignée'))+
+   section('CLASSES DE BATEAUX',buckets(r=>r.boatClass||'Non renseignée'))+
+   section('ÉQUIPEMENTS',buckets(r=>equipmentModes[r.equipment]||'Non renseigné'))+'</div>';
+}
+function selectWorkspace(view){
+ const showStats=view==='stats';
+ $('races-panel').hidden=showStats;$('stats-panel').hidden=!showStats;
+ for(const [id,active] of [['view-races',!showStats],['view-stats',showStats]]){
+   const el=$(id);el.classList.toggle('active',active);el.setAttribute('aria-selected',String(active));el.tabIndex=active?0:-1;
+ }
+ if(showStats)renderStatistics();
 }
 function preview(k){const img=$('preview-'+k),ph=$('placeholder-'+k);img.hidden=!validImage(pictures[k]);ph.hidden=validImage(pictures[k]);if(validImage(pictures[k]))img.src=pictures[k];else img.removeAttribute('src');}
 function openEditor(r){editId=r?.id||'';const data=r||normal();for(const k of Object.keys(props))getField(k).value=data[k]||'';legacyArrival={start:data.start,startTime:data.startTime,duration:data.duration,end:data.end,endTime:data.endTime};updateArrival();$('race-live').checked=!!data.live;equipmentInputs().forEach(input=>{input.checked=input.value===validEquipment(data.equipment);});for(const k of imageKeys){pictures[k]=data[k]||'';preview(k);}$('dialog-title').textContent=editId?'MODIFIER LA COURSE':'AJOUTER UNE COURSE';$('delete-race').hidden=!editId;if(!dialog.open)dialog.showModal();document.body.style.overflow='hidden';dialog.querySelector('.dialog-scroll').scrollTop=0;getField('name').focus({preventScroll:true});}

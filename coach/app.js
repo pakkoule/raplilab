@@ -196,7 +196,7 @@ function editor(slotIndex){
  '<div id="player-results" class="player-results"></div>'+
  '<label>NOM COMPLET *<input id="player-full" required maxlength="100" placeholder="Zinédine Zidane" value="'+escapeHTML(selection.full)+'"></label>'+
  '<label>NOM COURT (FACULTATIF)<input id="player-short" maxlength="35" placeholder="Zidane" value="'+escapeHTML(selection.short)+'"></label>'+
- '<label>PHOTO (FACULTATIVE)<input type="file" id="player-photo" accept="image/png,image/jpeg,image/webp,image/gif"></label>'+
+ '<label>PHOTO (FACULTATIVE)<input type="file" id="player-photo" accept=".png,.jpg,.jpeg,.webp,.gif,image/png,image/jpeg,image/webp,image/gif"></label>'+
  '<div class="crop-area"><canvas id="crop-preview" width="200" height="200" aria-label="Prévisualisation recadrage"></canvas><div class="crop-controls"><label>ZOOM<input id="crop-zoom" type="range" min="1" max="3" step=".05" value="'+selection.crop.zoom+'"></label><label>HORIZONTAL<input id="crop-x" type="range" min="-1" max="1" step=".05" value="'+selection.crop.x+'"></label><label>VERTICAL<input id="crop-y" type="range" min="-1" max="1" step=".05" value="'+selection.crop.y+'"></label></div></div>'+
  actionButtons([{label:'ANNULER',id:'cancel'},...(prior?[{label:'VIDER CET EMPLACEMENT',id:'empty',kind:'danger'}]:[]),{label:'VALIDER LE JOUEUR',id:'submit',kind:'action'}])+'</form>');
  function fill(){modal.querySelector('#player-full').value=selection.full;modal.querySelector('#player-short').value=selection.short;modal.querySelector('#crop-zoom').value=selection.crop.zoom;modal.querySelector('#crop-x').value=selection.crop.x;modal.querySelector('#crop-y').value=selection.crop.y;drawCrop();}
@@ -220,7 +220,10 @@ function editor(slotIndex){
 }
 async function photoData(file){
  if(file.size>12*1024*1024)throw Error('Fichier supérieur à 12 Mo.');
- if(!file.type.startsWith('image/'))throw Error('Format non reconnu.');
+ // Some browsers (including file pickers on mobile/Windows) return an empty MIME type for WebP files.
+ const validMime=/^image\/(?:png|jpeg|webp|gif)$/i.test(file.type||'');
+ const validExtension=/\.(?:png|jpe?g|webp|gif)$/i.test(file.name||'');
+ if(!validMime && !validExtension)throw Error('Format non reconnu. Utilise PNG, JPG, WebP ou GIF.');
  const url=URL.createObjectURL(file),im=new Image();
  try{await new Promise((resolve,reject)=>{im.onload=resolve;im.onerror=()=>reject(Error('Décodage impossible'));im.src=url;});
  const k=Math.min(1,900/Math.max(im.width,im.height)),cv=document.createElement('canvas');

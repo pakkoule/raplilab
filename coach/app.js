@@ -43,8 +43,8 @@ const normComp=raw=>{
   return base;
 };
 const normPlayer=p=>({id:p?.id||uid(),full:String(p?.full||'').trim(),short:String(p?.short||'').trim(),photo:p?.photo||'',crop:{zoom:Number(p?.crop?.zoom||1),x:Number(p?.crop?.x||0),y:Number(p?.crop?.y||0)}});
-const fileName=s=>(s||'Composition').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9 -_]/g,'').trim().replace(/\s+/g,'_').slice(0,100)||'Composition';
-let current=fresh('football'),library=[],players=[],db=null,dirty=false,undo=[],redo=[],reassign=null,images=new Map(),busy=false,noticeTimer=null;
+const fileName=s=>(s||'Composition').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9 _-]/g,'').trim().replace(/\s+/g,'_').slice(0,100)||'Composition';
+let current=fresh('football'),library=[],players=[],db=null,dirty=false,undo=[],redo=[],reassign=null,images=new Map(),busy=false,noticeTimer=null,cloudQueue=Promise.resolve();
 const dialog=$('#dialog'),modal=$('#dialog-content');
 function notice(message,error=false){const n=$('#notice');n.textContent=message;n.dataset.error=String(error);clearTimeout(noticeTimer);noticeTimer=setTimeout(()=>{if(n.textContent===message)n.textContent='';},6500);}
 function show(html){modal.onclick=null;modal.innerHTML=html;dialog.showModal();}
@@ -63,7 +63,23 @@ function dbPut(key,value){return new Promise((resolve,reject)=>{const r=db.trans
 async function savePersist(){await dbPut('saved',{library,players,activeId:current.id});}
 async function saveDraft(){try{if(db)await dbPut('draft',dirty?clone(current):null);}catch(e){console.warn('Brouillon local indisponible',e);}}
 function savedState(){return {records:[...library.map(c=>({kind:'composition',...clone(c)})),...players.map(p=>({kind:'player',...clone(p)}))],logos:[]};}
-async function cloudChanged(){window.RapliModuleCloud?.changed?.();const api=window.RapliModuleCloud;if(api?.getStatus?.().ready){try{const ok=await api.saveNow(false);if(!ok)notice('Enregistré localement · synchronisation cloud à vérifier',true);}catch(e){notice('Cloud indisponible : '+e.message,true);}}}
+function cloudChanged(){
+ const api=window.RapliModuleCloud;
+ api?.changed?.();
+ if(!api)return;
+ // Player confirmations are queued so rapid successive additions cannot overwrite each other.
+ cloudQueue=cloudQueue.catch(()=>{}).then(async()=>{
+   for(let attempt=0;attempt<5;attempt++){
+     const state=api.getStatus?.();
+     if(state?.conflict){notice('Conflit cloud : actualisation nécessaire avant d’envoyer les joueurs.',true);return;}
+     if(state?.ready&&!state?.busy){
+       try{const ok=await api.saveNow(false);if(ok)return;}catch(e){console.warn('Synchronisation joueur',e);}
+     }
+     await new Promise(resolve=>setTimeout(resolve,Math.min(15000,750*2**attempt)));
+   }
+   notice('Joueur conservé localement · synchronisation cloud à vérifier',true);
+ });
+}
 async function persistPlayer(p){
  const existing=players.findIndex(q=>q.id===p.id);
  if(existing<0)players.push(clone(p));else players[existing]=clone(p);
@@ -147,7 +163,7 @@ function drawPlayers(ctx,c,S,editor=false){
 }
 function drawTo(ctx,c,size,editor=false){ctx.save();ctx.clearRect(0,0,size,size);pitch(ctx,c,size);drawPlayers(ctx,c,size,editor);ctx.restore();}
 function draw(){const cv=$('#board');const ctx=cv.getContext('2d');drawTo(ctx,current,1024,true);overlay();}
-function nearestLimit(slots){let dist=Infinity;for(let i=0;i<slots.length;i++)for(let j=i+1;j<slots.length;j++)dist=Math.min(dist,Math.hypot(slots[i].x-slots[j].x,slots[i].y-slots[j].y));return Math.max(46,Math.min(100,Math.floor(dist*1024-12)));}
+function nearestLimit(slots){let dist=Infinity;for(let i=0;i<slots.length;i++)for(let j=i+1;j<slots.length;j++)dist=Math.min(dist,Math.hypot(slots[i].x-slots[j].x,slots[i].y-slots[j].y));return Math.max(46,Math.min(100,Math.floor(dist*500)));}
 function overlay(){const host=$('#slot-overlay');host.innerHTML='';
  for(let i=0;i<current.slots.length;i++){const s=current.slots[i],b=document.createElement('button');b.type='button';b.className='slot-button';b.dataset.slot=String(i);b.style.left=(s.x*100)+'%';b.style.top=(s.y*100)+'%';
  const diameter=(current.mode==='dots'?66:Number(current.settings.portraitSize||73))*100/1024;
@@ -184,7 +200,7 @@ function editor(slotIndex){
  '<div class="crop-area"><canvas id="crop-preview" width="200" height="200" aria-label="Prévisualisation recadrage"></canvas><div class="crop-controls"><label>ZOOM<input id="crop-zoom" type="range" min="1" max="3" step=".05" value="'+selection.crop.zoom+'"></label><label>HORIZONTAL<input id="crop-x" type="range" min="-1" max="1" step=".05" value="'+selection.crop.x+'"></label><label>VERTICAL<input id="crop-y" type="range" min="-1" max="1" step=".05" value="'+selection.crop.y+'"></label></div></div>'+
  actionButtons([{label:'ANNULER',id:'cancel'},...(prior?[{label:'VIDER CET EMPLACEMENT',id:'empty',kind:'danger'}]:[]),{label:'VALIDER LE JOUEUR',id:'submit',kind:'action'}])+'</form>');
  function fill(){modal.querySelector('#player-full').value=selection.full;modal.querySelector('#player-short').value=selection.short;modal.querySelector('#crop-zoom').value=selection.crop.zoom;modal.querySelector('#crop-x').value=selection.crop.x;modal.querySelector('#crop-y').value=selection.crop.y;drawCrop();}
- function drawCrop(){const cv=$('#crop-preview'),ctx=cv.getContext('2d');ctx.clearRect(0,0,200,200);ctx.fillStyle=current.settings.dot;ctx.fillRect(0,0,200,200);ctx.save();ctx.beginPath();ctx.arc(100,100,100,0,7);ctx.clip();const img=imageFor(selection.photo);if(img){const z=selection.crop.zoom,w=200*z,h=200*z,sc=Math.max(w/img.width,h/img.height),W=img.width*sc,H=img.height*sc;ctx.drawImage(img,100-W/2+selection.crop.x*80,100-H/2+selection.crop.y*80,W,H);}else{ctx.strokeStyle=CIRCLE_LABEL;ctx.lineWidth=6;ctx.beginPath();ctx.arc(100,72,23,0,7);ctx.stroke();ctx.beginPath();ctx.arc(100,165,60,Math.PI,2*Math.PI);ctx.stroke();}ctx.restore();}
+ function drawCrop(){const cv=$('#crop-preview'),ctx=cv.getContext('2d');ctx.clearRect(0,0,200,200);ctx.fillStyle=current.settings.dot;ctx.fillRect(0,0,200,200);ctx.save();ctx.beginPath();ctx.arc(100,100,100,0,7);ctx.clip();const img=imageFor(selection.photo);if(!img&&selection.photo){const pending=images.get(selection.photo);pending?.img.addEventListener('load',drawCrop,{once:true});}if(img){const z=selection.crop.zoom,w=200*z,h=200*z,sc=Math.max(w/img.width,h/img.height),W=img.width*sc,H=img.height*sc;ctx.drawImage(img,100-W/2+selection.crop.x*80,100-H/2+selection.crop.y*80,W,H);}else{ctx.strokeStyle=CIRCLE_LABEL;ctx.lineWidth=6;ctx.beginPath();ctx.arc(100,72,23,0,7);ctx.stroke();ctx.beginPath();ctx.arc(100,165,60,Math.PI,2*Math.PI);ctx.stroke();}ctx.restore();}
  const input=$('#player-search'),results=$('#player-results');function options(){
  const q=input.value.trim().toLocaleLowerCase('fr-FR');if(!q){results.innerHTML='';return;}
  results.innerHTML=players.filter(p=>p.full.toLocaleLowerCase('fr-FR').includes(q)||p.short.toLocaleLowerCase('fr-FR').includes(q)).slice(0,12).map(p=>'<button type="button" data-reuse="'+escapeHTML(p.id)+'">'+escapeHTML(p.full)+(p.short?' · '+escapeHTML(p.short):'')+'</button>').join('')||'<span>Aucun joueur trouvé — crée une nouvelle fiche.</span>';

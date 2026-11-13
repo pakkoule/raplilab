@@ -94,6 +94,7 @@ const equipmentInputs=()=>[...document.querySelectorAll('input[name="race-equipm
 const VSR=Object.freeze({hc:'HORS CATÉGORIE',vsr1:'VSR 1',vsr2:'VSR 2',vsr3:'VSR 3'});
 const VSR_ORDER=Object.freeze(['hc','vsr1','vsr2','vsr3']);
 const VSR_PRIORITY=value=>{const n=VSR_ORDER.indexOf(value);return n===-1?VSR_ORDER.length:n;};
+const VSR_LABEL_PRIORITY=label=>{const key=VSR_ORDER.find(k=>VSR[k]===label);return key?VSR_PRIORITY(key):99;};
 const DEFAULT_VSR_COLORS=Object.freeze({hc:'#d4a339',vsr1:'#dfeef5',vsr2:'#dfe8f2',vsr3:'#eaeef1'});
 const moneyNumber=v=>{const raw=String(v??'').trim();return /^\d{1,9}$/.test(raw)&&Number.isSafeInteger(Number(raw))?raw:'';};
 const rewardValue=v=>moneyNumber(v)?Number(v):0;
@@ -457,10 +458,8 @@ function renderStatistics(){
    ).join('')+'</div>';
  };
  const group=(items,fn)=>[...items.reduce((acc,r)=>{const name=fn(r)||'Non renseigné';acc.set(name,(acc.get(name)||0)+1);return acc;},new Map()).entries()]
-  .sort((a,b)=>{
-   const priority=label=>label==='HORS CATÉGORIE'?0:/^VSR ([1-3])$/.test(label)?Number(label.slice(-1)):99;
-   return priority(a[0])-priority(b[0])||b[1]-a[1]||a[0].localeCompare(b[0],'fr');
-  });
+  .sort((a,b)=>VSR_LABEL_PRIORITY(a[0])-VSR_LABEL_PRIORITY(b[0])||b[1]-a[1]||a[0].localeCompare(b[0],'fr'));
+
  const maxYear=Math.max(1,...stats.yearly.map(x=>x.count));
  const annual=stats.yearly.length?
   '<div class="stats-years">'+stats.yearly.map(x=>
@@ -476,7 +475,7 @@ function renderStatistics(){
    const relative=statRelative(race);
    if(relative!==null){entry.relativeSum+=relative;entry.relativeCount++;}
   }
-  const list=[...groups.values()].sort((a,b)=>b.count-a.count||a.label.localeCompare(b.label,'fr'));
+  const list=[...groups.values()].sort((a,b)=>VSR_LABEL_PRIORITY(a.label)-VSR_LABEL_PRIORITY(b.label)||b.count-a.count||a.label.localeCompare(b.label,'fr'));
   return '<div class="stats-breakdown stats-performance"><h3>'+safe(name)+'</h3>'+
    (list.length?'<div class="performance-table"><div class="performance-head"><span>GROUPE</span><span>COURSES</span><span>TOP 10</span><span>TOP % MOY.</span></div>'+
     list.map(x=>'<div class="performance-row"><strong>'+safe(x.label)+'</strong><span>'+statInt(x.count)+'</span><span>'+statInt(x.top10)+'</span><span>'+(x.relativeCount?percent(x.relativeSum/x.relativeCount):'—')+'</span></div>').join('')+'</div>':

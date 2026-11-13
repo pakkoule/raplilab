@@ -14,7 +14,8 @@ Module intégré à la PR #1 de RapliLab, non fusionnée.
 - **Catégorie VSR** : Hors Catégorie (**pastille dorée et en gras**), VSR 1, VSR 2, VSR 3 ou non renseignée.
 - **Deux cases indépendantes mais mutuellement exclusives** : « Course en cours » (halo turquoise) et « À venir » (halo bleu).
 - **Équipement unique et facultatif** : PDD, 1/2 FP ou Full Pack (cases exclusives) ; zéro choix possible.
-- Cinq classements avec **position / nombre de joueurs**, dans l’esprit des numérotations de Rapli Sports :
+- Sur chaque tuile, **tag de classe de bateau et catégorie VSR sur une seule ligne** (l'année peut se décaler à côté/à la ligne sur écran compact). Même alignement dans l'export PNG.
+- Cinq classements avec **position / nombre de joueurs**, affichés avec la police sportive **Barlow Condensed ExtraBold** (tuiles, formulaire et export PNG), et non une serif type Times New Roman :
   - 🏆 Général : plaque principale agrandie (serif blanche sur fond contrasté) ;
   - 🇫🇷 National : petite plaque ;
   - 🇨🇶 Départemental : drapeau de Sark (affichage emoji selon appareil) ;

@@ -36,7 +36,9 @@
           (record.editionNote?'<div class="card-note">'+esc(record.editionNote)+'</div>':'')+
           (record.tags.length?'<div class="card-tags">'+record.tags.map(t=>'<span class="tag">'+esc(t)+'</span>').join('')+'</div>':'')+
           '<div class="card-bottom"><span class="status-pill '+(record.status==='wish'?'wish':'')+'">'+(record.status==='wish'?'ENVIES':'JE POSSÈDE')+'</span>'+
-          '<button type="button" class="card-edit" data-edit="'+esc(record.id)+'" aria-label="Modifier '+esc(record.album)+'">MODIFIER</button></div>'+
+          '<div class="card-bottom-actions">'+
+          (record.status==='wish'?'<button type="button" class="card-to-own" data-to-own="'+esc(record.id)+'" aria-label="Ajouter '+esc(record.album)+' à OWN" title="Déplacer ce CD vers OWN">→ OWN</button>':'')+
+          '<button type="button" class="card-edit" data-edit="'+esc(record.id)+'" aria-label="Modifier '+esc(record.album)+'">MODIFIER</button></div></div>'+
         '</div></article>';
     }).join('');
   }
@@ -218,6 +220,16 @@
     $('add-album').onclick=()=>openAlbum();
     $('add-bottom').onclick=()=>openAlbum();
     $('cards').addEventListener('click',e=>{
+      const ownButton=e.target.closest('[data-to-own]');
+      if(ownButton){
+        const id=ownButton.dataset.toOwn;
+        if(isBusy)return;
+        const album=albums.find(record=>record.id===id);
+        if(!album||album.status!=='wish')return;
+        ownButton.disabled=true;
+        void mutate(rows=>rows.map(record=>record.id===id?{...record,status:'own',updatedAt:now()}:record));
+        return;
+      }
       const btn=e.target.closest('[data-edit]');if(btn)openAlbum(btn.dataset.edit);
     });
     $('album-form').addEventListener('submit',saveAlbum);

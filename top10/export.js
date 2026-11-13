@@ -21,15 +21,15 @@ const textX=visual?pad:podium?pad:(pad+48+(item.image?imageW+16:0));
 const textWidth=Math.max(68,colWidth-textX-pad-(item.logo&&!visual?35:0));
 const name=String(item.name||'').trim();const nameSize=measureFont(ctx,name,textWidth,visual?Math.min(27,Math.max(15,colWidth*.1)):Math.min(29,Math.max(15,colWidth*.09)),12,font,800);
 const subSize=Math.max(11,Math.min(17,colWidth*.055)),descriptionSize=Math.max(10,Math.min(16,colWidth*.049));
-const nameLines=textLines(ctx,name,textWidth,font,nameSize,800),subtitleLines=item.subtitle?textLines(ctx,item.subtitle,textWidth,'Poppins,Arial,sans-serif',subSize,500):[],descriptionLines=item.description?textLines(ctx,item.description,textWidth,font,descriptionSize,400):[];
-const textH=nameLines.length*nameSize*1.34+(subtitleLines.length?8+subtitleLines.length*subSize*1.4:0)+(descriptionLines.length?8+descriptionLines.length*descriptionSize*1.43:0)+(item.score?35:0);
+const nameLines=textLines(ctx,name,textWidth,font,nameSize,800),subtitleLines=item.subtitle?textLines(ctx,item.subtitle,textWidth,'Poppins,Arial,sans-serif',subSize,500):[],descriptionLines=item.description?textLines(ctx,item.description,textWidth,font,descriptionSize,400):[],scoreLines=item.score?textLines(ctx,item.score,Math.max(43,textWidth-18),'Poppins,Arial,sans-serif',12,800):[];
+const textH=nameLines.length*nameSize*1.34+(subtitleLines.length?8+subtitleLines.length*subSize*1.4:0)+(descriptionLines.length?8+descriptionLines.length*descriptionSize*1.43:0)+(scoreLines.length?scoreLines.length*15+17:0);
 let height=visual?(item.image?Math.round(imageW*.74)+16:56)+textH+39:podium?(item.image?Math.round(imageW*.9)+16:56)+textH+73:Math.max(textH+40,item.image?Math.round(imageW*.8)+28:0,92);
-return {item,position,w:colWidth,h:Math.max(height,visual?110:podium?156:90),imageW,textX,textWidth,pad,nameSize,subSize,descriptionSize,nameLines,subtitleLines,descriptionLines,visual,podium,font};
+return {item,position,w:colWidth,h:Math.max(height,visual?110:podium?156:90),imageW,textX,textWidth,pad,nameSize,subSize,descriptionSize,nameLines,subtitleLines,descriptionLines,scoreLines,visual,podium,font};
 }
 function imageFrom(data){return new Promise((resolve,reject)=>{if(!data){resolve(null);return;}const i=new Image();i.onload=()=>resolve(i);i.onerror=()=>reject(Error('Une image du classement est illisible.'));i.src=data;});}
 function drawImageCover(ctx,img,x,y,w,h){if(!img)return;const ratio=Math.max(w/img.naturalWidth,h/img.naturalHeight),sw=w/ratio,sh=h/ratio,sx=(img.naturalWidth-sw)/2,sy=(img.naturalHeight-sh)/2;ctx.save();ctx.beginPath();ctx.roundRect(x,y,w,h,7);ctx.clip();ctx.drawImage(img,sx,sy,sw,sh,x,y,w,h);ctx.restore();}
 function drawText(ctx,lines,x,y,size,leading,color,font,weight=500){ctx.fillStyle=color;ctx.font=weight+' '+size+'px '+font;ctx.textBaseline='top';for(const line of lines){ctx.fillText(line,x,y);y+=size*leading;}return y;}
-function drawCard(ctx,box,x,y,pal,images){const {item,w,h,pad,nameSize,subSize,descriptionSize,nameLines,subtitleLines,descriptionLines,textX,textWidth,font,position,visual,podium,imageW}=box;
+function drawCard(ctx,box,x,y,pal,images){const {item,w,h,pad,nameSize,subSize,descriptionSize,nameLines,subtitleLines,descriptionLines,scoreLines,textX,textWidth,font,position,visual,podium,imageW}=box;
 roundedRect(ctx,x,y,w,h,12,pal.card);
 ctx.strokeStyle=pal.accent+'44';ctx.lineWidth=1.5;ctx.beginPath();ctx.roundRect(x+.75,y+.75,w-1.5,h-1.5,12);ctx.stroke();
 if(visual||podium){
@@ -41,17 +41,17 @@ ctx.fillStyle=pal.bg;ctx.textAlign='center';ctx.font='800 25px Poppins,Arial,san
 cy=drawText(ctx,nameLines,x+pad,cy,nameSize,1.34,pal.fg,font,800);
 if(subtitleLines.length)cy=drawText(ctx,subtitleLines,x+pad,cy+8,subSize,1.4,pal.detail,'Poppins,Arial,sans-serif');
 if(descriptionLines.length)cy=drawText(ctx,descriptionLines,x+pad,cy+8,descriptionSize,1.43,pal.fg,font,400);
-if(item.score){roundedRect(ctx,x+pad,cy+7,Math.min(w-pad*2,Math.max(48,String(item.score).length*9+20)),26,6,pal.accent);drawText(ctx,[String(item.score)],x+pad+9,cy+11,12,1.2,pal.bg,'Poppins,Arial,sans-serif',800);}
+if(scoreLines.length){const bw=Math.min(w-pad*2,Math.max(50,Math.max(...scoreLines.map(t=>{ctx.font='800 12px Poppins,Arial,sans-serif';return ctx.measureText(t).width;}))+18));roundedRect(ctx,x+pad,cy+7,bw,scoreLines.length*15+10,6,pal.accent);drawText(ctx,scoreLines,x+pad+9,cy+11,12,1.25,pal.bg,'Poppins,Arial,sans-serif',800);}
 if(item.logo){const im=images.get(item.logo);if(im)ctx.drawImage(im,x+w-48,y+10,34,34);}
 return;
 }
 ctx.font='800 31px Poppins,Arial,sans-serif';ctx.fillStyle=pal.accent;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(String(position+1).padStart(2,'0'),x+pad+16,y+h/2);ctx.textAlign='left';
 if(item.image){const img=images.get(item.image),ih=Math.min(h-24,imageW*.8);drawImageCover(ctx,img,x+pad+48,y+(h-ih)/2,imageW,ih);}
-let cy=y+(h-(nameLines.length*nameSize*1.34+(subtitleLines.length?8+subtitleLines.length*subSize*1.4:0)+(descriptionLines.length?8+descriptionLines.length*descriptionSize*1.43:0)+(item.score?35:0)))/2;
+let cy=y+(h-(nameLines.length*nameSize*1.34+(subtitleLines.length?8+subtitleLines.length*subSize*1.4:0)+(descriptionLines.length?8+descriptionLines.length*descriptionSize*1.43:0)+(scoreLines.length?scoreLines.length*15+17:0)))/2;
 cy=drawText(ctx,nameLines,x+textX,cy,nameSize,1.34,pal.fg,font,800);
 if(subtitleLines.length)cy=drawText(ctx,subtitleLines,x+textX,cy+8,subSize,1.4,pal.detail,'Poppins,Arial,sans-serif');
 if(descriptionLines.length)cy=drawText(ctx,descriptionLines,x+textX,cy+8,descriptionSize,1.43,pal.fg,font,400);
-if(item.score){let bw=Math.min(textWidth,Math.max(50,String(item.score).length*9+20));roundedRect(ctx,x+textX,cy+6,bw,25,5,pal.accent);drawText(ctx,[String(item.score)],x+textX+8,cy+10,12,1.2,pal.bg,'Poppins,Arial,sans-serif',800);}
+if(scoreLines.length){let bw=Math.min(textWidth,Math.max(50,Math.max(...scoreLines.map(t=>{ctx.font='800 12px Poppins,Arial,sans-serif';return ctx.measureText(t).width;}))+16));roundedRect(ctx,x+textX,cy+6,bw,scoreLines.length*15+10,5,pal.accent);drawText(ctx,scoreLines,x+textX+8,cy+10,12,1.25,pal.bg,'Poppins,Arial,sans-serif',800);}
 if(item.logo){const img=images.get(item.logo);if(img)ctx.drawImage(img,x+w-40,y+12,27,27);}
 }
 function generateLayout(ctx,list){const s=list.settings,pal=colors(s),font=fontFor(s,pal),W=1080,edge=38,gap=14,cols=countCols(s,list.positions.length);

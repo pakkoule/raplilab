@@ -32,6 +32,8 @@ Module intégré à la PR #1 de RapliLab, non fusionnée.
 - Onglet interne **STATISTIQUES** enrichi, calculé directement à partir des courses de la collection :
   - **Tableau de bord** : total, terminées, en cours, à venir.
   - **Palmarès** : victoires, podiums, Top 10, Top 100, taux de podiums/Top 10 parmi les courses classées, meilleur classement général, moyenne et médiane des places, meilleur et moyen « Top % » (place / participants), records nationaux, départementaux, ville et team.
+  - **Podiums par type de classement** : cinq cartes compactes avec les totaux séparés 🏆 général, 🇫🇷 national, 🇨🇶 départemental, 🏙️ ville et 🏴‍☠️ team. Chaque carte affiche un compteur de podiums, la répartition des médailles 🥇/🥈/🥉 en petit histogramme, et le taux de podiums parmi les courses terminées possédant le classement concerné (anneau circulaire).
+  - **Mini-graphe chronologique** : histogramme des podiums au général par année de départ (six dernières années présentes dans la collection).
   - **Temps de navigation** : durée cumulée, moyenne, course la plus courte et la plus longue ; précision à la seconde.
   - **Évolution annuelle** : histogrammes des courses selon l’année de départ, portion terminées et décompte Top 10.
   - **Habitudes** : répartitions des courses par VSR, bateau, équipement et statut.
@@ -45,6 +47,7 @@ Module intégré à la PR #1 de RapliLab, non fusionnée.
 
 - Syntaxe JavaScript contrôlée, champs HTML recoupés.
 - Tableau de statistiques testé avec des courses de différentes années, des courses en cours/à venir, des places sans participants et une collection vide. Les podiums et ratios excluent les courses non terminées.
+- Tests complémentaires : chaque type de classement vérifié indépendamment avec ses places 1/2/3 ; position impossible (supérieure au total déclaré) écartée ; courses non terminées exclues ; taux et dénominateurs contrôlés ; cinq anneaux, quinze colonnes de médailles et barres annuelles contrôlés ; aucune donnée / aucun podium gérés.
 - Scénario simulé de création de course : cinq classements, catégorie VSR, classe colorée, choix « À venir », durée jours/heures/minutes/secondes, calcul d’arrivée, sauvegarde et export ICS.
 - Cas de durée vérifiés : `12 j 08 h 35 min`, `8h35`, `1 j 2 h 3 min 4 s`, `00 h 00 min 31 s`, `01:02:03`.
 - À tester **dans la vraie Deploy Preview** avant fusion : glisser-déposer d’images, photos et rendu Canvas/PNG, iPhone Safari, ouverture du fichier ICS dans Apple Calendrier, accès Supabase PC ↔ iPhone et conflit de révision, affichage éventuel du drapeau de Sark.

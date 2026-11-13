@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#eeeeec">
+<title>Rapli Top Tiers — Le Lab de Rapli</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main class="shell">
+  <section class="workspace" aria-label="Éditeur Rapli Tiers List">
+    <header class="editor-head">
+      <div class="title-line">
+        <label class="sr-only" for="tier-title">Nom du classement</label>
+        <input id="tier-title" type="text" maxlength="160" placeholder="Nouvelle Tier List" autocomplete="off" aria-label="Nom de la Tier List">
+        <small id="save-dot" class="save-dot" hidden title="Modifications non enregistrées" aria-label="Modifications non enregistrées"></small>
+      </div>
+      <p id="notice" class="notice" role="status" aria-live="polite"></p>
+    </header>
+    <nav class="action-row" aria-label="Actions principales">
+      <button type="button" id="library-toggle" class="btn soft"><span aria-hidden="true">▤</span> BIBLIOTHÈQUE</button>
+      <div class="action-group">
+        <button type="button" id="undo" class="btn icon" title="Annuler" aria-label="Annuler" disabled>↶</button>
+        <button type="button" id="redo" class="btn icon" title="Rétablir" aria-label="Rétablir" disabled>↷</button>
+        <button type="button" id="save" class="btn primary"><span aria-hidden="true">▣</span> ENREGISTRER</button>
+      </div>
+    </nav>
+    <nav class="tool-row" aria-label="Réglages">
+      <button type="button" class="tool-btn" data-panel="ranks"><span>▤</span>RANGS</button>
+      <button type="button" class="tool-btn" data-panel="elements"><span>▧</span>ÉLÉMENTS</button>
+      <button type="button" class="tool-btn" data-panel="style"><span>◉</span>STYLE</button>
+      <button type="button" class="tool-btn" data-panel="export"><span>⇩</span>EXPORT</button>
+    </nav>
+    <div id="settings-panel" class="settings-panel" hidden></div>
+    <div id="group-bar" class="group-bar" hidden>
+      <div class="group-top"><strong id="group-count">0 sélectionné</strong><button type="button" class="plain" id="leave-selection" aria-label="Quitter la sélection">✕</button></div>
+      <div class="group-fields">
+        <label>Tout sélectionner <select id="select-scope"><option value="">Choisir une zone</option><option value="all">Classement entier</option><option value="waiting">Zone d'attente</option></select></label>
+        <button type="button" id="group-move" class="btn soft">DÉPLACER</button>
+        <button type="button" id="group-wait" class="btn soft">ATTENTE</button>
+        <button type="button" id="group-delete" class="btn danger">SUPPRIMER</button>
+      </div>
+    </div>
+    <div id="board-wrap" class="board-wrap">
+      <div id="board" class="tier-board" aria-label="Tableau de classement"></div>
+    </div>
+    <section class="waiting-panel" aria-label="Éléments non classés">
+      <div class="waiting-header">
+        <h2>ZONE D'ATTENTE <span id="waiting-count">0</span></h2>
+        <div class="waiting-actions">
+          <button type="button" class="mini" id="add-text-wait" title="Ajouter un texte">+ TEXTE</button>
+          <button type="button" class="mini" id="add-image-wait" title="Importer des images">+ IMAGES</button>
+          <button type="button" class="mini" id="select-mode">SÉLECTIONNER</button>
+        </div>
+      </div>
+      <div id="waiting" class="waiting-grid" aria-label="Zone d'attente" tabindex="0"></div>
+    </section>
+    <footer class="footer">
+      <span>RAPLI TOP TIERS · ÉDITEUR PERSONNEL</span>
+      <span id="cloud-status" aria-live="polite">Sauvegarde manuelle</span>
+    </footer>
+  </section>
+</main>
+<input type="file" id="image-files" accept="image/png,image/jpeg,image/webp,image/heic,image/heif,.heic,.heif" multiple hidden>
+<script defer src="app.js"></script>
+<script defer src="../shared/module-cloud.js"></script>
+</body>
+</html>

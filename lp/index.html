@@ -33,14 +33,19 @@
     </div>
     <button type="button" class="btn primary" id="add-album">＋ AJOUTER UN CD</button>
   </section>
+  <div class="collection-nav">
+    <div class="collection-tabs" role="tablist" aria-label="Statut de la collection">
+      <button type="button" class="collection-tab active" role="tab" id="tab-own" data-view="own" aria-controls="cards" aria-selected="true" tabindex="0">OWN <b id="tab-own-count">0</b></button>
+      <button type="button" class="collection-tab" role="tab" id="tab-wishlist" data-view="wish" aria-controls="cards" aria-selected="false" tabindex="-1">WISHLIST <b id="tab-wish-count">0</b></button>
+    </div>
+  </div>
   <section class="filters" aria-label="Filtrer la collection">
     <label class="filter search">RECHERCHER <input id="search" type="search" placeholder="Artiste, album, édition, tag…" autocomplete="off"></label>
-    <label class="filter">STATUT <select id="filter-status"><option value="">Tous les albums</option><option value="own">Possédés</option><option value="wish">Envies</option></select></label>
     <label class="filter">ARTISTE <select id="filter-artist"><option value="">Tous les artistes</option></select></label>
     <label class="filter">TRI <select id="sort"><option value="recent">Ajouts récents</option><option value="artist">Artiste A → Z</option><option value="album">Album A → Z</option><option value="old">Ajouts anciens</option></select></label>
     <button type="button" id="clear-filters" class="btn subtle">EFFACER</button>
   </section>
-  <div class="collection-heading"><strong>MA COLLECTION</strong><span id="result-count"></span></div>
+  <div class="collection-heading"><strong id="collection-heading">MES ALBUMS · OWN</strong><span id="result-count"></span></div>
   <section id="cards" class="cards" aria-live="polite"></section>
   <p id="empty" class="empty" hidden>Aucun album ici pour le moment. Ajoute ton premier CD !</p>
   <div class="bottom-actions"><button type="button" id="add-bottom" class="btn secondary">＋ AJOUTER UN CD</button></div>

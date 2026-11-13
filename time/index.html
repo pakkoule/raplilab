@@ -513,7 +513,8 @@ body::before{display:none!important}
 @media(max-width:780px){#rapli-module-cloud-status{max-width:135px;font-size:9px}}
 @media(max-width:580px){#rapli-module-cloud-status{display:none}.rapli-utility-strip{gap:6px}.rapli-cloud-module-group .rapli-cloud-module-btn{min-width:36px;width:36px;height:36px;border-radius:9px}}
 @media(prefers-reduced-motion:reduce){.rapli-cloud-module-btn.is-refreshing svg{animation:none}}
-</style></head>
+</style>  <link rel="stylesheet" href="../shared/photo-zoom.css">
+</head>
 <body>
 <div class="app-shell">
   <div class="topline"></div>
@@ -687,4 +688,5 @@ initialize().then(rapliModuleReady).catch(err=>console.warn('Rapli module startu
 </script>
 
 <script src="../shared/module-cloud.js" defer></script>
+  <script src="../shared/photo-zoom.js" defer></script>
 </body></html>

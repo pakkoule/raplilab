@@ -110,7 +110,7 @@ export async function generateGeneralPDF({races,filters={},settings={},outputNam
   rect(x,117,w,31,i===0?'#deedf1':'#f0f6f7');
   note(doc,t.name,x+3,125,7.6,'#34586c','bold',w-6);
   note(doc,String(t.podiums)+' podiums',x+3,134,11,teal,'bold',w-6);
-  note(doc(''+''),0,0); // placeholder
+  note(doc,'1er '+t.first+'  /  2e '+t.second+'  /  3e '+t.third,x+3,143,8,'#597887','normal',w-6);
  }
  note(doc,'CATEGORIES VSR · PRIORITE : HC > VSR 1 > VSR 2 > VSR 3',margin,158,10,navy,'bold');
  const barMax=Math.max(1,...summary.cats.map(x=>x.count));

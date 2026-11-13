@@ -1,8 +1,8 @@
 # Rapli Top 10 — Cahier des charges V1.0
 
-> **Statut : CONCEPTION VALIDÉE — NON IMPLÉMENTÉ**  
+> **Statut : CONCEPTION VALIDÉE — IMPLÉMENTATION PR #1 EN COURS DE TEST**  
 > **Version : 1.0 · 13 novembre 2026**  
-> **Périmètre : documentation seule dans la PR #1.** Aucun code exécutable, aucun onglet ni changement Supabase ne doit être ajouté au titre de cette conception avant une autorisation explicite.
+> **Périmètre : référence de conception V1.0.** Développement explicitement autorisé le 13 novembre 2026 ; consulter également `top10/SUPABASE.md` pour la réalisation.
 
 ## 1. Objectif et principes
 
@@ -150,8 +150,8 @@ Bibliothèque personnelle intégrant :
 
 ## 12. Gestion de projet et exclusions
 
-**Cette livraison ajoute uniquement la documentation de conception dans la PR #1.** Elle ne vaut **pas** autorisation de :
-- coder Top 10, créer ses tables Supabase, l'ajouter à la navigation ou à une Deploy Preview ;
+**La conception est désormais accompagnée d'une implémentation de test en PR #1, suite au feu vert explicite de l'utilisateur.** Elle ne vaut **pas** autorisation de :
+- mettre en production Top 10 sans recette validée ;
 - fusionner la PR #1 ;
 - déployer en production.
 

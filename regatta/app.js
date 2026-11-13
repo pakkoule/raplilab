@@ -235,6 +235,27 @@ function card(r){
  (r.upcoming?'<button type="button" class="btn calendar-btn" data-action="calendar" title="Ajouter cette course à Apple Calendrier">📅 CALENDRIER</button>':'')+
  '<button type="button" class="btn subtle" data-action="delete">×</button></div></div></article>';
 }
+
+/* Ajustement dynamique après mise en page : une ligne même pour > 100 000 joueurs. */
+function fitRankingNumbers(){
+ if(!document.querySelectorAll)return;
+ for(const rank of document.querySelectorAll('.rank-plate .rank-line strong')){
+   const line=rank.parentElement,medal=line?.querySelector('.rank-medal');
+   if(!line||!line.clientWidth)continue;
+   const allowed=line.clientWidth-(medal?.getBoundingClientRect().width||0)-(medal?7:0);
+   if(allowed<20)continue;
+   const isMain=!!rank.closest('.rank-main');
+   let size=isMain?36:23;
+   rank.style.fontSize=size+'px';
+   while(rank.scrollWidth>allowed&&size>11){
+     size--;rank.style.fontSize=size+'px';
+   }
+ }
+}
+function scheduleRankingFit(){
+ if(typeof requestAnimationFrame==='function')requestAnimationFrame(fitRankingNumbers);
+}
+
 function render(){
  const selected=$('filter-class').value;
  const classes=[...new Set(rows.map(x=>x.boatClass).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'fr'));
@@ -255,6 +276,7 @@ function render(){
  $('count-finished').textContent=rows.filter(r=>raceStatus(r)==='finished').length;
  $('result-count').textContent=out.length+' / '+rows.length;
  $('cards').innerHTML=out.map(card).join('')||(rows.length?'<p>Aucune course ne correspond aux filtres.</p>':'');
+ scheduleRankingFit();
  $('empty').hidden=rows.length!==0;
  renderStatistics();renderClassColors();
 }
@@ -761,6 +783,10 @@ async function exportPNG(r){
    ctx.font='700 21px "Courier Prime","American Typewriter",monospace';ctx.fillStyle='#1a5368';
    wrap(ctx,'DURÉE · '+r.duration,590,1).forEach(t=>ctx.fillText(t,555,y+270));
   }
+  ctx.font='800 17px Poppins,sans-serif';ctx.fillStyle='#987021';
+  if(moneyNumber(r.gainPoints))ctx.fillText('POINTS VSR : +'+Number(r.gainPoints).toLocaleString('fr-FR'),48,y+300,500);
+  ctx.fillStyle='#377c56';
+  if(moneyNumber(r.gainCredits))ctx.fillText('CREDITS VR : +'+Number(r.gainCredits).toLocaleString('fr-FR'),555,y+300,495);
   const ranks=[
    ['🏆','CLASSEMENT GÉNÉRAL',r.rank,r.rankTotal,podiumMedalFor(r,'rank','rankTotal')],
    ['🇫🇷','NATIONAL',r.rankNational,r.rankNationalTotal,podiumMedalFor(r,'rankNational','rankNationalTotal')],
@@ -904,6 +930,7 @@ for(const id of ['search','filter-status','filter-vsr','filter-class','sort'])$(
 for(const key of imageKeys){$('image-'+key).addEventListener('change',e=>{const f=e.target.files[0];e.target.value='';fileData(f,key);});document.querySelector('[data-remove="'+key+'"]').addEventListener('click',()=>{pictures[key]='';preview(key);});const zone=document.querySelector('[data-image="'+key+'"] .upload-preview');zone.addEventListener('dragover',e=>{e.preventDefault();});zone.addEventListener('drop',e=>{e.preventDefault();fileData(e.dataTransfer?.files[0],key);});}
 $('cards').addEventListener('click',e=>{const btn=e.target.closest('[data-action]');if(!btn)return;const r=rows.find(x=>x.id===btn.closest('[data-id]')?.dataset.id);if(!r)return;if(btn.dataset.action==='edit')openEditor(r);if(btn.dataset.action==='delete')deleteRace(r.id);if(btn.dataset.action==='png')exportPNG(r);if(btn.dataset.action==='calendar')exportCalendar(r);});
 $('export-json').addEventListener('click',exportJSON);$('import-json').addEventListener('change',e=>importJSON(e.target.files[0]));document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'&&!dialog.open){e.preventDefault();$('search').focus();}});
+window.addEventListener?.('resize',scheduleRankingFit);
 const bridge=window.RapliModuleBridge={module:'regatta',ready:false,
  getState:()=>({records:rows,logos:colorSettingsState()}),notify:msg=>toast(msg),
  replaceState:async data=>{

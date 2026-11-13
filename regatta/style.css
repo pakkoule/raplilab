@@ -78,3 +78,15 @@ dialog form{border-radius:18px;background:#fff;display:flex;flex-direction:colum
 /* Rangs à trois niveaux : repérage discret sans alourdir la carte. */
 .stat-chip.regional{background:#eaf8f6;border-color:#a4dcd8;color:#136c75}
 .stat-chip.national{background:#fdf0f7;border-color:#f4c6e0;color:#a22a70}
+
+/* Mode d'équipement : cases exclusives (PDD / 1/2 FP / Full Pack) mais facultatives. */
+.equipment-choice{margin:0;padding:13px 15px;border:1px solid #cce3e6;border-radius:11px;background:#f6fbfb;min-width:0}
+.equipment-choice legend{padding:0 7px;font-size:10px;font-weight:900;letter-spacing:.06em;color:#537684}
+.equipment-help{font-size:9px;font-weight:600;letter-spacing:0;color:#819ca5;margin-left:8px}
+.equipment-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-top:4px}
+.fields .equipment-option{display:flex;flex-direction:row;align-items:center;justify-content:center;gap:9px;min-width:0;min-height:45px;padding:10px;border:1px solid #c9dde1;border-radius:9px;background:#fff;color:#305f71;cursor:pointer;font-size:12px;font-weight:900;letter-spacing:.02em;transition:background .15s,border-color .15s}
+.fields .equipment-option input[type=checkbox]{width:19px;height:19px;min-height:19px;min-width:19px;margin:0;padding:0;flex:none;accent-color:#008fa8;cursor:pointer}
+.equipment-option:has(input:checked){background:#e5f8f7;border-color:#00a6b6;color:#005e76;box-shadow:inset 0 0 0 1px #04a3b3}
+.equipment-option:hover{border-color:#61b5bd}
+.stat-chip.equipment{background:#e8f8f8;border-color:#a7dbdb;color:#007990;font-weight:900}
+@media(max-width:420px){.equipment-options{gap:6px}.equipment-choice{padding:11px 9px}.equipment-help{display:block;margin:3px 0 0}.fields .equipment-option{padding:8px 5px;gap:6px;font-size:11px}}

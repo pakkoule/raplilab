@@ -7,8 +7,11 @@ const uid=()=>crypto.randomUUID?crypto.randomUUID():'race-'+Date.now().toString(
 const now=()=>new Date().toISOString();
 const props={name:180,edition:100,boatClass:100,boat:140,start:20,end:20,rank:40,rankDepartment:40,rankNational:40,duration:100,notes:2500};
 const imageKeys=['icon','result','route'];
+const equipmentModes=Object.freeze({pdd:'PDD','half-fp':'1/2 FP','full-pack':'FULL PACK'});
+const validEquipment=value=>Object.prototype.hasOwnProperty.call(equipmentModes,value)?value:'';
+const equipmentInputs=()=>[...document.querySelectorAll('input[name="race-equipment"]')];
 const validImage=v=>typeof v==='string'&&/^data:image\/(png|webp|jpeg|gif);base64,[a-z0-9+/=]+$/i.test(v);
-function normal(x={}){const r={id:typeof x.id==='string'&&x.id.length<130?x.id:uid(),createdAt:x.createdAt||now(),updatedAt:x.updatedAt||now(),live:!!x.live};for(const [k,n] of Object.entries(props))r[k]=clean(x[k],n);for(const k of imageKeys)r[k]=validImage(x[k])?x[k]:'';return r;}
+function normal(x={}){const r={id:typeof x.id==='string'&&x.id.length<130?x.id:uid(),createdAt:x.createdAt||now(),updatedAt:x.updatedAt||now(),live:!!x.live,equipment:validEquipment(x.equipment)};for(const [k,n] of Object.entries(props))r[k]=clean(x[k],n);for(const k of imageKeys)r[k]=validImage(x[k])?x[k]:'';return r;}
 let rows=[],db=null,editId='',pictures={icon:'',result:'',route:''},uploads=0,writeBusy=false,timer;
 const dialog=$('race-dialog'),getField=k=>$('race-'+({boatClass:'class',rankDepartment:'rank-department',rankNational:'rank-national'}[k]||k));
 function toast(t,error=false){$('notice').textContent=t;$('notice').dataset.error=String(error);clearTimeout(timer);timer=setTimeout(()=>{$('notice').textContent='';},7000);}
@@ -28,7 +31,7 @@ function card(r){
  return '<article class="card'+(r.live?' live':'')+'" data-id="'+safe(r.id)+'"><div class="card-top"><div class="race-icon card-photo">'+(validImage(r.icon)?imageTag(r.icon,'Affiche '+r.name):'<div class="icon-placeholder">⛵</div>')+'</div><span class="badge-status">'+statusTitle[status]+'</span></div><div class="card-content">'+
  '<div class="card-eyebrow"><span>'+safe(r.boatClass||'VIRTUAL REGATTA')+'</span><span class="year">'+safe(r.edition)+'</span></div>'+
  '<h2>'+safe(r.name)+'</h2><div class="card-boat">'+safe(r.boat)+'</div>'+
- '<div class="card-stats">'+(r.start?'<span class="stat-chip">DÉPART '+dateFR(r.start)+'</span>':'')+(r.rank?'<span class="stat-chip">GÉNÉRAL · '+safe(r.rank)+'</span>':'')+(r.rankDepartment?'<span class="stat-chip regional">DÉPARTEMENTAL · '+safe(r.rankDepartment)+'</span>':'')+(r.rankNational?'<span class="stat-chip national">NATIONAL · '+safe(r.rankNational)+'</span>':'')+(r.duration?'<span class="stat-chip">TEMPS '+safe(r.duration)+'</span>':'')+'</div>'+
+ '<div class="card-stats">'+(r.start?'<span class="stat-chip">DÉPART '+dateFR(r.start)+'</span>':'')+(r.rank?'<span class="stat-chip">GÉNÉRAL · '+safe(r.rank)+'</span>':'')+(r.rankDepartment?'<span class="stat-chip regional">DÉPARTEMENTAL · '+safe(r.rankDepartment)+'</span>':'')+(r.rankNational?'<span class="stat-chip national">NATIONAL · '+safe(r.rankNational)+'</span>':'')+(r.duration?'<span class="stat-chip">TEMPS '+safe(r.duration)+'</span>':'')+(validEquipment(r.equipment)?'<span class="stat-chip equipment">ÉQUIPEMENT · '+safe(equipmentModes[r.equipment])+'</span>':'')+'</div>'+
  '<div class="shots"><div class="shot"><label>CLASSEMENT FINAL</label><div class="shot-box image-preview">'+imageTag(r.result,'Classement '+r.name)+'</div></div><div class="shot"><label>TRACÉ</label><div class="shot-box image-preview">'+imageTag(r.route,'Tracé '+r.name)+'</div></div></div>'+
  (r.notes?'<p class="card-note">'+safe(r.notes)+'</p>':'')+
  '<div class="card-actions"><button type="button" class="btn secondary" data-action="edit">MODIFIER</button><button type="button" class="btn subtle" data-action="png">↓ PNG</button><button type="button" class="btn subtle" data-action="delete">×</button></div></div></article>';
@@ -38,7 +41,7 @@ function render(){
  $('filter-class').innerHTML='<option value="">Toutes les classes</option>'+classes.map(x=>'<option value="'+safe(x)+'">'+safe(x)+'</option>').join('');
  if(classes.includes(selected))$('filter-class').value=selected;
  const q=$('search').value.toLocaleLowerCase('fr').trim(),status=$('filter-status').value,cls=$('filter-class').value;
- let out=rows.filter(r=>(!status||raceStatus(r)===status)&&(!cls||r.boatClass===cls)&&(!q||[r.name,r.edition,r.boatClass,r.boat,r.rank,r.rankDepartment,r.rankNational,r.notes].some(v=>v.toLocaleLowerCase('fr').includes(q))));
+ let out=rows.filter(r=>(!status||raceStatus(r)===status)&&(!cls||r.boatClass===cls)&&(!q||[r.name,r.edition,r.boatClass,r.boat,r.rank,r.rankDepartment,r.rankNational,equipmentModes[r.equipment]||'',r.notes].some(v=>v.toLocaleLowerCase('fr').includes(q))));
  const sort=$('sort').value;
  out.sort((a,b)=>sort==='name'?a.name.localeCompare(b.name,'fr'):sort==='old'?a.createdAt.localeCompare(b.createdAt):sort==='start'?b.start.localeCompare(a.start):b.updatedAt.localeCompare(a.updatedAt));
  $('count-total').textContent=rows.length;$('count-live').textContent=rows.filter(r=>r.live).length;$('count-finished').textContent=rows.filter(r=>raceStatus(r)==='finished').length;$('result-count').textContent=out.length+' / '+rows.length;
@@ -46,7 +49,7 @@ function render(){
  $('empty').hidden=rows.length!==0;
 }
 function preview(k){const img=$('preview-'+k),ph=$('placeholder-'+k);img.hidden=!validImage(pictures[k]);ph.hidden=validImage(pictures[k]);if(validImage(pictures[k]))img.src=pictures[k];else img.removeAttribute('src');}
-function openEditor(r){editId=r?.id||'';const data=r||normal();for(const k of Object.keys(props))getField(k).value=data[k]||'';$('race-live').checked=!!data.live;for(const k of imageKeys){pictures[k]=data[k]||'';preview(k);}$('dialog-title').textContent=editId?'MODIFIER LA COURSE':'AJOUTER UNE COURSE';$('delete-race').hidden=!editId;if(!dialog.open)dialog.showModal();document.body.style.overflow='hidden';dialog.querySelector('.dialog-scroll').scrollTop=0;getField('name').focus({preventScroll:true});}
+function openEditor(r){editId=r?.id||'';const data=r||normal();for(const k of Object.keys(props))getField(k).value=data[k]||'';$('race-live').checked=!!data.live;equipmentInputs().forEach(input=>{input.checked=input.value===validEquipment(data.equipment);});for(const k of imageKeys){pictures[k]=data[k]||'';preview(k);}$('dialog-title').textContent=editId?'MODIFIER LA COURSE':'AJOUTER UNE COURSE';$('delete-race').hidden=!editId;if(!dialog.open)dialog.showModal();document.body.style.overflow='hidden';dialog.querySelector('.dialog-scroll').scrollTop=0;getField('name').focus({preventScroll:true});}
 const closeEditor=()=>{if(dialog.open)dialog.close();};
 dialog.addEventListener('close',()=>{document.body.style.overflow='';editId='';});dialog.addEventListener('click',e=>{if(e.target===dialog)closeEditor();});
 document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',closeEditor));
@@ -54,6 +57,8 @@ async function saveEditor(e){
  e.preventDefault();if(writeBusy||uploads)return;
  const old=rows.find(x=>x.id===editId);const r={...(old||normal()),updatedAt:now(),live:$('race-live').checked};
  for(const k of Object.keys(props))r[k]=clean(getField(k).value,props[k]);
+ const chosen=equipmentInputs().filter(input=>input.checked);if(chosen.length>1){toast('Une seule méthode d’équipement est autorisée.',true);return;}
+ r.equipment=validEquipment(chosen[0]?.value);
  if(!r.name){getField('name').focus();return;}for(const k of imageKeys)r[k]=pictures[k]||'';
  writeBusy=true;$('save-race').disabled=true;
  try{await saveRow(r);rows=[...rows.filter(x=>x.id!==r.id),r];render();window.RapliModuleCloud?.changed?.();closeEditor();toast('Course enregistrée ✓');}
@@ -90,6 +95,7 @@ async function exportPNG(r){
   const w=1200,extra=ranking||route?450:0,h=130+675+300+extra+42,c=document.createElement('canvas');c.width=w;c.height=h;const ctx=c.getContext('2d');if(!ctx)throw Error('Canvas indisponible');
   ctx.fillStyle='#fff';ctx.fillRect(0,0,w,h);ctx.fillStyle='#15384a';ctx.fillRect(0,0,w,130);ctx.fillStyle='#00c6c8';ctx.fillRect(0,0,900,8);ctx.fillStyle='#f30082';ctx.fillRect(900,0,300,8);
   ctx.fillStyle='#fff';ctx.font='900 51px Poppins,sans-serif';ctx.fillText('RAPLI REGATTA',49,88);
+  if(validEquipment(r.equipment)){ctx.textAlign='right';ctx.fillStyle='#cbf6f4';ctx.font='800 22px Poppins,sans-serif';ctx.fillText('ÉQUIPEMENT · '+equipmentModes[r.equipment],1147,85);ctx.textAlign='left';}
   ctx.fillStyle='#e4f4f3';ctx.fillRect(0,130,w,675);contain(ctx,im,0,130,w,675);
   const y=805;ctx.fillStyle='#007d98';ctx.font='800 20px Poppins,sans-serif';ctx.fillText([r.boatClass,r.edition].filter(Boolean).join(' · ').toUpperCase()||'VIRTUAL REGATTA',48,y+38);
   ctx.fillStyle='#14364a';ctx.font='900 42px Poppins,sans-serif';wrap(ctx,r.name,1100,2).forEach((line,i)=>ctx.fillText(line,48,y+96+i*51));
@@ -112,6 +118,11 @@ async function exportPNG(r){
 }
 function exportJSON(){download(new Blob([JSON.stringify({app:'Rapli Regatta',version:1,exportedAt:now(),races:rows},null,2)],{type:'application/json'}),'Rapli_Regatta_'+now().slice(0,10)+'.json');toast('JSON exporté ✓');}
 async function importJSON(file){if(!file)return;try{if(file.size>120e6)throw Error('Fichier trop volumineux');const obj=JSON.parse(await file.text());if(obj.app!=='Rapli Regatta'||!Array.isArray(obj.races)||obj.races.length>20000)throw Error('Fichier de sauvegarde invalide');const next=obj.races.map(normal);if(new Set(next.map(r=>r.id)).size!==next.length)throw Error('IDs dupliqués');if(!confirm('Importer '+next.length+' courses et remplacer la collection locale ?'))return;await replaceRows(next);window.RapliModuleCloud?.changed?.();toast('Collection importée ✓');}catch(err){toast(err.message,true);}finally{$('import-json').value='';}}
+$('race-equipment-group').addEventListener('change',event=>{
+ const selected=event.target.closest('input[name="race-equipment"]');
+ if(!selected||!selected.checked)return;
+ equipmentInputs().forEach(input=>{if(input!==selected)input.checked=false;});
+});
 $('new-race').addEventListener('click',()=>openEditor());$('empty-add').addEventListener('click',()=>openEditor());$('race-form').addEventListener('submit',saveEditor);$('delete-race').addEventListener('click',()=>{if(editId)deleteRace(editId);});
 for(const id of ['search','filter-status','filter-class','sort'])$(id).addEventListener(id==='search'?'input':'change',render);
 for(const key of imageKeys){$('image-'+key).addEventListener('change',e=>{const f=e.target.files[0];e.target.value='';fileData(f,key);});document.querySelector('[data-remove="'+key+'"]').addEventListener('click',()=>{pictures[key]='';preview(key);});const zone=document.querySelector('[data-image="'+key+'"] .upload-preview');zone.addEventListener('dragover',e=>{e.preventDefault();});zone.addEventListener('drop',e=>{e.preventDefault();fileData(e.dataTransfer?.files[0],key);});}

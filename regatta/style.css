@@ -327,3 +327,48 @@ dialog form{border-radius:18px;background:#fff;display:flex;flex-direction:colum
  .rank-medal{font-size:21px}
  .rank-main .rank-medal{font-size:26px}
 }
+
+/* Large ranking numbers: never wrap across two lines, even with 100 000+ players. */
+.rank-value{flex:1 1 auto;min-width:0;container-type:inline-size}
+.rank-line{flex-wrap:nowrap;min-width:0;max-width:100%;gap:3px}
+.rank-line strong{white-space:nowrap!important;overflow:visible!important;word-break:normal!important;overflow-wrap:normal!important;flex:0 1 auto;min-width:0;font-size:clamp(12px,11.5cqi,23px)!important;letter-spacing:0!important;font-variant-numeric:tabular-nums}
+.rank-main .rank-line strong{font-size:clamp(23px,10.2cqi,36px)!important;letter-spacing:.025em!important}
+.rank-line .rank-medal{flex:0 0 auto}
+.vsr-badge,.vsr-badge.hc,.card-tag-row .vsr-badge{
+ background:var(--vsr-color,#e7f1f4)!important;color:var(--vsr-ink,#213c4d)!important;
+ border-color:color-mix(in srgb,var(--vsr-color,#d4a339) 80%,#344352)!important;
+ font-weight:900!important;
+}
+.vsr-badge.hc{box-shadow:0 2px 7px #d4a33945}
+.vsr-color-row .vsr-badge{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vsr-colors-head{margin-top:26px}
+.vsr-colors-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.stat-chip.reward-points{background:#fff8e5;border-color:#ebce75;color:#8c6718;font-weight:800}
+.stat-chip.reward-credits{background:#ebf7ed;border-color:#b6ddb5;color:#3c754d;font-weight:800}
+.rewards-field{margin:0;padding:13px 14px;border:1px solid #cde2e3;border-radius:11px;background:#f8fbfa;min-width:0}
+.rewards-field legend{padding:0 7px;font-size:10px;font-weight:900;color:#4b7482;letter-spacing:.06em}
+.rewards-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.rewards-grid label{min-width:0}
+.rewards-grid input{font-family:'Barlow Condensed',Poppins,sans-serif;font-size:20px!important;font-weight:800}
+.reward-chart{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.reward-chart-row{border-radius:12px;border:1px solid #d7e7e8;background:#f8fcfc;padding:12px}
+.reward-chart-row>strong{display:block;color:#1d556e;font-size:11px;margin-bottom:10px}
+.reward-chart-bars{display:grid;gap:8px}
+.reward-bar-line{display:grid;grid-template-columns:46px minmax(0,1fr) 44px;gap:7px;align-items:center}
+.reward-bar-line span{font-size:8px;color:#738e98;font-weight:900}
+.reward-bar-line b{text-align:right;font-size:11px;color:#1c586b;font-variant-numeric:tabular-nums}
+.reward-track{height:9px;background:#e9f2f2;border-radius:7px;overflow:hidden}
+.reward-fill{height:100%;border-radius:7px}
+.reward-fill.points{background:linear-gradient(90deg,#b8953a,#f0c45a)}
+.reward-fill.credits{background:linear-gradient(90deg,#208a5c,#51c096)}
+/* PDF filter modal shares the same dialog dimensions as the race editor. */
+#pdf-dialog{width:min(720px,calc(100vw - 22px));max-width:720px;max-height:95dvh}
+#pdf-dialog .dialog-scroll{padding:20px 22px}
+.pdf-intro,.pdf-hint{font-size:11px;color:#65818e;line-height:1.7;margin:0 0 16px}
+.pdf-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.pdf-preview-count{display:flex;align-items:center;gap:11px;background:#e9f7f7;border:1px solid #bae3e3;border-radius:10px;margin:18px 0 10px;padding:12px 15px}
+.pdf-preview-count strong{font:900 33px/1 'Barlow Condensed',Poppins,sans-serif;color:#008fa1}
+.pdf-preview-count span{font-size:10px;color:#547788;font-weight:900}
+.pdf-hint{margin-bottom:0}
+@media(max-width:780px){.vsr-colors-list,.reward-chart{grid-template-columns:1fr}}
+@media(max-width:580px){.rewards-grid{gap:7px}.rewards-field{padding:11px}.rewards-grid input{font-size:18px!important}#pdf-dialog .dialog-scroll{padding:14px}.pdf-fields{grid-template-columns:1fr}.rank-main .rank-line strong{font-size:clamp(20px,10cqi,32px)!important}}

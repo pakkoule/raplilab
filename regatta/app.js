@@ -205,8 +205,8 @@ const statRelative=r=>{
 };
 const statDuration=sec=>{
  if(sec===null||!Number.isFinite(sec)||sec<0)return '—';
- const days=Math.floor(sec/86400),hours=Math.floor((sec%86400)/3600),minutes=Math.floor((sec%3600)/60);
- return (days?statInt(days)+' j ':'')+String(hours).padStart(2,'0')+' h '+String(minutes).padStart(2,'0')+' min';
+ const rounded=Math.round(sec),days=Math.floor(rounded/86400),hours=Math.floor((rounded%86400)/3600),minutes=Math.floor((rounded%3600)/60),seconds=rounded%60;
+ return (days?statInt(days)+' j ':'')+String(hours).padStart(2,'0')+' h '+String(minutes).padStart(2,'0')+' min '+String(seconds).padStart(2,'0')+' s';
 };
 function computeRaceStatistics(items){
  const total=items.length,finished=items.filter(r=>raceStatus(r)==='finished');
@@ -217,6 +217,12 @@ function computeRaceStatistics(items){
  const best=ranked.reduce((acc,r)=>!acc||statRank(r)<statRank(acc)?r:acc,null);
  const relative=ranked.map(r=>({race:r,value:statRelative(r)})).filter(x=>x.value!==null);
  const bestRelative=relative.reduce((acc,x)=>!acc||x.value<acc.value?x:acc,null);
+ const bestRegional=Object.fromEntries(['rankNational','rankDepartment','rankCity','rankTeam'].map(key=>{
+   const valid=finished.map(r=>({r,rank:Number(r[key])}))
+     .filter(x=>Number.isSafeInteger(x.rank)&&x.rank>0);
+   const best=valid.reduce((acc,x)=>!acc||x.rank<acc.rank?x:acc,null);
+   return [key,best];
+ }));
  const durationRows=finished.map(r=>({race:r,value:parseRaceDuration(r.duration)}))
    .filter(x=>x.value.status==='valid'&&x.value.seconds>0)
    .map(x=>({race:x.race,seconds:x.value.seconds}));
@@ -234,7 +240,7 @@ function computeRaceStatistics(items){
  const yearly=[...years.values()].sort((x,y)=>
    x.year==='Sans date'?1:y.year==='Sans date'?-1:Number(y.year)-Number(x.year));
  return {
-   total,finished,live,upcoming,ranked,relative,best,bestRelative,durationRows,totalSeconds,
+   total,finished,live,upcoming,ranked,relative,best,bestRelative,bestRegional,durationRows,totalSeconds,
    shortest,longest,yearly,
    winners:ranked.filter(r=>statRank(r)===1).length,
    podiums:ranked.filter(r=>statRank(r)<=3).length,
@@ -262,11 +268,17 @@ function renderStatistics(){
      ['PODIUMS 🏆',statInt(stats.podiums),'Top 3 au général, victoires incluses'],
      ['TOP 10',statInt(stats.top10),'Top 10 au général'],
      ['TOP 100',statInt(stats.top100),'Top 100 au général'],
+     ['TAUX DE PODIUMS',stats.ranked.length?percent(stats.podiums/stats.ranked.length*100):'—','Podiums / courses classées'],
+     ['TAUX DE TOP 10',stats.ranked.length?percent(stats.top10/stats.ranked.length*100):'—','Top 10 / courses classées'],
      ['MEILLEURE PLACE',stats.best?'#'+statInt(statRank(stats.best)):'—',stats.best?.name||'Aucun résultat enregistré'],
      ['PLACE MOYENNE',stats.meanRank===null?'—':statDecimal(stats.meanRank,1),stats.ranked.length+' courses classées'],
      ['PLACE MÉDIANE',stats.medianRank===null?'—':statDecimal(stats.medianRank,1),'Résultats au général'],
      ['MEILLEUR TOP %',stats.bestRelative?'Top '+percent(stats.bestRelative.value):'—',stats.bestRelative?stats.bestRelative.race.name:'Renseigne aussi les participants'],
-     ['TOP % MOYEN',stats.meanRelative===null?'—':percent(stats.meanRelative),'Place ÷ nombre de participants']
+     ['TOP % MOYEN',stats.meanRelative===null?'—':percent(stats.meanRelative),'Place ÷ nombre de participants'],
+     ['MEILLEUR NATIONAL',stats.bestRegional.rankNational?'#'+statInt(stats.bestRegional.rankNational.rank):'—',stats.bestRegional.rankNational?.r.name||'Non renseigné'],
+     ['MEILLEUR DÉPARTEMENTAL',stats.bestRegional.rankDepartment?'#'+statInt(stats.bestRegional.rankDepartment.rank):'—',stats.bestRegional.rankDepartment?.r.name||'Non renseigné'],
+     ['MEILLEUR VILLE',stats.bestRegional.rankCity?'#'+statInt(stats.bestRegional.rankCity.rank):'—',stats.bestRegional.rankCity?.r.name||'Non renseigné'],
+     ['MEILLEUR TEAM',stats.bestRegional.rankTeam?'#'+statInt(stats.bestRegional.rankTeam.rank):'—',stats.bestRegional.rankTeam?.r.name||'Non renseigné']
    ]},
    {title:'TEMPS DE NAVIGATION',items:[
      ['TEMPS CUMULÉ',stats.durationRows.length?statDuration(stats.totalSeconds):'—',stats.durationRows.length+' courses terminées avec durée'],

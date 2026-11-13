@@ -220,15 +220,43 @@ function selectWorkspace(view){
  if(showStats)renderStatistics();
 }
 function preview(k){const img=$('preview-'+k),ph=$('placeholder-'+k);img.hidden=!validImage(pictures[k]);ph.hidden=validImage(pictures[k]);if(validImage(pictures[k]))img.src=pictures[k];else img.removeAttribute('src');}
-function openEditor(r){editId=r?.id||'';const data=r||normal();for(const k of Object.keys(props))getField(k).value=data[k]||'';legacyArrival={start:data.start,startTime:data.startTime,duration:data.duration,end:data.end,endTime:data.endTime};updateArrival();$('race-live').checked=!!data.live;equipmentInputs().forEach(input=>{input.checked=input.value===validEquipment(data.equipment);});for(const k of imageKeys){pictures[k]=data[k]||'';preview(k);}$('dialog-title').textContent=editId?'MODIFIER LA COURSE':'AJOUTER UNE COURSE';$('delete-race').hidden=!editId;if(!dialog.open)dialog.showModal();document.body.style.overflow='hidden';dialog.querySelector('.dialog-scroll').scrollTop=0;getField('name').focus({preventScroll:true});}
+function openEditor(r){
+ editId=r?.id||'';
+ const data=r||normal();
+ for(const k of Object.keys(props))getField(k).value=data[k]||'';
+ getField('classColor').value=colorSafe(data.classColor);
+ legacyArrival={start:data.start,startTime:data.startTime,duration:data.duration,end:data.end,endTime:data.endTime};
+ updateArrival();
+ $('race-live').checked=!!data.live;
+ $('race-upcoming').checked=!!data.upcoming;
+ equipmentInputs().forEach(input=>{input.checked=input.value===validEquipment(data.equipment);});
+ for(const k of imageKeys){pictures[k]=data[k]||'';preview(k);}
+ $('dialog-title').textContent=editId?'MODIFIER LA COURSE':'AJOUTER UNE COURSE';
+ $('delete-race').hidden=!editId;
+ if(!dialog.open)dialog.showModal();
+ document.body.style.overflow='hidden';dialog.querySelector('.dialog-scroll').scrollTop=0;
+ getField('name').focus({preventScroll:true});
+}
 const closeEditor=()=>{if(dialog.open)dialog.close();};
 dialog.addEventListener('close',()=>{document.body.style.overflow='';editId='';});dialog.addEventListener('click',e=>{if(e.target===dialog)closeEditor();});
 document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',closeEditor));
 async function saveEditor(e){
  e.preventDefault();if(writeBusy||uploads)return;
- const old=rows.find(x=>x.id===editId);const r={...(old||normal()),updatedAt:now(),live:$('race-live').checked};
- const arrival=updateArrival();if(arrival.status==='invalid-duration'||arrival.status==='invalid-date'){toast('Corrige la durée ou les horaires avant d’enregistrer.',true);getField(arrival.status==='invalid-duration'?'duration':'start').focus();return;}
+ const old=rows.find(x=>x.id===editId);const r={...(old||normal()),updatedAt:now(),live:$('race-live').checked,upcoming:$('race-upcoming').checked};
+ if(r.live&&r.upcoming){toast('Une course ne peut pas être à venir et en cours simultanément.',true);return;}
+ const arrival=updateArrival();if(arrival.status==='invalid-duration'||arrival.status==='invalid-date'){toast('Corrige la durée ou les horaires avant d’enregistrer.',true);getField(arrival.status==='invalid-duration'?'durationDays':'start').focus();return;}
+ if(syncDurationInput()==='invalid'){toast('Durée incorrecte : vérifie les jours, heures, minutes et secondes.',true);getField('durationDays').focus();return;}
  for(const k of Object.keys(props))r[k]=clean(getField(k).value,props[k]);
+ for(const [place,total] of rankPairs){
+   const input=getField(place),run=getField(total);
+   const placeText=input.value.trim(),totalText=run.value.trim();
+   if(placeText&&!intString(placeText)){toast('Classement invalide : saisis une position numérique.',true);input.focus();return;}
+   if(totalText&&!intString(totalText)){toast('Nombre de joueurs invalide.',true);run.focus();return;}
+   if(totalText&&!placeText){toast('Renseigne aussi la position du classement.',true);input.focus();return;}
+   if(placeText&&totalText&&Number(intString(placeText))>Number(intString(totalText))){toast('La position ne peut pas dépasser le nombre de joueurs.',true);input.focus();return;}
+   r[place]=intString(placeText);r[total]=intString(totalText);
+ }
+ r.classColor=colorSafe(r.classColor);r.vsr=VSR[r.vsr]?r.vsr:'';
  if(arrival.status==='ready'){r.end=arrival.end;r.endTime=arrival.endTime;}
  const chosen=equipmentInputs().filter(input=>input.checked);if(chosen.length>1){toast('Une seule méthode d’équipement est autorisée.',true);return;}
  r.equipment=validEquipment(chosen[0]?.value);
@@ -301,12 +329,17 @@ $('race-equipment-group').addEventListener('change',event=>{
  if(!selected||!selected.checked)return;
  equipmentInputs().forEach(input=>{if(input!==selected)input.checked=false;});
 });
-for(const key of ['start','startTime','duration'])getField(key).addEventListener('input',updateArrival);
-for(const key of ['start','startTime','duration'])getField(key).addEventListener('change',updateArrival);
+for(const key of ['start','startTime','durationDays','durationHours','durationMinutes','durationSeconds'])
+  getField(key).addEventListener('input',updateArrival);
+for(const key of ['start','startTime','durationDays','durationHours','durationMinutes','durationSeconds'])
+  getField(key).addEventListener('change',updateArrival);
+$('race-live').addEventListener('change',event=>{if(event.target.checked)$('race-upcoming').checked=false;});
+$('race-upcoming').addEventListener('change',event=>{if(event.target.checked)$('race-live').checked=false;});
+for(const view of ['races','stats'])$('view-'+view).addEventListener('click',()=>selectWorkspace(view));
 $('new-race').addEventListener('click',()=>openEditor());$('empty-add').addEventListener('click',()=>openEditor());$('race-form').addEventListener('submit',saveEditor);$('delete-race').addEventListener('click',()=>{if(editId)deleteRace(editId);});
-for(const id of ['search','filter-status','filter-class','sort'])$(id).addEventListener(id==='search'?'input':'change',render);
+for(const id of ['search','filter-status','filter-vsr','filter-class','sort'])$(id).addEventListener(id==='search'?'input':'change',render);
 for(const key of imageKeys){$('image-'+key).addEventListener('change',e=>{const f=e.target.files[0];e.target.value='';fileData(f,key);});document.querySelector('[data-remove="'+key+'"]').addEventListener('click',()=>{pictures[key]='';preview(key);});const zone=document.querySelector('[data-image="'+key+'"] .upload-preview');zone.addEventListener('dragover',e=>{e.preventDefault();});zone.addEventListener('drop',e=>{e.preventDefault();fileData(e.dataTransfer?.files[0],key);});}
-$('cards').addEventListener('click',e=>{const btn=e.target.closest('[data-action]');if(!btn)return;const r=rows.find(x=>x.id===btn.closest('[data-id]')?.dataset.id);if(!r)return;if(btn.dataset.action==='edit')openEditor(r);if(btn.dataset.action==='delete')deleteRace(r.id);if(btn.dataset.action==='png')exportPNG(r);});
+$('cards').addEventListener('click',e=>{const btn=e.target.closest('[data-action]');if(!btn)return;const r=rows.find(x=>x.id===btn.closest('[data-id]')?.dataset.id);if(!r)return;if(btn.dataset.action==='edit')openEditor(r);if(btn.dataset.action==='delete')deleteRace(r.id);if(btn.dataset.action==='png')exportPNG(r);if(btn.dataset.action==='calendar')exportCalendar(r);});
 $('export-json').addEventListener('click',exportJSON);$('import-json').addEventListener('change',e=>importJSON(e.target.files[0]));document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'&&!dialog.open){e.preventDefault();$('search').focus();}});
 const bridge=window.RapliModuleBridge={module:'regatta',ready:false,getState:()=>({records:rows,logos:[]}),notify:msg=>toast(msg),replaceState:async data=>{if(!Array.isArray(data?.records)||!Array.isArray(data?.logos)||data.records.length>20000||data.logos.length)throw Error('Collection Regatta cloud invalide');const next=data.records.map(normal);if(new Set(next.map(r=>r.id)).size!==next.length)throw Error('Doublons cloud');await replaceRows(next);}};
 window.RapliRegatta={getCount:()=>rows.length};

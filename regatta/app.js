@@ -71,7 +71,8 @@ function updateArrival(){
    message.textContent='Arrivée calculée automatiquement · '+dateTimeFR(outcome.end,outcome.endTime);
    message.dataset.state='ok';
  }else{
-   const sameAsLegacy=legacyArrival&&date===legacyArrival.start&&time===legacyArrival.startTime&&duration===legacyArrival.duration;
+   const sameAsLegacy=legacyArrival&&date===legacyArrival.start&&time===legacyArrival.startTime&&
+   (duration===legacyArrival.duration||(duration===''&&parseRaceDuration(legacyArrival.duration).status!=='valid'));
    getField('end').value=sameAsLegacy?legacyArrival.end:'';
    getField('endTime').value=sameAsLegacy?legacyArrival.endTime:'';
    message.dataset.state=outcome.status.startsWith('invalid')?'error':'waiting';
@@ -92,6 +93,12 @@ const validEquipment=value=>Object.prototype.hasOwnProperty.call(equipmentModes,
 const equipmentInputs=()=>[...document.querySelectorAll('input[name="race-equipment"]')];
 const VSR=Object.freeze({hc:'HORS CATÉGORIE',vsr1:'VSR 1',vsr2:'VSR 2',vsr3:'VSR 3'});
 const colorSafe=v=>/^#[a-f0-9]{6}$/i.test(v||'')?v:'#008fa1';
+const classTextColor=color=>{
+ const hex=colorSafe(color).slice(1),channels=[0,2,4].map(i=>parseInt(hex.slice(i,i+2),16)/255)
+   .map(c=>c<=0.04045?c/12.92:((c+0.055)/1.055)**2.4);
+ const luminance=0.2126*channels[0]+0.7152*channels[1]+0.0722*channels[2];
+ return luminance>0.30?'#132d3f':'#ffffff';
+};
 const intString=v=>{const raw=String(v??'').trim().replace(/\s|\u00a0/g,'');return /^\d{1,12}$/.test(raw)?String(Number(raw)):'';};
 const rankPairs=[['rank','rankTotal'],['rankNational','rankNationalTotal'],['rankDepartment','rankDepartmentTotal'],['rankCity','rankCityTotal'],['rankTeam','rankTeamTotal']];
 const rankDisplay=(rank,total)=>rank?rank+(total?' / '+Number(total).toLocaleString('fr-FR'):''):'';
@@ -146,7 +153,7 @@ function card(r){
    rankHtml('🇨🇶','DÉPARTEMENTAL',r.rankDepartment,r.rankDepartmentTotal,'rank-department')+
    rankHtml('🏙️','VILLE',r.rankCity,r.rankCityTotal,'rank-city')+
    rankHtml('🏴‍☠️','TEAM',r.rankTeam,r.rankTeamTotal,'rank-team');
- return '<article class="card'+(r.live?' live':'')+(r.upcoming?' upcoming':'')+'" data-id="'+safe(r.id)+'" style="--class-tag:'+tag+'">'+
+ return '<article class="card'+(r.live?' live':'')+(r.upcoming?' upcoming':'')+'" data-id="'+safe(r.id)+'" style="--class-tag:'+tag+';--class-ink:'+classTextColor(tag)+'">'+
  '<div class="card-top"><div class="race-icon card-photo">'+(validImage(r.icon)?imageTag(r.icon,'Affiche '+r.name):'<div class="icon-placeholder">⛵</div>')+'</div><span class="badge-status">'+statusTitle[status]+'</span></div>'+
  '<div class="card-content"><div class="card-eyebrow"><span class="class-tag">'+safe(r.boatClass||'VIRTUAL REGATTA')+'</span><span class="year">'+safe(r.edition)+'</span></div>'+
  '<div class="card-category">'+(mode?'<span class="vsr-badge'+(r.vsr==='hc'?' hc':'')+'">'+safe(mode)+'</span>':'')+'</div>'+
@@ -300,7 +307,7 @@ async function exportPNG(r){
   ctx.fillStyle='#15384a';ctx.fillRect(0,0,W,HEADER);
   ctx.fillStyle='#00c6c8';ctx.fillRect(0,0,900,8);ctx.fillStyle='#f30082';ctx.fillRect(900,0,300,8);
   ctx.fillStyle='#fff';ctx.font='900 49px Poppins,sans-serif';ctx.fillText('RAPLI REGATTA',49,82);
-  ctx.textAlign='right';ctx.font='800 19px Poppins,sans-serif';ctx.fillStyle='#caecf2';
+  ctx.textAlign='right';ctx.font=(r.vsr==='hc'?'900 21px':'800 19px')+' Poppins,sans-serif';ctx.fillStyle=r.vsr==='hc'?'#e6bb54':'#caecf2';
   if(VSR[r.vsr])ctx.fillText(VSR[r.vsr],1151,62);
   if(equipmentModes[r.equipment]){ctx.font='700 15px Poppins,sans-serif';ctx.fillText('ÉQUIPEMENT · '+equipmentModes[r.equipment],1151,92);}
   ctx.textAlign='left';
@@ -312,7 +319,7 @@ async function exportPNG(r){
   const y=HEADER+PHOTO;
   const tag=colorSafe(r.classColor);
   ctx.fillStyle=tag;ctx.fillRect(48,y+24,Math.min(560,Math.max(140,ctx.measureText(r.boatClass||'VIRTUAL REGATTA').width+45)),36);
-  ctx.fillStyle='#fff';ctx.font='800 18px Poppins,sans-serif';ctx.fillText((r.boatClass||'VIRTUAL REGATTA').toUpperCase().slice(0,28),61,y+49);
+  ctx.fillStyle=classTextColor(tag);ctx.font='800 18px Poppins,sans-serif';ctx.fillText((r.boatClass||'VIRTUAL REGATTA').toUpperCase().slice(0,28),61,y+49);
   ctx.fillStyle='#73909e';ctx.textAlign='right';ctx.font='700 17px Poppins,sans-serif';ctx.fillText((r.edition||'').slice(0,40),1151,y+49);ctx.textAlign='left';
   ctx.fillStyle='#123648';ctx.font='900 43px Poppins,sans-serif';wrap(ctx,r.name,1090,2).forEach((line,i)=>ctx.fillText(line,48,y+111+i*51));
   if(r.boat){ctx.fillStyle='#7a919d';ctx.font='700 18px Poppins,sans-serif';wrap(ctx,r.boat,1050,1).forEach(t=>ctx.fillText(t,48,y+202));}

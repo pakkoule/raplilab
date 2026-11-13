@@ -59,11 +59,16 @@
         <label>CLASSE DE BATEAU<input id="race-class" maxlength="100" list="boat-classes" placeholder="IMOCA"><datalist id="boat-classes"><option value="IMOCA"><option value="ULTIM"><option value="Class40"><option value="Ocean Fifty"><option value="Mini 6.50"></datalist></label>
         <label>NOM DU BATEAU<input id="race-boat" maxlength="140" placeholder="Mon IMOCA"></label>
         <label>DATE DE DÉPART<input id="race-start" type="date"></label>
-        <label>DATE D’ARRIVÉE<input id="race-end" type="date"></label>
+        <label>HEURE DE DÉPART<input id="race-start-time" type="time" step="60"></label>
+        <label class="wide">DURÉE DE LA COURSE<input id="race-duration" maxlength="100" placeholder="12 j 08 h 35 min" autocomplete="off" aria-describedby="duration-help">
+          <small class="field-help" id="duration-help">Exemples : 12 j 08 h 35 min · 8h35 · 45 min</small>
+        </label>
+        <label class="arrival-field">DATE D’ARRIVÉE <span class="computed-label">AUTO</span><input id="race-end" type="date" readonly aria-describedby="arrival-feedback"></label>
+        <label class="arrival-field">HEURE D’ARRIVÉE <span class="computed-label">AUTO</span><input id="race-end-time" type="time" readonly aria-describedby="arrival-feedback"></label>
+        <p class="arrival-feedback wide" id="arrival-feedback" role="status" aria-live="polite">La date et l’heure d’arrivée sont calculées à partir du départ et de la durée.</p>
         <label>CLASSEMENT GÉNÉRAL<input id="race-rank" maxlength="40" placeholder="235e / 4 250"></label>
         <label>CLASSEMENT DÉPARTEMENTAL<input id="race-rank-department" maxlength="40" placeholder="12e / 180"></label>
         <label>CLASSEMENT NATIONAL<input id="race-rank-national" maxlength="40" placeholder="96e / 2 100"></label>
-        <label>TEMPS DE COURSE<input id="race-duration" maxlength="100" placeholder="12 j 08 h 35 min"></label>
         <fieldset class="equipment-choice wide" id="race-equipment-group">
           <legend>ÉQUIPEMENT DE COURSE <span class="equipment-help">Une seule option maximum · facultatif</span></legend>
           <div class="equipment-options" aria-label="Type de pack utilisé pendant la course">

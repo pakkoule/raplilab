@@ -10,9 +10,9 @@
   const REF_PREFIX = 'rapli-private://';
   const MAX_IMAGE = 10 * 1024 * 1024;
   const bridge = window.RapliModuleBridge;
-  if (!bridge || !['time','sports','refs','stickers','tools','tiers'].includes(bridge.module)) return;
+  if (!bridge || !['time','sports','refs','stickers','tools','tiers','top10'].includes(bridge.module)) return;
   const MODULE = bridge.module;
-  const manualOnly = MODULE === 'tiers';
+  const manualOnly = MODULE === 'tiers' || MODULE === 'top10';
   const el = id => document.getElementById(id);
   let client, userId, ownerId, revision = 0, exists = false, ready = false, busy = false;
   let dirty = false, conflict = false, error = false, hydratedBaseline = null;
@@ -317,8 +317,8 @@
       try{
         if(bridge.ready){
           // Global save never asks to force-overwrite another device's newer data.
-          success=manualOnly && operation==='save' && window.RapliTiers?.hasUnsaved?.()
-            ? !!(await window.RapliTiers.saveCurrent())
+          success=manualOnly && operation==='save' && (MODULE==='tiers'?window.RapliTiers?.hasUnsaved?.():window.RapliTop10?.hasUnsaved?.())
+            ? !!(await (MODULE==='tiers'?window.RapliTiers.saveCurrent():window.RapliTop10.saveCurrent()))
             : operation==='save'?await saveNow(true):await refresh(true);
         }else{
           setStatus('Application non initialisée','error');

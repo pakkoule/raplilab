@@ -50,3 +50,21 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}button:disabled{
 @media(max-width:750px){input,select,textarea{font-size:16px!important}}
 /* Keep long user-provided scores inside the card. */
 .rank-score{max-width:100%;white-space:normal;overflow-wrap:anywhere}
+
+/* Quick Top N control beside the classification title */
+.board-heading-actions{flex-wrap:wrap;justify-content:flex-end}
+.quick-count{display:flex;align-items:center;gap:7px;font-size:10px;font-weight:800;color:#48617f;white-space:nowrap}
+.quick-count select{font:800 11px Poppins,sans-serif;min-height:35px;padding:7px 27px 7px 10px;border:1px solid #b8cce4;border-radius:8px;background:#ecf3fd;color:#143f75;cursor:pointer}
+.custom-count{display:flex;align-items:center;gap:5px}
+.custom-count input{width:75px;min-height:35px;padding:6px 8px;border:1px solid #b8cce4;border-radius:8px;color:#153e75;background:#fff}
+@media(max-width:750px){
+  .board-heading{align-items:flex-start}
+  .board-heading-actions{gap:5px}
+  .quick-count span{display:none}
+  .quick-count select{min-height:34px;padding:6px 20px 6px 7px}
+  .custom-count input{width:65px;min-height:34px}
+}
+@media(max-width:460px){
+  .board-heading{flex-wrap:wrap}
+  .board-heading-actions{width:100%;justify-content:flex-start}
+}

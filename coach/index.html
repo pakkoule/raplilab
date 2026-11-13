@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#eef1ee">
+  <title>Rapli Coach — Le Lab de Rapli</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main class="shell">
+  <section class="workspace" aria-label="Rapli Coach — compositions football et basketball">
+    <div class="topline">
+      <div class="title-wrap"><label for="comp-title" class="sr-only">Titre de la composition</label>
+        <input id="comp-title" maxlength="140" value="Mon XI" autocomplete="off" aria-label="Titre de la composition">
+        <span id="dirty" class="dirty" hidden title="Modifications non enregistrées">●</span>
+      </div>
+      <div class="actions">
+        <button id="new" class="btn quiet">＋ NOUVEAU</button>
+        <button id="undo" class="btn square" title="Annuler" aria-label="Annuler" disabled>↶</button>
+        <button id="redo" class="btn square" title="Rétablir" aria-label="Rétablir" disabled>↷</button>
+        <button id="save" class="btn primary">▣ ENREGISTRER</button>
+        <button id="export" class="btn dark">⇩ EXPORTER PNG</button>
+      </div>
+    </div>
+    <div class="viewbar">
+      <label>SPORT <strong id="sport-display">FOOTBALL</strong></label>
+      <label id="formation-wrap">FORMATION
+        <select id="formation" aria-label="Formation de football">
+          <option>4-3-3</option><option>4-4-2</option><option>4-2-3-1</option><option>3-5-2</option><option>3-4-3</option>
+        </select>
+      </label>
+      <label>AFFICHAGE
+        <select id="mode" aria-label="Présentation des joueurs">
+          <option value="dots">PASTILLES + NOMS</option>
+          <option value="photos">PORTRAITS + NOMS</option>
+          <option value="photos-only">PORTRAITS SEULS</option>
+        </select>
+      </label>
+      <button id="clear" class="btn quiet small">VIDER LES JOUEURS</button>
+    </div>
+    <div class="board-holder"><div class="board-area">
+      <canvas id="board" width="1024" height="1024" aria-label="Aperçu de la composition"></canvas>
+      <div id="slot-overlay" class="slot-overlay" aria-label="Choisir un emplacement"></div>
+    </div></div>
+    <p class="helper">Clique sur un poste pour ajouter ou modifier un joueur. Fais glisser les joueurs pour les déplacer ou les échanger.</p>
+    <details id="appearance" class="drawer">
+      <summary>◉ PERSONNALISER L'APPARENCE <span>Couleurs · Portraits · Typographie</span></summary>
+      <div class="settings">
+        <label>Fond extérieur<input type="color" data-setting="outside" value="#edf0eb"></label>
+        <label>Terrain<input type="color" data-setting="field" value="#416458"></label>
+        <label>Lignes du terrain<input type="color" data-setting="lines" value="#e5efdf"></label>
+        <label>Fond du titre<input type="color" data-setting="titleBg" value="#263c34"></label>
+        <label>Couleur du titre<input type="color" data-setting="titleText" value="#ffffff"></label>
+        <label>Couleur des pastilles<input type="color" data-setting="dot" value="#a5c0ab"></label>
+        <label>Contour des joueurs<input type="color" data-setting="border" value="#ffffff"></label>
+        <label>Épaisseur du contour<select data-setting="borderWidth"><option value="2">FIN</option><option value="4" selected>NORMAL</option><option value="6">ÉPAIS</option></select></label>
+        <label>Texte des noms<input type="color" data-setting="nameText" value="#ffffff"></label>
+        <label>Police des noms<select data-setting="nameFont"><option value="Poppins">Poppins</option><option value="Georgia">Georgia (serif)</option><option value="Arial">Arial</option><option value="Impact">Impact</option></select></label>
+        <label>Taille des noms<input type="range" data-setting="nameSize" min="12" max="29" value="21"><output id="nameSize-output">21</output></label>
+        <label>Taille des portraits<input type="range" id="portrait-size" data-setting="portraitSize" min="46" max="100" value="73"><output id="portraitSize-output">73</output></label>
+      </div>
+    </details>
+    <details id="library" class="drawer">
+      <summary>▤ MA BIBLIOTHÈQUE <span id="library-count">0 composition</span></summary>
+      <div class="library-controls">
+        <input type="search" id="library-search" placeholder="Rechercher une composition…" aria-label="Rechercher dans la bibliothèque">
+        <select id="library-sport" aria-label="Filtrer par sport"><option value="all">TOUS LES SPORTS</option><option value="football">FOOTBALL</option><option value="basketball">BASKETBALL</option></select>
+      </div>
+      <div id="library-items" class="library-items"></div>
+    </details>
+    <div class="footer"><span>RAPLI COACH · LE LAB DE RAPLI</span>
+      <span id="rapli-module-cloud-status">Connexion cloud…</span>
+      <div class="cloud-actions"><button type="button" id="rapli-module-cloud-save" title="Envoyer les enregistrements dans Supabase">☁ ENVOYER</button>
+      <button type="button" id="rapli-module-cloud-refresh" title="Récupérer les données Supabase">↻ ACTUALISER</button></div>
+    </div>
+    <p id="notice" class="notice" role="status" aria-live="polite"></p>
+  </section>
+</main>
+<dialog id="dialog" aria-label="Rapli Coach"><div id="dialog-content"></div></dialog>
+<script defer src="app.js"></script>
+<script defer src="../shared/module-cloud.js"></script>
+</body>
+</html>

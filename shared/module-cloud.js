@@ -317,7 +317,9 @@
       try{
         if(bridge.ready){
           // Global save never asks to force-overwrite another device's newer data.
-          success=operation==='save'?await saveNow(true):await refresh(true);
+          success=manualOnly && operation==='save' && window.RapliTiers?.hasUnsaved?.()
+            ? !!(await window.RapliTiers.saveCurrent())
+            : operation==='save'?await saveNow(true):await refresh(true);
         }else{
           setStatus('Application non initialisée','error');
         }

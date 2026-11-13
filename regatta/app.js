@@ -20,7 +20,7 @@ function parseRaceDuration(raw){
    return {status:'valid',seconds:h*3600+m*60+sec};
  }
  // Support existing shorthand, including "8h35" and full duration with seconds.
- text=text.replace(/(\d+)\s*h\s*(\d{1,2})(?![a-z])/g,'$1h$2min');
+ text=text.replace(/(\d+)\s*h\s*(\d{1,2})\s*$/,'$1h$2min');
  let seconds=0,tokens=0;
  const remaining=text.replace(/(\d+)\s*(jours?|j|heures?|h|minutes?|mins?|min|mn|m|secondes?|secs?|sec|s)(?![a-z])/g,(_match,n,unit)=>{
    const value=Number(n);

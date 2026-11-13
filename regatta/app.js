@@ -497,6 +497,14 @@ function renderClassColors(){
    '<label class="class-color-control"><span class="color-control-label">'+(customized?'PERSONNALISÉE':'PAR DÉFAUT')+'</span>'+
    '<input type="color" value="'+selected+'" data-class-key="'+safe(key)+'" aria-label="Couleur de la classe '+safe(label)+'"></label></div>';
  }).join('');
+ $('vsr-colors-list').innerHTML=VSR_ORDER.map((key,i)=>{
+  const color=getVSRTagColor(key),count=rows.filter(r=>r.vsr===key).length;
+  return '<div class="class-color-row vsr-color-row">'+
+   '<span class="vsr-badge '+(key==='hc'?'hc ':'')+'vsr-'+key+'" style="--vsr-color:'+color+';--vsr-ink:'+classTextColor(color)+'" title="Priorité '+(i+1)+' sur 4">'+safe(VSR[key])+'</span>'+
+   '<span class="class-color-count">'+count+' course'+(count===1?'':'s')+'</span>'+
+   '<label class="class-color-control"><span class="color-control-label">PRIORITÉ '+(i+1)+'</span>'+
+   '<input type="color" value="'+color+'" data-vsr-key="'+key+'" aria-label="Couleur de '+safe(VSR[key])+'"></label></div>';
+ }).join('');
 }
 function changeDefaultClassColor(value){
  const next=colorSafe(value);
@@ -505,7 +513,7 @@ function changeDefaultClassColor(value){
     !confirm('Appliquer cette couleur à toutes les courses ? Les couleurs personnalisées par classe seront réinitialisées.')){
    $('default-class-color').value=classSettings.defaultColor;return;
  }
- storeClassSettings({defaultColor:next,classColors:{}});
+ storeClassSettings({...classSettings,defaultColor:next,classColors:{}});
  toast('Couleur générale appliquée à toutes les courses ✓');
 }
 function changeSpecificClassColor(key,value){
@@ -514,10 +522,16 @@ function changeSpecificClassColor(key,value){
  const next=colorSafe(value),colors={...classSettings.classColors};
  if(next===classSettings.defaultColor)delete colors[normalized];
  else colors[normalized]=next;
- storeClassSettings({defaultColor:classSettings.defaultColor,classColors:colors});
+ storeClassSettings({...classSettings,classColors:colors});
  toast('Couleur de la classe '+normalized+' mise à jour sur toutes ses courses ✓');
 }
 
+function changeVSRColor(key,value){
+ if(!VSR[key]||!/^#[a-f0-9]{6}$/i.test(value||''))return;
+ const next={...classSettings.vsrColors,[key]:colorSafe(value)};
+ storeClassSettings({...classSettings,vsrColors:next});
+ toast('Couleur '+VSR[key]+' appliquée à toutes les courses correspondantes ✓');
+}
 function selectWorkspace(view){
  const valid=['races','stats','colors'];
  if(!valid.includes(view))return;
@@ -638,8 +652,9 @@ async function exportPNG(r){
   if(vsrWidth){
     const vsrLabel=VSR[r.vsr],vsrX=tagStart+tagWidth+10;
     ctx.font='900 16px Poppins,sans-serif';
-    ctx.fillStyle=r.vsr==='hc'?'#efcb70':'#e8f2fa';ctx.fillRect(vsrX,y+29,vsrWidth,39);
-    ctx.fillStyle=r.vsr==='hc'?'#75500d':'#386480';ctx.fillText(vsrLabel,vsrX+12,y+55,vsrWidth-23);
+    const vsrColor=getVSRTagColor(r.vsr);
+    ctx.fillStyle=vsrColor;ctx.fillRect(vsrX,y+29,vsrWidth,39);
+    ctx.fillStyle=classTextColor(vsrColor);ctx.fillText(vsrLabel,vsrX+12,y+55,vsrWidth-23);
   }
   ctx.fillStyle='#123648';ctx.font='900 39px Poppins,sans-serif';
   ctx.fillText(r.name,48,y+62,Math.max(190,tagStart-64));
@@ -779,6 +794,10 @@ $('default-class-color').addEventListener('change',event=>changeDefaultClassColo
 $('class-colors-list').addEventListener('change',event=>{
  const el=event.target;
  if(el.matches?.('input[data-class-key]'))changeSpecificClassColor(el.dataset.classKey,el.value);
+});
+$('vsr-colors-list').addEventListener('change',event=>{
+ const el=event.target;
+ if(el.matches?.('input[data-vsr-key]'))changeVSRColor(el.dataset.vsrKey,el.value);
 });
 $('new-race').addEventListener('click',()=>openEditor());$('empty-add').addEventListener('click',()=>openEditor());$('race-form').addEventListener('submit',saveEditor);$('delete-race').addEventListener('click',()=>{if(editId)deleteRace(editId);});
 for(const id of ['search','filter-status','filter-vsr','filter-class','sort'])$(id).addEventListener(id==='search'?'input':'change',render);

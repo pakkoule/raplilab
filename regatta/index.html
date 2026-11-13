@@ -21,6 +21,7 @@
       <span id="rapli-module-cloud-status" role="status" aria-live="polite">Connexion cloud…</span>
       <button type="button" class="btn icon" id="rapli-module-cloud-save" title="Sauvegarder vers Supabase" aria-label="Sauvegarder vers Supabase">☁</button>
       <button type="button" class="btn icon" id="rapli-module-cloud-refresh" title="Actualiser depuis Supabase" aria-label="Actualiser depuis Supabase">↻</button>
+      <button type="button" class="btn primary tiny" id="export-general-pdf">↓ PDF GLOBAL</button>
       <button type="button" class="btn subtle tiny" id="export-json">↓ JSON</button>
       <label class="btn subtle tiny" for="import-json">↑ JSON</label><input hidden type="file" id="import-json" accept=".json,application/json">
     </div>
@@ -44,7 +45,7 @@
     <label>STATUT<select id="filter-status"><option value="">Toutes les courses</option><option value="live">En cours</option><option value="finished">Terminées</option><option value="planned">À venir</option></select></label>
     <label>CATÉGORIE VSR<select id="filter-vsr"><option value="">Toutes les catégories</option><option value="hc">Hors Catégorie</option><option value="vsr1">VSR 1</option><option value="vsr2">VSR 2</option><option value="vsr3">VSR 3</option></select></label>
     <label>CLASSE<select id="filter-class"><option value="">Toutes les classes</option></select></label>
-    <label>TRIER PAR<select id="sort"><option value="start">Départ récent → ancien</option><option value="recent">Modifications récentes</option><option value="old">Ajout ancien</option><option value="name">Nom A → Z</option></select></label>
+    <label>TRIER PAR<select id="sort"><option value="start">Départ récent → ancien</option><option value="vsr">VSR · importance</option><option value="recent">Modifications récentes</option><option value="old">Ajout ancien</option><option value="name">Nom A → Z</option></select></label>
   </section>
   <div class="collection-head"><strong>MES COURSES <span class="mini-accent">/ RACE ARCHIVE</span></strong><span id="result-count"></span></div>
   <section id="cards" class="cards" aria-live="polite"></section>
@@ -59,7 +60,7 @@
     <div id="stats-content" class="stats-content"></div>
   </section>
   <section id="colors-panel" class="colors-panel" role="tabpanel" aria-labelledby="view-colors" hidden>
-    <div class="colors-heading"><strong>COULEURS DES CLASSES DE BATEAUX</strong><p>Réglages communs à toutes les courses. Les couleurs sont partagées avec Supabase et les exports.</p></div>
+    <div class="colors-heading"><strong>COULEURS DES TAGS</strong><p>Réglages communs à toutes les courses : bateaux et catégories VSR. Les couleurs sont conservées dans les sauvegardes.</p></div>
     <div class="color-global">
       <label for="default-class-color">COULEUR GLOBALE DES TAGS <input type="color" id="default-class-color" value="#008fa1" aria-label="Couleur globale des classes de bateaux"></label>
       <p>Modifier cette couleur l'applique à <strong>toutes les courses</strong> et réinitialise les couleurs spécifiques. Tu peux ensuite attribuer une couleur différente à une classe ci-dessous.</p>
@@ -67,9 +68,32 @@
     <div class="colors-list-head"><strong>COULEURS PAR CLASSE</strong><span id="colors-class-count"></span></div>
     <div id="class-colors-list" class="class-colors-list"></div>
     <p class="colors-help">Une couleur modifiée ici s'applique immédiatement à toutes les courses de la même classe de bateau, même aux anciennes fiches.</p>
+    <div class="colors-list-head vsr-colors-head"><strong>COULEURS DES CATÉGORIES VSR</strong><span>Priorité : HC › VSR 1 › VSR 2 › VSR 3</span></div>
+    <div id="vsr-colors-list" class="vsr-colors-list"></div>
+    <p class="colors-help">Hors Catégorie reste la plus haute catégorie, indépendamment de sa couleur. Les changements de couleur VSR s'appliquent à toutes les courses concernées.</p>
   </section>
   <p id="notice" class="notice" role="status" aria-live="polite"></p>
 </main>
+
+<dialog id="pdf-dialog" aria-labelledby="pdf-dialog-title">
+  <form id="pdf-form">
+    <header class="dialog-head"><h2 id="pdf-dialog-title">EXPORT PDF GLOBAL</h2><button type="button" class="close" data-pdf-close aria-label="Fermer">×</button></header>
+    <div class="dialog-scroll">
+      <p class="pdf-intro">Filtre les courses à inclure dans ton rapport. Les filtres se cumulent, les statistiques seront calculées uniquement sur la sélection.</p>
+      <div class="fields pdf-fields">
+        <label>ANNÉE<select id="pdf-year"><option value="">Toutes les années</option></select></label>
+        <label>CATÉGORIE VSR<select id="pdf-vsr"><option value="">Toutes les catégories</option><option value="hc">Hors Catégorie</option><option value="vsr1">VSR 1</option><option value="vsr2">VSR 2</option><option value="vsr3">VSR 3</option></select></label>
+        <label>CLASSE DE BATEAU<select id="pdf-class"><option value="">Toutes les classes</option></select></label>
+        <label>NOM DU BATEAU<select id="pdf-boat"><option value="">Tous les bateaux</option></select></label>
+        <label>STATUT<select id="pdf-status"><option value="">Tous les statuts</option><option value="finished">Terminées</option><option value="live">En cours</option><option value="planned">À venir</option></select></label>
+        <label>ORDRE DU RAPPORT<select id="pdf-order"><option value="vsr">Importance VSR puis date</option><option value="date">Date récente puis ancienne</option></select></label>
+      </div>
+      <div class="pdf-preview-count"><strong id="pdf-match-count">0</strong><span>COURSES DANS LE RAPPORT</span></div>
+      <p class="pdf-hint">Rapport A4 paysage : statistiques, podiums par classement, durées, gains VSR/VR, répartition par importance VSR et catalogue paginé.</p>
+    </div>
+    <footer class="dialog-footer"><button type="button" class="btn subtle" data-pdf-close>ANNULER</button><button id="pdf-generate" class="btn primary" type="submit">↓ TÉLÉCHARGER PDF</button></footer>
+  </form>
+</dialog>
 
 <dialog id="race-dialog" aria-labelledby="dialog-title">
   <form id="race-form">
@@ -106,6 +130,13 @@
           </div>
         </fieldset>
         <label>CATÉGORIE VSR<select id="race-vsr"><option value="">Non renseignée</option><option value="hc">Hors Catégorie</option><option value="vsr1">VSR 1</option><option value="vsr2">VSR 2</option><option value="vsr3">VSR 3</option></select></label>
+        <fieldset class="rewards-field wide">
+          <legend>GAINS DE LA COURSE</legend>
+          <div class="rewards-grid">
+            <label>POINTS VSR GAGNÉS<input type="number" id="race-gain-points" min="0" max="999999999" step="1" inputmode="numeric" placeholder="0" aria-label="Points VSR gagnés"></label>
+            <label>CRÉDITS VR GAGNÉS<input type="number" id="race-gain-credits" min="0" max="999999999" step="1" inputmode="numeric" placeholder="0" aria-label="Crédits VR gagnés"></label>
+          </div>
+        </fieldset>
         <fieldset class="equipment-choice wide" id="race-equipment-group">
           <legend>ÉQUIPEMENT DE COURSE <span class="equipment-help">Une seule option maximum · facultatif</span></legend>
           <div class="equipment-options" aria-label="Type de pack utilisé pendant la course">

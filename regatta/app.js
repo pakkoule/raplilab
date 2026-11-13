@@ -208,8 +208,45 @@ const statDuration=sec=>{
  const rounded=Math.round(sec),days=Math.floor(rounded/86400),hours=Math.floor((rounded%86400)/3600),minutes=Math.floor((rounded%3600)/60),seconds=rounded%60;
  return (days?statInt(days)+' j ':'')+String(hours).padStart(2,'0')+' h '+String(minutes).padStart(2,'0')+' min '+String(seconds).padStart(2,'0')+' s';
 };
+
+const podiumScopes=Object.freeze([
+ {key:'rank',totalKey:'rankTotal',icon:'🏆',label:'GÉNÉRAL'},
+ {key:'rankNational',totalKey:'rankNationalTotal',icon:'🇫🇷',label:'NATIONAL'},
+ {key:'rankDepartment',totalKey:'rankDepartmentTotal',icon:'🇨🇶',label:'DÉPARTEMENTAL'},
+ {key:'rankCity',totalKey:'rankCityTotal',icon:'🏙️',label:'VILLE'},
+ {key:'rankTeam',totalKey:'rankTeamTotal',icon:'🏴‍☠️',label:'TEAM'}
+]);
+function rankForPodium(r,key,totalKey){
+ const raw=String(r[key]??'').trim();
+ if(!/^\d{1,12}$/.test(raw))return null;
+ const rank=Number(raw),total=String(r[totalKey]??'').trim();
+ if(!Number.isSafeInteger(rank)||rank<1)return null;
+ if(total&&(!/^\d{1,12}$/.test(total)||Number(total)<rank))return null;
+ return rank;
+}
+function countPodiumTypes(completed){
+ return podiumScopes.map(scope=>{
+  const ranked=completed.map(r=>rankForPodium(r,scope.key,scope.totalKey)).filter(n=>n!==null);
+  const gold=ranked.filter(n=>n===1).length;
+  const silver=ranked.filter(n=>n===2).length;
+  const bronze=ranked.filter(n=>n===3).length;
+  const podiums=gold+silver+bronze;
+  return {...scope,ranked:ranked.length,gold,silver,bronze,podiums,
+    share:ranked.length?100*podiums/ranked.length:null};
+ });
+}
+function podiumHistory(completed,all){
+ const years=[...new Set(all.map(r=>/^(\d{4})-\d{2}-\d{2}$/.exec(r.start||'')?.[1]).filter(Boolean))]
+   .sort((a,b)=>Number(a)-Number(b)).slice(-6);
+ return years.map(year=>({
+  year,
+  general:completed.filter(r=>r.start?.slice(0,4)===year&&[1,2,3].includes(rankForPodium(r,'rank','rankTotal'))).length
+ }));
+}
+
 function computeRaceStatistics(items){
  const total=items.length,finished=items.filter(r=>raceStatus(r)==='finished');
+ const podiumTypes=countPodiumTypes(finished),podiumYears=podiumHistory(finished,items);
  const live=items.filter(r=>r.live&&!r.upcoming);
  const upcoming=items.filter(r=>r.upcoming);
  const ranked=finished.filter(r=>statRank(r)!==null);
@@ -241,7 +278,7 @@ function computeRaceStatistics(items){
    x.year==='Sans date'?1:y.year==='Sans date'?-1:Number(y.year)-Number(x.year));
  return {
    total,finished,live,upcoming,ranked,relative,best,bestRelative,bestRegional,durationRows,totalSeconds,
-   shortest,longest,yearly,
+   shortest,longest,yearly,podiumTypes,podiumYears,
    winners:ranked.filter(r=>statRank(r)===1).length,
    podiums:ranked.filter(r=>statRank(r)<=3).length,
    top10:ranked.filter(r=>statRank(r)<=10).length,
@@ -324,7 +361,41 @@ function renderStatistics(){
     list.map(x=>'<div class="performance-row"><strong>'+safe(x.label)+'</strong><span>'+statInt(x.count)+'</span><span>'+statInt(x.top10)+'</span><span>'+(x.relativeCount?percent(x.relativeSum/x.relativeCount):'—')+'</span></div>').join('')+'</div>':
     '<p class="stats-empty">Aucun classement général enregistré pour ce groupe.</p>')+'</div>';
  };
- $('stats-content').innerHTML=blocks.map(counterSection).join('')+
+
+ const podiumCard=scope=>{
+  const medals=[['gold','🥇','1re',scope.gold],['silver','🥈','2e',scope.silver],['bronze','🥉','3e',scope.bronze]];
+  const max=Math.max(1,scope.gold,scope.silver,scope.bronze);
+  const bars=medals.map(([kind,emoji,label,count])=>
+   '<div class="podium-column"><span class="podium-column-count">'+statInt(count)+'</span>'+
+   '<div class="podium-column-bar '+kind+'" style="height:'+(count?Math.max(9,Math.round(count/max*49)):3)+'px" aria-hidden="true"></div>'+
+   '<span class="podium-column-label">'+emoji+' '+label+'</span></div>'
+  ).join('');
+  const share=scope.share===null?0:Math.max(0,Math.min(100,scope.share));
+  const summary=scope.share===null?'—':statDecimal(scope.share,1)+' %';
+  const label=scope.icon+' '+scope.label+', '+scope.podiums+' podiums : '+scope.gold+' première place, '+scope.silver+' deuxièmes places, '+scope.bronze+' troisièmes places sur '+scope.ranked+' courses classées';
+  return '<article class="podium-card" aria-label="'+safe(label)+'">'+
+   '<header class="podium-card-head"><span class="podium-card-icon" aria-hidden="true">'+scope.icon+'</span>'+
+     '<strong>'+safe(scope.label)+'</strong></header>'+
+   '<div class="podium-card-summary"><div><strong class="podium-card-total">'+statInt(scope.podiums)+'</strong>'+
+    '<small>PODIUM'+(scope.podiums===1?'':'S')+'</small></div>'+
+    '<div class="podium-ring" style="--podium-share:'+Math.round(share)+'%" role="img" aria-label="'+safe(scope.share===null?'Aucun classement enregistré':summary+' de podiums parmi les courses classées')+'"><span>'+safe(summary)+'</span></div></div>'+
+   '<div class="podium-columns" aria-hidden="true">'+bars+'</div>'+
+   '<footer>'+statInt(scope.ranked)+' course'+(scope.ranked===1?'':'s')+' classée'+(scope.ranked===1?'':'s')+'</footer>'+
+  '</article>';
+ };
+ const podiumMax=Math.max(1,...stats.podiumYears.map(r=>r.general));
+ const yearlyPodiums=stats.podiumYears.length?
+  '<div class="podium-year-bars">'+stats.podiumYears.map(({year,general})=>
+   '<div class="podium-year-item" aria-label="'+general+' podiums au général en '+year+'">'+
+    '<strong>'+statInt(general)+'</strong><div class="podium-year-column"><div style="height:'+(general?Math.max(10,Math.round(general/podiumMax*100)):2)+'%" aria-hidden="true"></div></div>'+
+    '<span>'+safe(year)+'</span></div>'
+  ).join('')+'</div>':'<p class="stats-empty">Aucune année de départ renseignée.</p>';
+ const podiumPanel='<section class="stats-metric-section"><h3>🏆 PODIUMS PAR CLASSEMENT</h3>'+
+  '<p class="stats-caption">Chaque course terminée peut compter dans plusieurs classements. Un podium correspond aux places 1, 2 ou 3 ; le cercle indique le taux de podiums parmi les courses avec ce classement renseigné.</p>'+
+  '<div class="podium-grid">'+stats.podiumTypes.map(podiumCard).join('')+'</div>'+
+  '<div class="podium-year-panel"><h4>PODIUMS AU GÉNÉRAL PAR ANNÉE</h4>'+yearlyPodiums+'</div></section>';
+
+ $('stats-content').innerHTML=blocks.map(counterSection).join('')+podiumPanel+
   '<section class="stats-metric-section"><h3>ÉVOLUTION PAR ANNÉE</h3><p class="stats-caption">Nombre de courses selon la date de départ ; la partie foncée représente les courses terminées.</p>'+annual+'</section>'+
   '<section class="stats-metric-section"><h3>MES HABITUDES DE COURSE</h3><div class="stats-breakdowns">'+
     distribution('CATÉGORIES VSR',group(rows,r=>VSR[r.vsr]||'Non renseignée'))+

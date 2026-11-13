@@ -370,6 +370,16 @@ function toIcsTime(date,clock='00:00'){
  if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||!/^([01]\d|2[0-3]):[0-5]\d(?::[0-5]\d)?$/.test(clock))return '';
  return date.replace(/-/g,'')+'T'+clock.replace(/:/g,'').padEnd(6,'0');
 }
+function foldCalendarLine(line){
+ const encoder=new TextEncoder();
+ let result='',bytes=0;
+ for(const ch of line){
+   const size=encoder.encode(ch).length;
+   if(bytes+size>75){result+='\r\n ';bytes=1;}
+   result+=ch;bytes+=size;
+ }
+ return result;
+}
 function calendarText(r){
  if(!r.upcoming)throw Error('Disponible uniquement pour une course à venir.');
  if(!r.start)throw Error('Renseigne la date de départ pour exporter dans Calendrier.');
@@ -379,7 +389,7 @@ function calendarText(r){
    start=toIcsTime(r.start,startClock);
    if(!start)throw Error('Heure de départ invalide.');
    const end=calculateArrival(r.start,startClock,r.duration);
-   if(end.status==='ready'&&end.end+'T'+end.endTime>r.start+'T'+startClock){
+   if(end.status==='ready'&&parseRaceDuration(r.duration).seconds>0){
      finish=toIcsTime(end.end,end.endTime);
    }else{
      const [year,month,day]=r.start.split('-').map(Number);
@@ -410,7 +420,7 @@ function calendarText(r){
    'DTSTART:'+start+'\r\nDTEND:'+finish;
  return ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Rapli Regatta//FR','CALSCALE:GREGORIAN',
   'BEGIN:VEVENT','UID:'+uidValue,'DTSTAMP:'+stamp,'SUMMARY:'+calendarEscape(r.name),
-  ...times.split('\r\n'),'DESCRIPTION:'+calendarEscape(descriptions),'END:VEVENT','END:VCALENDAR',''].join('\r\n');
+  ...times.split('\r\n'),'DESCRIPTION:'+calendarEscape(descriptions),'END:VEVENT','END:VCALENDAR',''].map(foldCalendarLine).join('\r\n');
 }
 function exportCalendar(r){
  try{

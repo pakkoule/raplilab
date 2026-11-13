@@ -171,7 +171,7 @@ body[data-active="refs"] .portal-header{background:linear-gradient(115deg,#112d3
 @media(prefers-reduced-motion:reduce){.global-cloud-controls button.is-busy svg{animation:none}}
 
 
-/* Seventh workspace: existing Top Tiers; eighth workspace: Rapli Top 10. */
+/* RapliLab workspaces including Top Tiers, Top 10, Coach and LP. */
 .product-tab[data-product="tiers"][aria-selected="true"]{background-color:rgba(230,183,66,.18)!important}
 body[data-active="top10"]{--accent:#f5e6c3;--frame-bg:#e9eef5;--frame-border:#b9cde5}
 body[data-active="top10"] .portal-header{background:linear-gradient(115deg,#071d3e,#17457e 52%,#071d3e)}
@@ -182,8 +182,8 @@ body[data-active="coach"] .portal-header{background:linear-gradient(115deg,#2435
 body[data-active="lp"]{--accent:#c5c6ca;--frame-bg:#e6e6e8;--frame-border:#b5b5ba}
 body[data-active="lp"] .portal-header{background:linear-gradient(115deg,#101114,#32333a 52%,#111215)}
 .product-tab[data-product="lp"][aria-selected="true"]{background-color:rgba(215,216,220,.2)!important}
-@media(min-width:801px){.product-tabs{grid-template-columns:repeat(10,minmax(0,1fr))}}
-@media(max-width:800px){.product-tabs{grid-template-columns:repeat(4,minmax(0,1fr))}.portal-header{min-height:132px}.app-frame{height:calc(100dvh - 179px)}}
+@media(min-width:801px){.product-tabs{grid-template-columns:repeat(10,minmax(0,1fr));width:min(100%,920px)}}
+@media(max-width:800px){.product-tabs{grid-template-columns:repeat(5,minmax(0,1fr))}.portal-header{min-height:132px}.app-frame{height:calc(100dvh - 179px)}}
 @media(max-width:420px){.portal-header{min-height:128px}.app-frame{height:calc(100dvh - 168px)}}
 </style>
 </head>

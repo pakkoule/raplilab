@@ -239,3 +239,52 @@ dialog form{border-radius:18px;background:#fff;display:flex;flex-direction:colum
  .performance-head{font-size:7px}
  .performance-row{font-size:10px}
 }
+
+/* Rapli Regatta: mini graphiques des podiums par niveau de classement. */
+.podium-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:15px 0 20px}
+.podium-card{min-width:0;border:1px solid #d4e5e9;background:linear-gradient(155deg,#fff,#f3fafb);border-radius:13px;padding:14px 14px 11px;box-shadow:0 5px 16px #23495a0d}
+.podium-card-head{display:flex;align-items:center;gap:9px;min-width:0}
+.podium-card-icon{font-size:23px;line-height:1.2;flex:none}
+.podium-card-head>strong{font-size:10px;font-weight:900;color:#335c6b;letter-spacing:.065em;overflow-wrap:anywhere}
+.podium-card-summary{display:flex;align-items:center;justify-content:space-between;gap:9px;margin:11px 0 4px}
+.podium-card-summary>div:first-child{display:flex;flex-direction:column;gap:0}
+.podium-card-total{font-family:'Barlow Condensed',Poppins,sans-serif;font-size:46px;line-height:1;font-weight:900;font-variant-numeric:tabular-nums;color:#0f728c}
+.podium-card-summary small{color:#7a97a1;font-size:9px;font-weight:900;letter-spacing:.07em}
+.podium-ring{width:60px;height:60px;flex:none;border-radius:50%;background:conic-gradient(#06aaba var(--podium-share,0%),#d9ecef 0);display:grid;place-items:center;position:relative}
+.podium-ring:before{content:"";position:absolute;inset:7px;border-radius:50%;background:#fafdfe}
+.podium-ring span{position:relative;z-index:1;font-family:'Barlow Condensed',Poppins,sans-serif;font-size:16px;font-weight:900;color:#0d728a;font-variant-numeric:tabular-nums;white-space:nowrap}
+.podium-columns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:end;gap:7px;height:94px;padding:8px 3px 2px;margin-top:4px;border-bottom:1px solid #d8e8e9}
+.podium-column{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;min-width:0;gap:5px}
+.podium-column-count{font-family:'Barlow Condensed',Poppins,sans-serif;font-size:16px;color:#355b6b;font-weight:800}
+.podium-column-bar{width:min(100%,29px);min-height:3px;border-radius:4px 4px 0 0}
+.podium-column-bar.gold{background:linear-gradient(#f9df78,#d49b28)}
+.podium-column-bar.silver{background:linear-gradient(#d9e5ed,#819db0)}
+.podium-column-bar.bronze{background:linear-gradient(#e4aa83,#ad6e45)}
+.podium-column-label{font-size:9px;color:#5f7b87;font-weight:800;white-space:nowrap}
+.podium-card footer{font-size:9px;color:#7d97a0;font-weight:700;margin-top:10px}
+.podium-year-panel{border:1px solid #d7e7e9;background:#f9fcfc;border-radius:11px;padding:16px 18px;margin:0 0 8px}
+.podium-year-panel h4{margin:0 0 16px;font-size:10px;font-weight:900;letter-spacing:.065em;color:#3b6d80}
+.podium-year-bars{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;align-items:end;max-width:700px}
+.podium-year-item{display:flex;min-width:0;flex-direction:column;align-items:center;gap:6px;color:#507486;font-weight:800}
+.podium-year-item>strong{font-family:'Barlow Condensed',Poppins,sans-serif;font-size:16px}
+.podium-year-item>span{font-size:10px}
+.podium-year-column{height:80px;width:min(100%,40px);background:#e6f1f3;border-radius:5px 5px 0 0;display:flex;align-items:end;overflow:hidden}
+.podium-year-column>div{background:linear-gradient(#08bbba,#007895);width:100%;border-radius:4px 4px 0 0;min-height:2px}
+@media(max-width:900px){.podium-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:480px){
+ .podium-grid{gap:9px}
+ .podium-card{padding:11px 9px 9px}
+ .podium-card-head{gap:6px}
+ .podium-card-icon{font-size:21px}
+ .podium-card-head>strong{font-size:9px;letter-spacing:.02em}
+ .podium-card-total{font-size:39px}
+ .podium-ring{height:51px;width:51px}
+ .podium-ring:before{inset:6px}
+ .podium-ring span{font-size:13px}
+ .podium-columns{gap:4px}
+ .podium-column-label{font-size:8px}
+ .podium-year-panel{padding:12px}
+ .podium-year-bars{gap:4px}
+ .podium-year-item>span{font-size:9px}
+}
+@media(max-width:360px){.podium-grid{grid-template-columns:1fr}}

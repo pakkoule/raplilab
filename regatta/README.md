@@ -10,11 +10,11 @@ Module intégré à la PR #1 de RapliLab, non fusionnée.
 
 ## Fiches de courses
 
-- Nom, édition/année, nom du bateau, classe (libre avec suggestions IMOCA/ULTIM/etc.) et **couleur personnalisable du tag de classe** par course.
+- Nom de course, nom du bateau, classe (libre avec suggestions IMOCA/ULTIM/etc.) et **couleur personnalisable du tag de classe**. Le champ « Édition/année » est supprimé du formulaire : l’année se déduit du départ. Les anciennes valeurs d’édition restent conservées dans les données archivées pour compatibilité.
 - **Catégorie VSR** : Hors Catégorie (**pastille dorée et en gras**), VSR 1, VSR 2, VSR 3 ou non renseignée.
 - **Deux cases indépendantes mais mutuellement exclusives** : « Course en cours » (halo turquoise) et « À venir » (halo bleu).
 - **Équipement unique et facultatif** : PDD, 1/2 FP ou Full Pack (cases exclusives) ; zéro choix possible.
-- Sur chaque tuile, **tag de classe de bateau et catégorie VSR sur une seule ligne** (l'année peut se décaler à côté/à la ligne sur écran compact). Même alignement dans l'export PNG.
+- Sur chaque tuile, **nom de la course à gauche et tags de classe de bateau + catégorie VSR à droite**, alignés horizontalement. La ligne s’adapte à l’iPhone : le nom peut revenir à la ligne et les libellés trop longs sont tronqués sans déplacer les tags. Même alignement dans l’export PNG ; l’ancienne année d’édition n’est plus affichée.
 - Cinq classements avec **position / nombre de joueurs**, affichés avec la police sportive **Barlow Condensed ExtraBold** (tuiles, formulaire et export PNG), et non une serif type Times New Roman :
   - 🏆 Général : plaque principale agrandie (serif blanche sur fond contrasté) ;
   - 🇫🇷 National : petite plaque ;

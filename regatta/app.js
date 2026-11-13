@@ -245,10 +245,11 @@ function fitRankingNumbers(){
    const allowed=line.clientWidth-(medal?.getBoundingClientRect().width||0)-(medal?7:0);
    if(allowed<20)continue;
    const isMain=!!rank.closest('.rank-main');
+   if(!rank.style?.setProperty)continue;
    let size=isMain?36:23;
-   rank.style.fontSize=size+'px';
+   rank.style.setProperty('font-size',size+'px','important');
    while(rank.scrollWidth>allowed&&size>11){
-     size--;rank.style.fontSize=size+'px';
+     size--;rank.style.setProperty('font-size',size+'px','important');
    }
  }
 }

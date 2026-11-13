@@ -238,29 +238,6 @@ body[data-active="lp"] .portal-header{background:linear-gradient(115deg,#101114,
     -webkit-mask-image:linear-gradient(180deg,#000 0%,rgba(0,0,0,.95) 24%,rgba(0,0,0,.65) 67%,rgba(0,0,0,.22) 100%);
     mask-image:linear-gradient(180deg,#000 0%,rgba(0,0,0,.95) 24%,rgba(0,0,0,.65) 67%,rgba(0,0,0,.22) 100%);
   }
-  /* Rapli Time — option A : composition latérale libre, sans mosaïque répétitive.
-     Huit impressions de la même identité, quatre de chaque côté.
-     Le dégradé général ci-dessus reste inchangé. */
-  body[data-active="time"]::after {
-    background-image:
-      var(--side-logo), var(--side-logo), var(--side-logo), var(--side-logo),
-      var(--side-logo), var(--side-logo), var(--side-logo), var(--side-logo);
-    background-repeat: no-repeat;
-    background-size:
-      285px auto, 205px auto, 350px auto, 230px auto,
-      225px auto, 330px auto, 190px auto, 275px auto;
-    background-position:
-      left -32px top 34px,
-      left 60px top 244px,
-      left -82px top 490px,
-      left 48px bottom 46px,
-      right 18px top 96px,
-      right -76px top 326px,
-      right 72px top 570px,
-      right -18px bottom 58px;
-    filter: grayscale(1);
-    opacity: .09;
-  }
   .portal {position:relative;z-index:1}
 }
 /* Mobile and small tablets preserve the original lightweight background. */

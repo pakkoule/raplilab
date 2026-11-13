@@ -5,7 +5,7 @@ const safe=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'
 const clean=(v,n=150)=>String(v??'').trim().slice(0,n);
 const uid=()=>crypto.randomUUID?crypto.randomUUID():'race-'+Date.now().toString(36)+Math.random().toString(36).slice(2);
 const now=()=>new Date().toISOString();
-const props={name:180,boatClass:100,boat:140,start:20,startTime:8,end:20,endTime:8,rank:40,rankTotal:12,rankDepartment:40,rankDepartmentTotal:12,rankNational:40,rankNationalTotal:12,rankCity:40,rankCityTotal:12,rankTeam:40,rankTeamTotal:12,duration:100,durationDays:4,durationHours:2,durationMinutes:2,durationSeconds:2,classColor:7,vsr:5,notes:2500};
+const props={name:180,boatClass:100,boat:140,start:20,startTime:8,end:20,endTime:8,rank:40,rankTotal:12,rankDepartment:40,rankDepartmentTotal:12,rankNational:40,rankNationalTotal:12,rankCity:40,rankCityTotal:12,rankTeam:40,rankTeamTotal:12,duration:100,durationDays:4,durationHours:2,durationMinutes:2,durationSeconds:2,vsr:5};
 const imageKeys=['icon','result','route'];
 
 /* A date and clock time represent the course's own civil time.
@@ -93,6 +93,52 @@ const validEquipment=value=>Object.prototype.hasOwnProperty.call(equipmentModes,
 const equipmentInputs=()=>[...document.querySelectorAll('input[name="race-equipment"]')];
 const VSR=Object.freeze({hc:'HORS CATÉGORIE',vsr1:'VSR 1',vsr2:'VSR 2',vsr3:'VSR 3'});
 const colorSafe=v=>/^#[a-f0-9]{6}$/i.test(v||'')?v:'#008fa1';
+
+const COLOR_SETTINGS_ID='regatta-class-colors-v1';
+const COLOR_STORAGE_KEY='rapli-regatta-class-colors-v1';
+const DEFAULT_TAG_COLOR='#008fa1';
+const defaultClassSettings=()=>({id:COLOR_SETTINGS_ID,defaultColor:DEFAULT_TAG_COLOR,classColors:{}});
+const classKey=value=>String(value||'').trim().normalize('NFKC').toLocaleUpperCase('fr').slice(0,100);
+function normalizeClassSettings(input){
+ const source=input&&typeof input==='object'?input:{};
+ const classColors=Object.create(null);
+ if(source.classColors&&typeof source.classColors==='object'&&!Array.isArray(source.classColors)){
+  let count=0;
+  for(const [key,value] of Object.entries(source.classColors)){
+   const normalized=classKey(key);
+   if(normalized&&/^#[a-f0-9]{6}$/i.test(value||'')&&count<300){
+    classColors[normalized]=colorSafe(value);count++;
+   }
+  }
+ }
+ return {id:COLOR_SETTINGS_ID,defaultColor:colorSafe(source.defaultColor),classColors};
+}
+function readClassSettings(){
+ try{
+  const saved=localStorage.getItem(COLOR_STORAGE_KEY);
+  return saved?normalizeClassSettings(JSON.parse(saved)):defaultClassSettings();
+ }catch(e){console.warn('Rapli Regatta: couleurs locales indisponibles',e);return defaultClassSettings();}
+}
+let classSettings=readClassSettings();
+function getClassTagColor(boatClass){
+ const key=classKey(boatClass);
+ return key&&Object.prototype.hasOwnProperty.call(classSettings.classColors,key)?
+  classSettings.classColors[key]:classSettings.defaultColor;
+}
+function settingsAreCustom(){
+ return classSettings.defaultColor!==DEFAULT_TAG_COLOR||Object.keys(classSettings.classColors).length>0;
+}
+function colorSettingsState(){
+ return settingsAreCustom()?[classSettings]:[];
+}
+function storeClassSettings(input,{notifyCloud=true}={}){
+ classSettings=normalizeClassSettings(input);
+ try{localStorage.setItem(COLOR_STORAGE_KEY,JSON.stringify(classSettings));}
+ catch(e){console.warn('Rapli Regatta: impossible de mémoriser les couleurs localement',e);toast('Sauvegarde locale des couleurs indisponible',true);}
+ render();renderClassColors();
+ if(notifyCloud)window.RapliModuleCloud?.changed?.();
+}
+
 const classTextColor=color=>{
  const hex=colorSafe(color).slice(1),channels=[0,2,4].map(i=>parseInt(hex.slice(i,i+2),16)/255)
    .map(c=>c<=0.04045?c/12.92:((c+0.055)/1.055)**2.4);
@@ -122,7 +168,7 @@ function normalizeRanking(r){
  }
 }
 function normal(x={}){const r={id:typeof x.id==='string'&&x.id.length<130?x.id:uid(),createdAt:x.createdAt||now(),updatedAt:x.updatedAt||now(),live:!!x.live,upcoming:!!x.upcoming&&!x.live,equipment:validEquipment(x.equipment),edition:clean(x.edition,100)};for(const [k,n] of Object.entries(props))r[k]=clean(x[k],n);
- r.classColor=colorSafe(r.classColor);r.vsr=VSR[r.vsr]?r.vsr:'';
+ r.classColor=colorSafe(x.classColor);r.notes=clean(x.notes,2500);r.vsr=VSR[r.vsr]?r.vsr:'';
  normalizeRanking(r);
  const durationKeys=['durationDays','durationHours','durationMinutes','durationSeconds'];
  if(durationKeys.every(k=>r[k]==='')){
@@ -133,7 +179,7 @@ function normal(x={}){const r={id:typeof x.id==='string'&&x.id.length<130?x.id:u
  if(formatted!==null&&formatted!=='')r.duration=formatted;
  for(const k of imageKeys)r[k]=validImage(x[k])?x[k]:'';const arrival=calculateArrival(r.start,r.startTime,r.duration);if(arrival.status==='ready'){r.end=arrival.end;r.endTime=arrival.endTime;}return r;}
 let rows=[],db=null,editId='',pictures={icon:'',result:'',route:''},uploads=0,writeBusy=false,timer;
-const dialog=$('race-dialog'),getField=k=>$('race-'+({boatClass:'class',startTime:'start-time',endTime:'end-time',rankDepartment:'rank-department',rankNational:'rank-national',rankTotal:'rank-total',rankNationalTotal:'rank-national-total',rankDepartmentTotal:'rank-department-total',rankCity:'rank-city',rankCityTotal:'rank-city-total',rankTeam:'rank-team',rankTeamTotal:'rank-team-total',durationDays:'days',durationHours:'hours',durationMinutes:'minutes',durationSeconds:'seconds',classColor:'class-color'}[k]||k));
+const dialog=$('race-dialog'),getField=k=>$('race-'+({boatClass:'class',startTime:'start-time',endTime:'end-time',rankDepartment:'rank-department',rankNational:'rank-national',rankTotal:'rank-total',rankNationalTotal:'rank-national-total',rankDepartmentTotal:'rank-department-total',rankCity:'rank-city',rankCityTotal:'rank-city-total',rankTeam:'rank-team',rankTeamTotal:'rank-team-total',durationDays:'days',durationHours:'hours',durationMinutes:'minutes',durationSeconds:'seconds'}[k]||k));
 function toast(t,error=false){$('notice').textContent=t;$('notice').dataset.error=String(error);clearTimeout(timer);timer=setTimeout(()=>{$('notice').textContent='';},7000);}
 const req=r=>new Promise((yes,no)=>{r.onsuccess=()=>yes(r.result);r.onerror=()=>no(r.error||Error('IndexedDB inaccessible'));});
 const done=tx=>new Promise((yes,no)=>{tx.oncomplete=yes;tx.onerror=()=>no(tx.error||Error('Sauvegarde locale impossible'));tx.onabort=()=>no(tx.error||Error('Stockage local annulé'));});
@@ -147,7 +193,7 @@ const raceStatus=r=>{if(r.upcoming)return 'planned';if(r.live)return 'live';if(r
 const dateFR=v=>/^\d{4}-\d{2}-\d{2}$/.test(v)?v.slice(8)+'/'+v.slice(5,7)+'/'+v.slice(0,4):'';
 const imageTag=(src,alt)=>validImage(src)?'<img loading="lazy" draggable="false" alt="'+safe(alt)+'" src="'+safe(src)+'">':'<span class="shot-empty">PAS DE CAPTURE</span>';
 function card(r){
- const status=raceStatus(r),tag=colorSafe(r.classColor),mode=VSR[r.vsr]||'';
+ const status=raceStatus(r),tag=getClassTagColor(r.boatClass),mode=VSR[r.vsr]||'';
  const rankBlocks=rankHtml('🏆','CLASSEMENT GÉNÉRAL',r.rank,r.rankTotal,'rank-main')+
    rankHtml('🇫🇷','NATIONAL',r.rankNational,r.rankNationalTotal,'rank-national')+
    rankHtml('🇨🇶','DÉPARTEMENTAL',r.rankDepartment,r.rankDepartmentTotal,'rank-department')+
@@ -166,7 +212,6 @@ function card(r){
  (rankBlocks?'<div class="rank-grid">'+rankBlocks+'</div>':'')+
  '<div class="shots"><div class="shot"><label>CLASSEMENT FINAL</label><div class="shot-box image-preview">'+imageTag(r.result,'Classement '+r.name)+'</div></div>'+
  '<div class="shot"><label>TRACÉ</label><div class="shot-box image-preview">'+imageTag(r.route,'Tracé '+r.name)+'</div></div></div>'+
- (r.notes?'<p class="card-note">'+safe(r.notes)+'</p>':'')+
  '<div class="card-actions"><button type="button" class="btn secondary" data-action="edit">MODIFIER</button><button type="button" class="btn subtle" data-action="png">↓ PNG</button>'+
  (r.upcoming?'<button type="button" class="btn calendar-btn" data-action="calendar" title="Ajouter cette course à Apple Calendrier">📅 CALENDRIER</button>':'')+
  '<button type="button" class="btn subtle" data-action="delete">×</button></div></div></article>';
@@ -179,7 +224,7 @@ function render(){
  const q=$('search').value.toLocaleLowerCase('fr').trim(),status=$('filter-status').value,cls=$('filter-class').value,vsr=$('filter-vsr').value;
  const filtered=rows.filter(r=>(!status||raceStatus(r)===status)&&(!cls||r.boatClass===cls)&&(!vsr||r.vsr===vsr)&&
    (!q||[r.name,r.boatClass,r.boat,r.rank,r.rankNational,r.rankDepartment,r.rankCity,r.rankTeam,
-           r.startTime,r.end,r.endTime,VSR[r.vsr]||'',equipmentModes[r.equipment]||'',r.notes].some(v=>String(v||'').toLocaleLowerCase('fr').includes(q))));
+           r.startTime,r.end,r.endTime,VSR[r.vsr]||'',equipmentModes[r.equipment]||''].some(v=>String(v||'').toLocaleLowerCase('fr').includes(q))));
  const out=[...filtered],sort=$('sort').value;
  const chronological=r=>(r.start?r.start+'T'+(r.startTime||'00:00'):r.createdAt||'');
  out.sort((a,b)=>sort==='name'?a.name.localeCompare(b.name,'fr'):
@@ -422,7 +467,6 @@ function openEditor(r){
  editId=r?.id||'';
  const data=r||normal();
  for(const k of Object.keys(props))getField(k).value=data[k]||'';
- getField('classColor').value=colorSafe(data.classColor);
  legacyArrival={start:data.start,startTime:data.startTime,duration:data.duration,end:data.end,endTime:data.endTime};
  updateArrival();
  $('race-live').checked=!!data.live;
@@ -454,7 +498,7 @@ async function saveEditor(e){
    if(placeText&&totalText&&Number(intString(placeText))>Number(intString(totalText))){toast('La position ne peut pas dépasser le nombre de joueurs.',true);input.focus();return;}
    r[place]=intString(placeText);r[total]=intString(totalText);
  }
- r.classColor=colorSafe(r.classColor);r.vsr=VSR[r.vsr]?r.vsr:'';
+ r.vsr=VSR[r.vsr]?r.vsr:'';
  if(arrival.status==='ready'){r.end=arrival.end;r.endTime=arrival.endTime;}
  const chosen=equipmentInputs().filter(input=>input.checked);if(chosen.length>1){toast('Une seule méthode d’équipement est autorisée.',true);return;}
  r.equipment=validEquipment(chosen[0]?.value);
@@ -507,7 +551,7 @@ async function exportPNG(r){
    ctx.font='900 19px Poppins,sans-serif';ctx.fillStyle='#fff';ctx.fillText(r.upcoming?'🔵 À VENIR':'COURSE EN COURS',46,HEADER+53);
   }
   const y=HEADER+PHOTO;
-  const tag=colorSafe(r.classColor),boatLabel=(r.boatClass||'VIRTUAL REGATTA').toUpperCase().slice(0,28);
+  const tag=getClassTagColor(r.boatClass),boatLabel=(r.boatClass||'VIRTUAL REGATTA').toUpperCase().slice(0,28);
   ctx.font='800 18px Poppins,sans-serif';
   const tagWidth=Math.min(295,Math.max(110,ctx.measureText(boatLabel).width+28));
   let vsrWidth=0;
@@ -622,7 +666,6 @@ function calendarText(r){
    'Équipement : '+(equipmentModes[r.equipment]||'Non renseigné'),
    'Durée : '+(r.duration||'Non renseignée'),
    placeholder?'Plage de calendrier indicative : 1 heure après le départ.':'',
-   r.notes||''
  ].filter(Boolean).join('\n');
  const stamp=new Date().toISOString().replace(/[-:]/g,'').replace(/\.\d+Z/,'Z');
  const uidValue=String(r.id||'race').replace(/[^a-zA-Z0-9_-]/g,'').slice(0,64)+'@regatta.raplilab';
@@ -640,8 +683,8 @@ function exportCalendar(r){
  }catch(error){toast(error.message||'Export calendrier indisponible',true);}
 }
 
-function exportJSON(){download(new Blob([JSON.stringify({app:'Rapli Regatta',version:1,exportedAt:now(),races:rows},null,2)],{type:'application/json'}),'Rapli_Regatta_'+now().slice(0,10)+'.json');toast('JSON exporté ✓');}
-async function importJSON(file){if(!file)return;try{if(file.size>120e6)throw Error('Fichier trop volumineux');const obj=JSON.parse(await file.text());if(obj.app!=='Rapli Regatta'||!Array.isArray(obj.races)||obj.races.length>20000)throw Error('Fichier de sauvegarde invalide');const next=obj.races.map(normal);if(new Set(next.map(r=>r.id)).size!==next.length)throw Error('IDs dupliqués');if(!confirm('Importer '+next.length+' courses et remplacer la collection locale ?'))return;await replaceRows(next);window.RapliModuleCloud?.changed?.();toast('Collection importée ✓');}catch(err){toast(err.message,true);}finally{$('import-json').value='';}}
+function exportJSON(){download(new Blob([JSON.stringify({app:'Rapli Regatta',version:2,exportedAt:now(),races:rows,settings:classSettings},null,2)],{type:'application/json'}),'Rapli_Regatta_'+now().slice(0,10)+'.json');toast('JSON exporté ✓');}
+async function importJSON(file){if(!file)return;try{if(file.size>120e6)throw Error('Fichier trop volumineux');const obj=JSON.parse(await file.text());if(obj.app!=='Rapli Regatta'||!Array.isArray(obj.races)||obj.races.length>20000)throw Error('Fichier de sauvegarde invalide');const next=obj.races.map(normal);if(new Set(next.map(r=>r.id)).size!==next.length)throw Error('IDs dupliqués');if(!confirm('Importer '+next.length+' courses et remplacer la collection locale ?'))return;await replaceRows(next);if(obj.settings)storeClassSettings(obj.settings,{notifyCloud:false});window.RapliModuleCloud?.changed?.();toast('Collection importée ✓');}catch(err){toast(err.message,true);}finally{$('import-json').value='';}}
 $('race-equipment-group').addEventListener('change',event=>{
  const selected=event.target.closest('input[name="race-equipment"]');
  if(!selected||!selected.checked)return;
@@ -659,7 +702,17 @@ for(const id of ['search','filter-status','filter-vsr','filter-class','sort'])$(
 for(const key of imageKeys){$('image-'+key).addEventListener('change',e=>{const f=e.target.files[0];e.target.value='';fileData(f,key);});document.querySelector('[data-remove="'+key+'"]').addEventListener('click',()=>{pictures[key]='';preview(key);});const zone=document.querySelector('[data-image="'+key+'"] .upload-preview');zone.addEventListener('dragover',e=>{e.preventDefault();});zone.addEventListener('drop',e=>{e.preventDefault();fileData(e.dataTransfer?.files[0],key);});}
 $('cards').addEventListener('click',e=>{const btn=e.target.closest('[data-action]');if(!btn)return;const r=rows.find(x=>x.id===btn.closest('[data-id]')?.dataset.id);if(!r)return;if(btn.dataset.action==='edit')openEditor(r);if(btn.dataset.action==='delete')deleteRace(r.id);if(btn.dataset.action==='png')exportPNG(r);if(btn.dataset.action==='calendar')exportCalendar(r);});
 $('export-json').addEventListener('click',exportJSON);$('import-json').addEventListener('change',e=>importJSON(e.target.files[0]));document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'&&!dialog.open){e.preventDefault();$('search').focus();}});
-const bridge=window.RapliModuleBridge={module:'regatta',ready:false,getState:()=>({records:rows,logos:[]}),notify:msg=>toast(msg),replaceState:async data=>{if(!Array.isArray(data?.records)||!Array.isArray(data?.logos)||data.records.length>20000||data.logos.length)throw Error('Collection Regatta cloud invalide');const next=data.records.map(normal);if(new Set(next.map(r=>r.id)).size!==next.length)throw Error('Doublons cloud');await replaceRows(next);}};
+const bridge=window.RapliModuleBridge={module:'regatta',ready:false,
+ getState:()=>({records:rows,logos:colorSettingsState()}),notify:msg=>toast(msg),
+ replaceState:async data=>{
+  if(!Array.isArray(data?.records)||!Array.isArray(data?.logos)||data.records.length>20000||data.logos.length>1||
+     (data.logos.length===1&&data.logos[0]?.id!==COLOR_SETTINGS_ID))
+    throw Error('Collection Regatta cloud invalide');
+  const next=data.records.map(normal);
+  if(new Set(next.map(r=>r.id)).size!==next.length)throw Error('Doublons cloud');
+  await replaceRows(next);
+  storeClassSettings(data.logos[0]||defaultClassSettings(),{notifyCloud:false});
+ }};
 window.RapliRegatta={getCount:()=>rows.length};
 (async()=>{try{await openDB();rows=await load();render();}catch(err){console.warn(err);rows=[];render();toast('Stockage local indisponible',true);}bridge.ready=true;window.dispatchEvent(new Event('rapli-module-ready'));})();
 })();

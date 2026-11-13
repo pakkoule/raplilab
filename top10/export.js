@@ -34,7 +34,7 @@ roundedRect(ctx,x,y,w,h,12,pal.card);
 ctx.strokeStyle=pal.accent+'44';ctx.lineWidth=1.5;ctx.beginPath();ctx.roundRect(x+.75,y+.75,w-1.5,h-1.5,12);ctx.stroke();
 if(visual||podium){
 let cy=y+pad;
-if(item.image){const img=images.get(item.image),ih=Math.round(imageW*.74);drawImageCover(ctx,img,x+pad,cy,w-pad*2,ih);cy+=ih+13;}
+if(item.image){const img=images.get(item.image),ih=Math.round(imageW*.74);drawImageCover(ctx,img,x+pad,cy,w-pad*2,ih);cy+=ih+13;}else cy+=56; // Reserve the badge area when no image is supplied.
 const nr=position+1;
 roundedRect(ctx,x+12,y+12,Math.max(44,Math.ceil(Math.log10(nr+1))*17+28),43,7,pal.accent);
 ctx.fillStyle=pal.bg;ctx.textAlign='center';ctx.font='800 25px Poppins,Arial,sans-serif';ctx.textBaseline='middle';ctx.fillText(String(nr).padStart(2,'0'),x+12+Math.max(44,Math.ceil(Math.log10(nr+1))*17+28)/2,y+33);ctx.textAlign='left';

@@ -16,7 +16,7 @@
     photo:typeof r?.photo==='string'?r.photo:'',
     createdAt:r?.createdAt||now(),updatedAt:r?.updatedAt||now()
   });
-  let albums=[],db=null,editing=null,pendingPhoto='',pendingTags=[],isBusy=false,noticeTimer=null;
+  let albums=[],db=null,editing=null,pendingPhoto='',pendingTags=[],currentView='own',isBusy=false,noticeTimer=null;
   let dbAvailable=false,bootFinished=false;
   const dialog=$('album-dialog');
   function notify(message,error=false){
@@ -44,12 +44,21 @@
     $('count-total').textContent=albums.length;
     $('count-own').textContent=albums.filter(r=>r.status==='own').length;
     $('count-wish').textContent=albums.filter(r=>r.status==='wish').length;
+    $('tab-own-count').textContent=albums.filter(r=>r.status==='own').length;
+    $('tab-wish-count').textContent=albums.filter(r=>r.status==='wish').length;
+    document.querySelectorAll('.collection-tab').forEach(tab=>{
+      const active=tab.dataset.view===currentView;
+      tab.classList.toggle('active',active);
+      tab.setAttribute('aria-selected',String(active));
+      tab.tabIndex=active?0:-1;
+    });
+    $('collection-heading').textContent=currentView==='own'?'MES ALBUMS · OWN':'MES ALBUMS · WISHLIST';
     const selected=$('filter-artist').value;
     const artists=[...new Set(albums.map(r=>r.artist).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'fr'));
     $('filter-artist').innerHTML='<option value="">Tous les artistes</option>'+artists.map(a=>'<option value="'+esc(a)+'">'+esc(a)+'</option>').join('');
     $('filter-artist').value=artists.includes(selected)?selected:'';
-    const q=$('search').value.trim().toLocaleLowerCase('fr-FR'),state=$('filter-status').value,artist=$('filter-artist').value;
-    let list=albums.filter(r=>(!state||r.status===state)&&(!artist||r.artist===artist)&&(!q||
+    const q=$('search').value.trim().toLocaleLowerCase('fr-FR'),artist=$('filter-artist').value;
+    let list=albums.filter(r=>r.status===currentView&&(!artist||r.artist===artist)&&(!q||
       [r.artist,r.album,r.editionNote,...r.tags].some(t=>String(t).toLocaleLowerCase('fr-FR').includes(q))));
     const sort=$('sort').value;
     list=[...list].sort((a,b)=>{
@@ -61,7 +70,7 @@
     $('cards').innerHTML=listHTML(list);
     $('result-count').textContent=list.length+' résultat'+(list.length>1?'s':'');
     $('empty').hidden=list.length>0;
-    if(list.length===0)$('empty').textContent=albums.length?'Aucun album ne correspond à tes filtres.':'Aucun album ici pour le moment. Ajoute ton premier CD !';
+    if(list.length===0)$('empty').textContent=q||artist?'Aucun album ne correspond à tes filtres.':currentView==='wish'?'Ta wishlist est vide. Ajoute les CD que tu recherches !':'Aucun CD possédé pour le moment. Ajoute ton premier album !';
   }
   function chipView(){
     $('chips').innerHTML=pendingTags.map((t,i)=>'<span class="edit-chip">'+esc(t)+
@@ -91,7 +100,7 @@
     pendingPhoto=record?.photo||'';
     $('dialog-title').textContent=record?'MODIFIER UN CD':'AJOUTER UN CD';
     $('artist').value=record?.artist||'';$('album').value=record?.album||'';
-    $('status').value=record?.status||'own';$('edition-note').value=record?.editionNote||'';
+    $('status').value=record?.status||currentView;$('edition-note').value=record?.editionNote||'';
     $('tag-field').value='';$('photo-file').value='';
     $('delete-album').hidden=!record;
     $('submit-album').textContent=record?'ENREGISTRER LES MODIFICATIONS':'ENREGISTRER LE CD';
@@ -239,9 +248,24 @@
       const btn=e.target.closest('[data-remove-tag]');if(!btn)return;
       pendingTags.splice(Number(btn.dataset.removeTag),1);chipView();
     });
-    ['search','filter-status','filter-artist','sort'].forEach(id=>$(id).addEventListener(id==='search'?'input':'change',render));
+    ['search','filter-artist','sort'].forEach(id=>$(id).addEventListener(id==='search'?'input':'change',render));
+    const switchTab=(view,focus=false)=>{
+      if(!['own','wish'].includes(view))return;
+      currentView=view;
+      render();
+      if(focus)document.querySelector('.collection-tab[data-view="'+view+'"]').focus();
+    };
+    document.querySelectorAll('.collection-tab').forEach(tab=>{
+      tab.addEventListener('click',()=>switchTab(tab.dataset.view));
+      tab.addEventListener('keydown',e=>{
+        if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;
+        e.preventDefault();
+        const next=e.key==='Home'?'own':e.key==='End'?'wish':tab.dataset.view==='own'?'wish':'own';
+        switchTab(next,true);
+      });
+    });
     $('clear-filters').addEventListener('click',()=>{
-      $('search').value='';$('filter-status').value='';$('filter-artist').value='';$('sort').value='recent';render();
+      $('search').value='';$('filter-artist').value='';$('sort').value='recent';render();
     });
     $('export-json').onclick=backup;
     $('import-json').addEventListener('change',e=>{

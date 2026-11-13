@@ -108,7 +108,11 @@ dialog form{border-radius:18px;background:#fff;display:flex;flex-direction:colum
 .class-edit label{min-width:0}
 .class-edit .class-color input[type=color]{height:42px;min-height:42px;width:100%;padding:3px;border:1px solid #c5dadd;border-radius:9px;background:#fff;cursor:pointer}
 .class-tag{color:var(--class-ink,#fff);font-weight:900;font-size:10px;line-height:1.2;letter-spacing:.045em;text-transform:uppercase;border:1px solid color-mix(in srgb,var(--class-tag,#008fa1) 75%,#000);background:var(--class-tag,#008fa1);border-radius:6px;padding:6px 9px;max-width:100%;overflow-wrap:anywhere}
-.card-eyebrow{align-items:center}.card-category{display:flex;gap:7px;flex-wrap:wrap;margin:3px 0 8px}
+.card-eyebrow{align-items:center;flex-wrap:wrap;gap:7px;margin-bottom:9px}
+.card-tag-row{display:flex;flex:1 1 auto;align-items:center;min-width:0;gap:7px;flex-wrap:nowrap}
+.card-tag-row .class-tag{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.card-tag-row .vsr-badge{flex:0 0 auto;white-space:nowrap}
+.card-eyebrow .year{margin-left:auto;flex:0 0 auto;align-self:center}
 .vsr-badge{font-size:9px;letter-spacing:.07em;font-weight:900;border-radius:6px;padding:5px 9px;background:#e8f2fa;color:#386480;border:1px solid #c9dbe7}
 .vsr-badge.hc{background:linear-gradient(135deg,#fff1b6,#f6d886 53%,#f3edce);border-color:#d6a642;color:#9f7116;font-weight:900;box-shadow:0 1px 5px #caa13b33}
 .card.upcoming{border-color:#3785e2;box-shadow:0 0 0 2px #3a83f432,0 0 22px #267fff50,0 8px 22px #18404a1a}
@@ -120,11 +124,11 @@ dialog form{border-radius:18px;background:#fff;display:flex;flex-direction:colum
 .rank-plate .rank-icon{font-size:22px;line-height:1.2;flex:none}
 .rank-value{display:flex;flex-direction:column;min-width:0;gap:2px}
 .rank-type{font:900 8px/1.3 Poppins,sans-serif;letter-spacing:.06em;color:#728993}
-.rank-plate strong{display:block;max-width:100%;font:700 19px/1.2 Georgia,'Baskerville',serif;color:#1f3d52;overflow-wrap:anywhere;font-variant-numeric:lining-nums tabular-nums}
+.rank-plate strong{display:block;max-width:100%;font:800 23px/1.05 'Barlow Condensed','Arial Narrow',sans-serif;letter-spacing:.035em;color:#1f3d52;overflow-wrap:anywhere;font-variant-numeric:lining-nums tabular-nums}
 .rank-plate.rank-main{grid-column:1/-1;background:linear-gradient(110deg,#103e54,#146f83);border-color:#087d9a;box-shadow:0 3px 12px #086e9f25;padding:11px 14px}
 .rank-main .rank-icon{font-size:30px;filter:drop-shadow(0 1px 3px #06182466)}
 .rank-main .rank-type{color:#b6e5ee;font-size:10px}
-.rank-main strong{font-size:29px;color:#fff;letter-spacing:.025em}
+.rank-main strong{font-size:36px;color:#fff;letter-spacing:.04em}
 .rank-plate.rank-national{background:#f3f8fc;border-color:#cbdfef}
 .rank-plate.rank-department{background:#eef8f4;border-color:#cde2d6}
 .rank-plate.rank-city{background:#f7f4fa;border-color:#e1d9e7}
@@ -149,9 +153,9 @@ dialog form{border-radius:18px;background:#fff;display:flex;flex-direction:colum
 .ranking-label{display:block;font-size:10px;letter-spacing:.045em;font-weight:900;color:#507383;margin-bottom:8px}
 .ranking-input-main .ranking-label{color:#0a7389;font-size:12px}
 .ranking-pair{display:grid;grid-template-columns:minmax(0,1fr) 18px minmax(0,1fr);gap:5px;align-items:center}
-.ranking-pair span{text-align:center;font:700 23px Georgia,serif;color:#8da2aa}
-.ranking-pair input{min-width:0!important;width:100%!important;min-height:42px!important;padding:8px 5px!important;text-align:center;font:700 19px Georgia,'Baskerville',serif!important;color:#25485c}
-.ranking-input-main .ranking-pair input{font-size:23px!important;color:#134a66}
+.ranking-pair span{text-align:center;font:800 24px 'Barlow Condensed','Arial Narrow',sans-serif;color:#8da2aa}
+.ranking-pair input{min-width:0!important;width:100%!important;min-height:42px!important;padding:8px 5px!important;text-align:center;font:800 22px 'Barlow Condensed','Arial Narrow',sans-serif!important;letter-spacing:.02em;color:#25485c}
+.ranking-input-main .ranking-pair input{font-size:27px!important;color:#134a66}
 .workspace-tabs{display:flex;gap:0;margin:0 26px 0;border-bottom:1px solid #d6e6e9}
 .workspace-tab{padding:15px 20px;border:0;background:transparent;color:#7f9da7;position:relative;font:900 12px Poppins,sans-serif;letter-spacing:.055em;cursor:pointer}
 .workspace-tab.active{color:#007e97}.workspace-tab.active::after{content:"";position:absolute;left:12px;right:12px;bottom:-1px;height:3px;background:#04a9b9;border-radius:3px}
@@ -170,4 +174,7 @@ dialog form{border-radius:18px;background:#fff;display:flex;flex-direction:colum
 .stat-bar-track{height:8px;background:#ebf2f4;border-radius:8px;overflow:hidden}.stat-bar-fill{height:100%;border-radius:inherit;background:linear-gradient(90deg,#00a2b4,#39bbaf)}
 .stats-empty{font-size:11px;color:#97a7ae;padding:10px}
 @media(max-width:780px){.filters{grid-template-columns:repeat(2,minmax(0,1fr))}.workspace-tabs{margin:0 14px}.stats-panel{padding:18px 14px 25px}.stats-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.stats-breakdowns{grid-template-columns:1fr}}
-@media(max-width:580px){.ranking-inputs{gap:7px}.ranking-input{padding:8px 7px}.rank-plate strong{font-size:18px}.rank-main strong{font-size:26px}.duration-grid{gap:5px}.duration-field,.rankings-editor{padding:10px}.duration-grid input[type=number]{font-size:17px}.ranking-pair{gap:2px}.ranking-pair input{font-size:17px!important}.ranking-input-main .ranking-pair input{font-size:20px!important}.rankings-help{display:block;margin-top:3px}.stats-metric strong{font-size:23px}.workspace-tab{padding:13px 14px;font-size:11px}}
+@media(max-width:580px){.ranking-inputs{gap:7px}.ranking-input{padding:8px 7px}.rank-plate strong{font-size:21px}.rank-main strong{font-size:32px}.duration-grid{gap:5px}.duration-field,.rankings-editor{padding:10px}.duration-grid input[type=number]{font-size:17px}.ranking-pair{gap:2px}.ranking-pair input{font-size:21px!important}.ranking-input-main .ranking-pair input{font-size:25px!important}.rankings-help{display:block;margin-top:3px}.stats-metric strong{font-size:23px}.workspace-tab{padding:13px 14px;font-size:11px}}
+
+/* Compact widths: boat class and VSR always share one line; year can wrap independently. */
+@media(max-width:420px){.card-tag-row{width:100%;gap:5px}.card-tag-row .class-tag{max-width:calc(100% - 92px);font-size:9px;padding:6px}.card-tag-row .vsr-badge{font-size:8px;padding:5px 6px}.card-eyebrow .year{font-size:9px}}

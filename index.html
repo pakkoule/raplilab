@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#0d2039">
-  <meta name="description" content="Rapli Archives, Sports, Time, Refs, Stickers Lab, Tools, Top Tiers et Top 10 réunis dans un même espace personnel.">
-  <title>RAPLI LAB — 8 espaces personnels</title>
+  <meta name="description" content="Rapli Archives, Sports, Time, Refs, Stickers Lab, Tools, Top Tiers Top 10 et Coach réunis dans un même espace personnel.">
+  <title>RAPLI LAB — 9 espaces personnels</title>
   <link rel="icon" type="image/webp" href="assets/archives-logo.webp">
   <style>
 
@@ -176,7 +176,10 @@ body[data-active="refs"] .portal-header{background:linear-gradient(115deg,#112d3
 body[data-active="top10"]{--accent:#f5e6c3;--frame-bg:#e9eef5;--frame-border:#b9cde5}
 body[data-active="top10"] .portal-header{background:linear-gradient(115deg,#071d3e,#17457e 52%,#071d3e)}
 .product-tab[data-product="top10"][aria-selected="true"]{background-color:rgba(245,230,195,.20)!important}
-@media(min-width:801px){.product-tabs{grid-template-columns:repeat(8,minmax(0,1fr))}}
+body[data-active="coach"]{--accent:#9abb9d;--frame-bg:#e9efe9;--frame-border:#bdcfc0}
+body[data-active="coach"] .portal-header{background:linear-gradient(115deg,#24352d,#465e4b 52%,#25352b)}
+.product-tab[data-product="coach"][aria-selected="true"]{background-color:rgba(190,212,184,.22)!important}
+@media(min-width:801px){.product-tabs{grid-template-columns:repeat(9,minmax(0,1fr))}}
 @media(max-width:800px){.product-tabs{grid-template-columns:repeat(4,minmax(0,1fr))}.portal-header{min-height:132px}.app-frame{height:calc(100dvh - 179px)}}
 @media(max-width:420px){.portal-header{min-height:128px}.app-frame{height:calc(100dvh - 168px)}}
 </style>
@@ -209,13 +212,16 @@ body[data-active="top10"] .portal-header{background:linear-gradient(115deg,#071d
         <button type="button" id="tab-top10" class="product-tab" data-product="top10" role="tab" aria-selected="false" aria-controls="panel-top10" tabindex="-1" title="Rapli Top 10 — classements">
           <img src="top10/assets/logo.webp" alt="Rapli Top 10" draggable="false">
         </button>
+        <button type="button" id="tab-coach" class="product-tab" data-product="coach" role="tab" aria-selected="false" aria-controls="panel-coach" tabindex="-1" title="Rapli Coach — compositions football et basket">
+          <img src="coach/assets/logo.webp" alt="Rapli Coach" draggable="false">
+        </button>
       </nav>
 
       <div class="global-cloud-controls" role="group" aria-label="Synchronisation globale RapliLab">
-        <button id="global-cloud-save" type="button" title="Enregistrer les huit espaces dans Supabase" aria-label="Enregistrer tous les espaces RapliLab dans le cloud">
+        <button id="global-cloud-save" type="button" title="Enregistrer les neuf espaces dans Supabase" aria-label="Enregistrer tous les espaces RapliLab dans le cloud">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18h10a4 4 0 0 0 .65-7.95A6.2 6.2 0 0 0 6 8.6 4.7 4.7 0 0 0 7 18Z"/><path d="M12 10v8m-3-3 3 3 3-3"/></svg>
         </button>
-        <button id="global-cloud-refresh" type="button" title="Actualiser les huit espaces depuis Supabase" aria-label="Récupérer les modifications de tous les espaces RapliLab depuis le cloud">
+        <button id="global-cloud-refresh" type="button" title="Actualiser les neuf espaces depuis Supabase" aria-label="Récupérer les modifications de tous les espaces RapliLab depuis le cloud">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14.25-5L3 8.5"/><path d="M3 3.5v5h5"/><path d="M4 13a8 8 0 0 0 14.25 5L21 15.5"/><path d="M21 20.5v-5h-5"/></svg>
         </button>
         <span class="cloud-controls-caption">TOUT RAPLILAB</span>
@@ -244,6 +250,9 @@ body[data-active="top10"] .portal-header{background:linear-gradient(115deg,#071d
       <section id="panel-top10" role="tabpanel" aria-labelledby="tab-top10" hidden>
         <iframe id="frame-top10" class="app-frame" data-src="top10/index.html" title="Rapli Top 10 — classement personnalisé" allow="clipboard-read; clipboard-write" loading="lazy"></iframe>
       </section>
+      <section id="panel-coach" role="tabpanel" aria-labelledby="tab-coach" hidden>
+        <iframe id="frame-coach" class="app-frame" data-src="coach/index.html" title="Rapli Coach — football et basketball" loading="lazy"></iframe>
+      </section>
       <section id="panel-tools" role="tabpanel" aria-labelledby="tab-tools">
         <iframe id="frame-tools" class="app-frame" data-src="tools/index.html" title="Rapli Tools — PDF, détourage, upscale et retouche photo" allow="clipboard-read; clipboard-write" loading="lazy"></iframe>
       </section>
@@ -252,7 +261,7 @@ body[data-active="top10"] .portal-header{background:linear-gradient(115deg,#071d
   <script>
   (() => {
     'use strict';
-    const projects=['archives','sports','time','refs','stickers','tools','tiers','top10'];
+    const projects=['archives','sports','time','refs','stickers','tools','tiers','top10','coach'];
     const tabs=Object.fromEntries(projects.map(name=>[name,document.getElementById('tab-'+name)]));
     const panels=Object.fromEntries(projects.map(name=>[name,document.getElementById('panel-'+name)]));
     const frames=Object.fromEntries(projects.map(name=>[name,document.getElementById('frame-'+name)]));
@@ -275,7 +284,7 @@ body[data-active="top10"] .portal-header{background:linear-gradient(115deg,#071d
         frames[project].hidden=!active;
         sendActivity(project,active);
       }
-      document.title=({archives:'RAPLI — Archives · Dragon Blanc aux Yeux Bleus',sports:'RAPLI — Sports',time:'RAPLI — Time',refs:'RAPLI — Refs',stickers:'RAPLI — Stickers Lab',tools:'RAPLI — Tools',tiers:'RAPLI — Top Tiers',top10:'RAPLI — Top 10'})[name];
+      document.title=({archives:'RAPLI — Archives · Dragon Blanc aux Yeux Bleus',sports:'RAPLI — Sports',time:'RAPLI — Time',refs:'RAPLI — Refs',stickers:'RAPLI — Stickers Lab',tools:'RAPLI — Tools',tiers:'RAPLI — Top Tiers',top10:'RAPLI — Top 10',coach:'RAPLI — Coach'})[name];
       if(updateHash && location.hash !=='#'+name)history.pushState({project:name},'', '#'+name);
       if(focus)tabs[name].focus();
     }
@@ -298,7 +307,7 @@ body[data-active="top10"] .portal-header{background:linear-gradient(115deg,#071d
 
     // One global action, executed separately for each isolated private collection.
     // Lazy iframes are loaded on demand, including the inactive modules.
-    const cloudNames={archives:'Archives',sports:'Sports',time:'Time',refs:'Refs',stickers:'Stickers Lab',tools:'Tools',tiers:'Top Tiers',top10:'Top 10'};
+    const cloudNames={archives:'Archives',sports:'Sports',time:'Time',refs:'Refs',stickers:'Stickers Lab',tools:'Tools',tiers:'Top Tiers',top10:'Top 10',coach:'Coach'};
     const cloudSave=document.getElementById('global-cloud-save');
     const cloudRefresh=document.getElementById('global-cloud-refresh');
     const cloudFeedback=document.getElementById('global-cloud-feedback');
@@ -363,7 +372,7 @@ body[data-active="top10"] .portal-header{background:linear-gradient(115deg,#071d
           ? '<details open><summary>'+errors.length+' espace(s) à vérifier</summary><ul>'+
               errors.map(e=>'<li><strong>'+escapeCloud(cloudNames[e.name])+'</strong> : '+escapeCloud(e.message)+'</li>').join('')+
             '</ul></details>'
-          : '<details><summary>Afficher le détail des huit espaces</summary><ul>'+
+          : '<details><summary>Afficher le détail des neuf espaces</summary><ul>'+
               results.map(e=>'<li>'+escapeCloud(cloudNames[e.name])+' : '+escapeCloud(e.message)+'</li>').join('')+
             '</ul></details>';
         cloudFeedback.innerHTML='<strong>'+escapeCloud(summary)+'</strong>'+detail+

@@ -8,7 +8,7 @@
 <title>Rapli Regatta — Mes courses</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="../shared/photo-zoom.css">
 </head>
@@ -33,11 +33,17 @@
     </div>
     <button type="button" class="btn primary" id="new-race">＋ AJOUTER UNE COURSE</button>
   </section>
+  <nav class="workspace-tabs" role="tablist" aria-label="Vues Rapli Regatta">
+    <button type="button" id="view-races" class="workspace-tab active" role="tab" aria-selected="true" aria-controls="races-panel">COURSES</button>
+    <button type="button" id="view-stats" class="workspace-tab" role="tab" aria-selected="false" aria-controls="stats-panel" tabindex="-1">STATISTIQUES</button>
+  </nav>
+  <div id="races-panel" role="tabpanel" aria-labelledby="view-races">
   <section class="filters" aria-label="Filtres de la collection">
     <label class="search">RECHERCHE<input id="search" type="search" placeholder="Course, bateau, année…" autocomplete="off"></label>
     <label>STATUT<select id="filter-status"><option value="">Toutes les courses</option><option value="live">En cours</option><option value="finished">Terminées</option><option value="planned">À venir</option></select></label>
+    <label>CATÉGORIE VSR<select id="filter-vsr"><option value="">Toutes les catégories</option><option value="hc">Hors Catégorie</option><option value="vsr1">VSR 1</option><option value="vsr2">VSR 2</option><option value="vsr3">VSR 3</option></select></label>
     <label>CLASSE<select id="filter-class"><option value="">Toutes les classes</option></select></label>
-    <label>TRIER PAR<select id="sort"><option value="recent">Mise à jour récente</option><option value="start">Départ récent</option><option value="old">Ajout ancien</option><option value="name">Nom A → Z</option></select></label>
+    <label>TRIER PAR<select id="sort"><option value="start">Départ récent → ancien</option><option value="recent">Modifications récentes</option><option value="old">Ajout ancien</option><option value="name">Nom A → Z</option></select></label>
   </section>
   <div class="collection-head"><strong>MES COURSES <span class="mini-accent">/ RACE ARCHIVE</span></strong><span id="result-count"></span></div>
   <section id="cards" class="cards" aria-live="polite"></section>
@@ -46,6 +52,11 @@
     <h2>Aucune course pour le moment</h2><p>Ajoute une course Virtual Regatta avec son affiche 16:9, son classement et son tracé.</p>
     <button type="button" id="empty-add" class="btn primary">＋ MA PREMIÈRE COURSE</button>
   </div>
+  </div>
+  <section id="stats-panel" class="stats-panel" role="tabpanel" aria-labelledby="view-stats" hidden>
+    <div class="stats-intro"><strong>STATISTIQUES DE MES COURSES</strong><span id="stats-summary">Collection personnelle</span></div>
+    <div id="stats-content" class="stats-content"></div>
+  </section>
   <p id="notice" class="notice" role="status" aria-live="polite"></p>
 </main>
 
@@ -56,19 +67,36 @@
       <div class="fields">
         <label class="wide">NOM DE LA COURSE <span class="required">*</span><input id="race-name" maxlength="180" placeholder="Route du Rhum – Destination Guadeloupe" required></label>
         <label>ÉDITION / ANNÉE<input id="race-edition" maxlength="100" placeholder="2026"></label>
-        <label>CLASSE DE BATEAU<input id="race-class" maxlength="100" list="boat-classes" placeholder="IMOCA"><datalist id="boat-classes"><option value="IMOCA"><option value="ULTIM"><option value="Class40"><option value="Ocean Fifty"><option value="Mini 6.50"></datalist></label>
+        <div class="class-edit"><label>CLASSE DE BATEAU<input id="race-class" maxlength="100" list="boat-classes" placeholder="IMOCA"><datalist id="boat-classes"><option value="IMOCA"><option value="ULTIM"><option value="Class40"><option value="Ocean Fifty"><option value="Mini 6.50"></datalist></label>
+          <label class="class-color">COULEUR DU TAG<input type="color" id="race-class-color" value="#008fa1" title="Couleur de la classe de bateau"></label></div>
         <label>NOM DU BATEAU<input id="race-boat" maxlength="140" placeholder="Mon IMOCA"></label>
         <label>DATE DE DÉPART<input id="race-start" type="date"></label>
         <label>HEURE DE DÉPART<input id="race-start-time" type="time" step="60"></label>
-        <label class="wide">DURÉE DE LA COURSE<input id="race-duration" maxlength="100" placeholder="12 j 08 h 35 min" autocomplete="off" aria-describedby="duration-help">
-          <small class="field-help" id="duration-help">Exemples : 12 j 08 h 35 min · 8h35 · 45 min</small>
-        </label>
+        <fieldset class="duration-field wide" aria-describedby="duration-help">
+          <legend>DURÉE DE LA COURSE</legend>
+          <div class="duration-grid">
+            <label>JOURS<input type="number" id="race-days" min="0" max="3650" inputmode="numeric" placeholder="0"></label>
+            <label>HEURES<input type="number" id="race-hours" min="0" max="23" inputmode="numeric" placeholder="0"></label>
+            <label>MINUTES<input type="number" id="race-minutes" min="0" max="59" inputmode="numeric" placeholder="0"></label>
+            <label>SECONDES<input type="number" id="race-seconds" min="0" max="59" inputmode="numeric" placeholder="0"></label>
+          </div>
+          <input type="hidden" id="race-duration">
+          <p class="field-help" id="duration-help">Durée précise à la seconde · L’arrivée est calculée automatiquement.</p>
+        </fieldset>
         <label class="arrival-field">DATE D’ARRIVÉE <span class="computed-label">AUTO</span><input id="race-end" type="date" readonly aria-describedby="arrival-feedback"></label>
-        <label class="arrival-field">HEURE D’ARRIVÉE <span class="computed-label">AUTO</span><input id="race-end-time" type="time" readonly aria-describedby="arrival-feedback"></label>
+        <label class="arrival-field">HEURE D’ARRIVÉE <span class="computed-label">AUTO</span><input id="race-end-time" type="time" step="1" readonly aria-describedby="arrival-feedback"></label>
         <p class="arrival-feedback wide" id="arrival-feedback" role="status" aria-live="polite">La date et l’heure d’arrivée sont calculées à partir du départ et de la durée.</p>
-        <label>CLASSEMENT GÉNÉRAL<input id="race-rank" maxlength="40" placeholder="235e / 4 250"></label>
-        <label>CLASSEMENT DÉPARTEMENTAL<input id="race-rank-department" maxlength="40" placeholder="12e / 180"></label>
-        <label>CLASSEMENT NATIONAL<input id="race-rank-national" maxlength="40" placeholder="96e / 2 100"></label>
+        <fieldset class="rankings-editor wide">
+          <legend>CLASSEMENTS <span class="rankings-help">Place / nombre de joueurs · style numérotation Rapli Sports</span></legend>
+          <div class="ranking-inputs">
+            <div class="ranking-input ranking-input-main"><span class="ranking-label">🏆 GÉNÉRAL</span><div class="ranking-pair"><input id="race-rank" type="text" inputmode="numeric" maxlength="40" placeholder="235" aria-label="Classement général"><span>/</span><input id="race-rank-total" type="text" inputmode="numeric" maxlength="12" placeholder="4 250" aria-label="Joueurs au général"></div></div>
+            <div class="ranking-input"><span class="ranking-label">🇫🇷 NATIONAL</span><div class="ranking-pair"><input id="race-rank-national" type="text" inputmode="numeric" maxlength="40" placeholder="96" aria-label="Classement national"><span>/</span><input id="race-rank-national-total" type="text" inputmode="numeric" maxlength="12" placeholder="2 100" aria-label="Joueurs au national"></div></div>
+            <div class="ranking-input"><span class="ranking-label">🇨🇶 DÉPARTEMENTAL</span><div class="ranking-pair"><input id="race-rank-department" type="text" inputmode="numeric" maxlength="40" placeholder="12" aria-label="Classement départemental"><span>/</span><input id="race-rank-department-total" type="text" inputmode="numeric" maxlength="12" placeholder="180" aria-label="Joueurs au départemental"></div></div>
+            <div class="ranking-input"><span class="ranking-label">🏙️ VILLE</span><div class="ranking-pair"><input id="race-rank-city" type="text" inputmode="numeric" maxlength="40" placeholder="3" aria-label="Classement ville"><span>/</span><input id="race-rank-city-total" type="text" inputmode="numeric" maxlength="12" placeholder="32" aria-label="Joueurs en ville"></div></div>
+            <div class="ranking-input"><span class="ranking-label">🏴‍☠️ TEAM</span><div class="ranking-pair"><input id="race-rank-team" type="text" inputmode="numeric" maxlength="40" placeholder="2" aria-label="Classement team"><span>/</span><input id="race-rank-team-total" type="text" inputmode="numeric" maxlength="12" placeholder="15" aria-label="Joueurs en team"></div></div>
+          </div>
+        </fieldset>
+        <label>CATÉGORIE VSR<select id="race-vsr"><option value="">Non renseignée</option><option value="hc">Hors Catégorie</option><option value="vsr1">VSR 1</option><option value="vsr2">VSR 2</option><option value="vsr3">VSR 3</option></select></label>
         <fieldset class="equipment-choice wide" id="race-equipment-group">
           <legend>ÉQUIPEMENT DE COURSE <span class="equipment-help">Une seule option maximum · facultatif</span></legend>
           <div class="equipment-options" aria-label="Type de pack utilisé pendant la course">
@@ -78,6 +106,7 @@
           </div>
         </fieldset>
         <label class="wide check-live"><input id="race-live" type="checkbox"><span class="live-indicator" aria-hidden="true"></span><span><strong>COURSE EN COURS</strong><small>Active un halo lumineux turquoise sur la tuile.</small></span></label>
+        <label class="wide check-upcoming"><input id="race-upcoming" type="checkbox"><span class="upcoming-indicator" aria-hidden="true"></span><span><strong>À VENIR</strong><small>Une course programmée · halo bleu et export Apple Calendrier.</small></span></label>
       </div>
       <div class="image-section"><h3>VISUELS DE LA COURSE <small>3 images indépendantes</small></h3>
         <div class="uploads">

@@ -23,7 +23,7 @@ const name=String(item.name||'').trim();const nameSize=measureFont(ctx,name,text
 const subSize=Math.max(11,Math.min(17,colWidth*.055)),descriptionSize=Math.max(10,Math.min(16,colWidth*.049));
 const nameLines=textLines(ctx,name,textWidth,font,nameSize,800),subtitleLines=item.subtitle?textLines(ctx,item.subtitle,textWidth,'Poppins,Arial,sans-serif',subSize,500):[],descriptionLines=item.description?textLines(ctx,item.description,textWidth,font,descriptionSize,400):[];
 const textH=nameLines.length*nameSize*1.34+(subtitleLines.length?8+subtitleLines.length*subSize*1.4:0)+(descriptionLines.length?8+descriptionLines.length*descriptionSize*1.43:0)+(item.score?35:0);
-let height=visual?(item.image?Math.round(imageW*.74)+16:0)+textH+35:podium?(item.image?Math.round(Math.min(imageW,colWidth-32)*.75)+16:0)+textH+65:Math.max(textH+40,item.image?Math.round(imageW*.8)+28:0,92);
+let height=visual?(item.image?Math.round(imageW*.74)+16:56)+textH+39:podium?(item.image?Math.round(imageW*.9)+16:56)+textH+73:Math.max(textH+40,item.image?Math.round(imageW*.8)+28:0,92);
 return {item,position,w:colWidth,h:Math.max(height,visual?110:podium?156:90),imageW,textX,textWidth,pad,nameSize,subSize,descriptionSize,nameLines,subtitleLines,descriptionLines,visual,podium,font};
 }
 function imageFrom(data){return new Promise((resolve,reject)=>{if(!data){resolve(null);return;}const i=new Image();i.onload=()=>resolve(i);i.onerror=()=>reject(Error('Une image du classement est illisible.'));i.src=data;});}
@@ -34,7 +34,7 @@ roundedRect(ctx,x,y,w,h,12,pal.card);
 ctx.strokeStyle=pal.accent+'44';ctx.lineWidth=1.5;ctx.beginPath();ctx.roundRect(x+.75,y+.75,w-1.5,h-1.5,12);ctx.stroke();
 if(visual||podium){
 let cy=y+pad;
-if(item.image){const img=images.get(item.image),ih=Math.round(imageW*.74);drawImageCover(ctx,img,x+pad,cy,w-pad*2,ih);cy+=ih+13;}else cy+=56; // Reserve the badge area when no image is supplied.
+if(item.image){const img=images.get(item.image),iw=podium?Math.min(w-2*pad,170):w-2*pad,ih=Math.round(iw*(podium?.9:.74));drawImageCover(ctx,img,x+(w-iw)/2,cy,iw,ih);cy+=ih+13;}else cy+=56; // Reserve the badge area when no image is supplied.
 const nr=position+1;
 roundedRect(ctx,x+12,y+12,Math.max(44,Math.ceil(Math.log10(nr+1))*17+28),43,7,pal.accent);
 ctx.fillStyle=pal.bg;ctx.textAlign='center';ctx.font='800 25px Poppins,Arial,sans-serif';ctx.textBaseline='middle';ctx.fillText(String(nr).padStart(2,'0'),x+12+Math.max(44,Math.ceil(Math.log10(nr+1))*17+28)/2,y+33);ctx.textAlign='left';

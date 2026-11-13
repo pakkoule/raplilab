@@ -10,20 +10,28 @@ Module intégré à la PR #1 de RapliLab, non fusionnée.
 
 ## Fiches de courses
 
-- Nom de course, nom du bateau, classe (libre avec suggestions IMOCA/ULTIM/etc.) et **couleur personnalisable du tag de classe**. Le champ « Édition/année » est supprimé du formulaire : l’année se déduit du départ. Les anciennes valeurs d’édition restent conservées dans les données archivées pour compatibilité.
+- Nom de course, nom du bateau et classe (libre avec suggestions IMOCA/ULTIM/etc.). **Aucun réglage de couleur dans une fiche individuelle** : les couleurs des tags sont globales par classe, dans le menu dédié. Le champ « Édition/année » est supprimé du formulaire : l’année se déduit du départ. Les anciennes valeurs d’édition restent conservées dans les données archivées pour compatibilité.
 - **Catégorie VSR** : Hors Catégorie (**pastille dorée et en gras**), VSR 1, VSR 2, VSR 3 ou non renseignée.
 - **Deux cases indépendantes mais mutuellement exclusives** : « Course en cours » (halo turquoise) et « À venir » (halo bleu).
 - **Équipement unique et facultatif** : PDD, 1/2 FP ou Full Pack (cases exclusives) ; zéro choix possible.
 - Sur chaque tuile, **nom de la course à gauche et tags de classe de bateau + catégorie VSR à droite**, alignés horizontalement. La ligne s’adapte à l’iPhone : le nom peut revenir à la ligne et les libellés trop longs sont tronqués sans déplacer les tags. Même alignement dans l’export PNG ; l’ancienne année d’édition n’est plus affichée.
-- Cinq classements avec **position / nombre de joueurs**, affichés avec la police sportive **Barlow Condensed ExtraBold** (tuiles, formulaire et export PNG), et non une serif type Times New Roman :
-  - 🏆 Général : plaque principale agrandie (serif blanche sur fond contrasté) ;
+- Cinq classements avec **position / nombre de joueurs**, affichés avec la police sportive **Barlow Condensed ExtraBold** (tuiles, formulaire et export PNG), et non une serif type Times New Roman. Les podiums terminés affichent automatiquement **🥇 1re place / 🥈 2e / 🥉 3e** à côté du rang, sans masquer l’emoji du type de classement. Les courses en cours/à venir n’affichent pas de médaille :
+  - 🏆 Général : plaque principale agrandie (police sportive blanche sur fond contrasté) ;
   - 🇫🇷 National : petite plaque ;
   - 🇨🇶 Départemental : drapeau de Sark (affichage emoji selon appareil) ;
   - 🏙️ Ville : cityscape ;
   - 🏴‍☠️ Team : drapeau pirate.
 - Durée dans **quatre cases sur une ligne** : jours, heures, minutes et secondes. Police **Courier Prime**, plus douce que Courier.
 - Date et heure de départ ; **date et heure d’arrivée calculées** à la seconde (lecture seule) à partir des quatre champs de durée. Calcul de durée en temps civil de la course, sans fuseau de course configuré. Prise en charge des passages de jour, mois, année et année bissextile.
+- **Bloc « Notes personnelles » supprimé** du formulaire et des tuiles. Les notes déjà enregistrées restent dans les données historiques et ne sont pas écrasées lors des modifications.
 - Formulaire, stockage local, restauration cloud et import/export JSON compatibles avec les anciens enregistrements : les classements « 235e / 4 250 » sont séparés en place et total ; les anciennes durées textuelles sont converties ; une date d’arrivée historique est préservée si l’heure de départ n’avait pas été enregistrée.
+
+## Réglages globaux des couleurs
+
+- Troisième vue interne **COULEURS DES CLASSES** : choix d’une **couleur générale** (initialement turquoise), puis possibilité de personnaliser chaque classe IMOCA, ULTIM, Class40, Ocean Fifty, Mini 6.50 ou toute classe enregistrée.
+- Changer la couleur générale **applique la nouvelle couleur à toutes les courses** et, après confirmation, réinitialise les exceptions propres aux classes. Changer une classe met à jour simultanément toutes les courses portant cette classe (en ignorant les différences de casse et de présentation).
+- Les anciens champs `classColor` par course sont conservés dans les données historiques mais **ne pilotent plus l’affichage**. Les couleurs des tuiles et des exports PNG proviennent exclusivement des réglages globaux ; le contraste du texte est calculé automatiquement.
+- Réglages enregistrés localement sous `rapli-regatta-class-colors-v1` et synchronisés sur Supabase via l’objet de paramètres de la collection. Les réglages par défaut ne créent pas de faux contenu dans un nouveau compte. Import/export JSON inclut les couleurs (version 2) et les anciens JSON restent importables.
 
 ## Navigation, statistiques et exports
 
@@ -39,7 +47,7 @@ Module intégré à la PR #1 de RapliLab, non fusionnée.
   - **Habitudes** : répartitions des courses par VSR, bateau, équipement et statut.
   - **Performances comparées** : par VSR, classe de bateau et équipement, avec nombre de courses classées, Top 10 et Top % moyen.
   - Les statistiques de performance ne comptabilisent pas les courses « À venir » ou « En cours ». Les métriques nécessitant des classements / participants affichent « — » lorsqu’il manque les données. Les moyennes de durée utilisent uniquement des courses terminées avec durée positive. Aucun nouveau champ ni migration Supabase nécessaire.
-- **PNG par course** : affiche 16:9, métadonnées, classe colorée, VSR, date/heure, durée en Courier Prime, **cinq classements (avec position et total)** et les deux captures.
+- **PNG par course** : affiche 16:9, métadonnées, couleur de classe issue du menu global, VSR, date/heure, durée en Courier Prime, **cinq classements (avec position, total et médailles de podium)** et les deux captures.
 - Pour une **course cochée À venir**, bouton **📅 CALENDRIER** produisant un fichier `.ics` compatible avec l’import dans Apple Calendrier : horaires de départ/arrivée si connus, journée entière si heure manquante, ou plage indicative d’une heure si durée absente. Le téléchargement ne crée pas directement un événement sans l’action d’importation de l’utilisateur.
 - Sauvegarde locale automatique dans IndexedDB `rapli-regatta-v1` ; synchronisation Supabase via `RapliModuleBridge`, bucket privé et RLS existants. Aucune nouvelle table ; migration contrainte `regatta/migrations/20261113_add_regatta_module.sql` déjà appliquée.
 
@@ -48,6 +56,7 @@ Module intégré à la PR #1 de RapliLab, non fusionnée.
 - Syntaxe JavaScript contrôlée, champs HTML recoupés.
 - Tableau de statistiques testé avec des courses de différentes années, des courses en cours/à venir, des places sans participants et une collection vide. Les podiums et ratios excluent les courses non terminées.
 - Tests complémentaires : chaque type de classement vérifié indépendamment avec ses places 1/2/3 ; position impossible (supérieure au total déclaré) écartée ; courses non terminées exclues ; taux et dénominateurs contrôlés ; cinq anneaux, quinze colonnes de médailles et barres annuelles contrôlés ; aucune donnée / aucun podium gérés.
+- Réglages couleurs testés en simulation : application globale sur toutes les classes, exception IMOCA sur plusieurs courses, confirmation de réinitialisation, conservation dans la sauvegarde locale et restauration des réglages cloud ; anciennes notes préservées mais masquées. Médailles vérifiées sur les cinq classements, absentes sur les courses à venir et en cours.
 - Scénario simulé de création de course : cinq classements, catégorie VSR, classe colorée, choix « À venir », durée jours/heures/minutes/secondes, calcul d’arrivée, sauvegarde et export ICS.
 - Cas de durée vérifiés : `12 j 08 h 35 min`, `8h35`, `1 j 2 h 3 min 4 s`, `00 h 00 min 31 s`, `01:02:03`.
 - À tester **dans la vraie Deploy Preview** avant fusion : glisser-déposer d’images, photos et rendu Canvas/PNG, iPhone Safari, ouverture du fichier ICS dans Apple Calendrier, accès Supabase PC ↔ iPhone et conflit de révision, affichage éventuel du drapeau de Sark.

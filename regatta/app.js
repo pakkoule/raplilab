@@ -135,7 +135,7 @@ function storeClassSettings(input,{notifyCloud=true}={}){
  classSettings=normalizeClassSettings(input);
  try{localStorage.setItem(COLOR_STORAGE_KEY,JSON.stringify(classSettings));}
  catch(e){console.warn('Rapli Regatta: impossible de mémoriser les couleurs localement',e);toast('Sauvegarde locale des couleurs indisponible',true);}
- render();renderClassColors();
+ render();
  if(notifyCloud)window.RapliModuleCloud?.changed?.();
 }
 
@@ -236,7 +236,7 @@ function render(){
  $('result-count').textContent=out.length+' / '+rows.length;
  $('cards').innerHTML=out.map(card).join('')||(rows.length?'<p>Aucune course ne correspond aux filtres.</p>':'');
  $('empty').hidden=rows.length!==0;
- renderStatistics();
+ renderStatistics();renderClassColors();
 }
 const statInt=n=>Number(n).toLocaleString('fr-FR');
 const statDecimal=(n,digits=1)=>Number(n).toLocaleString('fr-FR',{minimumFractionDigits:0,maximumFractionDigits:digits});
@@ -454,13 +454,61 @@ function renderStatistics(){
     performance('PAR ÉQUIPEMENT',r=>equipmentModes[r.equipment]||'Non renseigné')+
   '</div></section>';
 }
-function selectWorkspace(view){
- const showStats=view==='stats';
- $('races-panel').hidden=showStats;$('stats-panel').hidden=!showStats;
- for(const [id,active] of [['view-races',!showStats],['view-stats',showStats]]){
-   const el=$(id);el.classList.toggle('active',active);el.setAttribute('aria-selected',String(active));el.tabIndex=active?0:-1;
+
+function renderClassColors(){
+ const defaults=['IMOCA','ULTIM','Class40','Ocean Fifty','Mini 6.50'];
+ const labels=new Map();
+ const addClass=name=>{
+  const label=String(name||'').trim().slice(0,100),key=classKey(label);
+  if(key&&!labels.has(key))labels.set(key,label);
+ };
+ for(const label of defaults)addClass(label);
+ for(const r of rows)addClass(r.boatClass);
+ for(const key of Object.keys(classSettings.classColors))addClass(key);
+ const list=[...labels.entries()].sort(([a],[b])=>a.localeCompare(b,'fr'));
+ $('default-class-color').value=classSettings.defaultColor;
+ $('colors-class-count').textContent=list.length+' classes';
+ $('class-colors-list').innerHTML=list.map(([key,label])=>{
+  const selected=getClassTagColor(key);
+  const count=rows.filter(r=>classKey(r.boatClass)===key).length;
+  const customized=Object.prototype.hasOwnProperty.call(classSettings.classColors,key);
+  return '<div class="class-color-row"><span class="class-color-preview" style="--class-tag:'+selected+';--class-ink:'+classTextColor(selected)+'">'+safe(label)+'</span>'+
+   '<span class="class-color-count">'+count+' course'+(count===1?'':'s')+'</span>'+
+   '<label class="class-color-control"><span class="color-control-label">'+(customized?'PERSONNALISÉE':'PAR DÉFAUT')+'</span>'+
+   '<input type="color" value="'+selected+'" data-class-key="'+safe(key)+'" aria-label="Couleur de la classe '+safe(label)+'"></label></div>';
+ }).join('');
+}
+function changeDefaultClassColor(value){
+ const next=colorSafe(value);
+ if(next===classSettings.defaultColor&&Object.keys(classSettings.classColors).length===0)return;
+ if(Object.keys(classSettings.classColors).length>0 &&
+    !confirm('Appliquer cette couleur à toutes les courses ? Les couleurs personnalisées par classe seront réinitialisées.')){
+   $('default-class-color').value=classSettings.defaultColor;return;
  }
- if(showStats)renderStatistics();
+ storeClassSettings({defaultColor:next,classColors:{}});
+ toast('Couleur générale appliquée à toutes les courses ✓');
+}
+function changeSpecificClassColor(key,value){
+ const normalized=classKey(key);
+ if(!normalized)return;
+ const next=colorSafe(value),colors={...classSettings.classColors};
+ if(next===classSettings.defaultColor)delete colors[normalized];
+ else colors[normalized]=next;
+ storeClassSettings({defaultColor:classSettings.defaultColor,classColors:colors});
+ toast('Couleur de la classe '+normalized+' mise à jour sur toutes ses courses ✓');
+}
+
+function selectWorkspace(view){
+ const valid=['races','stats','colors'];
+ if(!valid.includes(view))return;
+ for(const name of valid){
+  const active=name===view;
+  $(name+'-panel').hidden=!active;
+  const tab=$('view-'+name);
+  tab.classList.toggle('active',active);tab.setAttribute('aria-selected',String(active));tab.tabIndex=active?0:-1;
+ }
+ if(view==='stats')renderStatistics();
+ if(view==='colors')renderClassColors();
 }
 function preview(k){const img=$('preview-'+k),ph=$('placeholder-'+k);img.hidden=!validImage(pictures[k]);ph.hidden=validImage(pictures[k]);if(validImage(pictures[k]))img.src=pictures[k];else img.removeAttribute('src');}
 function openEditor(r){
@@ -696,7 +744,12 @@ for(const key of ['start','startTime','durationDays','durationHours','durationMi
   getField(key).addEventListener('change',updateArrival);
 $('race-live').addEventListener('change',event=>{if(event.target.checked)$('race-upcoming').checked=false;});
 $('race-upcoming').addEventListener('change',event=>{if(event.target.checked)$('race-live').checked=false;});
-for(const view of ['races','stats'])$('view-'+view).addEventListener('click',()=>selectWorkspace(view));
+for(const view of ['races','stats','colors'])$('view-'+view).addEventListener('click',()=>selectWorkspace(view));
+$('default-class-color').addEventListener('change',event=>changeDefaultClassColor(event.target.value));
+$('class-colors-list').addEventListener('change',event=>{
+ const el=event.target;
+ if(el.matches?.('input[data-class-key]'))changeSpecificClassColor(el.dataset.classKey,el.value);
+});
 $('new-race').addEventListener('click',()=>openEditor());$('empty-add').addEventListener('click',()=>openEditor());$('race-form').addEventListener('submit',saveEditor);$('delete-race').addEventListener('click',()=>{if(editId)deleteRace(editId);});
 for(const id of ['search','filter-status','filter-vsr','filter-class','sort'])$(id).addEventListener(id==='search'?'input':'change',render);
 for(const key of imageKeys){$('image-'+key).addEventListener('change',e=>{const f=e.target.files[0];e.target.value='';fileData(f,key);});document.querySelector('[data-remove="'+key+'"]').addEventListener('click',()=>{pictures[key]='';preview(key);});const zone=document.querySelector('[data-image="'+key+'"] .upload-preview');zone.addEventListener('dragover',e=>{e.preventDefault();});zone.addEventListener('drop',e=>{e.preventDefault();fileData(e.dataTransfer?.files[0],key);});}

@@ -135,6 +135,19 @@ body[data-active="refs"] .portal-header{background:linear-gradient(115deg,#112d3
 #global-cloud-feedback details{margin:4px auto 0;max-width:720px;text-align:left;font-weight:500}
 #global-cloud-feedback details summary{cursor:pointer;font-weight:700}
 #global-cloud-feedback ul{margin:5px 0 4px;padding-left:20px}
+#global-cloud-feedback:has(.global-cloud-dismiss){padding-left:50px;padding-right:50px}
+#global-cloud-feedback .global-cloud-dismiss{
+ position:absolute;top:50%;right:12px;transform:translateY(-50%);
+ display:grid;place-items:center;width:30px;height:30px;border:1px solid #a9c6e4;
+ border-radius:8px;background:rgba(255,255,255,.75);color:inherit;
+ font:700 19px/1 Inter,system-ui,sans-serif;cursor:pointer;
+}
+#global-cloud-feedback .global-cloud-dismiss:hover{background:#fff;border-color:#729fcb}
+#global-cloud-feedback .global-cloud-dismiss:focus-visible{outline:2px solid currentColor;outline-offset:2px}
+@media(max-width:420px){
+ #global-cloud-feedback:has(.global-cloud-dismiss){padding-left:38px;padding-right:38px}
+ #global-cloud-feedback .global-cloud-dismiss{right:5px;width:28px;height:28px}
+}
 @media(max-width:1120px){
  .portal-header{flex-wrap:wrap;gap:7px}
  .product-tabs{flex:1 1 100%;max-width:100%}
@@ -353,7 +366,8 @@ body[data-active="top10"] .portal-header{background:linear-gradient(115deg,#071d
           : '<details><summary>Afficher le détail des huit espaces</summary><ul>'+
               results.map(e=>'<li>'+escapeCloud(cloudNames[e.name])+' : '+escapeCloud(e.message)+'</li>').join('')+
             '</ul></details>';
-        cloudFeedback.innerHTML='<strong>'+escapeCloud(summary)+'</strong>'+detail;
+        cloudFeedback.innerHTML='<strong>'+escapeCloud(summary)+'</strong>'+detail+
+          '<button type="button" class="global-cloud-dismiss" aria-label="Masquer le résultat de la synchronisation" title="Fermer ce message">×</button>';
       }
     }
     async function runGlobalCloud(operation) {
@@ -380,6 +394,11 @@ body[data-active="top10"] .portal-header{background:linear-gradient(115deg,#071d
         active.removeAttribute('aria-busy');
       }
     }
+    cloudFeedback.addEventListener('click',event=>{
+      if(event.target.closest('.global-cloud-dismiss') && !globalCloudBusy){
+        cloudFeedback.hidden=true;
+      }
+    });
     cloudSave.addEventListener('click',()=>void runGlobalCloud('save'));
     cloudRefresh.addEventListener('click',()=>void runGlobalCloud('refresh'));
   })();

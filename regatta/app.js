@@ -5,7 +5,7 @@ const safe=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'
 const clean=(v,n=150)=>String(v??'').trim().slice(0,n);
 const uid=()=>crypto.randomUUID?crypto.randomUUID():'race-'+Date.now().toString(36)+Math.random().toString(36).slice(2);
 const now=()=>new Date().toISOString();
-const props={name:180,edition:100,boatClass:100,boat:140,start:20,startTime:8,end:20,endTime:8,rank:40,rankTotal:12,rankDepartment:40,rankDepartmentTotal:12,rankNational:40,rankNationalTotal:12,rankCity:40,rankCityTotal:12,rankTeam:40,rankTeamTotal:12,duration:100,durationDays:4,durationHours:2,durationMinutes:2,durationSeconds:2,classColor:7,vsr:5,notes:2500};
+const props={name:180,boatClass:100,boat:140,start:20,startTime:8,end:20,endTime:8,rank:40,rankTotal:12,rankDepartment:40,rankDepartmentTotal:12,rankNational:40,rankNationalTotal:12,rankCity:40,rankCityTotal:12,rankTeam:40,rankTeamTotal:12,duration:100,durationDays:4,durationHours:2,durationMinutes:2,durationSeconds:2,classColor:7,vsr:5,notes:2500};
 const imageKeys=['icon','result','route'];
 
 /* A date and clock time represent the course's own civil time.
@@ -121,7 +121,7 @@ function normalizeRanking(r){
    else {r[key]='';r[totalKey]='';}
  }
 }
-function normal(x={}){const r={id:typeof x.id==='string'&&x.id.length<130?x.id:uid(),createdAt:x.createdAt||now(),updatedAt:x.updatedAt||now(),live:!!x.live,upcoming:!!x.upcoming&&!x.live,equipment:validEquipment(x.equipment)};for(const [k,n] of Object.entries(props))r[k]=clean(x[k],n);
+function normal(x={}){const r={id:typeof x.id==='string'&&x.id.length<130?x.id:uid(),createdAt:x.createdAt||now(),updatedAt:x.updatedAt||now(),live:!!x.live,upcoming:!!x.upcoming&&!x.live,equipment:validEquipment(x.equipment),edition:clean(x.edition,100)};for(const [k,n] of Object.entries(props))r[k]=clean(x[k],n);
  r.classColor=colorSafe(r.classColor);r.vsr=VSR[r.vsr]?r.vsr:'';
  normalizeRanking(r);
  const durationKeys=['durationDays','durationHours','durationMinutes','durationSeconds'];
@@ -155,9 +155,10 @@ function card(r){
    rankHtml('🏴‍☠️','TEAM',r.rankTeam,r.rankTeamTotal,'rank-team');
  return '<article class="card'+(r.live?' live':'')+(r.upcoming?' upcoming':'')+'" data-id="'+safe(r.id)+'" style="--class-tag:'+tag+';--class-ink:'+classTextColor(tag)+'">'+
  '<div class="card-top"><div class="race-icon card-photo">'+(validImage(r.icon)?imageTag(r.icon,'Affiche '+r.name):'<div class="icon-placeholder">⛵</div>')+'</div><span class="badge-status">'+statusTitle[status]+'</span></div>'+
- '<div class="card-content"><div class="card-eyebrow"><div class="card-tag-row"><span class="class-tag" title="'+safe(r.boatClass||'VIRTUAL REGATTA')+'">'+safe(r.boatClass||'VIRTUAL REGATTA')+'</span>'+
- (mode?'<span class="vsr-badge'+(r.vsr==='hc'?' hc':'')+'">'+safe(mode)+'</span>':'')+'</div><span class="year">'+safe(r.edition)+'</span></div>'+
- '<h2>'+safe(r.name)+'</h2><div class="card-boat">'+safe(r.boat)+'</div>'+
+ '<div class="card-content"><div class="card-title-row"><h2 title="'+safe(r.name)+'">'+safe(r.name)+'</h2>'+
+ '<div class="card-tag-row"><span class="class-tag" title="'+safe(r.boatClass||'VIRTUAL REGATTA')+'">'+safe(r.boatClass||'VIRTUAL REGATTA')+'</span>'+
+ (mode?'<span class="vsr-badge'+(r.vsr==='hc'?' hc':'')+'">'+safe(mode)+'</span>':'')+'</div></div>'+
+ '<div class="card-boat">'+safe(r.boat)+'</div>'+
  '<div class="card-stats">'+(r.start?'<span class="stat-chip">DÉPART '+safe(dateTimeFR(r.start,r.startTime))+'</span>':'')+
  (r.end?'<span class="stat-chip arrival-chip">ARRIVÉE '+safe(dateTimeFR(r.end,r.endTime))+'</span>':'')+
  (r.duration?'<span class="stat-chip duration-chip">⏱ '+safe(r.duration)+'</span>':'')+
@@ -177,7 +178,7 @@ function render(){
  if(classes.includes(selected))$('filter-class').value=selected;
  const q=$('search').value.toLocaleLowerCase('fr').trim(),status=$('filter-status').value,cls=$('filter-class').value,vsr=$('filter-vsr').value;
  const filtered=rows.filter(r=>(!status||raceStatus(r)===status)&&(!cls||r.boatClass===cls)&&(!vsr||r.vsr===vsr)&&
-   (!q||[r.name,r.edition,r.boatClass,r.boat,r.rank,r.rankNational,r.rankDepartment,r.rankCity,r.rankTeam,
+   (!q||[r.name,r.boatClass,r.boat,r.rank,r.rankNational,r.rankDepartment,r.rankCity,r.rankTeam,
            r.startTime,r.end,r.endTime,VSR[r.vsr]||'',equipmentModes[r.equipment]||'',r.notes].some(v=>String(v||'').toLocaleLowerCase('fr').includes(q))));
  const out=[...filtered],sort=$('sort').value;
  const chronological=r=>(r.start?r.start+'T'+(r.startTime||'00:00'):r.createdAt||'');
@@ -318,18 +319,23 @@ async function exportPNG(r){
   const y=HEADER+PHOTO;
   const tag=colorSafe(r.classColor),boatLabel=(r.boatClass||'VIRTUAL REGATTA').toUpperCase().slice(0,28);
   ctx.font='800 18px Poppins,sans-serif';
-  const tagWidth=Math.min(470,Math.max(140,ctx.measureText(boatLabel).width+28));
-  ctx.fillStyle=tag;ctx.fillRect(48,y+24,tagWidth,36);
-  ctx.fillStyle=classTextColor(tag);ctx.fillText(boatLabel,61,y+49,tagWidth-24);
+  const tagWidth=Math.min(295,Math.max(110,ctx.measureText(boatLabel).width+28));
+  let vsrWidth=0;
   if(VSR[r.vsr]){
-    const vsrLabel=VSR[r.vsr],vsrX=48+tagWidth+10;
     ctx.font='900 16px Poppins,sans-serif';
-    const vsrWidth=Math.min(260,Math.max(92,ctx.measureText(vsrLabel).width+29));
-    ctx.fillStyle=r.vsr==='hc'?'#efcb70':'#e8f2fa';ctx.fillRect(vsrX,y+24,vsrWidth,36);
-    ctx.fillStyle=r.vsr==='hc'?'#75500d':'#386480';ctx.fillText(vsrLabel,vsrX+12,y+48,vsrWidth-23);
+    vsrWidth=Math.min(230,Math.max(80,ctx.measureText(VSR[r.vsr]).width+29));
   }
-  ctx.fillStyle='#73909e';ctx.textAlign='right';ctx.font='700 17px Poppins,sans-serif';ctx.fillText((r.edition||'').slice(0,40),1151,y+49);ctx.textAlign='left';
-  ctx.fillStyle='#123648';ctx.font='900 43px Poppins,sans-serif';wrap(ctx,r.name,1090,2).forEach((line,i)=>ctx.fillText(line,48,y+111+i*51));
+  const tagEnd=1152,tagStart=tagEnd-tagWidth-(vsrWidth?10+vsrWidth:0);
+  ctx.fillStyle=tag;ctx.fillRect(tagStart,y+29,tagWidth,39);
+  ctx.fillStyle=classTextColor(tag);ctx.font='800 18px Poppins,sans-serif';ctx.fillText(boatLabel,tagStart+12,y+55,tagWidth-24);
+  if(vsrWidth){
+    const vsrLabel=VSR[r.vsr],vsrX=tagStart+tagWidth+10;
+    ctx.font='900 16px Poppins,sans-serif';
+    ctx.fillStyle=r.vsr==='hc'?'#efcb70':'#e8f2fa';ctx.fillRect(vsrX,y+29,vsrWidth,39);
+    ctx.fillStyle=r.vsr==='hc'?'#75500d':'#386480';ctx.fillText(vsrLabel,vsrX+12,y+55,vsrWidth-23);
+  }
+  ctx.fillStyle='#123648';ctx.font='900 39px Poppins,sans-serif';
+  ctx.fillText(r.name,48,y+62,Math.max(190,tagStart-64));
   if(r.boat){ctx.fillStyle='#7a919d';ctx.font='700 18px Poppins,sans-serif';wrap(ctx,r.boat,1050,1).forEach(t=>ctx.fillText(t,48,y+202));}
   ctx.fillStyle='#245c6c';ctx.font='800 17px Poppins,sans-serif';
   if(r.start)ctx.fillText('DÉPART · '+dateTimeFR(r.start,r.startTime),48,y+238);
@@ -420,7 +426,6 @@ function calendarText(r){
    finish=next.replace(/-/g,'');
  }
  const descriptions=[
-   'Édition : '+(r.edition||'Non renseignée'),
    'Bateau : '+(r.boat||'Non renseigné'),
    'Classe : '+(r.boatClass||'Non renseignée'),
    'Catégorie VSR : '+(VSR[r.vsr]||'Non renseignée'),

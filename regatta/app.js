@@ -108,7 +108,7 @@ function normalizeRanking(r){
  for(const [key,totalKey] of rankPairs){
    const legacy=String(r[key]||'');
    const pieces=legacy.split('/');
-   const place=intString(pieces[0].replace(/(?:ème|eme|er|e)$/i,''));
+   const place=intString(pieces[0].trim().replace(/(?:ème|eme|er|e)$/i,''));
    const total=intString(r[totalKey]||pieces[1]||'');
    if(place){r[key]=place;r[totalKey]=total;}
    else {r[key]='';r[totalKey]='';}

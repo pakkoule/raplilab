@@ -183,8 +183,27 @@ body[data-active="lp"]{--accent:#c5c6ca;--frame-bg:#e6e6e8;--frame-border:#b5b5b
 body[data-active="lp"] .portal-header{background:linear-gradient(115deg,#101114,#32333a 52%,#111215)}
 .product-tab[data-product="lp"][aria-selected="true"]{background-color:rgba(215,216,220,.2)!important}
 @media(min-width:801px){.product-tabs{grid-template-columns:repeat(10,minmax(0,1fr));width:min(100%,920px)}}
-@media(max-width:800px){.product-tabs{grid-template-columns:repeat(5,minmax(0,1fr))}.portal-header{min-height:132px}.app-frame{height:calc(100dvh - 179px)}}
-@media(max-width:420px){.portal-header{min-height:128px}.app-frame{height:calc(100dvh - 168px)}}
+/* Mobile: ten product tabs remain on ONE horizontally swipeable rail. */
+@media(max-width:800px){
+  .portal-header{min-height:0}
+  .product-tabs{
+    display:flex;flex-wrap:nowrap;justify-content:flex-start;align-items:center;
+    flex:1 1 100%;width:100%;max-width:100%;min-width:0;
+    overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;
+    -webkit-overflow-scrolling:touch;touch-action:pan-x;
+    scroll-snap-type:x proximity;scrollbar-width:thin;
+    scrollbar-color:rgba(230,235,241,.48) transparent;
+    gap:7px;padding:0 2px 7px;
+  }
+  .product-tab{flex:0 0 clamp(86px,21vw,112px);width:auto;scroll-snap-align:start}
+  .product-tab[aria-selected="true"]::after{bottom:1px}
+  .app-frame{height:calc(100dvh - 118px)}
+}
+@media(max-width:420px){
+  .product-tabs{gap:6px;padding-bottom:6px}
+  .product-tab{flex-basis:92px}
+  .app-frame{height:calc(100dvh - 111px)}
+}
 </style>
 </head>
 <body data-active="tools">
@@ -304,6 +323,13 @@ body[data-active="lp"] .portal-header{background:linear-gradient(115deg,#101114,
       }
       document.title=({archives:'RAPLI — Archives · Dragon Blanc aux Yeux Bleus',sports:'RAPLI — Sports',time:'RAPLI — Time',refs:'RAPLI — Refs',stickers:'RAPLI — Stickers Lab',tools:'RAPLI — Tools',tiers:'RAPLI — Top Tiers',top10:'RAPLI — Top 10',coach:'RAPLI — Coach',lp:'RAPLI — LP'})[name];
       if(updateHash && location.hash !=='#'+name)history.pushState({project:name},'', '#'+name);
+      // Keep the active tab visible in the one-row mobile scroll rail.
+      if(window.matchMedia('(max-width: 800px)').matches){
+        const rail=tabs[name].parentElement;
+        const selected=tabs[name];
+        const left=Math.max(0,selected.offsetLeft-(rail.clientWidth-selected.offsetWidth)/2);
+        rail.scrollTo({left,behavior:updateHash?'smooth':'auto'});
+      }
       if(focus)tabs[name].focus();
     }
     for(const name of projects){

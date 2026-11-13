@@ -64,6 +64,14 @@
         <label>CLASSEMENT DÉPARTEMENTAL<input id="race-rank-department" maxlength="40" placeholder="12e / 180"></label>
         <label>CLASSEMENT NATIONAL<input id="race-rank-national" maxlength="40" placeholder="96e / 2 100"></label>
         <label>TEMPS DE COURSE<input id="race-duration" maxlength="100" placeholder="12 j 08 h 35 min"></label>
+        <fieldset class="equipment-choice wide" id="race-equipment-group">
+          <legend>ÉQUIPEMENT DE COURSE <span class="equipment-help">Une seule option maximum · facultatif</span></legend>
+          <div class="equipment-options" aria-label="Type de pack utilisé pendant la course">
+            <label class="equipment-option"><input type="checkbox" name="race-equipment" value="pdd"><span>PDD</span></label>
+            <label class="equipment-option"><input type="checkbox" name="race-equipment" value="half-fp"><span>1/2 FP</span></label>
+            <label class="equipment-option"><input type="checkbox" name="race-equipment" value="full-pack"><span>FULL PACK</span></label>
+          </div>
+        </fieldset>
         <label class="wide check-live"><input id="race-live" type="checkbox"><span class="live-indicator" aria-hidden="true"></span><span><strong>COURSE EN COURS</strong><small>Active un halo lumineux turquoise sur la tuile.</small></span></label>
       </div>
       <div class="image-section"><h3>VISUELS DE LA COURSE <small>3 images indépendantes</small></h3>

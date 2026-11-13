@@ -5,7 +5,7 @@ const safe=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'
 const clean=(v,n=150)=>String(v??'').trim().slice(0,n);
 const uid=()=>crypto.randomUUID?crypto.randomUUID():'race-'+Date.now().toString(36)+Math.random().toString(36).slice(2);
 const now=()=>new Date().toISOString();
-const props={name:180,edition:100,boatClass:100,boat:140,start:20,startTime:5,end:20,endTime:5,rank:40,rankDepartment:40,rankNational:40,duration:100,notes:2500};
+const props={name:180,edition:100,boatClass:100,boat:140,start:20,startTime:8,end:20,endTime:8,rank:40,rankTotal:12,rankDepartment:40,rankDepartmentTotal:12,rankNational:40,rankNationalTotal:12,rankCity:40,rankCityTotal:12,rankTeam:40,rankTeamTotal:12,duration:100,durationDays:4,durationHours:2,durationMinutes:2,durationSeconds:2,classColor:7,vsr:5,notes:2500};
 const imageKeys=['icon','result','route'];
 
 /* A date and clock time represent the course's own civil time.
@@ -14,44 +14,56 @@ function parseRaceDuration(raw){
  const source=String(raw??'').trim().toLowerCase().replace(/\s+/g,' ');
  if(!source)return {status:'missing'};
  let text=source;
- if(/^\d{1,4}:\d{2}$/.test(text)){
-   const [h,m]=text.split(':').map(Number);
-   if(m>59||h>87600)return {status:'invalid'};
-   return {status:'valid',minutes:h*60+m};
+ if(/^\d{1,5}:\d{2}(?::\d{2})?$/.test(text)){
+   const [h,m,sec=0]=text.split(':').map(Number);
+   if(m>59||sec>59||h>87600)return {status:'invalid'};
+   return {status:'valid',seconds:h*3600+m*60+sec};
  }
- // "8h35" / "12j8h35" are common shorthand for hours + minutes.
- text=text.replace(/(\d+)\s*h\s*(\d{1,2})$/,'$1h$2min');
- let minutes=0,tokens=0;
- const remaining=text.replace(/(\d+)\s*(jours?|j|heures?|h|minutes?|mins?|mn|m)(?![a-z])/g,(_match,n,unit)=>{
+ // Support existing shorthand, including "8h35" and full duration with seconds.
+ text=text.replace(/(\d+)\s*h\s*(\d{1,2})(?![a-z])/g,'$1h$2min');
+ let seconds=0,tokens=0;
+ const remaining=text.replace(/(\d+)\s*(jours?|j|heures?|h|minutes?|mins?|min|mn|m|secondes?|secs?|sec|s)(?![a-z])/g,(_match,n,unit)=>{
    const value=Number(n);
-   if(!Number.isFinite(value))return _match;
-   const amount=/^(j|jour)/.test(unit)?1440:/^(h|heure)/.test(unit)?60:1;
-   minutes+=value*amount;tokens++;
+   const amount=/^(j|jour)/.test(unit)?86400:/^(h|heure)/.test(unit)?3600:/^(s|sec|seconde)/.test(unit)?1:60;
+   seconds+=value*amount;tokens++;
    return ' ';
  });
- if(!tokens||remaining.trim()||!Number.isSafeInteger(minutes)||minutes>5256000)return {status:'invalid'};
- return {status:'valid',minutes};
+ if(!tokens||remaining.trim()||!Number.isSafeInteger(seconds)||seconds>315360000)return {status:'invalid'};
+ return {status:'valid',seconds};
+}
+function durationComponents(total){
+ if(!Number.isSafeInteger(total)||total<0)return null;
+ return {durationDays:String(Math.floor(total/86400)),durationHours:String(Math.floor(total%86400/3600)),durationMinutes:String(Math.floor(total%3600/60)),durationSeconds:String(total%60)};
+}
+function durationFromParts(r){
+ const keys=['durationDays','durationHours','durationMinutes','durationSeconds'];
+ const entries=keys.map(k=>String(r[k]??'').trim());
+ if(entries.every(x=>x===''))return '';
+ const caps=[3650,23,59,59];
+ if(entries.some((v,i)=>v&&!/^\d+$/.test(v)||Number(v)>caps[i]))return null;
+ const [d,h,m,sec]=entries.map(x=>Number(x||0));
+ return d+' j '+h+' h '+m+' min '+sec+' s';
 }
 function calculateArrival(day,time,duration){
  if(!day||!time||!String(duration||'').trim())return {status:'waiting'};
- const validTime=/^([01]\d|2[0-3]):([0-5]\d)$/.exec(time);
+ const validTime=/^([01]\d|2[0-3]):([0-5]\d)(?::([0-5]\d))?$/.exec(time);
  const validDate=/^(\d{4})-(\d{2})-(\d{2})$/.exec(day);
  if(!validTime||!validDate)return {status:'invalid-date'};
- const [year,month,date]=validDate.slice(1).map(Number),[hour,minute]=validTime.slice(1).map(Number);
- const start=new Date(Date.UTC(year,month-1,date,hour,minute));
+ const [year,month,date]=validDate.slice(1).map(Number),hour=Number(validTime[1]),minute=Number(validTime[2]),second=Number(validTime[3]||0);
+ const start=new Date(Date.UTC(year,month-1,date,hour,minute,second));
  if(start.getUTCFullYear()!==year||start.getUTCMonth()+1!==month||start.getUTCDate()!==date)
    return {status:'invalid-date'};
  const parsed=parseRaceDuration(duration);
  if(parsed.status!=='valid')return {status:'invalid-duration'};
- const end=new Date(start.getTime()+parsed.minutes*60000);
+ const end=new Date(start.getTime()+parsed.seconds*1000);
  if(!Number.isFinite(end.getTime())||end.getUTCFullYear()>9999)return {status:'invalid-duration'};
  const iso=end.toISOString();
- return {status:'ready',end:iso.slice(0,10),endTime:iso.slice(11,16)};
+ return {status:'ready',end:iso.slice(0,10),endTime:iso.slice(11,19)};
 }
-const dateTimeFR=(day,time)=>[dateFR(day),/^\d{2}:\d{2}$/.test(time||'')?time:''].filter(Boolean).join(' · ');
+const dateTimeFR=(day,time)=>[dateFR(day),/^\d{2}:\d{2}(?::\d{2})?$/.test(time||'')?time:''].filter(Boolean).join(' · ');
 let legacyArrival=null;
 function updateArrival(){
- const date=getField('start').value,time=getField('startTime').value,duration=getField('duration').value;
+ const date=getField('start').value,time=getField('startTime').value,duration=syncDurationInput();
  const outcome=calculateArrival(date,time,duration);
  const message=$('arrival-feedback');
  if(outcome.status==='ready'){
@@ -66,7 +78,7 @@ function updateArrival(){
    if(sameAsLegacy && legacyArrival.end)
      message.textContent='Ancienne date d’arrivée conservée. Renseigne l’heure de départ et la durée pour la recalculer.';
    else if(outcome.status==='invalid-duration')
-     message.textContent='Durée non reconnue. Exemples : 12 j 08 h 35 min, 8h35, 01:30.';
+     message.textContent='Durée invalide : jours 0–3650, heures 0–23, minutes et secondes 0–59.';
    else if(outcome.status==='invalid-date')
      message.textContent='Date ou heure de départ invalide.';
    else
@@ -78,10 +90,43 @@ function updateArrival(){
 const equipmentModes=Object.freeze({pdd:'PDD','half-fp':'1/2 FP','full-pack':'FULL PACK'});
 const validEquipment=value=>Object.prototype.hasOwnProperty.call(equipmentModes,value)?value:'';
 const equipmentInputs=()=>[...document.querySelectorAll('input[name="race-equipment"]')];
+const VSR=Object.freeze({hc:'HORS CATÉGORIE',vsr1:'VSR 1',vsr2:'VSR 2',vsr3:'VSR 3'});
+const colorSafe=v=>/^#[a-f0-9]{6}$/i.test(v||'')?v:'#008fa1';
+const intString=v=>{const raw=String(v??'').trim().replace(/\s|\u00a0/g,'');return /^\d{1,12}$/.test(raw)?String(Number(raw)):'';};
+const rankPairs=[['rank','rankTotal'],['rankNational','rankNationalTotal'],['rankDepartment','rankDepartmentTotal'],['rankCity','rankCityTotal'],['rankTeam','rankTeamTotal']];
+const rankDisplay=(rank,total)=>rank?rank+(total?' / '+Number(total).toLocaleString('fr-FR'):''):'';
+const rankHtml=(emoji,label,rank,total,kind='')=>rank?'<div class="rank-plate '+kind+'"><span class="rank-icon" aria-hidden="true">'+emoji+'</span><div class="rank-value"><span class="rank-type">'+label+'</span><strong>'+safe(rankDisplay(rank,total))+'</strong></div></div>':'';
 const validImage=v=>typeof v==='string'&&/^data:image\/(png|webp|jpeg|gif);base64,[a-z0-9+/=]+$/i.test(v);
-function normal(x={}){const r={id:typeof x.id==='string'&&x.id.length<130?x.id:uid(),createdAt:x.createdAt||now(),updatedAt:x.updatedAt||now(),live:!!x.live,equipment:validEquipment(x.equipment)};for(const [k,n] of Object.entries(props))r[k]=clean(x[k],n);for(const k of imageKeys)r[k]=validImage(x[k])?x[k]:'';const arrival=calculateArrival(r.start,r.startTime,r.duration);if(arrival.status==='ready'){r.end=arrival.end;r.endTime=arrival.endTime;}return r;}
+
+function syncDurationInput(){
+ const parts={durationDays:getField('durationDays').value,durationHours:getField('durationHours').value,durationMinutes:getField('durationMinutes').value,durationSeconds:getField('durationSeconds').value};
+ const value=durationFromParts(parts);
+ getField('duration').value=value===null?'invalid':value;
+ return getField('duration').value;
+}
+function normalizeRanking(r){
+ for(const [key,totalKey] of rankPairs){
+   const legacy=String(r[key]||'');
+   const pieces=legacy.split('/');
+   const place=intString(pieces[0].replace(/(?:ème|eme|er|e)$/i,''));
+   const total=intString(r[totalKey]||pieces[1]||'');
+   if(place){r[key]=place;r[totalKey]=total;}
+   else {r[key]='';r[totalKey]='';}
+ }
+}
+function normal(x={}){const r={id:typeof x.id==='string'&&x.id.length<130?x.id:uid(),createdAt:x.createdAt||now(),updatedAt:x.updatedAt||now(),live:!!x.live,upcoming:!!x.upcoming&&!x.live,equipment:validEquipment(x.equipment)};for(const [k,n] of Object.entries(props))r[k]=clean(x[k],n);
+ r.classColor=colorSafe(r.classColor);r.vsr=VSR[r.vsr]?r.vsr:'';
+ normalizeRanking(r);
+ const durationKeys=['durationDays','durationHours','durationMinutes','durationSeconds'];
+ if(durationKeys.every(k=>r[k]==='')){
+   const old=parseRaceDuration(r.duration);
+   if(old.status==='valid')Object.assign(r,durationComponents(old.seconds));
+ }
+ const formatted=durationFromParts(r);
+ if(formatted!==null&&formatted!=='')r.duration=formatted;
+ for(const k of imageKeys)r[k]=validImage(x[k])?x[k]:'';const arrival=calculateArrival(r.start,r.startTime,r.duration);if(arrival.status==='ready'){r.end=arrival.end;r.endTime=arrival.endTime;}return r;}
 let rows=[],db=null,editId='',pictures={icon:'',result:'',route:''},uploads=0,writeBusy=false,timer;
-const dialog=$('race-dialog'),getField=k=>$('race-'+({boatClass:'class',rankDepartment:'rank-department',rankNational:'rank-national'}[k]||k));
+const dialog=$('race-dialog'),getField=k=>$('race-'+({boatClass:'class',rankDepartment:'rank-department',rankNational:'rank-national',rankTotal:'rank-total',rankNationalTotal:'rank-national-total',rankDepartmentTotal:'rank-department-total',rankCity:'rank-city',rankCityTotal:'rank-city-total',rankTeam:'rank-team',rankTeamTotal:'rank-team-total',durationDays:'days',durationHours:'hours',durationMinutes:'minutes',durationSeconds:'seconds',classColor:'class-color'}[k]||k));
 function toast(t,error=false){$('notice').textContent=t;$('notice').dataset.error=String(error);clearTimeout(timer);timer=setTimeout(()=>{$('notice').textContent='';},7000);}
 const req=r=>new Promise((yes,no)=>{r.onsuccess=()=>yes(r.result);r.onerror=()=>no(r.error||Error('IndexedDB inaccessible'));});
 const done=tx=>new Promise((yes,no)=>{tx.oncomplete=yes;tx.onerror=()=>no(tx.error||Error('Sauvegarde locale impossible'));tx.onabort=()=>no(tx.error||Error('Stockage local annulé'));});

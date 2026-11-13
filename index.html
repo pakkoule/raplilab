@@ -204,6 +204,44 @@ body[data-active="lp"] .portal-header{background:linear-gradient(115deg,#101114,
   .product-tab{flex-basis:92px}
   .app-frame{height:calc(100dvh - 111px)}
 }
+
+/* RAPLI LAB — PREMIUM LATERAL BRAND ATMOSPHERE (option C)
+   Draw behind the existing portal, without changing its size or iframe behavior. */
+@media (min-width:1100px) {
+  body { --side-theme:#1a416c; --side-logo:url("assets/archives-logo.webp"); background:#050708; isolation:isolate; }
+  body[data-active="archives"] {--side-theme:#1a416c;--side-logo:url("assets/archives-logo.webp")}
+  body[data-active="sports"] {--side-theme:#15519b;--side-logo:url("sports/assets/logo.png")}
+  body[data-active="time"] {--side-theme:#76603f;--side-logo:url("time/assets/logo.png")}
+  body[data-active="refs"] {--side-theme:#176d67;--side-logo:url("refs/assets/logo.png")}
+  body[data-active="stickers"] {--side-theme:#19715b;--side-logo:url("assets/stickers-logo.webp")}
+  body[data-active="tools"] {--side-theme:#a86521;--side-logo:url("assets/tools-logo.webp")}
+  body[data-active="tiers"] {--side-theme:#766b32;--side-logo:url("tiers/assets/logo.webp")}
+  body[data-active="top10"] {--side-theme:#24548e;--side-logo:url("top10/assets/logo.webp")}
+  body[data-active="coach"] {--side-theme:#4e6c51;--side-logo:url("coach/assets/logo.webp")}
+  body[data-active="lp"] {--side-theme:#40414d;--side-logo:url("lp/assets/logo.webp")}
+  body::before,body::after {
+    content:"";display:block;position:fixed;inset:0;z-index:0;pointer-events:none;
+  }
+  /* Brand-tinted upper edges, atmospheric middle and near-black bottom. */
+  body::before {
+    background:
+      radial-gradient(ellipse 45% 45% at 0% 5%,color-mix(in srgb,var(--side-theme) 58%,#a6a7a2) 0%,transparent 75%),
+      radial-gradient(ellipse 45% 55% at 100% 12%,color-mix(in srgb,var(--side-theme) 65%,#899598) 0%,transparent 76%),
+      linear-gradient(180deg,color-mix(in srgb,var(--side-theme) 88%,#0a1012) 0%,color-mix(in srgb,var(--side-theme) 55%,#080b10) 34%,#101417 66%,#040506 100%);
+  }
+  /* Large repeated translucent silhouettes, fading as the gradient darkens.
+     This is decorative only: no content is covered and clicks pass through. */
+  body::after {
+    background-image:var(--side-logo);background-repeat:repeat;
+    background-position:center 36px;background-size:clamp(350px,29vw,500px) auto;
+    filter:grayscale(1) brightness(0) invert(1);opacity:.19;
+    -webkit-mask-image:linear-gradient(180deg,#000 0%,rgba(0,0,0,.95) 24%,rgba(0,0,0,.65) 67%,rgba(0,0,0,.22) 100%);
+    mask-image:linear-gradient(180deg,#000 0%,rgba(0,0,0,.95) 24%,rgba(0,0,0,.65) 67%,rgba(0,0,0,.22) 100%);
+  }
+  .portal {position:relative;z-index:1}
+}
+/* Mobile and small tablets preserve the original lightweight background. */
+
 </style>
 </head>
 <body data-active="tools">

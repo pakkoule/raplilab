@@ -24,8 +24,8 @@ function openTier(l){if(!l||!discardOK())return;current=clone(l);undo=[];redo=[]
 async function saveTier(){if(busy)return;busy=true;$('#save').disabled=true;
  try{current.title=current.title.trim()||'Nouvelle Tier List';current.updated=new Date().toISOString();const i=library.findIndex(x=>x.id===current.id);if(i<0)library.unshift(clone(current));else library[i]=clone(current);await writeStore();markDirty(false);render();
  const cloud=window.RapliModuleCloud;const ok=cloud?await cloud.saveNow(false):false;
- notice(ok?'Classement sauvegardé sur cet appareil et Supabase ✓':'Sauvegarde locale réussie · Cloud à synchroniser via ENREGISTRER',false);}
- catch(e){notice('Enregistrement impossible : '+e.message,true);markDirty();}
+ notice(ok?'Classement sauvegardé sur cet appareil et Supabase ✓':'Sauvegarde locale réussie · Cloud à synchroniser via ENREGISTRER',false);return !!ok;}
+ catch(e){notice('Enregistrement impossible : '+e.message,true);markDirty();return false;}
  finally{busy=false;$('#save').disabled=false;}}
 function move(ids,target,before=null){if(!zone(target)||!ids.length)return;modify(()=>{const set=new Set(ids);current.waiting=current.waiting.filter(x=>!set.has(x));current.ranks.forEach(r=>r.items=r.items.filter(x=>!set.has(x)));const dest=zone(target);let at=before?dest.indexOf(before):-1;if(at<0)at=dest.length;dest.splice(at,0,...ids.filter(i=>!!element(i)));});selected.clear();selectionMode=false;picked=null;render();}
 function removeElements(ids){if(!ids.length)return;modify(()=>{const set=new Set(ids);current.elements=current.elements.filter(x=>!set.has(x.id));current.waiting=current.waiting.filter(x=>!set.has(x));current.ranks.forEach(r=>r.items=r.items.filter(x=>!set.has(x)));});selected.clear();selectionMode=false;picked=null;render();}
@@ -74,6 +74,10 @@ async function parseImage(file){
  if(file.size>10*1024*1024)throw Error(file.name+' dépasse 10 Mo ; compresse cette image.');
  let src=await toDataURL(file),dim;
  try{dim=await imageInfo(src);}catch(e){if(!/heic|heif/i.test(file.name+' '+file.type))throw e;try{const bm=await createImageBitmap(file),c=document.createElement('canvas');c.width=bm.width;c.height=bm.height;c.getContext('2d').drawImage(bm,0,0);src=c.toDataURL('image/jpeg',.92);dim={w:c.width,h:c.height};bm.close();}catch{throw Error('HEIC non compatible : convertir en JPG.');}}
+ if(/heic|heif/i.test(file.name+' '+file.type) && !src.startsWith('data:image/jpeg;')){
+  try{const im=new Image();await new Promise((res,rej)=>{im.onload=res;im.onerror=rej;im.src=src;});const c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;c.getContext('2d').drawImage(im,0,0);src=c.toDataURL('image/jpeg',.92);dim={w:c.width,h:c.height};}
+  catch{throw Error('Conversion HEIC impossible sur cet appareil.');}
+ }
  return {id:uid(),type:'image',name:file.name,text:'',src,w:dim.w,h:dim.h};
 }
 async function importFiles(files){const list=Array.from(files||[]),added=[],errors=[];if(!list.length)return;notice('Import en cours…');for(const file of list){try{added.push(await parseImage(file));}catch(e){errors.push(e.message);}}

@@ -69,7 +69,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .tile{position:relative;display:flex;align-items:center;justify-content:center;flex:0 0 auto;overflow:hidden;user-select:none;cursor:pointer;background:var(--tile-bg,#d7b87c);border-radius:var(--tile-radius,0px);border:0;padding:0}
 .tile img{width:100%;height:100%;display:block;object-fit:var(--tile-fit,cover)}
 .tile.image-original img{object-fit:contain}
-.tile .caption{position:absolute;left:0;right:0;bottom:0;background:#000b;color:#fff;font-weight:700;font-size:10px;line-height:1.15;text-align:center;padding:1px 2px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow-wrap:anywhere}
+.tile .caption{position:absolute;left:0;right:0;bottom:0;background:rgba(0,0,0,.7);color:#fff;font-weight:700;font-size:10px;line-height:1.15;text-align:center;padding:1px 2px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow-wrap:anywhere}
 .tile-text{display:flex;align-items:center;justify-content:center;width:100%;height:100%;padding:2px;text-align:center;line-height:1.12;font-weight:700;overflow-wrap:anywhere}
 .tile .tile-x,.tile .tile-edit,.tile .tile-grip{position:absolute;z-index:2;border:0;display:grid;place-items:center;width:19px;height:19px;border-radius:50%;padding:0;line-height:1;color:white;background:#b53636;top:2px;right:2px;font-size:15px}
 .tile .tile-edit{top:auto;right:2px;bottom:2px;background:#222d;opacity:0}

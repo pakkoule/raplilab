@@ -10,8 +10,9 @@
   const REF_PREFIX = 'rapli-private://';
   const MAX_IMAGE = 10 * 1024 * 1024;
   const bridge = window.RapliModuleBridge;
-  if (!bridge || !['time','sports','refs','stickers','tools'].includes(bridge.module)) return;
+  if (!bridge || !['time','sports','refs','stickers','tools','tiers'].includes(bridge.module)) return;
   const MODULE = bridge.module;
+  const manualOnly = MODULE === 'tiers';
   const el = id => document.getElementById(id);
   let client, userId, ownerId, revision = 0, exists = false, ready = false, busy = false;
   let dirty = false, conflict = false, error = false, hydratedBaseline = null;
@@ -213,7 +214,7 @@
       conflict=false;error=false;
       dirty=fingerprint(snapshot())!==hash;
       setStatus(dirty?'Modifications en attente de sauvegarde':'Enregistré sur Supabase ✓','ok');
-      if(dirty)queueSave();
+      if(dirty&&!manualOnly)queueSave();
       return true;
     }catch(e){
       console.warn('Rapli '+MODULE+' cloud save:',e);
@@ -249,13 +250,14 @@
     }finally{busy=false;paint();}
   }
   function queueSave() {
+    if(manualOnly)return; // Tiers List: explicit manual saves only.
     clearTimeout(timer);
     timer=setTimeout(()=>{if(dirty&&!conflict&&!busy)void saveNow(true);},1400);
   }
   function changed() {
     if(!bridge.ready)return;
     dirty=true;
-    if(ready&&!conflict)queueSave();
+    if(ready&&!conflict&&!manualOnly)queueSave();
     setStatus(conflict?'Conflit cloud — actualise avant de continuer':'Modifications locales à enregistrer','pending');
   }
   async function boot(){
@@ -274,14 +276,14 @@
           // Upload locally modified records, including deletions, rather than restoring over them.
           dirty=true;conflict=false;
           setStatus('Modifications locales hors ligne — envoi en attente','pending');
-          queueSave();
+          if(!manualOnly)queueSave();
         }else{
           // Remote revision changed, or a new device has no acknowledged baseline.
           // Restore only if there is no real local collection to overwrite.
           await refresh(false);
         }
       }else if(hasPersonalData(local)){
-        dirty=true;setStatus('Première sauvegarde cloud…','ok');queueSave();
+        dirty=true;setStatus(manualOnly?'Clique Enregistrer pour envoyer dans le cloud':'Première sauvegarde cloud…','ok');if(!manualOnly)queueSave();
       }else{
         dirty=false;setStatus('Cloud connecté · prêt à enregistrer','ok');
       }

@@ -155,8 +155,8 @@ function card(r){
    rankHtml('🏴‍☠️','TEAM',r.rankTeam,r.rankTeamTotal,'rank-team');
  return '<article class="card'+(r.live?' live':'')+(r.upcoming?' upcoming':'')+'" data-id="'+safe(r.id)+'" style="--class-tag:'+tag+';--class-ink:'+classTextColor(tag)+'">'+
  '<div class="card-top"><div class="race-icon card-photo">'+(validImage(r.icon)?imageTag(r.icon,'Affiche '+r.name):'<div class="icon-placeholder">⛵</div>')+'</div><span class="badge-status">'+statusTitle[status]+'</span></div>'+
- '<div class="card-content"><div class="card-eyebrow"><span class="class-tag">'+safe(r.boatClass||'VIRTUAL REGATTA')+'</span><span class="year">'+safe(r.edition)+'</span></div>'+
- '<div class="card-category">'+(mode?'<span class="vsr-badge'+(r.vsr==='hc'?' hc':'')+'">'+safe(mode)+'</span>':'')+'</div>'+
+ '<div class="card-content"><div class="card-eyebrow"><div class="card-tag-row"><span class="class-tag" title="'+safe(r.boatClass||'VIRTUAL REGATTA')+'">'+safe(r.boatClass||'VIRTUAL REGATTA')+'</span>'+
+ (mode?'<span class="vsr-badge'+(r.vsr==='hc'?' hc':'')+'">'+safe(mode)+'</span>':'')+'</div><span class="year">'+safe(r.edition)+'</span></div>'+
  '<h2>'+safe(r.name)+'</h2><div class="card-boat">'+safe(r.boat)+'</div>'+
  '<div class="card-stats">'+(r.start?'<span class="stat-chip">DÉPART '+safe(dateTimeFR(r.start,r.startTime))+'</span>':'')+
  (r.end?'<span class="stat-chip arrival-chip">ARRIVÉE '+safe(dateTimeFR(r.end,r.endTime))+'</span>':'')+
@@ -307,9 +307,8 @@ async function exportPNG(r){
   ctx.fillStyle='#15384a';ctx.fillRect(0,0,W,HEADER);
   ctx.fillStyle='#00c6c8';ctx.fillRect(0,0,900,8);ctx.fillStyle='#f30082';ctx.fillRect(900,0,300,8);
   ctx.fillStyle='#fff';ctx.font='900 49px Poppins,sans-serif';ctx.fillText('RAPLI REGATTA',49,82);
-  ctx.textAlign='right';ctx.font=(r.vsr==='hc'?'900 21px':'800 19px')+' Poppins,sans-serif';ctx.fillStyle=r.vsr==='hc'?'#e6bb54':'#caecf2';
-  if(VSR[r.vsr])ctx.fillText(VSR[r.vsr],1151,62);
-  if(equipmentModes[r.equipment]){ctx.font='700 15px Poppins,sans-serif';ctx.fillText('ÉQUIPEMENT · '+equipmentModes[r.equipment],1151,92);}
+  ctx.textAlign='right';
+  if(equipmentModes[r.equipment]){ctx.font='700 15px Poppins,sans-serif';ctx.fillStyle='#caecf2';ctx.fillText('ÉQUIPEMENT · '+equipmentModes[r.equipment],1151,77);}
   ctx.textAlign='left';
   ctx.fillStyle='#e4f4f3';ctx.fillRect(0,HEADER,W,PHOTO);contain(ctx,im,0,HEADER,W,PHOTO);
   if(r.upcoming||r.live){
@@ -317,9 +316,18 @@ async function exportPNG(r){
    ctx.font='900 19px Poppins,sans-serif';ctx.fillStyle='#fff';ctx.fillText(r.upcoming?'🔵 À VENIR':'COURSE EN COURS',46,HEADER+53);
   }
   const y=HEADER+PHOTO;
-  const tag=colorSafe(r.classColor);
-  ctx.fillStyle=tag;ctx.fillRect(48,y+24,Math.min(560,Math.max(140,ctx.measureText(r.boatClass||'VIRTUAL REGATTA').width+45)),36);
-  ctx.fillStyle=classTextColor(tag);ctx.font='800 18px Poppins,sans-serif';ctx.fillText((r.boatClass||'VIRTUAL REGATTA').toUpperCase().slice(0,28),61,y+49);
+  const tag=colorSafe(r.classColor),boatLabel=(r.boatClass||'VIRTUAL REGATTA').toUpperCase().slice(0,28);
+  ctx.font='800 18px Poppins,sans-serif';
+  const tagWidth=Math.min(470,Math.max(140,ctx.measureText(boatLabel).width+28));
+  ctx.fillStyle=tag;ctx.fillRect(48,y+24,tagWidth,36);
+  ctx.fillStyle=classTextColor(tag);ctx.fillText(boatLabel,61,y+49,tagWidth-24);
+  if(VSR[r.vsr]){
+    const vsrLabel=VSR[r.vsr],vsrX=48+tagWidth+10;
+    ctx.font='900 16px Poppins,sans-serif';
+    const vsrWidth=Math.min(260,Math.max(92,ctx.measureText(vsrLabel).width+29));
+    ctx.fillStyle=r.vsr==='hc'?'#efcb70':'#e8f2fa';ctx.fillRect(vsrX,y+24,vsrWidth,36);
+    ctx.fillStyle=r.vsr==='hc'?'#75500d':'#386480';ctx.fillText(vsrLabel,vsrX+12,y+48,vsrWidth-23);
+  }
   ctx.fillStyle='#73909e';ctx.textAlign='right';ctx.font='700 17px Poppins,sans-serif';ctx.fillText((r.edition||'').slice(0,40),1151,y+49);ctx.textAlign='left';
   ctx.fillStyle='#123648';ctx.font='900 43px Poppins,sans-serif';wrap(ctx,r.name,1090,2).forEach((line,i)=>ctx.fillText(line,48,y+111+i*51));
   if(r.boat){ctx.fillStyle='#7a919d';ctx.font='700 18px Poppins,sans-serif';wrap(ctx,r.boat,1050,1).forEach(t=>ctx.fillText(t,48,y+202));}
@@ -345,7 +353,7 @@ async function exportPNG(r){
    ctx.fillStyle=i===0?'#fff':'#244b5e';
    ctx.font='24px "Apple Color Emoji","Segoe UI Emoji",sans-serif';ctx.fillText(emoji,x+13,top+33);
    ctx.fillStyle=i===0?'#b1e6ef':'#7d929e';ctx.font='800 14px Poppins,sans-serif';ctx.fillText(label,x+56,top+28);
-   ctx.font=(i===0?'700 33px':'700 27px')+' Georgia,serif';ctx.fillStyle=i===0?'#fff':'#193e57';
+   ctx.font=(i===0?'800 39px':'800 34px')+' "Barlow Condensed","Arial Narrow",sans-serif';ctx.fillStyle=i===0?'#fff':'#193e57';
    let value=rankDisplay(place,total)||'—';
    while(ctx.measureText(value).width>width-75&&value.length>2)value=value.slice(0,-2)+'…';
    ctx.fillText(value,x+56,top+h-14);

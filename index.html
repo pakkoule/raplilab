@@ -219,6 +219,12 @@ body[data-active="lp"] .portal-header{background:linear-gradient(115deg,#101114,
   body[data-active="top10"] {--side-theme:#24548e;--side-logo:url("top10/assets/logo.webp")}
   body[data-active="coach"] {--side-theme:#4e6c51;--side-logo:url("coach/assets/logo.webp")}
   body[data-active="lp"] {--side-theme:#40414d;--side-logo:url("lp/assets/logo.webp")}
+  /* The four extra-light WebP tab logos lose detail when magnified to 500px.
+     Use a compact, still repeated tile at a more appropriate display size. */
+  body[data-active="top10"],body[data-active="tiers"],
+  body[data-active="coach"],body[data-active="lp"] {
+    --side-logo-size:clamp(180px,16vw,250px);
+  }
   body::before,body::after {
     content:"";display:block;position:fixed;inset:0;z-index:0;pointer-events:none;
   }
@@ -229,12 +235,12 @@ body[data-active="lp"] .portal-header{background:linear-gradient(115deg,#101114,
       radial-gradient(ellipse 45% 55% at 100% 12%,color-mix(in srgb,var(--side-theme) 65%,#899598) 0%,transparent 76%),
       linear-gradient(180deg,color-mix(in srgb,var(--side-theme) 88%,#0a1012) 0%,color-mix(in srgb,var(--side-theme) 55%,#080b10) 34%,#101417 66%,#040506 100%);
   }
-  /* Large repeated original-color logos: retain their artwork details, with
-     lower opacity and a gentle fade; never cover the app or intercept clicks. */
+  /* Monochrome photo texture: retain light/dark image detail and original alpha.
+     Avoid upscaling lightweight navigation logos beyond their useful resolution. */
   body::after {
     background-image:var(--side-logo);background-repeat:repeat;
-    background-position:center 36px;background-size:clamp(350px,29vw,500px) auto;
-    opacity:.15;
+    background-position:center 36px;background-size:var(--side-logo-size,clamp(350px,29vw,500px)) auto;
+    filter:grayscale(1);opacity:.15;
     -webkit-mask-image:linear-gradient(180deg,#000 0%,rgba(0,0,0,.95) 24%,rgba(0,0,0,.65) 67%,rgba(0,0,0,.22) 100%);
     mask-image:linear-gradient(180deg,#000 0%,rgba(0,0,0,.95) 24%,rgba(0,0,0,.65) 67%,rgba(0,0,0,.22) 100%);
   }

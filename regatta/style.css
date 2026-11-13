@@ -177,4 +177,22 @@ dialog form{border-radius:18px;background:#fff;display:flex;flex-direction:colum
 @media(max-width:580px){.ranking-inputs{gap:7px}.ranking-input{padding:8px 7px}.rank-plate strong{font-size:21px}.rank-main strong{font-size:32px}.duration-grid{gap:5px}.duration-field,.rankings-editor{padding:10px}.duration-grid input[type=number]{font-size:17px}.ranking-pair{gap:2px}.ranking-pair input{font-size:21px!important}.ranking-input-main .ranking-pair input{font-size:25px!important}.rankings-help{display:block;margin-top:3px}.stats-metric strong{font-size:23px}.workspace-tab{padding:13px 14px;font-size:11px}}
 
 /* Compact widths: boat class and VSR always share one line; year can wrap independently. */
-@media(max-width:420px){.card-tag-row{width:100%;gap:5px}.card-tag-row .class-tag{max-width:calc(100% - 92px);font-size:9px;padding:6px}.card-tag-row .vsr-badge{font-size:8px;padding:5px 6px}.card-eyebrow .year{font-size:9px}}
+/* The race title is the leading element, with boat class and VSR aligned alongside. */
+.card-title-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;min-width:0;margin:0 0 10px}
+.card-title-row h2{flex:1 1 auto;min-width:0;margin:0;font-size:clamp(16px,1.55vw,20px);line-height:1.27;overflow-wrap:anywhere}
+.card-title-row .card-tag-row{display:flex;flex:0 1 auto;max-width:56%;min-width:0;align-items:center;justify-content:flex-end;flex-wrap:nowrap;gap:6px;margin-top:1px}
+.card-title-row .class-tag{flex:0 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card-title-row .vsr-badge{flex:0 0 auto;white-space:nowrap}
+@media(max-width:580px){
+  .card-title-row{gap:8px}
+  .card-title-row h2{font-size:16px}
+  .card-title-row .card-tag-row{gap:5px;max-width:55%}
+  .card-title-row .class-tag{font-size:9px;padding:5px 7px}
+  .card-title-row .vsr-badge{font-size:8px;padding:5px 6px}
+}
+@media(max-width:360px){
+  .card-title-row{gap:5px}
+  .card-title-row h2{font-size:15px}
+  .card-title-row .card-tag-row{max-width:58%}
+  .card-title-row .class-tag{font-size:8px;padding:5px}
+}

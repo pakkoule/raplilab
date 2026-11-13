@@ -130,7 +130,8 @@
       albums=next;
       render();window.RapliModuleCloud?.changed?.();
       notify('Collection enregistrée ✓');
-    }catch(e){notify('Enregistrement impossible : '+(e?.message||e),true);}
+      return true;
+    }catch(e){notify('Enregistrement impossible : '+(e?.message||e),true);return false;}
     finally{isBusy=false;}
   }
   async function photoData(file){
@@ -182,8 +183,7 @@
     if(!editing)return;
     const r=albums.find(x=>x.id===editing);
     if(!r||!confirm('Supprimer définitivement « '+r.album+' » de la collection ?'))return;
-    await mutate(rows=>rows.filter(x=>x.id!==editing));
-    if(!isBusy)closeAlbum();
+    if(await mutate(rows=>rows.filter(x=>x.id!==editing)))closeAlbum();
   }
   function backup(){
     const doc={app:'Rapli LP',version:1,exportedAt:now(),albums};

@@ -45,6 +45,18 @@
           <div><span class="eyebrow">CLASSEMENT PERSONNEL</span><h1 id="board-title">Mon Top 10</h1></div>
           <div class="board-heading-actions">
             <span id="count-label" class="count-label">10 POSITIONS</span>
+            <label class="quick-count" for="quick-count">
+              <span>TAILLE DU TOP</span>
+              <select id="quick-count" aria-label="Choisir rapidement le nombre de positions">
+                <option value="10">TOP 10</option>
+              </select>
+            </label>
+            <div id="custom-count-wrap" class="custom-count" hidden>
+              <label class="sr-only" for="custom-count">Nombre personnalisé de positions</label>
+              <input id="custom-count" type="number" min="1" max="1000" step="1" inputmode="numeric" aria-label="Nombre personnalisé de positions">
+              <button type="button" id="custom-count-apply" class="button small">OK</button>
+              <button type="button" id="custom-count-cancel" class="button small ghost" aria-label="Annuler le nombre personnalisé">✕</button>
+            </div>
             <button type="button" id="add-position" class="button small">＋ POSITION</button>
           </div>
         </div>

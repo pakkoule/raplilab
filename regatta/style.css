@@ -90,3 +90,14 @@ dialog form{border-radius:18px;background:#fff;display:flex;flex-direction:colum
 .equipment-option:hover{border-color:#61b5bd}
 .stat-chip.equipment{background:#e8f8f8;border-color:#a7dbdb;color:#007990;font-weight:900}
 @media(max-width:420px){.equipment-options{gap:6px}.equipment-choice{padding:11px 9px}.equipment-help{display:block;margin:3px 0 0}.fields .equipment-option{padding:8px 5px;gap:6px;font-size:11px}}
+
+/* Arrival is derived from the departure date/time + elapsed race duration.
+   Keep read-only fields visibly distinct without hiding their values on iOS. */
+.fields label.arrival-field{position:relative;color:#266e7e}
+.arrival-field input[readonly]{background:#e8f8f7;border-color:#9bd3d8;color:#114b61;font-weight:800;opacity:1;-webkit-text-fill-color:#114b61;cursor:default}
+.computed-label{position:absolute;top:0;right:0;padding:1px 6px;border:1px solid #c1e7e6;background:#e8f8f7;color:#068e9c;border-radius:5px;font-size:8px;letter-spacing:.075em;font-weight:900}
+.field-help{font-size:10px;color:#869eaa;letter-spacing:0;font-weight:500}
+.arrival-feedback{grid-column:1/-1;font-size:11px;font-weight:600;letter-spacing:0;line-height:1.55;border:1px solid #d5e7e9;background:#f5fafb;border-radius:9px;margin:-4px 0 2px;padding:9px 11px;color:#688691}
+.arrival-feedback[data-state="ok"]{background:#e7f8f4;border-color:#a5dcda;color:#06747f}
+.arrival-feedback[data-state="error"]{background:#fff1f4;border-color:#f2c4d1;color:#a73854}
+.stat-chip.arrival-chip{background:#ecf9f6;border-color:#b2e0d6;color:#26786c}

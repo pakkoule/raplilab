@@ -271,6 +271,15 @@ body[data-active="coach"] .portal-header{background:linear-gradient(115deg,#2435
     const fromHash=()=>{const name=location.hash.slice(1).toLowerCase();return projects.includes(name)?name:'tools';};
     function select(name, updateHash=false, focus=false) {
       if(!projects.includes(name))name='tools';
+      if(name!==current && current==='coach'){
+        try{
+          if(frames.coach?.contentWindow?.RapliCoach?.hasUnsaved?.() &&
+             !confirm('Rapli Coach contient des modifications non enregistrées. Quitter ce terrain ?')){
+            if(location.hash!=='#coach')history.replaceState({project:'coach'},'', '#coach');
+            return;
+          }
+        }catch(e){/* iframe not yet initialized */ }
+      }
       current=name;
       // Do not launch the heavyweight editors (and their model libraries) until visited.
       const frame=frames[name];

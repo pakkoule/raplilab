@@ -322,6 +322,65 @@ async function exportPNG(r){
   download(blob,'Rapli_Regatta_'+r.name.replace(/[^a-z0-9-]+/gi,'_').slice(0,65)+'.png');toast('PNG exporté ✓');
  }catch(err){console.error(err);toast('Export PNG : '+err.message,true);}
 }
+
+function calendarEscape(input){
+ return String(input??'').replace(/\r\n?/g,'\n').replace(/\\/g,'\\\\')
+   .replace(/\n/g,'\\n').replace(/;/g,'\\;').replace(/,/g,'\\,').slice(0,6000);
+}
+function toIcsTime(date,clock='00:00'){
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||!/^([01]\d|2[0-3]):[0-5]\d(?::[0-5]\d)?$/.test(clock))return '';
+ return date.replace(/-/g,'')+'T'+clock.replace(/:/g,'').padEnd(6,'0');
+}
+function calendarText(r){
+ if(!r.upcoming)throw Error('Disponible uniquement pour une course à venir.');
+ if(!r.start)throw Error('Renseigne la date de départ pour exporter dans Calendrier.');
+ const startClock=r.startTime||'';
+ let start='',finish='',allDay=false,placeholder=false;
+ if(startClock){
+   start=toIcsTime(r.start,startClock);
+   if(!start)throw Error('Heure de départ invalide.');
+   const end=calculateArrival(r.start,startClock,r.duration);
+   if(end.status==='ready'&&end.end+'T'+end.endTime>r.start+'T'+startClock){
+     finish=toIcsTime(end.end,end.endTime);
+   }else{
+     const [year,month,day]=r.start.split('-').map(Number);
+     const [h,m,sec=0]=startClock.split(':').map(Number);
+     const next=new Date(Date.UTC(year,month-1,day,h+1,m,sec)).toISOString();
+     finish=next.slice(0,10).replace(/-/g,'')+'T'+next.slice(11,19).replace(/:/g,'');
+     placeholder=true;
+   }
+ }else{
+   allDay=true;start=r.start.replace(/-/g,'');
+   const [year,month,day]=r.start.split('-').map(Number);
+   const next=new Date(Date.UTC(year,month-1,day+1)).toISOString().slice(0,10);
+   finish=next.replace(/-/g,'');
+ }
+ const descriptions=[
+   'Édition : '+(r.edition||'Non renseignée'),
+   'Bateau : '+(r.boat||'Non renseigné'),
+   'Classe : '+(r.boatClass||'Non renseignée'),
+   'Catégorie VSR : '+(VSR[r.vsr]||'Non renseignée'),
+   'Équipement : '+(equipmentModes[r.equipment]||'Non renseigné'),
+   'Durée : '+(r.duration||'Non renseignée'),
+   placeholder?'Plage de calendrier indicative : 1 heure après le départ.':'',
+   r.notes||''
+ ].filter(Boolean).join('\n');
+ const stamp=new Date().toISOString().replace(/[-:]/g,'').replace(/\.\d+Z/,'Z');
+ const uidValue=String(r.id||'race').replace(/[^a-zA-Z0-9_-]/g,'').slice(0,64)+'@regatta.raplilab';
+ const times=allDay?'DTSTART;VALUE=DATE:'+start+'\r\nDTEND;VALUE=DATE:'+finish:
+   'DTSTART:'+start+'\r\nDTEND:'+finish;
+ return ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Rapli Regatta//FR','CALSCALE:GREGORIAN',
+  'BEGIN:VEVENT','UID:'+uidValue,'DTSTAMP:'+stamp,'SUMMARY:'+calendarEscape(r.name),
+  ...times.split('\r\n'),'DESCRIPTION:'+calendarEscape(descriptions),'END:VEVENT','END:VCALENDAR',''].join('\r\n');
+}
+function exportCalendar(r){
+ try{
+  const ics=calendarText(r);
+  download(new Blob([ics],{type:'text/calendar;charset=utf-8'}),'Rapli_Regatta_'+r.name.replace(/[^a-zA-Z0-9_-]/g,'_').slice(0,55)+'.ics');
+  toast('Fichier calendrier .ics prêt : ouvre-le pour ajouter la course à Apple Calendrier.');
+ }catch(error){toast(error.message||'Export calendrier indisponible',true);}
+}
+
 function exportJSON(){download(new Blob([JSON.stringify({app:'Rapli Regatta',version:1,exportedAt:now(),races:rows},null,2)],{type:'application/json'}),'Rapli_Regatta_'+now().slice(0,10)+'.json');toast('JSON exporté ✓');}
 async function importJSON(file){if(!file)return;try{if(file.size>120e6)throw Error('Fichier trop volumineux');const obj=JSON.parse(await file.text());if(obj.app!=='Rapli Regatta'||!Array.isArray(obj.races)||obj.races.length>20000)throw Error('Fichier de sauvegarde invalide');const next=obj.races.map(normal);if(new Set(next.map(r=>r.id)).size!==next.length)throw Error('IDs dupliqués');if(!confirm('Importer '+next.length+' courses et remplacer la collection locale ?'))return;await replaceRows(next);window.RapliModuleCloud?.changed?.();toast('Collection importée ✓');}catch(err){toast(err.message,true);}finally{$('import-json').value='';}}
 $('race-equipment-group').addEventListener('change',event=>{

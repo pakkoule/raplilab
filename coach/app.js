@@ -47,7 +47,7 @@ const fileName=s=>(s||'Composition').normalize('NFKD').replace(/[\u0300-\u036f]/
 let current=fresh('football'),library=[],players=[],db=null,dirty=false,undo=[],redo=[],reassign=null,images=new Map(),busy=false,noticeTimer=null;
 const dialog=$('#dialog'),modal=$('#dialog-content');
 function notice(message,error=false){const n=$('#notice');n.textContent=message;n.dataset.error=String(error);clearTimeout(noticeTimer);noticeTimer=setTimeout(()=>{if(n.textContent===message)n.textContent='';},6500);}
-function show(html){modal.innerHTML=html;dialog.showModal();}
+function show(html){modal.onclick=null;modal.innerHTML=html;dialog.showModal();}
 function close(){if(dialog.open)dialog.close();}
 function actionButtons(items){return '<div class="modal-actions">'+items.map(({label,id,kind})=>'<button type="button" data-modal="'+id+'" class="'+(kind||'')+'">'+label+'</button>').join('')+'</div>';}
 const promptDiscard=()=>!dirty||confirm('Des modifications non enregistrées seront perdues. Continuer ?');
@@ -110,9 +110,7 @@ function pitch(ctx,c,S){
 function drawPlayers(ctx,c,S,editor=false){
  for(const slot of c.slots){
   const x=slot.x*S,y=slot.y*S,p=slot.player;
-  const diameter=c.mode==='dots'?66:Number(c.settings.portraitSize||73);
-  const radius=diameter*S/2048*1.12; // 2048 output defaults to ~82 px diameter at full size
-  // Scale diameter against the 1024 logical canvas, keeping player positions fixed.
+    // Scale diameter against the 1024 logical canvas, keeping player positions fixed.
   const R=c.mode==='dots'?S*.029:S*(Number(c.settings.portraitSize||73)/2048)*1.0;
   if(!p){
     ctx.save();ctx.beginPath();ctx.arc(x,y,R,0,Math.PI*2);ctx.setLineDash([S*.007,S*.006]);ctx.strokeStyle='#ffffff';ctx.globalAlpha=.67;ctx.lineWidth=S*.0022;ctx.stroke();ctx.restore();
@@ -201,7 +199,7 @@ function editor(slotIndex){
  selection.full=full;selection.short=short;
  try{await persistPlayer(selection);edit(()=>{current.slots[slotIndex].player=clone(selection)});close();notice('Joueur disponible dans les prochaines compositions ✓');}catch(err){notice('Impossible de conserver le joueur : '+err.message,true);}
  }
- modal.addEventListener('click',e=>{const btn=e.target.closest('[data-modal]');if(!btn)return;if(btn.dataset.modal==='cancel')close();if(btn.dataset.modal==='empty'){edit(()=>{current.slots[slotIndex].player=null});close();}if(btn.dataset.modal==='submit')void submit();});
+ modal.onclick=e=>{const btn=e.target.closest('[data-modal]');if(!btn)return;if(btn.dataset.modal==='cancel')close();if(btn.dataset.modal==='empty'){edit(()=>{current.slots[slotIndex].player=null});close();}if(btn.dataset.modal==='submit')void submit();};
  drawCrop();
 }
 async function photoData(file){
@@ -218,14 +216,14 @@ async function photoData(file){
 function pickCandidate(slotIndex){
  const candidates=reassign.queue;
  show('<h2>RÉAFFECTER · '+escapeHTML(current.slots[slotIndex].label)+'</h2><p>Choisis un joueur conservé de l’ancienne formation.</p><div class="candidate-list">'+candidates.map((p,i)=>'<button data-candidate="'+i+'">'+escapeHTML(p.short||p.full)+'</button>').join('')+'</div>'+actionButtons([{label:'ANNULER',id:'cancel'}]));
- modal.addEventListener('click',e=>{
+ modal.onclick=e=>{
  const btn=e.target.closest('[data-candidate]');if(btn){
  const player=reassign.queue.splice(Number(btn.dataset.candidate),1)[0];
  if(current.slots[slotIndex].player)reassign.queue.push(current.slots[slotIndex].player);
- current.slots[slotIndex].player=player;close();render();return;
+ current.slots[slotIndex].player=player;close();render();updateReassignBar();return;
  }
  if(e.target.closest('[data-modal="cancel"]'))close();
- });
+ };
 }
 function startReassignment(next){
  if(next===current.formation)return;
@@ -274,7 +272,7 @@ async function download(){
  try{const cnv=document.createElement('canvas');cnv.width=2048;cnv.height=2048;
  await document.fonts.ready;
  // Ensure imported pictures are decoded before using them in high-res output.
- await Promise.all(current.slots.filter(s=>s.player?.photo).map(s=>new Promise(resolve=>{const img=new Image();img.onload=img.onerror=resolve;img.src=s.player.photo;})));
+ await Promise.all(current.slots.filter(s=>s.player?.photo).map(s=>new Promise(resolve=>{const source=s.player.photo;const img=new Image();img.onload=()=>{images.set(source,{img,loaded:true});resolve();};img.onerror=resolve;img.src=source;})));
  drawTo(cnv.getContext('2d'),current,2048,false);
  const blob=await new Promise((resolve,reject)=>cnv.toBlob(b=>b?resolve(b):reject(Error('PNG non généré')),'image/png'));
  const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=fileName(current.title)+'.png';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);notice('PNG téléchargé · 2048 × 2048 ✓');

@@ -286,7 +286,7 @@ body[data-active="regatta"] .portal-header{background:linear-gradient(120deg,#10
 #global-manager-state,#global-manager-feedback{padding:8px 10px!important;border-radius:8px;
  background:#eef5fb;border:1px solid #d2e4f1;color:#17496e!important;line-height:1.45!important}
 #global-manager-feedback[data-error=true]{background:#fff1f2;border-color:#e6bbc1;color:#93363f!important}
-#global-manager-conflict[hidden],#global-manager-enable[hidden],#global-pair-create[hidden]{display:none!important}
+#global-manager-conflict[hidden],#global-manager-enable[hidden],#global-pair-create[hidden],#global-manager-archives-advanced-panel[hidden]{display:none!important}
 #global-manager-conflict{border-color:#e8c8a2;background:#fff8ef}
 #global-manager-conflict h3{color:#8d551e}
 .global-manager-backup-dates{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:11px 0}
@@ -404,7 +404,15 @@ body[data-active="regatta"] .portal-header{background:linear-gradient(120deg,#10
           </div>
         </section>
         <p id="global-manager-feedback" role="status" aria-live="polite">Aucune action lancée.</p>
-        <button type="button" id="global-manager-archives-advanced">Options avancées / JSON d’Archives</button>
+        <button type="button" id="global-manager-archives-advanced" aria-expanded="false" aria-controls="global-manager-archives-advanced-panel">Options avancées / JSON d’Archives ▾</button>
+        <section id="global-manager-archives-advanced-panel" class="global-manager-box" hidden aria-label="Options avancées des sauvegardes Archives">
+          <h3>Options avancées — Archives</h3>
+          <p>Enregistre une copie JSON de ton catalogue actuel ou importe une sauvegarde existante. L’import remplace les données locales uniquement, après vérification et confirmation ; Supabase reste protégé.</p>
+          <div class="global-manager-buttons">
+            <button type="button" id="global-manager-advanced-export">Exporter Archives (JSON)</button>
+            <button type="button" id="global-manager-advanced-import">Importer Archives (JSON)</button>
+          </div>
+        </section>
       </div>
     </dialog>
     <div class="frame-wrap">
@@ -593,7 +601,7 @@ body[data-active="regatta"] .portal-header{background:linear-gradient(120deg,#10
     const managerConflict=document.getElementById('global-manager-conflict');
     let managerBusy=false,managerReady=false;
     const managerActionIds=['global-manager-enable','global-pair-create','global-pair-redeem',
-      'global-manager-save','global-manager-refresh','global-manager-export-local','global-manager-import-local','global-manager-restore','global-manager-keep-local'];
+      'global-manager-save','global-manager-refresh','global-manager-export-local','global-manager-import-local','global-manager-advanced-export','global-manager-advanced-import','global-manager-restore','global-manager-keep-local'];
     const readableSaveDate=value=>{
       if(typeof value!=='string'||!value)return null;
       const date=new Date(value);
@@ -634,7 +642,7 @@ body[data-active="regatta"] .portal-header{background:linear-gradient(120deg,#10
       managerActionIds.forEach(id=>{
         const button=document.getElementById(id);
         if(button)button.disabled=managerBusy ||
-          (!state.ready&&id!=='global-manager-enable'&&!['global-manager-save','global-manager-refresh','global-manager-export-local','global-manager-import-local'].includes(id)) ||
+          (!state.ready&&id!=='global-manager-enable'&&!['global-manager-save','global-manager-refresh','global-manager-export-local','global-manager-import-local','global-manager-advanced-export','global-manager-advanced-import'].includes(id)) ||
           (id==='global-pair-create'&&!state.primary) ||
           (state.remoteInfoOutdated&&['global-manager-restore','global-manager-keep-local'].includes(id));
       });
@@ -690,19 +698,23 @@ body[data-active="regatta"] .portal-header{background:linear-gradient(120deg,#10
         :api.getManagerState().status,error:!linked};
     }));
     // Synchronous same-origin call keeps the download inside Safari's user gesture.
-    document.getElementById('global-manager-export-local').addEventListener('click',()=>{
+    function exportArchivesJson(){
       try{
         const api=frames.archives?.contentWindow?.RapliCloud;
         if(!api?.exportLocalSnapshot)throw Error('Archive non initialisée : rouvre Sauvegardes.');
         const started=api.exportLocalSnapshot();
         managerMessage(started?'Export JSON de la version locale lancé. Garde ce fichier avant toute restauration.':'Export local indisponible.',!started);
       }catch(error){managerMessage('Export local impossible : '+(error?.message||error),true);}
-    });
+    }
+    document.getElementById('global-manager-export-local').addEventListener('click',exportArchivesJson);
+    document.getElementById('global-manager-advanced-export').addEventListener('click',exportArchivesJson);
     const importFile=document.getElementById('global-manager-import-file');
-    document.getElementById('global-manager-import-local').addEventListener('click',()=>{
+    function chooseArchivesJson(){
       // Native file picker must open directly during the user's Safari gesture.
       importFile.click();
-    });
+    }
+    document.getElementById('global-manager-import-local').addEventListener('click',chooseArchivesJson);
+    document.getElementById('global-manager-advanced-import').addEventListener('click',chooseArchivesJson);
     importFile.addEventListener('change',event=>{
       const file=event.target.files?.[0];
       event.target.value=''; // Allow retrying the same JSON.
@@ -734,11 +746,12 @@ body[data-active="regatta"] .portal-header{background:linear-gradient(120deg,#10
             error:failed.length>0};
         }));
     }
-    document.getElementById('global-manager-archives-advanced').addEventListener('click',()=>{
-      manager.close();
-      select('archives',true);
-      void ensureCloudFrame('archives').then(frame=>frame.contentWindow.postMessage(
-        {type:'RAPLI_OPEN_ARCHIVES_BACKUPS'},location.origin));
+    const advancedToggle=document.getElementById('global-manager-archives-advanced');
+    const advancedPanel=document.getElementById('global-manager-archives-advanced-panel');
+    advancedToggle.addEventListener('click',()=>{
+      const expand=advancedPanel.hidden;
+      advancedPanel.hidden=!expand;
+      advancedToggle.setAttribute('aria-expanded',String(expand));
     });
     window.addEventListener('message',event=>{
       if(event.origin!==location.origin || event.source!==frames.archives?.contentWindow)return;

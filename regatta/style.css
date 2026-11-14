@@ -408,3 +408,5 @@ dialog form{border-radius:18px;background:#fff;display:flex;flex-direction:colum
 .card.event{border-color:#6c82bc}
 .card.event .badge-status{background:#3956a1}
 @media(max-width:580px){.score-orb{width:64px;height:64px;font-size:24px}.score-dialog-body{padding:13px}}
+
+.fields label[hidden],.fields #race-event-controls[hidden],.fields #race-joker-control[hidden]{display:none!important}

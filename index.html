@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#0d2039">
   <meta name="description" content="Rapli Archives, Sports et Regatta réunis dans un même espace personnel.">
-  <title>RAPLI LAB — 11 espaces personnels</title>
+  <title>RAPLI LAB — Archives, Sports et Regatta</title>
   <link rel="icon" type="image/webp" href="assets/archives-logo.webp">
   <style>
 
@@ -61,27 +61,19 @@ body{background:radial-gradient(ellipse 880px 340px at 50% 0%,rgba(94,155,225,.1
 /* RAPLI LAB — identité des espaces conservés. */
 body[data-active="sports"]{--accent:#277de7;--frame-bg:#e9f1fc;--frame-border:#b3cde9}
 body[data-active="sports"] .portal-header{background:linear-gradient(115deg,#0b2344,#123d73 52%,#0b2344)}
-.product-tabs{grid-template-columns:repeat(6,minmax(0,1fr));width:min(100%,1110px);gap:8px}
+.product-tabs{grid-template-columns:repeat(3,minmax(0,1fr));width:min(100%,720px);gap:8px}
 .product-tab{min-width:0;padding:4px 7px;height:56px}
-  width:100%;max-width:100%!important;max-height:47px!important;object-fit:contain
-}
 @media(max-width:800px){
- .portal-header{min-height:119px;padding:7px 8px 10px}
- .product-tabs{grid-template-columns:repeat(3,minmax(0,1fr));width:min(100%,640px);gap:7px}
+ .portal-header{min-height:60px;padding:5px 8px 8px}
+ .product-tabs{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
  .product-tab{height:46px}
-   max-height:39px!important
- }
- .app-frame{height:calc(100dvh - 119px);min-height:0}
+ .app-frame{height:calc(100dvh - 71px);min-height:0}
 }
 @media(max-width:420px){
- .portal-header{min-height:111px;padding:5px 6px 9px}
- .product-tabs{gap:5px}
- .product-tab{height:43px;padding:3px 4px}
-   max-height:35px!important
- }
- .app-frame{height:calc(100dvh - 111px);min-height:0}
+ .portal-header{min-height:54px;padding:4px 6px 7px}
+ .product-tab{height:43px;padding:3px}
+ .app-frame{height:calc(100dvh - 64px)}
 }
-
 
 /* RAPLI LAB — one site-wide Cloud Save / Refresh pair for every workspace */
 .portal-header{gap:12px}
@@ -224,7 +216,7 @@ body[data-active="regatta"] .portal-header{background:linear-gradient(120deg,#10
 .portal-header{display:flex;flex-wrap:nowrap;justify-content:center;min-height:72px;padding:7px 12px 9px;gap:0}
 .portal-nav-strip{position:relative;display:flex;align-items:center;justify-content:center;gap:12px;width:100%;max-width:1160px;min-width:0}
 .portal-nav-strip .product-tabs{
-  display:grid;grid-template-columns:repeat(11,minmax(0,1fr));
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
   flex:1 1 auto;width:100%;max-width:1018px;min-width:0;gap:7px;
 }
 .portal-nav-strip .global-cloud-controls{
@@ -263,6 +255,57 @@ body[data-active="regatta"] .portal-header{background:linear-gradient(120deg,#10
   .app-frame{height:calc(100dvh - 64px)}
 }
 
+
+/* Shared diskette: device pairing and whole-site backup manager */
+#global-cloud-manager{width:min(92vw,560px);max-height:min(89dvh,760px);padding:0;
+ border:1px solid #b8c7d7;border-radius:17px;background:#fbfdff;color:#1b3650;
+ box-shadow:0 22px 72px rgba(5,20,40,.38);overflow-y:auto}
+#global-cloud-manager::backdrop{background:rgba(5,17,35,.58);backdrop-filter:blur(3px)}
+.global-manager-head{position:sticky;top:0;z-index:1;background:#16395e;color:#fff;
+ display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 18px;border-radius:16px 16px 0 0}
+.global-manager-head h2{margin:0;font-size:18px;font-weight:850;line-height:1.25}
+.global-manager-head small{display:block;margin-top:3px;font-size:10px;color:#c1d9ed}
+#global-manager-close{display:grid;place-items:center;width:32px;height:32px;flex:none;border-radius:9px;
+ border:1px solid #7295b5;background:#ffffff19;color:#fff;cursor:pointer;font:800 23px/1 system-ui}
+.global-manager-content{padding:18px;display:grid;gap:14px}
+.global-manager-content p{font:500 12px/1.6 Inter,system-ui,sans-serif;margin:0;color:#496378}
+.global-manager-content h3{margin:0 0 7px;font:850 13px/1.25 Inter,system-ui,sans-serif;color:#1c3c5c}
+.global-manager-box{border:1px solid #d3e1ec;border-radius:12px;padding:13px;background:white}
+.global-manager-buttons{display:flex;flex-wrap:wrap;gap:8px;margin-top:9px}
+.global-manager-buttons button,#global-manager-enable,#global-manager-archives-advanced{border-radius:9px;border:1px solid #a9c4de;
+ background:#edf5fc;color:#174d7c;padding:9px 12px;font:800 11px/1.3 Inter,system-ui,sans-serif;cursor:pointer}
+.global-manager-buttons button.primary,#global-manager-enable{background:#153f68;color:#fff;border-color:#153f68}
+.global-manager-buttons button:hover:not(:disabled),#global-manager-enable:hover:not(:disabled){filter:brightness(.95)}
+.global-manager-buttons button:disabled,#global-manager-enable:disabled{opacity:.55;cursor:wait}
+.global-manager-buttons label{font:750 11px Inter,system-ui,sans-serif;display:grid;gap:5px;flex:1 1 175px;min-width:0}
+#global-pair-input{box-sizing:border-box;min-width:0;width:100%;height:39px;border-radius:9px;
+ border:1px solid #aec4d8;padding:7px 11px;font:700 16px/1.2 Inter,system-ui,sans-serif}
+#global-pair-output{display:block;font:850 16px/1.4 ui-monospace,monospace;letter-spacing:.08em;
+ color:#174d7c;overflow-wrap:anywhere;margin-top:7px}
+#global-pair-output:empty{display:none}
+#global-manager-state,#global-manager-feedback{padding:8px 10px!important;border-radius:8px;
+ background:#eef5fb;border:1px solid #d2e4f1;color:#17496e!important;line-height:1.45!important}
+#global-manager-feedback[data-error=true]{background:#fff1f2;border-color:#e6bbc1;color:#93363f!important}
+#global-manager-conflict[hidden],#global-manager-enable[hidden],#global-pair-create[hidden]{display:none!important}
+#global-manager-conflict{border-color:#e8c8a2;background:#fff8ef}
+#global-manager-conflict h3{color:#8d551e}
+@media(max-width:800px){
+ .portal-nav-strip{overflow-x:visible;overflow-y:visible;touch-action:auto;gap:6px}
+ .portal-nav-strip .product-tabs{flex:1 1 auto;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+   width:100%;max-width:none;min-width:0;padding:0;gap:5px}
+ .portal-nav-strip .product-tab{flex:none;width:100%;min-width:0;height:43px;padding:3px}
+ .portal-nav-strip .global-cloud-controls{flex:0 0 auto;padding:0;align-self:center;gap:4px}
+ .portal-nav-strip .global-cloud-controls button{width:33px;height:33px;border-radius:9px}
+ .portal-nav-strip .global-cloud-controls button svg{width:20px;height:20px}
+}
+@media(max-width:390px){
+ .portal-nav-strip{gap:4px}
+ .portal-nav-strip .product-tabs{gap:4px}
+ .portal-nav-strip .global-cloud-controls{gap:3px}
+ .portal-nav-strip .global-cloud-controls button{width:29px;height:31px}
+ .portal-nav-strip .global-cloud-controls button svg{width:18px;height:18px}
+ .global-manager-content{padding:12px}
+}
 </style>
   <link rel="stylesheet" href="shared/ios-input-focus.css">
 </head>
@@ -282,7 +325,10 @@ body[data-active="regatta"] .portal-header{background:linear-gradient(120deg,#10
         </button>
       </nav>
 
-      <div class="global-cloud-controls" role="group" aria-label="Synchronisation globale RapliLab">
+      <div class="global-cloud-controls" role="group" aria-label="Sauvegardes RapliLab">
+        <button id="global-cloud-manage" type="button" title="Gérer les sauvegardes et associer PC / iPhone" aria-label="Gérer les sauvegardes de tous les onglets">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 3.5H17l2.5 2.5v14.5h-15z"/><path d="M8 3.5v6h8v-6M8 20.5v-7h8v7"/></svg>
+        </button>
         <button id="global-cloud-save" type="button" title="Enregistrer les trois espaces dans Supabase" aria-label="Enregistrer tous les espaces RapliLab dans le cloud">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18h10a4 4 0 0 0 .65-7.95A6.2 6.2 0 0 0 6 8.6 4.7 4.7 0 0 0 7 18Z"/><path d="M12 10v8m-3-3 3 3 3-3"/></svg>
         </button>
@@ -293,6 +339,46 @@ body[data-active="regatta"] .portal-header{background:linear-gradient(120deg,#10
       </div>
     </header>
     <div id="global-cloud-feedback" role="status" aria-live="polite" hidden></div>
+    <dialog id="global-cloud-manager" aria-labelledby="global-cloud-manager-title">
+      <div class="global-manager-head">
+        <div><h2 id="global-cloud-manager-title">Sauvegardes RapliLab</h2><small>Archives · Sports · Regatta — une seule session Supabase</small></div>
+        <button type="button" id="global-manager-close" aria-label="Fermer le gestionnaire">×</button>
+      </div>
+      <div class="global-manager-content">
+        <p>Sauvegarde et récupération communes aux trois onglets. Les données de chaque espace restent séparées et protégées contre les conflits de versions.</p>
+        <section class="global-manager-box" aria-label="Enregistrer ou actualiser les collections">
+          <h3>Sauvegarde globale</h3>
+          <div class="global-manager-buttons">
+            <button type="button" class="primary" id="global-manager-save">Enregistrer les 3 onglets</button>
+            <button type="button" id="global-manager-refresh">Actualiser les 3 onglets</button>
+          </div>
+        </section>
+        <section class="global-manager-box" aria-label="Appairage de deux appareils">
+          <h3>Relier PC et iPhone</h3>
+          <p id="global-manager-state" role="status" aria-live="polite">Lecture de la session...</p>
+          <button type="button" id="global-manager-enable" hidden>Activer la sauvegarde Supabase</button>
+          <div class="global-manager-buttons"><button type="button" id="global-pair-create" hidden>Générer un code sur cet appareil</button></div>
+          <output id="global-pair-output" aria-live="polite"></output>
+          <div class="global-manager-buttons">
+            <label for="global-pair-input">Code reçu de l’autre appareil
+              <input type="text" id="global-pair-input" maxlength="35" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="Code de liaison">
+            </label>
+            <button type="button" class="primary" id="global-pair-redeem">Associer cet appareil</button>
+          </div>
+          <p style="margin-top:9px">Un code est valable 10 minutes et n’est utilisable qu’une seule fois. L’appairage est commun à RapliLab. Conserve une sauvegarde locale avant de restaurer des données.</p>
+        </section>
+        <section id="global-manager-conflict" class="global-manager-box" hidden aria-label="Résoudre un conflit de sauvegarde Archives">
+          <h3>Deux versions d’Archives différentes</h3>
+          <p>Choisis la version à conserver. Aucune restauration ne se fait automatiquement et chaque action demande confirmation.</p>
+          <div class="global-manager-buttons">
+            <button type="button" id="global-manager-restore" class="primary">Restaurer Archives depuis Supabase</button>
+            <button type="button" id="global-manager-keep-local">Conserver Archives de cet appareil</button>
+          </div>
+        </section>
+        <p id="global-manager-feedback" role="status" aria-live="polite">Aucune action lancée.</p>
+        <button type="button" id="global-manager-archives-advanced">Options avancées / JSON d’Archives</button>
+      </div>
+    </dialog>
     <div class="frame-wrap">
       <section id="panel-archives" role="tabpanel" aria-labelledby="tab-archives">
         <iframe id="frame-archives" class="app-frame" data-src="archives/index.html" title="Rapli Archives — catalogue Dragon Blanc aux Yeux Bleus" allow="clipboard-read; clipboard-write" loading="eager"></iframe>
@@ -450,6 +536,7 @@ body[data-active="regatta"] .portal-header{background:linear-gradient(120deg,#10
           results.push({name,...response});
           reportGlobalCloud(operation,results.length,results);
         }
+        return results;
       }finally{
         globalCloudBusy=false;
         cloudSave.disabled=cloudRefresh.disabled=false;
@@ -464,6 +551,117 @@ body[data-active="regatta"] .portal-header{background:linear-gradient(120deg,#10
     });
     cloudSave.addEventListener('click',()=>void runGlobalCloud('save'));
     cloudRefresh.addEventListener('click',()=>void runGlobalCloud('refresh'));
+
+    // A single diskette manages the secure device-linking flow for every workspace.
+    // The pairing code and credentials stay inside the existing Archives Supabase client.
+    const manager=document.getElementById('global-cloud-manager');
+    const managerStatus=document.getElementById('global-manager-state');
+    const managerFeedback=document.getElementById('global-manager-feedback');
+    const managerEnable=document.getElementById('global-manager-enable');
+    const managerPairCreate=document.getElementById('global-pair-create');
+    const managerRedeem=document.getElementById('global-pair-redeem');
+    const managerInput=document.getElementById('global-pair-input');
+    const managerCode=document.getElementById('global-pair-output');
+    const managerConflict=document.getElementById('global-manager-conflict');
+    let managerBusy=false,managerReady=false;
+    const managerActionIds=['global-manager-enable','global-pair-create','global-pair-redeem',
+      'global-manager-save','global-manager-refresh','global-manager-restore','global-manager-keep-local'];
+    function managerMessage(message,bad=false){
+      managerFeedback.textContent=message;
+      managerFeedback.dataset.error=String(!!bad);
+    }
+    function managerRender(state){
+      managerReady=!!state.ready;
+      managerStatus.textContent=!state.ready?(state.status||'Sauvegarde Supabase non activée')
+        :state.linked?'Appareil associé à une collection partagée · '+state.status
+        :'Appareil principal · '+state.status;
+      managerEnable.hidden=!!state.ready;
+      managerPairCreate.hidden=!state.ready||!state.primary;
+      managerConflict.hidden=!state.conflict;
+      managerActionIds.forEach(id=>{
+        const button=document.getElementById(id);
+        if(button)button.disabled=managerBusy ||
+          (!state.ready&&id!=='global-manager-enable'&&!['global-manager-save','global-manager-refresh'].includes(id)) ||
+          (id==='global-pair-create'&&!state.primary);
+      });
+    }
+    async function withManager(message,work){
+      if(managerBusy)return;
+      managerBusy=true;
+      managerMessage(message);
+      managerActionIds.forEach(id=>{const button=document.getElementById(id);if(button)button.disabled=true;});
+      try{
+        const frame=await ensureCloudFrame('archives');
+        const api=frame.contentWindow.RapliCloud;
+        if(!api?.getManagerState)throw Error('Gestion des sauvegardes Archives non initialisée.');
+        const outcome=await work(api);
+        managerBusy=false;
+        managerRender(api.getManagerState());
+        if(outcome?.message)managerMessage(outcome.message,!!outcome.error);
+        else managerMessage(api.getManagerState().status,!!api.getManagerState().error);
+      }catch(e){
+        managerBusy=false;
+        managerMessage('Gestion des sauvegardes indisponible : '+(e?.message||e),true);
+        managerActionIds.forEach(id=>{const button=document.getElementById(id);if(button)button.disabled=false;});
+      }
+    }
+    function openCloudManager(){
+      if(!manager.open)manager.showModal();
+      managerMessage('Lecture des sauvegardes et de l’appairage...');
+      void withManager('Connexion au gestionnaire...',async api=>({message:api.getManagerState().status}));
+    }
+    document.getElementById('global-cloud-manage').addEventListener('click',openCloudManager);
+    document.getElementById('global-manager-close').addEventListener('click',()=>manager.close());
+    manager.addEventListener('click',e=>{if(e.target===manager)manager.close();});
+    managerEnable.addEventListener('click',()=>void withManager('Connexion à Supabase...',async api=>{
+      await api.enableManager();
+      const state=api.getManagerState();
+      return {message:state.status,error:!state.ready};
+    }));
+    managerPairCreate.addEventListener('click',()=>void withManager('Génération du code...',async api=>{
+      const code=await api.issuePairingCode();
+      if(code)managerCode.textContent=code+' · valable 10 minutes';
+      return {message:code?'Code à saisir sur le second appareil.':api.getManagerState().status,error:!code};
+    }));
+    managerRedeem.addEventListener('click',()=>void withManager('Appairage de cet appareil...',async api=>{
+      const code=managerInput.value.trim();
+      if(!code)return {message:'Saisis le code de liaison reçu de l’autre appareil.',error:true};
+      const linked=await api.redeemPairingCode(code);
+      if(linked){managerInput.value='';managerCode.textContent='';}
+      return {message:linked?'Appareil associé ✓ Choisis la version Archives à conserver, puis actualise les autres onglets.'
+        :api.getManagerState().status,error:!linked};
+    }));
+    document.getElementById('global-manager-restore').addEventListener('click',()=>void withManager('Restauration Archives...',async api=>{
+      const restored=await api.restoreFromCloud();
+      return {message:restored?'Archives restaurées ✓ Pour les autres collections, clique « Actualiser les 3 onglets ».'
+        :api.getManagerState().status,error:!restored};
+    }));
+    document.getElementById('global-manager-keep-local').addEventListener('click',()=>void withManager('Envoi de la version locale...',async api=>{
+      const saved=await api.keepLocalVersion();
+      return {message:saved?'Version Archives de cet appareil conservée sur Supabase ✓':api.getManagerState().status,error:!saved};
+    }));
+    for(const operation of ['save','refresh']){
+      document.getElementById('global-manager-'+operation).addEventListener('click',()=>void withManager(
+        operation==='save'?'Sauvegarde des trois onglets...':'Actualisation des trois onglets...',
+        async api=>{
+          const outcomes=await runGlobalCloud(operation);
+          const failed=outcomes.filter(row=>!row.success);
+          return {message:(operation==='save'?'Sauvegarde':'Actualisation')+
+            ' globale : '+(outcomes.length-failed.length)+' / '+projects.length+
+            ' onglets vérifiés'+(failed.length?' · consulte le détail sous la barre des onglets':' ✓'),
+            error:failed.length>0};
+        }));
+    }
+    document.getElementById('global-manager-archives-advanced').addEventListener('click',()=>{
+      manager.close();
+      select('archives',true);
+      void ensureCloudFrame('archives').then(frame=>frame.contentWindow.postMessage(
+        {type:'RAPLI_OPEN_ARCHIVES_BACKUPS'},location.origin));
+    });
+    window.addEventListener('message',event=>{
+      if(event.origin!==location.origin || event.source!==frames.archives?.contentWindow)return;
+      if(event.data?.type==='RAPLI_SHOW_BACKUP_MANAGER')openCloudManager();
+    });
   })();
   </script>
   <script defer src="shared/retired-cleanup.js"></script>

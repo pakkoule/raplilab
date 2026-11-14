@@ -809,6 +809,7 @@ function openEditor(r){
  const parentSelect=$('race-event-id');
  parentSelect.innerHTML='<option value="">Aucune · course indépendante</option>'+rows.filter(x=>x.kind==='event'&&x.id!==data.id).map(x=>'<option value="'+safe(x.id)+'">'+safe(x.name)+'</option>').join('');
  parentSelect.value=data.eventId||'';
+ renderRecordAttempts(data.kind==='record'&&data.attempts.length?data.attempts:[{id:uid(),seconds:null,aborted:false}]);
  updateKindFields();
  equipmentInputs().forEach(input=>{input.checked=input.value===validEquipment(data.equipment);});
  for(const k of imageKeys){pictures[k]=data[k]||'';preview(k);}
@@ -825,13 +826,13 @@ async function saveEditor(e){
  e.preventDefault();if(writeBusy||uploads)return;
  const old=rows.find(x=>x.id===editId);const r={...(old||normal()),updatedAt:now(),live:$('race-live').checked,upcoming:$('race-upcoming').checked,dnf:$('race-dnf').checked};
  if([r.live,r.upcoming,r.dnf].filter(Boolean).length>1){toast('Choisis un seul statut manuel : en cours, à venir ou DNF.',true);return;}
- r.kind=$('race-kind').value==='event'?'event':'race';
- r.eventId=r.kind==='event'?'':clean($('race-event-id').value,130);
+ r.kind=['event','record'].includes($('race-kind').value)?$('race-kind').value:'race';
+ r.eventId=r.kind!=='race'?'':clean($('race-event-id').value,130);
  r.eventClosed=r.kind==='event'&&$('race-event-closed').checked;
- r.joker=r.kind!=='event'&&!!r.eventId&&$('race-joker').checked;
+ r.joker=r.kind==='race'&&!!r.eventId&&$('race-joker').checked;
  if(r.kind==='event'&&(r.live||r.upcoming)){toast('Pour un événement, utilise le statut « Compétition clôturée ».',true);return;}
- const arrival=updateArrival();if(arrival.status==='invalid-duration'||arrival.status==='invalid-date'){toast('Corrige la durée ou les horaires avant d’enregistrer.',true);getField(arrival.status==='invalid-duration'?'durationDays':'start').focus();return;}
- if(syncDurationInput()==='invalid'){toast('Durée incorrecte : vérifie les jours, heures, minutes et secondes.',true);getField('durationDays').focus();return;}
+ const arrival=r.kind==='record'?{status:'waiting'}:updateArrival();if(arrival.status==='invalid-duration'||arrival.status==='invalid-date'){toast('Corrige la durée ou les horaires avant d’enregistrer.',true);getField(arrival.status==='invalid-duration'?'durationDays':'start').focus();return;}
+ if(r.kind!=='record'&&syncDurationInput()==='invalid'){toast('Durée incorrecte : vérifie les jours, heures, minutes et secondes.',true);getField('durationDays').focus();return;}
  for(const k of Object.keys(props))r[k]=clean(getField(k).value,props[k]);
  for(const key of ['gainPoints','gainCredits']){
    const value=String(getField(key).value||'').trim();
@@ -852,7 +853,15 @@ async function saveEditor(e){
  const chosen=equipmentInputs().filter(input=>input.checked);if(chosen.length>1){toast('Une seule méthode d’équipement est autorisée.',true);return;}
  r.equipment=validEquipment(chosen[0]?.value);
  if(!r.name){getField('name').focus();return;}for(const k of imageKeys)r[k]=pictures[k]||'';
- if(!old?.scoreSnapshot){const initial=scoreEngine.scoreFor(r,[...rows.filter(x=>x.id!==r.id),r],raceStatus);if(initial.available)r.scoreSnapshot={...initial,signature:scoreEngine.signature(r),calculatedAt:now()};}
+ if(r.kind==='record'){
+  try{r.attempts=recordEngine.normalize(readRecordAttempts());}catch(error){toast(error.message,true);return;}
+  r.live=false;r.upcoming=false;r.dnf=false;r.eventClosed=false;r.eventId='';r.joker=false;
+  r.scoreSnapshot=null;
+  for(const [place,total] of rankPairs){r[place]='';r[total]='';}
+  for(const key of ['duration','durationDays','durationHours','durationMinutes','durationSeconds','end','endTime','vsr','gainPoints','gainCredits','participantCount'])r[key]='';
+  r.equipment='';
+ }else r.attempts=[];
+ if(r.kind!=='record'&&!old?.scoreSnapshot){const initial=scoreEngine.scoreFor(r,[...rows.filter(x=>x.id!==r.id),r],raceStatus);if(initial.available)r.scoreSnapshot={...initial,signature:scoreEngine.signature(r),calculatedAt:now()};}
  writeBusy=true;$('save-race').disabled=true;
  try{await saveRow(r);rows=[...rows.filter(x=>x.id!==r.id),r];render();window.RapliModuleCloud?.changed?.();closeEditor();toast('Course enregistrée ✓');}
  catch(err){console.error(err);toast('Impossible de sauvegarder : '+err.message,true);}
@@ -1113,6 +1122,22 @@ for(const key of ['start','startTime','durationDays','durationHours','durationMi
 for(const [selected,others] of [['race-live',['race-upcoming','race-dnf']],['race-upcoming',['race-live','race-dnf']],['race-dnf',['race-live','race-upcoming']]]){
  $(selected).addEventListener('change',event=>{if(event.target.checked)others.forEach(id=>$(id).checked=false);});
 }
+$('record-add-attempt').addEventListener('click',()=>{
+ let attempts;
+ try{attempts=readRecordAttempts();}catch(error){toast(error.message,true);return;}
+ if(attempts.length>=recordEngine.MAX){toast('Maximum de '+recordEngine.MAX+' tentatives par course record.',true);return;}
+ renderRecordAttempts([...attempts,{id:uid(),seconds:null,aborted:false}]);
+});
+$('record-attempts-list').addEventListener('click',event=>{
+ if(!event.target.closest('[data-record-remove]'))return;
+ try{
+  const target=event.target.closest('.record-attempt-row');
+  renderRecordAttempts(readRecordAttempts().filter(x=>x.id!==target.dataset.recordId));
+ }catch(error){toast(error.message,true);}
+});
+$('record-attempts-list').addEventListener('change',event=>{
+ if(event.target.matches('[data-record-aborted]'))event.target.closest('.record-attempt-row').classList.toggle('is-aborted',event.target.checked);
+});
 $('race-kind').addEventListener('change',updateKindFields);
 $('race-event-id').addEventListener('change',updateKindFields);
 for(const view of ['races','stats','colors'])$('view-'+view).addEventListener('click',()=>selectWorkspace(view));

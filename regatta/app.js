@@ -187,6 +187,17 @@ function normalizeRanking(r){
 function normal(x={}){const r={id:typeof x.id==='string'&&x.id.length<130?x.id:uid(),createdAt:x.createdAt||now(),updatedAt:x.updatedAt||now(),live:!!x.live&&!x.dnf,upcoming:!!x.upcoming&&!x.live&&!x.dnf,dnf:!!x.dnf,kind:['race','event','record'].includes(x.kind)?x.kind:'race',eventId:clean(x.eventId,130),eventClosed:!!x.eventClosed,joker:!!x.joker,equipment:validEquipment(x.equipment),edition:clean(x.edition,100)};for(const [k,n] of Object.entries(props))r[k]=clean(x[k],n);
  r.classColor=colorSafe(x.classColor);r.notes=clean(x.notes,2500);r.vsr=VSR[r.vsr]?r.vsr:'';
  r.attempts=window.RapliRegattaRecordAttempts.normalize(x.attempts);
+ if(r.kind==='record'){
+  // Older record entries had one start date on the parent. Preserve it as the first
+  // attempt's departure, never duplicate it across all attempts.
+  const record=window.RapliRegattaRecordAttempts;
+  if(!r.attempts.some(attempt=>attempt.startDate)&&record.validDate(r.start)){
+   if(!r.attempts.length)r.attempts=[{id:uid(),seconds:null,aborted:false,startDate:'',startTime:''}];
+   r.attempts[0]={...r.attempts[0],startDate:r.start,startTime:record.validTime(r.startTime)};
+  }
+  const first=record.earliestStart(r.attempts);
+  r.start=first.date;r.startTime=first.time;
+ }
  r.scoreSnapshot=x.scoreSnapshot&&typeof x.scoreSnapshot==='object'&&x.scoreSnapshot.available&&Number.isFinite(x.scoreSnapshot.value)&&x.scoreSnapshot.value>=0&&x.scoreSnapshot.value<=100?clone(x.scoreSnapshot):null;
  for(const key of ['gainPoints','gainCredits'])r[key]=moneyNumber(r[key]);
  normalizeRanking(r);
@@ -197,7 +208,7 @@ function normal(x={}){const r={id:typeof x.id==='string'&&x.id.length<130?x.id:u
  }
  const formatted=durationFromParts(r);
  if(formatted!==null&&formatted!=='')r.duration=formatted;
- for(const k of imageKeys)r[k]=validImage(x[k])?x[k]:'';const arrival=calculateArrival(r.start,r.startTime,r.duration);if(arrival.status==='ready'){r.end=arrival.end;r.endTime=arrival.endTime;}return r;}
+ for(const k of imageKeys)r[k]=validImage(x[k])?x[k]:'';if(r.kind!=='record'){const arrival=calculateArrival(r.start,r.startTime,r.duration);if(arrival.status==='ready'){r.end=arrival.end;r.endTime=arrival.endTime;}}return r;}
 let rows=[],db=null,editId='',pictures={icon:'',result:'',route:''},uploads=0,writeBusy=false,timer;
 const dialog=$('race-dialog'),getField=k=>$('race-'+({boatClass:'class',startTime:'start-time',endTime:'end-time',rankDepartment:'rank-department',rankNational:'rank-national',rankTotal:'rank-total',rankNationalTotal:'rank-national-total',rankDepartmentTotal:'rank-department-total',rankCity:'rank-city',rankCityTotal:'rank-city-total',rankTeam:'rank-team',rankTeamTotal:'rank-team-total',durationDays:'days',durationHours:'hours',durationMinutes:'minutes',durationSeconds:'seconds',gainPoints:'gain-points',gainCredits:'gain-credits',participantCount:'participant-count'}[k]||k));
 function toast(t,error=false){$('notice').textContent=t;$('notice').dataset.error=String(error);clearTimeout(timer);timer=setTimeout(()=>{$('notice').textContent='';},7000);}
@@ -209,7 +220,7 @@ async function load(){return db?(await req(db.transaction('races').objectStore('
 async function saveRow(row){if(!db){localStorage.setItem('rapli-regatta-v1',JSON.stringify([...rows.filter(x=>x.id!==row.id),row]));return;}const tx=db.transaction('races','readwrite');tx.objectStore('races').put(row);await done(tx);}
 async function deleteRow(id){if(!db){localStorage.setItem('rapli-regatta-v1',JSON.stringify(rows.filter(x=>x.id!==id)));return;}const tx=db.transaction('races','readwrite');tx.objectStore('races').delete(id);await done(tx);}
 async function replaceRows(next){if(!db){localStorage.setItem('rapli-regatta-v1',JSON.stringify(next));}else{const tx=db.transaction('races','readwrite'),store=tx.objectStore('races');store.clear();next.forEach(x=>store.put(x));await done(tx);}rows=next.map(normal);render();}
-const raceStatus=r=>{if(r.kind==='record')return 'record';if(r.dnf)return 'dnf';if(r.kind==='event')return r.eventClosed?'finished':r.live?'live':'planned';if(r.upcoming)return 'planned';if(r.live)return 'live';if(rankPairs.some(([key])=>r[key]))return 'finished';if(!r.end)return 'planned';if(!r.endTime)return 'finished';const current=new Date();const local=[current.getFullYear(),String(current.getMonth()+1).padStart(2,'0'),String(current.getDate()).padStart(2,'0')].join('-')+'T'+String(current.getHours()).padStart(2,'0')+':'+String(current.getMinutes()).padStart(2,'0');return (r.end+'T'+r.endTime)<=local?'finished':'planned';},statusTitle={live:'COURSE EN COURS',finished:'TERMINÉE',planned:'À VENIR',dnf:'DNF · ABANDON',record:'COURSE RECORD'};
+const raceStatus=r=>{if(r.kind==='record')return r.live?'record-live':'record';if(r.dnf)return 'dnf';if(r.kind==='event')return r.eventClosed?'finished':r.live?'live':'planned';if(r.upcoming)return 'planned';if(r.live)return 'live';if(rankPairs.some(([key])=>r[key]))return 'finished';if(!r.end)return 'planned';if(!r.endTime)return 'finished';const current=new Date();const local=[current.getFullYear(),String(current.getMonth()+1).padStart(2,'0'),String(current.getDate()).padStart(2,'0')].join('-')+'T'+String(current.getHours()).padStart(2,'0')+':'+String(current.getMinutes()).padStart(2,'0');return (r.end+'T'+r.endTime)<=local?'finished':'planned';},statusTitle={live:'COURSE EN COURS',finished:'TERMINÉE',planned:'À VENIR',dnf:'DNF · ABANDON',record:'COURSE RECORD','record-live':'RECORD EN COURS'};
 const dateFR=v=>/^\d{4}-\d{2}-\d{2}$/.test(v)?v.slice(8)+'/'+v.slice(5,7)+'/'+v.slice(0,4):'';
 const scoreEngine=window.RapliRegattaScore;
 const recordEngine=window.RapliRegattaRecordAttempts;
@@ -224,7 +235,7 @@ function scoreView(r){
 const imageTag=(src,alt)=>validImage(src)?'<img loading="lazy" draggable="false" alt="'+safe(alt)+'" src="'+safe(src)+'">':'<span class="shot-empty">PAS DE CAPTURE</span>';
 function recordCardContent(r){
  const attempts=recordEngine.normalize(r.attempts),stats=recordEngine.summary(attempts);
- const line=attempts.map((item,i)=>'<div class="record-attempt-chip'+(item.aborted?' is-aborted':item.id===stats.bestId?' is-best':'')+'"><span>TENTATIVE '+(i+1)+'</span><strong>'+safe(item.aborted?'AVORTÉE':item.seconds!==null?recordEngine.format(item.seconds):'EN ATTENTE')+'</strong></div>').join('');
+ const line=attempts.map((item,i)=>'<div class="record-attempt-chip'+(item.aborted?' is-aborted':item.id===stats.bestId?' is-best':'')+'"><span>TENTATIVE '+(i+1)+'<small>'+safe(item.startDate?'DÉPART · '+dateTimeFR(item.startDate,item.startTime):'DÉPART À RENSEIGNER')+'</small></span><strong>'+safe(item.aborted?'AVORTÉE':item.seconds!==null?recordEngine.format(item.seconds):'EN ATTENTE')+'</strong></div>').join('');
  return '<section class="record-card" aria-label="Tentatives de record"><div class="record-card-summary"><span>'+stats.total+' TENTATIVE'+(stats.total>1?'S':'')+' · '+stats.aborted+' AVORTÉE'+(stats.aborted>1?'S':'')+'</span><strong>'+safe(stats.bestSeconds!==null?'MEILLEUR TEMPS · '+recordEngine.format(stats.bestSeconds):'AUCUN TEMPS VALIDÉ')+'</strong></div><div class="record-attempt-chips">'+line+'</div></section>';
 }
 function card(r){
@@ -239,13 +250,13 @@ function card(r){
    rankHtml('🇨🇶','DÉPARTEMENTAL',r.rankDepartment,r.rankDepartmentTotal,'rank-department',podiumMedalFor(r,'rankDepartment','rankDepartmentTotal'))+
    rankHtml('🏙️','VILLE',r.rankCity,r.rankCityTotal,'rank-city',podiumMedalFor(r,'rankCity','rankCityTotal'))+
    rankHtml('🏴‍☠️','TEAM',r.rankTeam,r.rankTeamTotal,'rank-team',podiumMedalFor(r,'rankTeam','rankTeamTotal')));
- return '<article class="card'+(status==='live'?' live':'')+(status==='planned'&&r.upcoming?' upcoming':'')+(status==='dnf'?' dnf':'')+(r.kind==='event'?' event':'')+(r.kind==='record'?' record':'')+'" data-id="'+safe(r.id)+'" style="--class-tag:'+tag+';--class-ink:'+classTextColor(tag)+';--vsr-color:'+vsrTag+';--vsr-ink:'+classTextColor(vsrTag)+'">'+
+ return '<article class="card'+((status==='live'||status==='record-live')?' live':'')+(status==='planned'&&r.upcoming?' upcoming':'')+(status==='dnf'?' dnf':'')+(r.kind==='event'?' event':'')+(r.kind==='record'?' record':'')+'" data-id="'+safe(r.id)+'" style="--class-tag:'+tag+';--class-ink:'+classTextColor(tag)+';--vsr-color:'+vsrTag+';--vsr-ink:'+classTextColor(vsrTag)+'">'+
  '<div class="card-top"><div class="race-icon card-photo">'+(validImage(r.icon)?imageTag(r.icon,'Affiche '+r.name):'<div class="icon-placeholder">⛵</div>')+'</div><span class="badge-status">'+statusTitle[status]+'</span></div>'+
  '<div class="card-content"><div class="card-title-row"><h2 title="'+safe(r.name)+'">'+safe(r.name)+'</h2>'+
  '<div class="card-tag-row"><span class="class-tag" title="'+safe(r.boatClass||'VIRTUAL REGATTA')+'">'+safe(r.boatClass||'VIRTUAL REGATTA')+'</span>'+
  (mode?'<span class="vsr-badge vsr-'+r.vsr+(r.vsr==='hc'?' hc':'')+'" title="Importance VSR : '+(VSR_PRIORITY(r.vsr)+1)+' sur 4">'+safe(mode)+'</span>':'')+'</div></div>'+
  '<div class="card-boat">'+safe(r.boat)+(r.kind==='record'?' · COURSE RECORD':r.kind==='event'?' · COMPÉTITION':r.eventId?' · ÉTAPE'+(r.joker?' JOKER':''):'')+'</div>'+
- '<div class="card-stats">'+(r.start?'<span class="stat-chip">DÉPART '+safe(dateTimeFR(r.start,r.startTime))+'</span>':'')+
+ '<div class="card-stats">'+(r.kind!=='record'&&r.start?'<span class="stat-chip">DÉPART '+safe(dateTimeFR(r.start,r.startTime))+'</span>':'')+
  (r.kind!=='record'&&status!=='dnf'&&r.end?'<span class="stat-chip arrival-chip">ARRIVÉE '+safe(dateTimeFR(r.end,r.endTime))+'</span>':'')+
  (r.kind!=='record'&&r.duration?'<span class="stat-chip duration-chip">⏱ '+safe(r.duration)+'</span>':'')+
  (r.kind!=='record'&&validEquipment(r.equipment)?'<span class="stat-chip equipment">ÉQUIPEMENT · '+safe(equipmentModes[r.equipment])+'</span>':'')+
@@ -288,18 +299,18 @@ function render(){
  $('filter-class').innerHTML='<option value="">Toutes les classes</option>'+classes.map(x=>'<option value="'+safe(x)+'">'+safe(x)+'</option>').join('');
  if(classes.includes(selected))$('filter-class').value=selected;
  const q=$('search').value.toLocaleLowerCase('fr').trim(),status=$('filter-status').value,cls=$('filter-class').value,vsr=$('filter-vsr').value;
- const filtered=rows.filter(r=>(!status||raceStatus(r)===status)&&(!cls||r.boatClass===cls)&&(!vsr||r.vsr===vsr)&&
+ const filtered=rows.filter(r=>(!status||(status==='record'?r.kind==='record':status==='live'?['live','record-live'].includes(raceStatus(r)):raceStatus(r)===status))&&(!cls||r.boatClass===cls)&&(!vsr||r.vsr===vsr)&&
    (!q||[r.name,r.boatClass,r.boat,r.rank,r.rankNational,r.rankDepartment,r.rankCity,r.rankTeam,
-           r.startTime,r.end,r.endTime,VSR[r.vsr]||'',equipmentModes[r.equipment]||''].some(v=>String(v||'').toLocaleLowerCase('fr').includes(q))));
+           r.startTime,r.end,r.endTime,...(r.kind==='record'?recordEngine.normalize(r.attempts).map(x=>x.startDate+' '+x.startTime):[]),VSR[r.vsr]||'',equipmentModes[r.equipment]||''].some(v=>String(v||'').toLocaleLowerCase('fr').includes(q))));
  const out=[...filtered],sort=$('sort').value;
- const chronological=r=>(r.start?r.start+'T'+(r.startTime||'00:00'):r.createdAt||'');
+ const chronological=r=>{const start=r.kind==='record'?recordEngine.latestStart(r.attempts):{date:r.start,time:r.startTime};return start.date?start.date+'T'+(start.time||'00:00'):r.createdAt||'';};
  out.sort((a,b)=>sort==='name'?a.name.localeCompare(b.name,'fr'):
   sort==='old'?a.createdAt.localeCompare(b.createdAt):
   sort==='recent'?b.updatedAt.localeCompare(a.updatedAt):
   sort==='vsr'?VSR_PRIORITY(a.vsr)-VSR_PRIORITY(b.vsr)||chronological(b).localeCompare(chronological(a)):
   chronological(b).localeCompare(chronological(a))||b.createdAt.localeCompare(a.createdAt));
  const raceRows=rows.filter(r=>r.kind==='race');
- $('count-total').textContent=raceRows.length;$('count-live').textContent=raceRows.filter(r=>raceStatus(r)==='live').length;
+ $('count-total').textContent=raceRows.length;$('count-live').textContent=rows.filter(r=>['live','record-live'].includes(raceStatus(r))).length;
  $('count-finished').textContent=raceRows.filter(r=>raceStatus(r)==='finished').length;
  $('count-dnf').textContent=raceRows.filter(r=>raceStatus(r)==='dnf').length;
  $('count-record').textContent=rows.filter(r=>r.kind==='record').length;

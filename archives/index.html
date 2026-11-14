@@ -1936,7 +1936,43 @@ function exportJson(){downloadBlob(JSON.stringify({...archive,exportedAt:now()},
 function csvCell(s){const str=String(s??'');return /[;\n\r"]/.test(str)?'"'+str.replaceAll('"','""')+'"':str;}
 function exportCsv(){const columns=['univers','groupe','marque','saison','sport','reference','titre','annee','coloris','module','bracelet','joueur','equipe','numero_carte','parallele','numerotation','rarete','source','nombre_exemplaires','wishlist'];const rows=archive.variants.map(v=>{const g=getGroup(v.groupId);return [g?.category,g?.name,g?.brand,g?.year,g?.sport,v.reference,v.label,v.year,v.color,v.module,v.strap,v.player,v.team,v.cardNumber,v.parallel,v.serial,v.rarity,v.sourceUrl,ownedCount(v.id),!!wishFor(v.id)];});const txt='\ufeff'+[columns,...rows].map(row=>row.map(csvCell).join(';')).join('\r\n');downloadBlob(txt,'MY_ARCHIVE_references_'+new Date().toISOString().slice(0,10)+'.csv','text/csv;charset=utf-8');toast('CSV exporté.');}
 function validateImported(s){const a=normalizeState(s);const allIds=new Set;for(const collection of [a.groups,a.variants,a.copies,a.wishlist])for(const x of collection){if(typeof x!=='object'||!x||typeof x.id!=='string'||!x.id||allIds.has(x.id))throw Error('Identifiants invalides ou dupliqués');allIds.add(x.id)}const gIds=new Set(a.groups.map(g=>g.id)),vIds=new Set(a.variants.map(v=>v.id));if(a.groups.some(g=>!['cards','watches'].includes(g.category))||a.variants.some(v=>!gIds.has(v.groupId))||a.copies.some(c=>!vIds.has(c.variantId))||a.wishlist.some(w=>!vIds.has(w.variantId)))throw Error('Certaines références sont orphelines.');if(new Set(a.wishlist.map(w=>w.variantId)).size!==a.wishlist.length)throw Error('Wishlist contenant des doublons.');return a;}
-async function importJson(file){if(!file)return;try{const data=validateImported(JSON.parse(await file.text()));if(!confirm(`Restaurer ${data.groups.length} groupes, ${data.variants.length} références et ${data.copies.length} exemplaires ? Cela REMPLACERA toutes les données locales actuelles. Pense à exporter une sauvegarde avant.`))return;const prior=archive;archive=data;if(!await save()){archive=prior;return;}navigate('dashboard');toast('Sauvegarde restaurée avec succès ✓');}catch(e){toast('Impossible de restaurer : '+e.message,true)}}
+async function importJson(file){
+ if(!file)return {success:false,cancelled:true,message:'Aucun fichier sélectionné.'};
+ let gate=null,success=false;
+ try{
+  if(!/\.json$/i.test(String(file.name||'')))throw Error('Sélectionne un fichier de sauvegarde .json.');
+  if(!file.size||file.size>150*1024*1024)throw Error('Fichier vide ou trop volumineux (150 Mo maximum).');
+  const parsed=JSON.parse(await file.text());
+  const data=validateImported(parsed);
+  const originDate=parsed.exportedAt&&Number.isFinite(Date.parse(parsed.exportedAt))
+    ?new Date(parsed.exportedAt).toLocaleString('fr-FR')
+    :'Date d’export inconnue';
+  if(!confirm('Importer « '+file.name+' » ?\n'+originDate+'\n'+
+    data.groups.length+' éditions/groupes · '+data.variants.length+' références · '+
+    data.copies.length+' exemplaires · '+data.wishlist.length+' souhaits.\n\n'+
+    'ATTENTION : cela REMPLACERA la collection locale de cet appareil, sans fusion. '+
+    'Exporte sa version actuelle avant de confirmer. Supabase restera inchangé tant que tu ne choisiras pas de la remplacer.'))
+    return {success:false,cancelled:true,message:'Import annulé : aucune donnée modifiée.'};
+  gate=window.RapliCloud?.beginLocalImport?.();
+  if(!gate)throw Error('Protection de synchronisation indisponible : import annulé.');
+  const previous=archive;
+  archive=data;
+  if(!await save()){
+    archive=previous;
+    return {success:false,error:true,message:'Import non enregistré : les données locales précédentes sont conservées.'};
+  }
+  success=true;
+  navigate('dashboard');
+  toast('JSON importé localement. Vérifie le conflit Supabase avant toute synchronisation ✓');
+  return {success:true,message:'Sauvegarde JSON importée sur cet appareil ✓ Supabase n’a pas été remplacé. Choisis ensuite la version à conserver.'};
+ }catch(e){
+  const message='Import impossible : '+(e?.message||'fichier non conforme');
+  toast(message,true);
+  return {success:false,error:true,message};
+ }finally{
+  if(gate)window.RapliCloud?.finishLocalImport?.(gate,success);
+ }
+}
 function deleteGroup(id){const group=getGroup(id);if(!group)return;const refs=groupVariants(id);if(!confirm(`Supprimer « ${group.name} » et ses ${refs.length} références, avec tous leurs exemplaires et souhaits ? Cette opération est irréversible sans sauvegarde.`))return;const refIds=new Set(refs.map(v=>v.id));archive.groups=archive.groups.filter(g=>g.id!==id);archive.variants=archive.variants.filter(v=>!refIds.has(v.id));archive.copies=archive.copies.filter(c=>!refIds.has(c.variantId));archive.wishlist=archive.wishlist.filter(w=>!refIds.has(w.variantId));save();navigate(group.category);toast('Groupe supprimé.');}
 function deleteVariant(id){const v=getVariant(id);if(!v)return;if(!confirm(`Supprimer la référence « ${titleFor(v)} », ses exemplaires possédés et sa wishlist ?`))return;archive.variants=archive.variants.filter(v=>v.id!==id);archive.copies=archive.copies.filter(c=>c.variantId!==id);archive.wishlist=archive.wishlist.filter(w=>w.variantId!==id);save();navigate(catForGroup(v.groupId),v.groupId);toast('Référence supprimée.');}
 function legacyHandleAction(action,el){const id=el.dataset.id;switch(action){case 'navigate':navigate(el.dataset.view);break;case 'new-group':groupModal('','dragons');break;case 'new-variant':variantModal('',el.dataset.group||'');break;case 'open-group':navigate(catForGroup(id),id);break;case 'open-variant':{const v=getVariant(id);if(v)openQuickView(v);break;}case 'peek-own':peekOwn(id);break;case 'peek-wish':peekWish(id);break;case 'back-category':navigate(currentView);break;case 'back-group':navigate(currentView,currentGroup);break;case 'edit-group':groupModal(id);break;case 'delete-group':deleteGroup(id);break;case 'edit-variant':variantModal(id);break;case 'duplicate-variant':variantModal(id,'',true);break;case 'delete-variant':deleteVariant(id);break;case 'new-copy':copyModal();break;case 'quick-own':copyModal('',id);break;case 'edit-copy':copyModal(id);break;case 'delete-copy':{const c=archive.copies.find(x=>x.id===id);if(c&&confirm('Retirer cet exemplaire ?')){archive.copies=archive.copies.filter(x=>x.id!==id);save();render();const v=getVariant(c.variantId);if(v&&$('#modal-root .quick-preview'))openQuickView(v);toast('Exemplaire retiré.')}break;}case 'toggle-wish':{const existing=wishFor(id);if(existing){archive.wishlist=archive.wishlist.filter(w=>w.id!==existing.id);save();render();toast('Référence retirée de la wishlist.')}else wishlistModal(id);break;}case 'edit-wish':{const w=archive.wishlist.find(w=>w.id===id);if(w)wishlistModal(w.variantId,id);break;}case 'remove-image':modalImage='removed';$('#remove-image-value').value='yes';$('#f-image').value='';$('#image-preview').innerHTML='<span class="file-note">Photo retirée à l’enregistrement.</span>';break;case 'close-modal':closeModal();break;case 'export-json':exportJson();break;case 'export-csv':exportCsv();break;case 'reset-all':if(confirm('ATTENTION : effacer toutes tes archives locales ? Annule si tu n’as pas de sauvegarde.')&&confirm('Dernière confirmation : suppression de toutes les données RAPLI ARCHIVES sur cet appareil.')){archive=emptyState();save();navigate('dashboard');toast('Archive locale réinitialisée.')}break;}}
@@ -2712,6 +2748,7 @@ initialize().then(() => {
     refresh: () => render(),
     notify: (message, isError=false) => toast(message,isError),
     exportLocalSnapshot: () => {exportJson();return true;},
+    importLocalSnapshot: file => importJson(file),
     openBackups: () => {
       if(window.parent!==window) window.parent.postMessage({type:'RAPLI_SHOW_BACKUP_MANAGER'},location.origin);
       else navigate('tools');

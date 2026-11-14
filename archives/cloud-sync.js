@@ -542,6 +542,35 @@
     } else if(result === 'busy') notify('Sauvegarde ou actualisation déjà en cours.');
     else notify('Actualisation cloud indisponible.',true);
   }
+  function beginLocalImport() {
+    if(!context)throw Error('Catalogue Archives indisponible.');
+    if(uploading||connecting||refreshing||suspended)
+      throw Error('Une synchronisation est en cours. Réessaie après son achèvement.');
+    const previous={pending,conflict,error,status};
+    suspended=true;
+    clearTimeout(timer);
+    return previous;
+  }
+  function finishLocalImport(previous,success) {
+    if(!previous)return;
+    suspended=false;
+    if(success){
+      pending=false;
+      // A local import must not silently push over the existing Supabase state.
+      conflict=previous.conflict||(ready&&rowExists);
+      show(conflict
+        ?'JSON importé localement · choisis la version à conserver dans Sauvegardes'
+        :'JSON importé localement · cloud inchangé');
+    }else{
+      pending=previous.pending;
+      conflict=previous.conflict;
+      show(previous.status,previous.error);
+      if(ready&&pending&&!conflict){
+        clearTimeout(timer);
+        timer=setTimeout(()=>void flush(),1300);
+      }
+    }
+  }
   function changed() {
     if (!ready || conflict || suspended) return;
     pending = true;
@@ -626,6 +655,8 @@
     }),
     refreshBackupInfo,
     exportLocalSnapshot:()=>{if(!context?.exportLocalSnapshot)throw Error('Export Archives non disponible.');return context.exportLocalSnapshot();},
+    importLocalSnapshot:file=>{if(!context?.importLocalSnapshot)throw Error('Import Archives non disponible.');return context.importLocalSnapshot(file);},
+    beginLocalImport,finishLocalImport,
     enableManager:start,
     issuePairingCode:issueCode,
     redeemPairingCode:redeemCode,

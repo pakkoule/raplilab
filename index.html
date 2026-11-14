@@ -395,6 +395,8 @@ body[data-active="regatta"] .portal-header{background:linear-gradient(120deg,#10
           <p id="global-manager-dates-warning">La date locale est suivie depuis cette mise à jour ; les anciennes sauvegardes peuvent ne pas avoir d’horodatage.</p>
           <div class="global-manager-buttons">
             <button type="button" id="global-manager-export-local" class="global-manager-export">Exporter la version locale (JSON)</button>
+            <button type="button" id="global-manager-import-local" class="global-manager-export">Importer une sauvegarde locale (JSON)</button>
+            <input id="global-manager-import-file" type="file" accept=".json,application/json" hidden aria-label="Fichier de sauvegarde Rapli Archives">
           </div>
           <div class="global-manager-buttons">
             <button type="button" id="global-manager-restore" class="primary">Restaurer Archives depuis Supabase</button>
@@ -591,7 +593,7 @@ body[data-active="regatta"] .portal-header{background:linear-gradient(120deg,#10
     const managerConflict=document.getElementById('global-manager-conflict');
     let managerBusy=false,managerReady=false;
     const managerActionIds=['global-manager-enable','global-pair-create','global-pair-redeem',
-      'global-manager-save','global-manager-refresh','global-manager-export-local','global-manager-restore','global-manager-keep-local'];
+      'global-manager-save','global-manager-refresh','global-manager-export-local','global-manager-import-local','global-manager-restore','global-manager-keep-local'];
     const readableSaveDate=value=>{
       if(typeof value!=='string'||!value)return null;
       const date=new Date(value);
@@ -632,7 +634,7 @@ body[data-active="regatta"] .portal-header{background:linear-gradient(120deg,#10
       managerActionIds.forEach(id=>{
         const button=document.getElementById(id);
         if(button)button.disabled=managerBusy ||
-          (!state.ready&&id!=='global-manager-enable'&&!['global-manager-save','global-manager-refresh','global-manager-export-local'].includes(id)) ||
+          (!state.ready&&id!=='global-manager-enable'&&!['global-manager-save','global-manager-refresh','global-manager-export-local','global-manager-import-local'].includes(id)) ||
           (id==='global-pair-create'&&!state.primary) ||
           (state.remoteInfoOutdated&&['global-manager-restore','global-manager-keep-local'].includes(id));
       });
@@ -695,6 +697,21 @@ body[data-active="regatta"] .portal-header{background:linear-gradient(120deg,#10
         const started=api.exportLocalSnapshot();
         managerMessage(started?'Export JSON de la version locale lancé. Garde ce fichier avant toute restauration.':'Export local indisponible.',!started);
       }catch(error){managerMessage('Export local impossible : '+(error?.message||error),true);}
+    });
+    const importFile=document.getElementById('global-manager-import-file');
+    document.getElementById('global-manager-import-local').addEventListener('click',()=>{
+      // Native file picker must open directly during the user's Safari gesture.
+      importFile.click();
+    });
+    importFile.addEventListener('change',event=>{
+      const file=event.target.files?.[0];
+      event.target.value=''; // Allow retrying the same JSON.
+      if(!file)return;
+      void withManager('Vérification de la sauvegarde locale...',async api=>{
+        if(!api.importLocalSnapshot)throw Error('Import Archives indisponible.');
+        const result=await api.importLocalSnapshot(file);
+        return {message:result?.message||'Import terminé.',error:!!result?.error};
+      });
     });
     document.getElementById('global-manager-restore').addEventListener('click',()=>void withManager('Restauration Archives...',async api=>{
       const restored=await api.restoreFromCloud();

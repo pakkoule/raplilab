@@ -37,7 +37,7 @@
   const R=rank(r),N=fleet(r);
   if(!R||!N||N<2||R>N)return reason('Classement général final et effectif définitif requis.');
   if(!Object.prototype.hasOwnProperty.call(prestige,r.vsr))return reason('Catégorie VSR manquante.');
-  if(!name(r.boatClass))return reason('Classe de bateau manquante.');
+  // Sans classe, les critères historiques restent provisoires ; la prime attend la classe.
   const relative=35*(1-(R-1)/(N-1))**3;
   const previous=all.filter(x=>x.id!==r.id&&same(x,r)&&prior(x,r)&&completed(x,status)&&rank(x)&&fleet(x)>1&&rank(x)<=fleet(x))
     .sort((a,b)=>b.start.localeCompare(a.start)||String(b.id).localeCompare(String(a.id))).slice(0,5);
@@ -50,7 +50,7 @@
   const raw=round(relative+progress+prestige[r.vsr]+attendance+equip);
   const floor=R<=3?podium[r.vsr][R-1]:null;
   const threshold=Math.ceil(Math.max(1000,.25*(ref.median||0)));
-  const eligible=floor!==null&&N>=threshold;
+  const eligible=floor!==null&&N>=threshold&&!!name(r.boatClass);
   const bonus=eligible?floor:null;
   const final=Math.round(clamp(Math.max(raw,bonus||0),0,100));
   const flags=[];
@@ -60,7 +60,8 @@
   if(!Object.prototype.hasOwnProperty.call(gear,r.equipment))flags.push('Équipement inconnu — 10 points provisoires');
   if(floor!==null&&ref.count<3)flags.push('Prime provisoire — référence insuffisante');
   else if(floor!==null&&ref.count<5)flags.push('Prime — référence limitée');
-  if(floor!==null&&!eligible)flags.push('Prime non applicable — flotte trop petite');
+  if(!name(r.boatClass))flags.push('Classe de bateau inconnue — références historiques indisponibles');
+  if(floor!==null&&!eligible)flags.push(!name(r.boatClass)?'Prime en attente — classe de bateau manquante':'Prime non applicable — flotte trop petite');
   return {version:VERSION,kind:'race',available:true,value:final,raw,mention:mention(final),parts,
     weights:{relative:35,progress:20,vsr:10,attendance:15,equipment:20},
     bonus,bonusFloor:floor,bonusEligible:eligible,bonusThreshold:threshold,

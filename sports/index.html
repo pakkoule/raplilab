@@ -790,6 +790,23 @@ body::before{display:none!important}
 .rapli-collapsible-filters .toolbar-foot{padding:9px 12px 13px}
 @media(max-width:540px){.rapli-collapsible-filters>summary{padding:11px 12px}.rapli-collapsible-filters>summary span{font-size:9px}}
 </style>
+<style id="rapli-sports-metal-gradients">
+.collector-badge--number{background:var(--collector-gradient,var(--collector-bg,#192d4e))!important}
+.collector-gradient-settings{margin:12px 0;padding:12px;border:1px solid #cbd8e8;border-radius:11px;background:#f6faff}
+.collector-gradient-settings>label{display:grid;gap:6px;color:#3c658b;font:900 10px Poppins,sans-serif}
+.collector-gradient-settings .collector-tier-intro{margin:9px 0 0}
+#collectorGradientGlobal{margin-top:12px}
+#collectorGradientGlobal[hidden],.collector-tier-metal[hidden]{display:none!important}
+.collector-metal-editor{display:grid;grid-template-columns:minmax(0,2fr) minmax(115px,1fr);gap:9px;margin:10px 0}
+.collector-metal-editor>label{display:grid;gap:4px;font:850 9px Poppins,sans-serif;color:#5b7696}
+.collector-metal-colors{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:5px}
+.collector-metal-colors label{display:grid;gap:3px;flex:1 1 44px;color:#6882a1;font:850 9px Poppins,sans-serif;text-align:center}
+.collector-metal-colors label[hidden]{display:none}
+.collector-metal-colors input{width:100%;height:36px;border:1px solid #b8c9dc;border-radius:8px;padding:2px;background:#fff;cursor:pointer}
+.collector-tier-metal{grid-column:1/-1;border-top:1px dashed #c3d8e9;padding-top:9px}
+.collector-tier-metal>strong{font:900 9px Poppins,sans-serif;color:#597ba0}
+@media(max-width:530px){.collector-metal-editor{grid-template-columns:1fr 100px}.collector-metal-colors label{flex-basis:42px}}
+</style>
 </head>
 <body>
   <div class="app-shell">
@@ -916,6 +933,17 @@ body::before{display:none!important}
         <div id="collectorTierSettings" class="collector-tier-settings" hidden>
           <p class="collector-tier-intro">Le tirage total après « / » détermine automatiquement la couleur. Tu peux personnaliser chaque tranche.</p>
           <div id="collectorTierGrid" class="collector-tier-grid"></div>
+        </div>
+<div class="collector-gradient-settings">
+          <label>FINITION MÉTALLIQUE
+            <select class="select" id="collectorGradientMode">
+              <option value="solid">Fond uni (sans dégradé)</option>
+              <option value="uniform">Un même dégradé pour toutes les cartes</option>
+              <option value="tier">Un dégradé différent par numérotation</option>
+            </select>
+          </label>
+          <div id="collectorGradientGlobal" hidden></div>
+          <p class="collector-tier-intro">15 métaux prédéfinis. Chaque dégradé accepte jusqu’à 8 couleurs modifiables.</p>
         </div>
         <label class="collector-settings-check"><input id="collectorPremium" type="checkbox" checked> Effet foil / relief premium</label>
         <div class="collector-preview-title">APERÇU DES DIFFÉRENTES NUMÉROTATIONS</div>
@@ -1117,6 +1145,49 @@ body::before{display:none!important}
           }];
         }));
       }
+      const COLLECTOR_METALS=Object.freeze([{"key":"gold","label":"Or jaune","colors":["#654519","#be862f","#fff0a4","#b47a22","#f7db7c","#795321"]},{"key":"silver","label":"Argent brossé","colors":["#58616d","#c4d0dc","#f8fbff","#9daebf","#e9eef3","#606d7b"]},{"key":"rose","label":"Or rose","colors":["#8e5558","#c88784","#ffdad0","#b47172","#f2b4a6","#7b454c"]},{"key":"champagne","label":"Champagne","colors":["#8b7546","#ead19d","#fff4d0","#c3a66c","#f1dfbd","#8b774e"]},{"key":"platinum","label":"Platine","colors":["#75889b","#d4e5ed","#ffffff","#a5b6c2","#e3eef4","#768f9d"]},{"key":"chrome","label":"Chrome miroir","colors":["#2d4158","#d0e2f1","#ffffff","#50687b","#f5f9fc","#647b8f"]},{"key":"titanium","label":"Titane","colors":["#323e52","#7f90a1","#d2dae2","#687987","#b3c1cc","#364255"]},{"key":"palladium","label":"Palladium","colors":["#586976","#a5bcc6","#e9f6f9","#849ca8","#d9e9ed","#667c87"]},{"key":"bronze","label":"Bronze antique","colors":["#553a21","#9b6133","#e6b46b","#84542d","#d29a51","#523822"]},{"key":"copper","label":"Cuivre poli","colors":["#6e3828","#b96b45","#ffd5ac","#b25c39","#ed9e66","#723e29"]},{"key":"brass","label":"Laiton","colors":["#6f601e","#ba9e36","#fbdf79","#ac852b","#dfc266","#756322"]},{"key":"gunmetal","label":"Gunmetal","colors":["#1a222d","#435467","#8698a5","#314252","#6b7c89","#1b2833"]},{"key":"steel","label":"Acier bleui","colors":["#1c324d","#426586","#b3c9d8","#30516f","#86a7ba","#1d354d"]},{"key":"blackchrome","label":"Chrome noir","colors":["#0c141c","#374452","#7a8d9b","#1d2b38","#5b6f7e","#0d1824"]},{"key":"iridescent","label":"Acier irisé","colors":["#435c7b","#a4bfd4","#f5e9d0","#b0a2ce","#83aebf","#405a7a"]}]);
+      function collectorMetal(key){return COLLECTOR_METALS.find(x=>x.key===key)||COLLECTOR_METALS[0]}
+      function collectorGradientNormalize(raw={}){
+        const preset=COLLECTOR_METALS.some(x=>x.key===raw.preset)?raw.preset:'custom';
+        const base=collectorMetal(preset).colors;
+        const selected=Array.isArray(raw.colors)?raw.colors.slice(0,8).filter(x=>/^#[0-9a-f]{6}$/i.test(x)):[];
+        return {preset,colors:selected.length>=2?selected:base.slice()};
+      }
+      function collectorGradientCss(value){
+        const palette=collectorGradientNormalize(value).colors;
+        return 'linear-gradient(117deg,'+palette.join(',')+')';
+      }
+      function collectorGradientEditor(id,initial){
+        const value=collectorGradientNormalize(initial);
+        const count=value.colors.length;
+        const options=COLLECTOR_METALS.map(p=>'<option value="'+p.key+'"'+(p.key===value.preset?' selected':'')+'>'+p.label+'</option>').join('')+
+          '<option value="custom"'+(value.preset==='custom'?' selected':'')+'>Personnalisé</option>';
+        return '<div class="collector-metal-editor" data-metal-editor="'+id+'"><label>Métal'+
+          '<select class="select" id="collectorMetalPreset-'+id+'" data-metal-preset="'+id+'">'+options+'</select></label>'+
+          '<label>Nombre de couleurs<select class="select" id="collectorMetalCount-'+id+'" data-metal-count="'+id+'">'+
+          [2,3,4,5,6,7,8].map(n=>'<option value="'+n+'"'+(n===count?' selected':'')+'>'+n+'</option>').join('')+'</select></label>'+
+          '<div id="collectorMetalColors-'+id+'" class="collector-metal-colors">'+
+          Array.from({length:8},(_,i)=>'<label'+(i>=count?' hidden':'')+'>C'+(i+1)+
+            '<input type="color" data-metal-color="'+id+'" id="collectorMetalColor-'+id+'-'+i+'" value="'+(value.colors[i]||value.colors[count-1])+'"></label>').join('')+
+          '</div></div>';
+      }
+      function collectorGradientRead(id,fallback){
+        const count=Math.min(8,Math.max(2,Number($('collectorMetalCount-'+id)?.value)||6));
+        const colors=Array.from({length:count},(_,i)=>$('collectorMetalColor-'+id+'-'+i)?.value||
+          fallback.colors[Math.min(i,fallback.colors.length-1)]);
+        return collectorGradientNormalize({preset:$('collectorMetalPreset-'+id)?.value||fallback.preset,colors});
+      }
+      function collectorGradientStopVisibility(id){
+        const count=Math.min(8,Math.max(2,Number($('collectorMetalCount-'+id)?.value)||6));
+        document.querySelectorAll('#collectorMetalColors-'+id+' label').forEach((el,i)=>{el.hidden=i>=count;});
+      }
+      function collectorGradientSelectPreset(id,key){
+        const metal=COLLECTOR_METALS.find(x=>x.key===key);
+        if(!metal)return;
+        $('collectorMetalCount-'+id).value=String(metal.colors.length);
+        metal.colors.forEach((color,i)=>{$('collectorMetalColor-'+id+'-'+i).value=color;});
+        collectorGradientStopVisibility(id);
+      }
       function normalizedCollectorStyle(saved={}){
         return {
           numberFont:collectorFont(saved.numberFont),
@@ -1125,7 +1196,11 @@ body::before{display:none!important}
           foreground:validCollectorColor(saved.foreground,COLLECTOR_DEFAULTS.foreground),
           premium:saved.premium!==false,
           byPrintRun:saved.byPrintRun===true,
-          tierColors:collectorColors(saved.tierColors)
+          tierColors:collectorColors(saved.tierColors),
+          gradientMode:['uniform','tier'].includes(saved.gradientMode)?saved.gradientMode:'solid',
+          gradientGlobal:collectorGradientNormalize(saved.gradientGlobal||{preset:'gold',colors:collectorMetal('gold').colors}),
+          gradientTiers:Object.fromEntries(COLLECTOR_TIERS.map(t=>[t.key,
+            collectorGradientNormalize(saved.gradientTiers?.[t.key]||{preset:'gold',colors:collectorMetal('gold').colors})]))
         };
       }
       function collectorStyle(){
@@ -1141,7 +1216,9 @@ body::before{display:none!important}
           const configured=style.byPrintRun&&tier?style.tierColors?.[tier.key]:null;
           const background=validCollectorColor(configured?.background,style.background);
           const foreground=validCollectorColor(configured?.foreground,style.foreground);
-          badges+=`<span class="collector-badge collector-badge--number ${'font-'+collectorFont(style.numberFont)}" style="--collector-bg:${background};--collector-ink:${foreground}" aria-label="Carte numérotée ${safeText(card.serial)} sur ${safeText(card.printRun)}"><span class="collector-badge-main"><span>${safeText(card.serial)}</span><span class="collector-slash">/</span><span>${safeText(card.printRun)}</span></span><span class="collector-badge-caption">SERIAL NUMBER</span></span>`;
+          const metallic=style.gradientMode==='uniform'?collectorGradientCss(style.gradientGlobal):
+            style.gradientMode==='tier'&&tier?collectorGradientCss(style.gradientTiers[tier.key]):'';
+          badges+=`<span class="collector-badge collector-badge--number ${'font-'+collectorFont(style.numberFont)}" style="--collector-bg:${background};--collector-ink:${foreground};${metallic?'--collector-gradient:'+metallic+';':''}" aria-label="Carte numérotée ${safeText(card.serial)} sur ${safeText(card.printRun)}"><span class="collector-badge-main"><span>${safeText(card.serial)}</span><span class="collector-slash">/</span><span>${safeText(card.printRun)}</span></span><span class="collector-badge-caption">SERIAL NUMBER</span></span>`;
         }
         if(rookie){
           const logo=logoFor('rookie',card.sport);
@@ -1163,12 +1240,17 @@ body::before{display:none!important}
         return normalizedCollectorStyle({
           numberFont:$('collectorNumberFont').value,rookieFont:$('collectorRookieFont').value,
           background:$('collectorBackground').value,foreground:$('collectorForeground').value,
-          premium:$('collectorPremium').checked,byPrintRun:$('collectorByPrintRun').checked,tierColors
+          premium:$('collectorPremium').checked,byPrintRun:$('collectorByPrintRun').checked,tierColors,
+          gradientMode:$('collectorGradientMode').value,
+          gradientGlobal:collectorGradientRead('global',collectorStyle().gradientGlobal),
+          gradientTiers:Object.fromEntries(COLLECTOR_TIERS.map(t=>[t.key,collectorGradientRead(t.key,collectorStyle().gradientTiers[t.key])]))
         });
       }
       function updateCollectorPreview(){
         const style=collectorStyleFromForm();
-        $('collectorTierSettings').hidden=!style.byPrintRun;
+        $('collectorTierSettings').hidden=!style.byPrintRun&&style.gradientMode!=='tier';
+        $('collectorGradientGlobal').hidden=style.gradientMode!=='uniform';
+        document.querySelectorAll('.collector-tier-metal').forEach(row=>{row.hidden=style.gradientMode!=='tier';});
         const samples=COLLECTOR_TIERS.map(tier=>{
           const preview={numbered:true,serial:'1',printRun:String(tier.run),rookie:false,sport:'__preview__'};
           return '<div class="collector-preview-sample"><small>'+tier.label+'</small>'+collectorBadgeMarkup(preview,style)+'</div>';
@@ -1185,11 +1267,13 @@ body::before{display:none!important}
         $('collectorForeground').value=style.foreground;
         $('collectorPremium').checked=style.premium;
         $('collectorByPrintRun').checked=style.byPrintRun;
+        $('collectorGradientMode').value=style.gradientMode;
+        $('collectorGradientGlobal').innerHTML=collectorGradientEditor('global',style.gradientGlobal);
         $('collectorTierGrid').innerHTML=COLLECTOR_TIERS.map(tier=>{
           const colors=style.tierColors[tier.key];
           return '<div class="collector-tier-entry"><strong>'+tier.label+'</strong>'+
             '<label>FOND<input type="color" id="collectorTierBg-'+tier.key+'" data-collector-color value="'+colors.background+'" aria-label="Fond '+tier.label+'"></label>'+
-            '<label>TEXTE<input type="color" id="collectorTierInk-'+tier.key+'" data-collector-color value="'+colors.foreground+'" aria-label="Texte et contour '+tier.label+'"></label></div>';
+            '<label>TEXTE<input type="color" id="collectorTierInk-'+tier.key+'" data-collector-color value="'+colors.foreground+'" aria-label="Texte et contour '+tier.label+'"></label>'+'<div class="collector-tier-metal" hidden><strong>DÉGRADÉ MÉTALLIQUE</strong>'+collectorGradientEditor(tier.key,style.gradientTiers[tier.key])+'</div></div>';
         }).join('');
         updateCollectorPreview();
       }
@@ -1651,6 +1735,22 @@ body::before{display:none!important}
       ['collectorBackground','collectorForeground'].forEach(id=>$(id).addEventListener('input',updateCollectorPreview));
       $('collectorTierGrid').addEventListener('input',event=>{
         if(event.target.matches('[data-collector-color]'))updateCollectorPreview();
+      });
+      $('collectorGradientMode').addEventListener('change',updateCollectorPreview);
+      $('collectorSettingsPanel').addEventListener('input',event=>{
+        if(event.target.matches('[data-metal-color]')){
+          $('collectorMetalPreset-'+event.target.dataset.metalColor).value='custom';
+          updateCollectorPreview();
+        }
+      });
+      $('collectorSettingsPanel').addEventListener('change',event=>{
+        const el=event.target;
+        if(el.matches('[data-metal-preset]'))collectorGradientSelectPreset(el.dataset.metalPreset,el.value);
+        if(el.matches('[data-metal-count]')){
+          $('collectorMetalPreset-'+el.dataset.metalCount).value='custom';
+          collectorGradientStopVisibility(el.dataset.metalCount);
+        }
+        if(el.matches('[data-metal-preset],[data-metal-count],[data-metal-color]'))updateCollectorPreview();
       });
       $('collectorTierGrid').addEventListener('change',event=>{
         if(event.target.matches('[data-collector-color]'))updateCollectorPreview();

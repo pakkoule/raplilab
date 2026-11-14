@@ -33,6 +33,7 @@
       <div class="counter"><strong id="count-live">0</strong><span>EN COURS</span></div>
       <div class="counter"><strong id="count-finished">0</strong><span>TERMINÉES</span></div>
       <div class="counter"><strong id="count-dnf">0</strong><span>DNF</span></div>
+      <div class="counter"><strong id="count-record">0</strong><span>RECORDS</span></div>
     </div>
     <button type="button" class="btn primary" id="new-race">＋ AJOUTER UNE COURSE</button>
   </section>
@@ -44,7 +45,7 @@
   <div id="races-panel" role="tabpanel" aria-labelledby="view-races">
   <section class="filters" aria-label="Filtres de la collection">
     <label class="search">RECHERCHE<input id="search" type="search" placeholder="Course, bateau, année…" autocomplete="off"></label>
-    <label>STATUT<select id="filter-status"><option value="">Toutes les courses</option><option value="live">En cours</option><option value="finished">Terminées</option><option value="planned">À venir</option><option value="dnf">DNF · Abandon</option></select></label>
+    <label>STATUT<select id="filter-status"><option value="">Toutes les courses</option><option value="live">En cours</option><option value="finished">Terminées</option><option value="planned">À venir</option><option value="dnf">DNF · Abandon</option><option value="record">Courses record</option></select></label>
     <label>CATÉGORIE VSR<select id="filter-vsr"><option value="">Toutes les catégories</option><option value="hc">Hors Catégorie</option><option value="vsr1">VSR 1</option><option value="vsr2">VSR 2</option><option value="vsr3">VSR 3</option></select></label>
     <label>CLASSE<select id="filter-class"><option value="">Toutes les classes</option></select></label>
     <label>TRIER PAR<select id="sort"><option value="start">Départ récent → ancien</option><option value="vsr">VSR · importance</option><option value="recent">Modifications récentes</option><option value="old">Ajout ancien</option><option value="name">Nom A → Z</option></select></label>
@@ -87,7 +88,7 @@
         <label>CATÉGORIE VSR<select id="pdf-vsr"><option value="">Toutes les catégories</option><option value="hc">Hors Catégorie</option><option value="vsr1">VSR 1</option><option value="vsr2">VSR 2</option><option value="vsr3">VSR 3</option></select></label>
         <label>CLASSE DE BATEAU<select id="pdf-class"><option value="">Toutes les classes</option></select></label>
         <label>NOM DU BATEAU<select id="pdf-boat"><option value="">Tous les bateaux</option></select></label>
-        <label>STATUT<select id="pdf-status"><option value="">Tous les statuts</option><option value="finished">Terminées</option><option value="live">En cours</option><option value="planned">À venir</option><option value="dnf">DNF · Abandon</option></select></label>
+        <label>STATUT<select id="pdf-status"><option value="">Tous les statuts</option><option value="finished">Terminées</option><option value="live">En cours</option><option value="planned">À venir</option><option value="dnf">DNF · Abandon</option><option value="record">Courses record</option></select></label>
         <label>ORDRE DU RAPPORT<select id="pdf-order"><option value="vsr">Importance VSR puis date</option><option value="date">Date récente puis ancienne</option></select></label>
       </div>
       <div class="pdf-preview-count"><strong id="pdf-match-count">0</strong><span>COURSES DANS LE RAPPORT</span></div>
@@ -102,7 +103,7 @@
     <header class="dialog-head"><h2 id="dialog-title">AJOUTER UNE COURSE</h2><button type="button" class="close" data-close aria-label="Fermer">×</button></header>
     <div class="dialog-scroll">
       <div class="fields">
-        <label>TYPE DE FICHE<select id="race-kind"><option value="race">Course / Étape</option><option value="event">Compétition à étapes (parent)</option></select></label>
+        <label>TYPE DE FICHE<select id="race-kind"><option value="race">Course / Étape</option><option value="event">Compétition à étapes (parent)</option><option value="record">Course record</option></select></label>
         <label>COMPÉTITION PARENTE<select id="race-event-id"><option value="">Aucune · course indépendante</option></select></label>
         <label class="wide" id="race-event-controls"><input id="race-event-closed" type="checkbox"><span>Compétition clôturée et classement général final publié</span></label>
         <label class="wide" id="race-joker-control"><input id="race-joker" type="checkbox"><span>Étape Joker · exclue de la note globale de la compétition</span></label>
@@ -121,6 +122,12 @@
           </div>
           <input type="hidden" id="race-duration">
           <p class="field-help" id="duration-help">Durée précise à la seconde · L’arrivée est calculée automatiquement.</p>
+        </fieldset>
+        <fieldset class="record-attempts wide" id="race-record-attempts" hidden>
+          <legend>TENTATIVES DE RECORD</legend>
+          <p class="field-help">Ajoute autant de tentatives que nécessaire. Le meilleur temps est calculé uniquement parmi les tentatives terminées. Une tentative avortée peut être enregistrée sans temps.</p>
+          <div id="record-attempts-list"></div>
+          <button type="button" class="btn secondary record-add-btn" id="record-add-attempt">＋ AJOUTER UNE TENTATIVE</button>
         </fieldset>
         <label class="arrival-field">DATE D’ARRIVÉE <span class="computed-label">AUTO</span><input id="race-end" type="date" readonly aria-describedby="arrival-feedback"></label>
         <label class="arrival-field">HEURE D’ARRIVÉE <span class="computed-label">AUTO</span><input id="race-end-time" type="time" step="1" readonly aria-describedby="arrival-feedback"></label>
@@ -179,6 +186,7 @@
  <div id="score-recalc-body" class="score-dialog-body"></div>
  <footer class="dialog-footer"><button type="button" class="btn subtle" data-recalc-close>ANNULER</button><span class="fill"></span><button type="button" class="btn primary" id="score-recalc-confirm">VALIDER LES CHANGEMENTS</button></footer>
 </dialog>
+<script defer src="record-attempts.js"></script>
 <script defer src="score.js"></script>
 <script defer src="app.js"></script>
 <script defer src="../shared/photo-zoom.js"></script>

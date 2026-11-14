@@ -1664,6 +1664,41 @@ main#main-content:has(.dragon-heading) .archive-module-heading.dragon-heading{ma
  .group-grid .edition-tile .group-copy{top:7px;right:44px;width:34px;height:34px}
 }
 </style>
+
+<style id="rapli-archives-edition-name-fit">
+/* Edition labels only: smaller in the list; make long names span the full row on iPhone. */
+.module-settings .tax-row-edition input[data-setting-part="label"]{
+ font-size:12px!important;letter-spacing:-.2px;min-width:0;
+}
+@media(max-width:740px){
+ .module-settings .tax-row-edition input[data-setting-part="label"]{
+  font-size:13px!important;letter-spacing:-.3px;
+ }
+ /* Keep 16px on focus to avoid Safari automatically zooming text inputs. */
+ .module-settings .tax-row-edition input[data-setting-part="label"]:focus{
+  font-size:16px!important;letter-spacing:normal;
+ }
+ .module-settings .tax-row-edition-long{
+  grid-template-columns:minmax(0,1fr) 34px 62px 36px;
+  gap:5px 4px;margin:8px 0 10px;
+ }
+ .module-settings .tax-row-edition-long input[data-setting-part="label"]{
+  grid-column:1/-1;width:100%;height:39px;min-height:39px;
+  padding:5px 9px;
+ }
+ .module-settings .tax-row-edition-long input[data-setting-part="icon"]{
+  grid-column:1;min-width:0;
+ }
+ .module-settings .tax-row-edition-long input[type="color"]{grid-column:2}
+ .module-settings .tax-row-edition-long .file-logo{grid-column:3}
+ .module-settings .tax-row-edition-long .tax-remove{grid-column:4}
+}
+@media(max-width:390px){
+ .module-settings .tax-row-edition-long{
+  grid-template-columns:minmax(0,1fr) 31px 53px 34px;
+ }
+}
+</style>
 </head>
 <body>
 <div class="app-shell">
@@ -2253,7 +2288,7 @@ function showSettingsContent(){
   const entries=settings.taxonomies[field]||[];
   const rows=entries.map((item,i)=>{
    const imageControl=field==='artwork'?`<div class="artwork-settings-control"><label class="artwork-file-label" title="Choisir ou remplacer la miniature"><span class="artwork-thumb artwork-settings-thumb">${artworkThumbMarkup(item)}</span><span class="artwork-choose-text">Changer miniature</span><input type="file" accept="image/*,.heic,.heif" data-artwork-file="${i}" aria-label="Choisir ou remplacer la miniature de ${attr(item.label||'cet artwork')}"></label>${item.preview?`<button type="button" class="artwork-remove-preview" data-action="artwork-preview-remove" data-index="${i}" title="Retirer la miniature" aria-label="Retirer la miniature de ${attr(item.label)}">×</button>`:''}</div>`:'';
-   return `<div class="tax-row ${field==='artwork'?'tax-row-artwork':''}"><input type="text" data-setting-field="${field}" data-index="${i}" data-setting-part="label" value="${attr(item.label)}" placeholder="Nom" aria-label="Nom ${h(label)}"><input type="text" data-setting-field="${field}" data-index="${i}" data-setting-part="icon" value="${attr(item.icon||'')}" placeholder="Icône" aria-label="Icône ou drapeau" maxlength="16"><input type="color" data-setting-field="${field}" data-index="${i}" data-setting-part="color" value="${/^#[a-f0-9]{6}$/i.test(item.color||'')?item.color:'#99b9aa'}" aria-label="Couleur"><label class="file-logo" title="Importer un logo">${item.logo?'✓ Logo':'↑ Logo'}<input type="file" accept="image/*" data-setting-logo="${field}" data-index="${i}"></label>${imageControl}<button type="button" class="tax-remove" data-action="tax-remove" data-field="${field}" data-index="${i}" title="Supprimer la valeur">×</button></div>`;
+   return `<div class="tax-row ${field==='artwork'?'tax-row-artwork':''} ${field==='edition'?'tax-row-edition':''} ${field==='edition'&&String(item.label||'').length>24?'tax-row-edition-long':''}"><input type="text" data-setting-field="${field}" data-index="${i}" data-setting-part="label" value="${attr(item.label)}" title="${attr(item.label)}" placeholder="Nom" aria-label="Nom ${h(label)}"><input type="text" data-setting-field="${field}" data-index="${i}" data-setting-part="icon" value="${attr(item.icon||'')}" placeholder="Icône" aria-label="Icône ou drapeau" maxlength="16"><input type="color" data-setting-field="${field}" data-index="${i}" data-setting-part="color" value="${/^#[a-f0-9]{6}$/i.test(item.color||'')?item.color:'#99b9aa'}" aria-label="Couleur"><label class="file-logo" title="Importer un logo">${item.logo?'✓ Logo':'↑ Logo'}<input type="file" accept="image/*" data-setting-logo="${field}" data-index="${i}"></label>${imageControl}<button type="button" class="tax-remove" data-action="tax-remove" data-field="${field}" data-index="${i}" title="Supprimer la valeur">×</button></div>`;
   }).join('');
   const intro=field==='artwork'?'Importe une miniature carrée pour chaque artwork : elle apparaîtra dans le filtre et sur les cartes.':'Les icônes peuvent être des emoji (🇫🇷, ★…) ou remplacées par un logo téléchargé.';
   return `<section class="settings-section"><h3>${h(label)}</h3><p class="settings-intro">${intro}</p>${rows}<button class="tax-add" type="button" data-action="tax-add" data-field="${field}">＋ Ajouter une valeur</button></section>`;

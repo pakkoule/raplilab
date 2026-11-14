@@ -254,7 +254,7 @@ function card(r){
  (r.kind==='record'?recordCardContent(r):'')+
  (!score.available&&r.kind!=='record'&&(status==='dnf'||status==='finished')?'<p class="score-pending">'+safe(score.reason||'Note en attente')+'</p>':'')+
  (rankBlocks?'<div class="rank-grid">'+rankBlocks+'</div>':'')+
- '<div class="shots"><div class="shot"><label>CLASSEMENT FINAL</label><div class="shot-box image-preview">'+imageTag(r.result,'Classement '+r.name)+'</div></div>'+
+ '<div class="shots"><div class="shot"><label>'+(r.kind==='record'?'CAPTURE DU RECORD':'CLASSEMENT FINAL')+'</label><div class="shot-box image-preview">'+imageTag(r.result,'Classement '+r.name)+'</div></div>'+
  '<div class="shot"><label>TRACÉ</label><div class="shot-box image-preview">'+imageTag(r.route,'Tracé '+r.name)+'</div></div></div>'+
  '<div class="card-actions"><button type="button" class="btn secondary" data-action="edit">MODIFIER</button><button type="button" class="btn subtle" data-action="png">↓ PNG</button>'+
  (r.upcoming?'<button type="button" class="btn calendar-btn" data-action="calendar" title="Ajouter cette course à Apple Calendrier">📅 CALENDRIER</button>':'')+
@@ -897,6 +897,7 @@ async function exportPNG(r){
   // Compact editorial export: only the colour strip, poster and race information.
   // Images keep their own ratio; the main artwork stays inside a 16:9 area.
   const W=1200,STRIP=8,PHOTO=675,SHOT_H=(ranking||route)?434:0;
+  const recordEntries=r.kind==='record'?recordEngine.normalize(r.attempts):[];
   const c=document.createElement('canvas');
   c.width=W;
   const ctx=c.getContext('2d');if(!ctx)throw Error('Canvas indisponible');
@@ -928,7 +929,7 @@ async function exportPNG(r){
   const datesTop=infoLead+(r.boat?44:24);
   const rankTop=datesTop+81;
   // The ranking section is directly below the data, with a small fixed gutter.
-  const INFO=rankTop+256;
+  const INFO=r.kind==='record'?rankTop+Math.max(180,125+recordEntries.length*33):rankTop+256;
   const height=STRIP+PHOTO+INFO+SHOT_H;
   c.height=height;
   ctx.fillStyle='#fff';ctx.fillRect(0,0,W,height);
@@ -974,7 +975,25 @@ async function exportPNG(r){
   if(moneyNumber(r.gainCredits))
    ctx.fillText('CRÉDITS VR : +'+Number(r.gainCredits).toLocaleString('fr-FR'),618,y+datesTop+55,515);
 
-  const ranks=[
+  if(r.kind==='record'){
+   const stats=recordEngine.summary(recordEntries),top=y+rankTop;
+   ctx.fillStyle='#193d63';ctx.fillRect(left,top,right-left,84);
+   ctx.fillStyle='#b8d5eb';ctx.font='800 17px Poppins,sans-serif';
+   ctx.fillText('COURSE RECORD · '+stats.total+' TENTATIVES · '+stats.aborted+' AVORTÉES',left+20,top+27,right-left-40);
+   ctx.fillStyle='#fff';ctx.font='900 27px "Courier Prime",monospace';
+   ctx.fillText(stats.bestSeconds!==null?'MEILLEUR TEMPS · '+recordEngine.format(stats.bestSeconds):'AUCUN TEMPS VALIDÉ',left+20,top+63,right-left-40);
+   recordEntries.forEach((attempt,i)=>{
+    const topRow=top+100+i*33;
+    ctx.fillStyle=attempt.aborted?'#fff1ee':attempt.id===stats.bestId?'#e9f8f0':'#f1f6fa';
+    ctx.fillRect(left,topRow,right-left,29);
+    ctx.fillStyle='#315971';ctx.font='800 15px Poppins,sans-serif';
+    ctx.fillText('TENTATIVE '+(i+1),left+12,topRow+20,250);
+    ctx.textAlign='right';ctx.fillStyle=attempt.aborted?'#a64b3b':'#1d5d7f';
+    ctx.fillText(attempt.aborted?'AVORTÉE':attempt.seconds!==null?recordEngine.format(attempt.seconds):'EN ATTENTE',right-12,topRow+20,760);
+    ctx.textAlign='left';
+   });
+  }else{
+   const ranks=[
    ['🏆','CLASSEMENT GÉNÉRAL',r.rank,r.rankTotal,podiumMedalFor(r,'rank','rankTotal')],
    ['🇫🇷','NATIONAL',r.rankNational,r.rankNationalTotal,podiumMedalFor(r,'rankNational','rankNationalTotal')],
    ['🇨🇶','DÉPARTEMENTAL',r.rankDepartment,r.rankDepartmentTotal,podiumMedalFor(r,'rankDepartment','rankDepartmentTotal')],
@@ -1026,10 +1045,11 @@ async function exportPNG(r){
    const x=left+(i%2===0?565:0),row=Math.floor((i-1)/2);
    drawRank(i,x,y+rankTop+90+row*80,543,70);
   }
+  }
   if(SHOT_H){
    const shotY=y+INFO;
    ctx.fillStyle='#e7f3f5';ctx.fillRect(0,shotY,W,SHOT_H);
-   for(const [i,image,label] of [[0,ranking,'CLASSEMENT FINAL'],[1,route,'TRACÉ DE COURSE']]){
+   for(const [i,image,label] of [[0,ranking,r.kind==='record'?'CAPTURE DU RECORD':'CLASSEMENT FINAL'],[1,route,'TRACÉ DE COURSE']]){
     const x=30+i*582;
     ctx.fillStyle='#244b5e';ctx.font='800 20px Poppins,sans-serif';
     ctx.fillText(label,x,shotY+29);

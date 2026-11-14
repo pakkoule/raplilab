@@ -18,29 +18,19 @@
 <body>
 <main class="shell">
   <div class="topline" aria-hidden="true"></div>
-  <section class="utility">
-    <span class="utility-title">RAPLI REGATTA <small>/ MON JOURNAL DE COURSE</small></span>
-    <div class="cloud-actions">
-      <button type="button" class="btn subtle tiny" id="recalculate-scores" title="Comparer les notes figées avec un nouveau calcul">↻ RECALCULER NOTES</button>
-      <button type="button" class="btn primary tiny" id="export-general-pdf">↓ PDF GLOBAL</button>
-    </div>
-  </section>
-  <section class="summary">
-    <div class="counters">
-      <div class="counter"><strong id="count-total">0</strong><span>COURSES</span></div>
-      <div class="counter"><strong id="count-live">0</strong><span>EN COURS</span></div>
-      <div class="counter"><strong id="count-finished">0</strong><span>TERMINÉES</span></div>
-      <div class="counter"><strong id="count-dnf">0</strong><span>DNF</span></div>
-      <div class="counter"><strong id="count-record">0</strong><span>RECORDS</span></div>
-    </div>
-    <button type="button" class="btn primary" id="new-race">＋ AJOUTER UNE COURSE</button>
-  </section>
   <nav class="workspace-tabs" role="tablist" aria-label="Vues Rapli Regatta">
     <button type="button" id="view-races" class="workspace-tab active" role="tab" aria-selected="true" aria-controls="races-panel">COURSES</button>
     <button type="button" id="view-stats" class="workspace-tab" role="tab" aria-selected="false" aria-controls="stats-panel" tabindex="-1">STATISTIQUES</button>
-    <button type="button" id="view-colors" class="workspace-tab" role="tab" aria-selected="false" aria-controls="colors-panel" tabindex="-1">COULEURS DES CLASSES</button>
+    <button type="button" id="view-colors" class="workspace-tab regatta-settings-tab" role="tab" aria-selected="false" aria-controls="colors-panel" tabindex="-1" hidden>COULEURS DES CLASSES</button>
   </nav>
   <div id="races-panel" role="tabpanel" aria-labelledby="view-races">
+  <div class="regatta-catalogue-controls">
+    <div class="cloud-actions regatta-inline-actions" role="group" aria-label="Actions sur les courses">
+      <button type="button" class="btn subtle tiny regatta-icon-action" id="recalculate-scores" aria-label="Recalculer les notes" title="Recalculer les notes">↻</button>
+      <button type="button" class="btn primary tiny regatta-icon-action" id="new-race" aria-label="Ajouter une course" title="Ajouter une course">＋</button>
+      <button type="button" class="btn subtle tiny regatta-icon-action regatta-pdf-action" id="export-general-pdf" aria-label="PDF global" title="Exporter le PDF global">PDF</button>
+      <button type="button" class="btn subtle tiny regatta-icon-action" id="manage-class-colors" aria-label="Gérer les couleurs des classes" title="Gérer les couleurs des classes"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3v6M21 12h-6M12 21v-6M3 12h6"/><circle cx="12" cy="12" r="2.2"/></svg></button>
+    </div>
   <details class="regatta-filter-disclosure" id="regattaFilterDisclosure"><summary>☷ FILTRES ET TRI <span>Afficher les options de recherche</span></summary>
   <section class="filters" aria-label="Filtres de la collection">
     <label class="search">RECHERCHE<input id="search" type="search" placeholder="Course, bateau, année…" autocomplete="off"></label>
@@ -49,7 +39,7 @@
     <label>CLASSE<select id="filter-class"><option value="">Toutes les classes</option></select></label>
     <label>TRIER PAR<select id="sort"><option value="start">Départ récent → ancien</option><option value="vsr">VSR · importance</option><option value="recent">Modifications récentes</option><option value="old">Ajout ancien</option><option value="name">Nom A → Z</option></select></label>
   </section>
-  </details>
+  </details></div>
   <div class="collection-head"><strong>MES COURSES <span class="mini-accent">/ RACE ARCHIVE</span></strong><span id="result-count"></span></div>
   <div class="regatta-pagination-host" id="regatta-pagination-top" aria-label="Pagination supérieure des courses"></div>
   <section id="cards" class="cards" aria-live="polite"></section>
@@ -61,11 +51,18 @@
   </div>
   </div>
   <section id="stats-panel" class="stats-panel" role="tabpanel" aria-labelledby="view-stats" hidden>
+    <div class="counters" role="group" aria-label="Compteurs de courses, mis à jour avec la collection">
+      <div class="counter"><strong id="count-total">0</strong><span>COURSES</span></div>
+      <div class="counter"><strong id="count-live">0</strong><span>EN COURS</span></div>
+      <div class="counter"><strong id="count-finished">0</strong><span>TERMINÉES</span></div>
+      <div class="counter"><strong id="count-dnf">0</strong><span>DNF</span></div>
+      <div class="counter"><strong id="count-record">0</strong><span>RECORDS</span></div>
+    </div>
     <div class="stats-intro"><strong>STATISTIQUES DE MES COURSES</strong><span id="stats-summary">Collection personnelle</span></div>
     <div id="stats-content" class="stats-content"></div>
   </section>
   <section id="colors-panel" class="colors-panel" role="tabpanel" aria-labelledby="view-colors" hidden>
-    <div class="colors-heading"><strong>COULEURS DES TAGS</strong><p>Réglages communs à toutes les courses : bateaux et catégories VSR. Les couleurs sont conservées dans les sauvegardes.</p></div>
+    <div class="colors-heading"><strong>COULEURS DES TAGS</strong><button type="button" class="btn subtle tiny" id="colors-back-races">← Retour aux courses</button><p>Réglages communs à toutes les courses : bateaux et catégories VSR. Les couleurs sont conservées dans les sauvegardes.</p></div>
     <div class="color-global">
       <label for="default-class-color">COULEUR GLOBALE DES TAGS <input type="color" id="default-class-color" value="#008fa1" aria-label="Couleur globale des classes de bateaux"></label>
       <p>Modifier cette couleur l'applique à <strong>toutes les courses</strong> et réinitialise les couleurs spécifiques. Tu peux ensuite attribuer une couleur différente à une classe ci-dessous.</p>

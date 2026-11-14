@@ -260,8 +260,9 @@ async function replaceRows(next){if(!db){localStorage.setItem('rapli-regatta-v1'
    const live=st==='live'||st==='record-live';
    if(!live&&st!=='planned')return null;
    const attempt=row.kind==='record'?recordEngine.latestStart(row.attempts):null;
-   const start=localDateTime(attempt?.date||row.start,attempt?.time||row.startTime);
-   return start===null?null:{mode:live?'elapsed':'countdown',start};
+   const date=attempt?.date||row.start,time=attempt?.time||row.startTime;
+   const start=time?localDateTime(date,time):null;
+   return {mode:live?'elapsed':'countdown',start};
  }
  function formatRaceClock(seconds){
    const sec=Math.floor(Math.max(0,seconds)),days=Math.floor(sec/86400);
@@ -280,6 +281,9 @@ async function replaceRows(next){if(!db){localStorage.setItem('rapli-regatta-v1'
  function raceClockMarkup(row){
    const clock=raceClockInfo(row);
    if(!clock)return '';
+   if(clock.start===null)return '<div class="race-live-clock '+(clock.mode==='countdown'?'race-live-clock--countdown':'')+
+     '"><span aria-hidden="true">⏱</span><span>'+(clock.mode==='countdown'?'DÉPART À VENIR':'EN COURS')+'</span>'+
+     '<strong>DÉPART À RENSEIGNER</strong></div>';
    return '<div class="race-live-clock '+(clock.mode==='countdown'?'race-live-clock--countdown':'')+'">'+
       '<span aria-hidden="true">⏱</span><span>'+(clock.mode==='countdown'?'DÉPART DANS':'EN COURSE DEPUIS')+'</span>'+
       '<strong data-race-clock="'+clock.mode+'" data-start="'+clock.start+'">'+

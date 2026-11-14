@@ -421,3 +421,38 @@ dialog form{border-radius:18px;background:#fff;display:flex;flex-direction:colum
 @media(max-width:580px){.score-dialog-body{padding:13px}}
 
 .fields label[hidden],.fields #race-event-controls[hidden],.fields #race-joker-control[hidden]{display:none!important}
+
+/* Courses record : tentatives distinctes, temps et abandons, sans mélange avec les résultats VSR. */
+.record-attempts{border:1px solid #c8d9e7;border-radius:12px;background:#f6f9fd;padding:13px;min-width:0}
+.record-attempts legend{padding:0 6px;color:#305b84;font-size:11px;font-weight:900;letter-spacing:.04em}
+.record-attempts>.field-help{font-size:10px;line-height:1.5;color:#6a8397;margin:3px 0 12px}
+#record-attempts-list{display:grid;gap:10px}
+.record-attempt-row{background:#fff;border:1px solid #d5e3ec;border-radius:11px;padding:12px;min-width:0}
+.record-attempt-row.is-aborted{background:#fff8f7;border-color:#e9cfc9}
+.record-attempt-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+.record-attempt-head strong{font-size:11px;font-weight:900;color:#284d71}
+.record-attempt-head .btn{flex:none}
+.record-time-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+.fields .record-time-grid label{font-size:9px;gap:3px;min-width:0}
+.fields .record-time-grid input{padding:7px 2px;text-align:center;min-height:40px;font-size:16px;font-family:'Courier Prime','Courier New',monospace}
+.fields .record-abort-label{display:flex;flex-direction:row;align-items:center;gap:8px;margin-top:10px;font-size:11px;color:#a34535;font-weight:900;cursor:pointer}
+.fields .record-abort-label input{height:18px;width:18px;min-height:18px;flex:none;margin:0;accent-color:#af473a}
+.record-add-btn{margin-top:12px;width:100%}
+.card.record{border-color:#b9d0e3}
+.card.record .badge-status{background:#245e91}
+.record-card{margin-top:13px}
+.record-card-summary{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px 10px;align-items:center;padding:11px;border-radius:9px;background:#eaf3fa;border:1px solid #d5e5f0}
+.record-card-summary>span{font-size:9px;font-weight:800;color:#62829d}
+.record-card-summary>strong{font-family:'Courier Prime','Courier New',monospace;font-size:13px;color:#1c5e86}
+.record-attempt-chips{display:grid;gap:6px;margin-top:8px}
+.record-attempt-chip{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 10px;background:#f5f9fc;border:1px solid #e2ebf3;border-radius:7px;font-size:10px}
+.record-attempt-chip>span{font-weight:800;color:#5f8093}
+.record-attempt-chip>strong{font-weight:900;color:#204f70;text-align:right;font-variant-numeric:tabular-nums}
+.record-attempt-chip.is-aborted{background:#fff4f2;border-color:#ebd5d0}
+.record-attempt-chip.is-aborted>strong{color:#ad4b3c}
+.record-attempt-chip.is-best{border-color:#85b7aa;background:#eef8f4}
+.record-attempt-chip.is-best>strong{color:#287b62}
+.fields #race-record-attempts[hidden],.fields .duration-field[hidden],.fields .rankings-editor[hidden],
+.fields .rewards-field[hidden],.fields .equipment-choice[hidden],.fields .arrival-field[hidden],
+.fields .arrival-feedback[hidden],.fields #race-participant-help[hidden]{display:none!important}
+@media(max-width:580px){.record-attempt-row{padding:9px}.record-time-grid{gap:4px}.fields .record-time-grid input{font-size:15px;padding:6px 1px}.record-card-summary>strong{font-size:11px}}

@@ -1,3 +1,15 @@
+# RapliLab — PR #1 (état au 14 novembre 2026)
+
+**Trois modules actifs :** Rapli Archives, Rapli Sports, Rapli Regatta.
+
+- Le portail conserve une **unique sauvegarde/actualisation globale** Supabase dans la barre d’onglets ; les en-têtes internes n’affichent plus leurs commandes cloud ou import/export JSON. Les exports fonctionnels (PNG, PDF, calendrier) restent disponibles.
+- Dans Rapli Regatta, chaque course utilise désormais le nom de bateau constant `Rapli LPDB` (tuiles et PNG inclus). Les fichiers Calendrier Apple `.ics` ajoutent `⛵️` au titre et l’emplacement « Virtual Regatta\n33 Avenue Émile Zola, 92100 Boulogne-Billancourt, France », sans description.
+- Les pages et ressources GitHub de **Rapli Stickers Lab**, **Rapli Tools** et **Rapli LP** ont été retirées. Le script `shared/retired-cleanup.js` supprime leurs données locales lors de l’ouverture du portail actualisé.
+- Les lignes Supabase `rapli_module_collections` des modules `stickers`, `tools` et `lp` ont été supprimées via migration appliquée. **Attention : 15 images privées (13 stickers, 2 LP) restent à supprimer par l’API Supabase Storage.** Elles ne doivent pas être supprimées directement dans les tables SQL du Storage.
+- L’historique de version conservé ci-dessous décrit des fonctionnalités anciennes qui ne sont plus présentes dans la PR actuelle.
+
+---
+
 # RAPLI TRIO V3.0 — Ergonomie des onglets
 
 Cette version part de V2.9 et conserve les trois applications et toutes les fonctions.

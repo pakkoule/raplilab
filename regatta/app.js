@@ -985,7 +985,7 @@ async function exportPNG(r){
   const datesTop=infoLead+(r.boat?44:24);
   const rankTop=datesTop+81;
   // The ranking section is directly below the data, with a small fixed gutter.
-  const INFO=r.kind==='record'?rankTop+Math.max(180,125+recordEntries.length*45):rankTop+256;
+  const INFO=r.kind==='record'?rankTop+Math.max(180,125+recordEntries.length*45+(r.recordClosed?265:0)):rankTop+256;
   const height=STRIP+PHOTO+INFO+SHOT_H;
   c.height=height;
   ctx.fillStyle='#fff';ctx.fillRect(0,0,W,height);
@@ -994,11 +994,11 @@ async function exportPNG(r){
   const posterY=STRIP;
   ctx.fillStyle='#e4f4f3';ctx.fillRect(0,posterY,W,PHOTO);
   contain(ctx,im,0,posterY,W,PHOTO);
-  if(r.upcoming||r.live||r.dnf){
-   ctx.fillStyle=r.dnf?'#aa4939':r.upcoming?'#176cce':'#eb007c';
+  if(r.upcoming||r.live||r.dnf||(r.kind==='record'&&r.recordClosed)){
+   ctx.fillStyle=r.kind==='record'&&r.recordClosed?'#315b61':r.dnf?'#aa4939':r.upcoming?'#176cce':'#eb007c';
    ctx.fillRect(30,posterY+22,330,43);
    ctx.font='900 19px Poppins,sans-serif';ctx.fillStyle='#fff';
-   ctx.fillText(r.dnf?'DNF · ABANDON':r.upcoming?'À VENIR':'COURSE EN COURS',44,posterY+51);
+   ctx.fillText(r.kind==='record'?(r.recordClosed?'RECORD CLÔTURÉ':'RECORD EN COURS'):r.dnf?'DNF · ABANDON':r.upcoming?'À VENIR':'COURSE EN COURS',44,posterY+51);
   }
   const y=STRIP+PHOTO;
   ctx.fillStyle='#123648';ctx.font='900 39px Poppins,sans-serif';
@@ -1052,6 +1052,23 @@ async function exportPNG(r){
     ctx.fillText(attempt.aborted?'AVORTÉE':attempt.seconds!==null?recordEngine.format(attempt.seconds):'EN ATTENTE',right-12,topRow+27,620);
     ctx.textAlign='left';
    });
+   if(r.recordClosed){
+    const headingTop=top+110+recordEntries.length*45;
+    ctx.fillStyle='#21566a';ctx.font='900 18px Poppins,sans-serif';
+    ctx.fillText('CLASSEMENTS FINAUX',left,headingTop+19);
+    const labels=['GÉNÉRAL','NATIONAL','DÉPARTEMENTAL','VILLE','TEAM'];
+    rankPairs.forEach(([place,total],i)=>{
+     const lineTop=headingTop+34+i*39;
+     ctx.fillStyle=i%2?'#edf5f7':'#f4f8fa';
+     ctx.fillRect(left,lineTop,right-left,35);
+     ctx.fillStyle='#5b778a';ctx.font='800 14px Poppins,sans-serif';
+     ctx.fillText(labels[i],left+14,lineTop+23,320);
+     ctx.fillStyle='#194c65';ctx.font='800 23px "Barlow Condensed","Arial Narrow",sans-serif';
+     ctx.textAlign='right';
+     ctx.fillText(rankDisplay(r[place],r[total])||'—',right-14,lineTop+24,530);
+     ctx.textAlign='left';
+    });
+   }
   }else{
    const ranks=[
    ['🏆','CLASSEMENT GÉNÉRAL',r.rank,r.rankTotal,podiumMedalFor(r,'rank','rankTotal')],

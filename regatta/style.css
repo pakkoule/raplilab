@@ -575,3 +575,46 @@ dialog form{border-radius:18px;background:#fff;display:flex;flex-direction:colum
   background:linear-gradient(100deg,#f60077 0%,#d34da4 22%,#238fbd 49%,#12c9be 76%,#142d40 100%)!important;
   box-shadow:0 2px 7px rgba(13,107,131,.18);
 }
+
+/* PR1 — compact filters and one personalization gear across Rapli modules. */
+.regatta-catalogue-controls{gap:7px;margin-bottom:9px}
+.regatta-inline-actions{gap:5px}
+.regatta-inline-actions .regatta-icon-action{width:37px;height:37px;min-height:37px;padding:0}
+.regatta-inline-actions .rapli-personalize-action{
+ background:#173d61!important;border:1px solid #426b92!important;
+ color:#fff!important;border-radius:10px!important;
+ box-shadow:0 3px 9px #08203e21!important;
+}
+.regatta-inline-actions .rapli-personalize-gear{width:19px;height:19px;stroke:currentColor;fill:none}
+.regatta-catalogue-controls>.regatta-filter-disclosure>summary{
+ min-height:37px;padding:7px 11px;font-size:10px
+}
+.regatta-catalogue-controls .regatta-filter-disclosure .filters{
+ gap:6px;padding:9px 10px;
+ grid-template-columns:minmax(170px,1.35fr) repeat(4,minmax(100px,1fr))
+}
+.regatta-catalogue-controls .regatta-filter-disclosure .filters label{gap:3px}
+.regatta-catalogue-controls .regatta-filter-disclosure .filters input,
+.regatta-catalogue-controls .regatta-filter-disclosure .filters select{
+ height:35px;min-height:35px;padding:6px 9px;font-size:12px
+}
+@media(max-width:780px){
+ .regatta-catalogue-controls .regatta-filter-disclosure .filters{
+  grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;padding:8px
+ }
+ .regatta-catalogue-controls .regatta-filter-disclosure .filters .search{grid-column:1/-1}
+ .regatta-catalogue-controls .regatta-filter-disclosure .filters input,
+ .regatta-catalogue-controls .regatta-filter-disclosure .filters select{font-size:16px}
+}
+@media(max-width:580px){
+ .regatta-catalogue-controls{gap:5px}
+ .regatta-inline-actions{gap:4px}
+ .regatta-inline-actions .regatta-icon-action{width:34px;height:35px;min-height:35px}
+ .regatta-catalogue-controls>.regatta-filter-disclosure>summary{
+  min-height:35px;padding:6px 8px;font-size:9px
+ }
+}
+@media(max-width:360px){
+ .regatta-inline-actions .regatta-icon-action{width:30px;height:33px;min-height:33px}
+ .regatta-catalogue-controls>.regatta-filter-disclosure>summary{min-height:33px;padding:5px 6px;font-size:8.5px}
+}

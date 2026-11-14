@@ -215,7 +215,7 @@ const scoreNow=r=>scoreEngine.scoreFor(r,rows,raceStatus);
 function scoreView(r){
  if(raceStatus(r)==='dnf')return {available:false,reason:'DNF — sans note'};
  const saved=r.scoreSnapshot;
- if(saved?.available&&raceStatus(r)==='finished')return {...saved,stored:true,stale:saved.signature!==scoreEngine.signature(r)};
+ if(saved?.available&&raceStatus(r)==='finished')return saved.kind!==r.kind?{available:false,reason:'Type de fiche modifié — recalcul nécessaire.'}:{...saved,stored:true,stale:saved.signature!==scoreEngine.signature(r)};
  return {...scoreNow(r),stored:false,stale:false};
 }
 const imageTag=(src,alt)=>validImage(src)?'<img loading="lazy" draggable="false" alt="'+safe(alt)+'" src="'+safe(src)+'">':'<span class="shot-empty">PAS DE CAPTURE</span>';
@@ -657,9 +657,10 @@ function setPdfSelect(id,values,label){
 }
 function openPdfDialog(){
  const unique=values=>[...new Set(values.filter(Boolean))].sort((a,b)=>a.localeCompare(b,'fr'));
- setPdfSelect('pdf-year',unique(rows.map(r=>r.start?.slice(0,4))).sort((a,b)=>b.localeCompare(a)),'Toutes les années');
- setPdfSelect('pdf-class',unique(rows.map(r=>r.boatClass)),'Toutes les classes');
- setPdfSelect('pdf-boat',unique(rows.map(r=>r.boat)),'Tous les bateaux');
+ const raceRows=rows.filter(r=>r.kind!=='event');
+ setPdfSelect('pdf-year',unique(raceRows.map(r=>r.start?.slice(0,4))).sort((a,b)=>b.localeCompare(a)),'Toutes les années');
+ setPdfSelect('pdf-class',unique(raceRows.map(r=>r.boatClass)),'Toutes les classes');
+ setPdfSelect('pdf-boat',unique(raceRows.map(r=>r.boat)),'Tous les bateaux');
  updatePdfCount();
  if(!pdfDialog.open)pdfDialog.showModal();
 }
@@ -739,6 +740,7 @@ async function confirmScoreRecalc(){
 function preview(k){const img=$('preview-'+k),ph=$('placeholder-'+k);img.hidden=!validImage(pictures[k]);ph.hidden=validImage(pictures[k]);if(validImage(pictures[k]))img.src=pictures[k];else img.removeAttribute('src');}
 function updateKindFields(){
  const isEvent=$('race-kind').value==='event';
+ if(isEvent){$('race-live').checked=false;$('race-upcoming').checked=false;}
  $('race-event-id').closest('label').hidden=isEvent;
  $('race-event-controls').hidden=!isEvent;
  $('race-joker-control').hidden=isEvent||!$('race-event-id').value;

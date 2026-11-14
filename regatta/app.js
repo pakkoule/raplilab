@@ -798,13 +798,13 @@ function readRecordAttempts(){
  });
 }
 function updateKindFields(){
- const kind=$('race-kind').value,isEvent=kind==='event',isRecord=kind==='record';
+ const kind=$('race-kind').value,isEvent=kind==='event',isRecord=kind==='record',isClosedRecord=isRecord&&!!(rows.find(x=>x.id===editId)?.recordClosed);
  if(isEvent){$('race-live').checked=false;$('race-upcoming').checked=false;}
- if(isRecord){$('race-upcoming').checked=false;$('race-dnf').checked=false;}
+ if(isRecord){$('race-upcoming').checked=false;$('race-dnf').checked=false;if(isClosedRecord)$('race-live').checked=false;}
  $('race-event-id').closest('label').hidden=isEvent||isRecord;
  $('race-event-controls').hidden=!isEvent;
  $('race-joker-control').hidden=isEvent||isRecord||!$('race-event-id').value;
- $('race-live').closest('label').hidden=isEvent;
+ $('race-live').closest('label').hidden=isEvent||isClosedRecord;
  document.querySelectorAll('.race-global-start').forEach(el=>{el.hidden=isRecord;});
  $('race-upcoming').closest('label').hidden=isEvent||isRecord;
  $('race-dnf').closest('label').hidden=isRecord;
@@ -817,7 +817,11 @@ function updateKindFields(){
  $('race-vsr').closest('label').hidden=isRecord;
  $('race-equipment-group').hidden=isRecord;
  $('race-gain-points').closest('fieldset').hidden=isRecord;
- $('race-rank').closest('fieldset').hidden=isRecord;
+ $('race-rank').closest('fieldset').hidden=isRecord&&!isClosedRecord;
+ $('record-add-attempt').hidden=isClosedRecord;
+ $('record-add-attempt').disabled=isClosedRecord||$('record-attempts-list').children.length>=recordEngine.MAX;
+ $('record-closed-help').hidden=!isClosedRecord;
+ document.querySelectorAll('[data-record-remove]').forEach(btn=>{btn.hidden=isClosedRecord;});
 }
 function openEditor(r){
  editId=r?.id||'';
@@ -829,6 +833,7 @@ function openEditor(r){
  $('race-upcoming').checked=!!data.upcoming;
  $('race-dnf').checked=!!data.dnf;
  $('race-kind').value=data.kind||'race';
+ $('race-kind').disabled=!!(data.kind==='record'&&data.recordClosed);
  $('race-event-closed').checked=!!data.eventClosed;
  $('race-joker').checked=!!data.joker;
  const parentSelect=$('race-event-id');
@@ -851,7 +856,9 @@ async function saveEditor(e){
  e.preventDefault();if(writeBusy||uploads)return;
  const old=rows.find(x=>x.id===editId);const r={...(old||normal()),updatedAt:now(),live:$('race-live').checked,upcoming:$('race-upcoming').checked,dnf:$('race-dnf').checked};
  if([r.live,r.upcoming,r.dnf].filter(Boolean).length>1){toast('Choisis un seul statut manuel : en cours, à venir ou DNF.',true);return;}
- r.kind=['event','record'].includes($('race-kind').value)?$('race-kind').value:'race';
+ r.kind=old?.kind==='record'&&old.recordClosed?'record':['event','record'].includes($('race-kind').value)?$('race-kind').value:'race';
+ r.recordClosed=r.kind==='record'&&!!old?.recordClosed;
+ if(r.recordClosed)r.live=false;
  r.eventId=r.kind!=='race'?'':clean($('race-event-id').value,130);
  r.eventClosed=r.kind==='event'&&$('race-event-closed').checked;
  r.joker=r.kind==='race'&&!!r.eventId&&$('race-joker').checked;
@@ -864,7 +871,7 @@ async function saveEditor(e){
    if(value&&!moneyNumber(value)){toast('Les gains doivent être des nombres entiers positifs.',true);getField(key).focus();return;}
    r[key]=moneyNumber(value);
  }
- for(const [place,total] of r.kind==='record'?[]:rankPairs){
+ for(const [place,total] of r.kind==='record'&&!r.recordClosed?[]:rankPairs){
    const input=getField(place),run=getField(total);
    const placeText=input.value.trim(),totalText=run.value.trim();
    if(placeText&&!intString(placeText)){toast('Classement invalide : saisis une position numérique.',true);input.focus();return;}
@@ -885,15 +892,36 @@ async function saveEditor(e){
   const earliest=recordEngine.earliestStart(r.attempts);
   r.start=earliest.date;r.startTime=earliest.time;
   r.scoreSnapshot=null;
-  for(const [place,total] of rankPairs){r[place]='';r[total]='';}
+  if(!r.recordClosed)for(const [place,total] of rankPairs){r[place]='';r[total]='';}
   for(const key of ['duration','durationDays','durationHours','durationMinutes','durationSeconds','end','endTime','vsr','gainPoints','gainCredits','participantCount'])r[key]='';
   r.equipment='';
- }else r.attempts=[];
+ }else{r.attempts=[];r.recordClosed=false;}
  if(r.kind!=='record'&&!old?.scoreSnapshot){const initial=scoreEngine.scoreFor(r,[...rows.filter(x=>x.id!==r.id),r],raceStatus);if(initial.available)r.scoreSnapshot={...initial,signature:scoreEngine.signature(r),calculatedAt:now()};}
  writeBusy=true;$('save-race').disabled=true;
  try{await saveRow(r);rows=[...rows.filter(x=>x.id!==r.id),r];render();window.RapliModuleCloud?.changed?.();closeEditor();toast('Course enregistrée ✓');}
  catch(err){console.error(err);toast('Impossible de sauvegarder : '+err.message,true);}
  finally{writeBusy=false;$('save-race').disabled=false;}
+}
+async function closeRecord(id){
+ if(writeBusy||uploads)return;
+ const existing=rows.find(r=>r.id===id);
+ if(!existing||existing.kind!=='record'||existing.recordClosed)return;
+ if(!confirm('Clôturer définitivement « '+existing.name+' » ? Les tentatives enregistrées restent conservées. Le statut « En cours » sera retiré et les classements finaux deviendront disponibles.'))return;
+ const closed=normal({...existing,recordClosed:true,live:false,upcoming:false,dnf:false,updatedAt:now()});
+ writeBusy=true;
+ try{
+  await saveRow(closed);
+  rows=rows.map(r=>r.id===id?closed:r);
+  render();
+  window.RapliModuleCloud?.changed?.();
+  toast('Record clôturé ✓ Renseigne maintenant les classements finaux.');
+  openEditor(closed);
+  const rankSection=$('race-rank').closest('fieldset');
+  rankSection.scrollIntoView({block:'start',behavior:'smooth'});
+  getField('rank').focus({preventScroll:true});
+ }catch(err){
+  console.error(err);toast('Clôture impossible : '+(err?.message||err),true);
+ }finally{writeBusy=false;}
 }
 async function deleteRace(id){
  const r=rows.find(x=>x.id===id);if(!r||!confirm('Supprimer « '+r.name+' » et ses images ?'))return;
@@ -1230,7 +1258,7 @@ cardContainer.addEventListener('pointerdown',event=>{
 });
 for(const name of ['pointerup','pointercancel','pointermove'])cardContainer.addEventListener(name,clearLongPress);
 for(const key of imageKeys){$('image-'+key).addEventListener('change',e=>{const f=e.target.files[0];e.target.value='';fileData(f,key);});document.querySelector('[data-remove="'+key+'"]').addEventListener('click',()=>{pictures[key]='';preview(key);});const zone=document.querySelector('[data-image="'+key+'"] .upload-preview');zone.addEventListener('dragover',e=>{e.preventDefault();});zone.addEventListener('drop',e=>{e.preventDefault();fileData(e.dataTransfer?.files[0],key);});}
-$('cards').addEventListener('click',e=>{const btn=e.target.closest('[data-action]');if(!btn)return;const r=rows.find(x=>x.id===btn.closest('[data-id]')?.dataset.id);if(!r)return;if(btn.dataset.action==='edit')openEditor(r);if(btn.dataset.action==='delete')deleteRace(r.id);if(btn.dataset.action==='png')exportPNG(r);if(btn.dataset.action==='score'&&!longPressOpened)openScoreDetail(r);if(btn.dataset.action==='score')longPressOpened=false;if(btn.dataset.action==='calendar')exportCalendar(r);});
+$('cards').addEventListener('click',e=>{const btn=e.target.closest('[data-action]');if(!btn)return;const r=rows.find(x=>x.id===btn.closest('[data-id]')?.dataset.id);if(!r)return;if(btn.dataset.action==='edit')openEditor(r);if(btn.dataset.action==='record-close')closeRecord(r.id);if(btn.dataset.action==='delete')deleteRace(r.id);if(btn.dataset.action==='png')exportPNG(r);if(btn.dataset.action==='score'&&!longPressOpened)openScoreDetail(r);if(btn.dataset.action==='score')longPressOpened=false;if(btn.dataset.action==='calendar')exportCalendar(r);});
 $('export-json').addEventListener('click',exportJSON);$('import-json').addEventListener('change',e=>importJSON(e.target.files[0]));document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'&&!dialog.open){e.preventDefault();$('search').focus();}});
 window.addEventListener?.('resize',scheduleRankingFit);
 const bridge=window.RapliModuleBridge={module:'regatta',ready:false,

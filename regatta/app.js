@@ -751,14 +751,48 @@ async function confirmScoreRecalc(){
  finally{$('score-recalc-confirm').disabled=false;scoreRecalcChanges=[];}
 }
 function preview(k){const img=$('preview-'+k),ph=$('placeholder-'+k);img.hidden=!validImage(pictures[k]);ph.hidden=validImage(pictures[k]);if(validImage(pictures[k]))img.src=pictures[k];else img.removeAttribute('src');}
+function renderRecordAttempts(attempts){
+ const list=$('record-attempts-list');
+ list.innerHTML=recordEngine.normalize(attempts).map((a,i)=>{
+  const values=recordEngine.parts(a.seconds);
+  const inputs=[['days','JOURS',3650],['hours','HEURES',23],['minutes','MIN',59],['seconds','SEC',59]].map(([key,label,max])=>
+   '<label>'+label+'<input type="number" min="0" max="'+max+'" inputmode="numeric" data-attempt-part="'+key+'" value="'+safe(values[key])+'" aria-label="Tentative '+(i+1)+' : '+label.toLowerCase()+'"></label>').join('');
+  return '<div class="record-attempt-row'+(a.aborted?' is-aborted':'')+'" data-record-id="'+safe(a.id)+'">'+
+   '<div class="record-attempt-head"><strong>TENTATIVE '+(i+1)+'</strong><button type="button" class="btn subtle tiny" data-record-remove aria-label="Supprimer tentative '+(i+1)+'">SUPPRIMER</button></div>'+
+   '<div class="record-time-grid">'+inputs+'</div>'+
+   '<label class="record-abort-label"><input type="checkbox" data-record-aborted '+(a.aborted?'checked':'')+'><span>TENTATIVE AVORTÉE</span></label></div>';
+ }).join('');
+ $('record-add-attempt').disabled=list.children.length>=recordEngine.MAX;
+}
+function readRecordAttempts(){
+ return [...$('record-attempts-list').querySelectorAll('.record-attempt-row')].map((row,i)=>{
+  const inputs={};
+  for(const key of ['days','hours','minutes','seconds'])inputs[key]=row.querySelector('[data-attempt-part="'+key+'"]').value;
+  const time=recordEngine.fromParts(inputs);
+  if(!time.valid)throw Error('Tentative '+(i+1)+' : '+time.reason);
+  return {id:row.dataset.recordId,seconds:time.seconds,aborted:row.querySelector('[data-record-aborted]').checked};
+ });
+}
 function updateKindFields(){
- const isEvent=$('race-kind').value==='event';
- if(isEvent){$('race-live').checked=false;$('race-upcoming').checked=false;}
- $('race-event-id').closest('label').hidden=isEvent;
+ const kind=$('race-kind').value,isEvent=kind==='event',isRecord=kind==='record';
+ if(isEvent||isRecord){$('race-live').checked=false;$('race-upcoming').checked=false;}
+ if(isRecord)$('race-dnf').checked=false;
+ $('race-event-id').closest('label').hidden=isEvent||isRecord;
  $('race-event-controls').hidden=!isEvent;
- $('race-joker-control').hidden=isEvent||!$('race-event-id').value;
- $('race-live').closest('label').hidden=isEvent;
- $('race-upcoming').closest('label').hidden=isEvent;
+ $('race-joker-control').hidden=isEvent||isRecord||!$('race-event-id').value;
+ $('race-live').closest('label').hidden=isEvent||isRecord;
+ $('race-upcoming').closest('label').hidden=isEvent||isRecord;
+ $('race-dnf').closest('label').hidden=isRecord;
+ $('race-record-attempts').hidden=!isRecord;
+ $('race-duration').closest('.duration-field').hidden=isRecord;
+ for(const field of ['end','endTime'])getField(field).closest('label').hidden=isRecord;
+ $('arrival-feedback').hidden=isRecord;
+ $('race-participant-count').closest('label').hidden=isRecord;
+ $('race-participant-help').hidden=isRecord;
+ $('race-vsr').closest('label').hidden=isRecord;
+ $('race-equipment-group').hidden=isRecord;
+ $('race-gain-points').closest('fieldset').hidden=isRecord;
+ $('race-rank').closest('fieldset').hidden=isRecord;
 }
 function openEditor(r){
  editId=r?.id||'';

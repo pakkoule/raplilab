@@ -2340,7 +2340,13 @@ function showSettingsContent(){
   const tabNav='<div class="module-settings-tabs" role="tablist" aria-label="Catégories de personnalisation">'+tabs.map(([field,label])=>`<button type="button" class="module-settings-tab" role="tab" data-action="settings-section-tab" data-settings-section="${field}" aria-selected="${activeSettingsSection===field}" tabindex="${activeSettingsSection===field?'0':'-1'}">${h(label)}</button>`).join('')+'</div>';
   const sections=MODULES[editingModule].fields.filter(([field])=>field===activeSettingsSection).map(([field,label])=>{
   const entries=settings.taxonomies[field]||[];
-  const rows=entries.map((item,i)=>{
+  // Affichage alphabétique des éditions uniquement. L'index réel est conservé pour
+  // que édition, icône, couleur, logo et suppression ciblent la bonne entrée.
+  const displayedEntries=entries.map((item,index)=>({item,index}));
+  if(field==='edition')displayedEntries.sort((a,b)=>
+    String(a.item.label||'').localeCompare(String(b.item.label||''),'fr',{sensitivity:'base',numeric:true})
+    ||a.index-b.index);
+  const rows=displayedEntries.map(({item,index:i})=>{
    const imageControl=field==='artwork'?`<div class="artwork-settings-control"><label class="artwork-file-label" title="Choisir ou remplacer la miniature"><span class="artwork-thumb artwork-settings-thumb">${artworkThumbMarkup(item)}</span><span class="artwork-choose-text">Changer miniature</span><input type="file" accept="image/*,.heic,.heif" data-artwork-file="${i}" aria-label="Choisir ou remplacer la miniature de ${attr(item.label||'cet artwork')}"></label>${item.preview?`<button type="button" class="artwork-remove-preview" data-action="artwork-preview-remove" data-index="${i}" title="Retirer la miniature" aria-label="Retirer la miniature de ${attr(item.label)}">×</button>`:''}</div>`:'';
    return `<div class="tax-row ${field==='artwork'?'tax-row-artwork':''} ${field==='edition'?'tax-row-edition':''} ${field==='edition'&&String(item.label||'').length>24?'tax-row-edition-long':''}"><input type="text" data-setting-field="${field}" data-index="${i}" data-setting-part="label" value="${attr(item.label)}" title="${attr(item.label)}" placeholder="Nom" aria-label="Nom ${h(label)}"><input type="text" data-setting-field="${field}" data-index="${i}" data-setting-part="icon" value="${attr(item.icon||'')}" placeholder="Icône" aria-label="Icône ou drapeau" maxlength="16"><input type="color" data-setting-field="${field}" data-index="${i}" data-setting-part="color" value="${/^#[a-f0-9]{6}$/i.test(item.color||'')?item.color:'#99b9aa'}" aria-label="Couleur"><label class="file-logo" title="Importer un logo">${item.logo?'✓ Logo':'↑ Logo'}<input type="file" accept="image/*" data-setting-logo="${field}" data-index="${i}"></label>${imageControl}<button type="button" class="tax-remove" data-action="tax-remove" data-field="${field}" data-index="${i}" title="Supprimer la valeur">×</button></div>`;
   }).join('');

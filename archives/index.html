@@ -1801,7 +1801,7 @@ function filteredCardCounter(count){
 }
 function catalogueStatCounter(label,count){
  const n=Math.max(0,Math.floor(Number(count)||0));
- return `<div class="catalogue-stat" aria-label="${n} ${label==='OWN'?'références possédées':'références au catalogue'}"><span class="catalogue-stat-vortex filter-counter">${rapliIllustratedDigits(n)}</span><span class="catalogue-stat-label">${label}</span></div>`;
+ return `<div class="catalogue-stat" aria-label="${n} ${label==='OWN'?'références possédées':'références au catalogue'}"><span class="catalogue-stat-vortex filter-counter">${rapliIllustratedDigits(n)}</span></div>`;
 }
 
 let archiveLayout='details',archivePage=1,archiveArtworkSelection=null;
@@ -1887,7 +1887,6 @@ function dashboardView(){
  }
  return `
  <div class="catalogue-stats" role="group" aria-label="Compteurs du catalogue Dragon Blanc">
-   ${catalogueStatCounter('Références',entries.length)}
    ${catalogueStatCounter('OWN',owned)}
    <div class="catalogue-quick-actions" role="group" aria-label="Gestion du catalogue">
     <button type="button" class="catalogue-quick-action" data-action="module-settings" aria-label="Gérer les logos et catégories" title="Gérer les éditions, les artworks et les logos">

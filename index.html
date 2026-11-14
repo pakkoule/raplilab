@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#0d2039">
-  <meta name="description" content="Rapli Archives, Sports, Time, Refs, Stickers Lab, Tools, Top Tiers, Top 10, Coach LP et Regatta réunis dans un même espace personnel.">
+  <meta name="description" content="Rapli Archives, Sports, Stickers Lab, Tools, LP et Regatta réunis dans un même espace personnel.">
   <title>RAPLI LAB — 11 espaces personnels</title>
   <link rel="icon" type="image/webp" href="assets/archives-logo.webp">
   <style>
@@ -71,16 +71,10 @@ body[data-active="tools"] .portal-header{background:linear-gradient(120deg,#2f37
 @media(max-width:800px){.product-tab[aria-selected="true"]::after{bottom:-7px}}
 @media(max-width:420px){.product-tab[aria-selected="true"]::after{left:9px;right:9px;bottom:-7px}.product-tab[aria-selected="true"]::before{top:5px;right:5px;width:6px;height:6px}}
 
-/* RAPLI LAB / sept applications. The three new apps keep their own brand identity. */
+/* RAPLI LAB — identité des espaces conservés. */
 body[data-active="sports"]{--accent:#277de7;--frame-bg:#e9f1fc;--frame-border:#b3cde9}
-body[data-active="time"]{--accent:#d1a45d;--frame-bg:#f0eee9;--frame-border:#d6c8ae}
-body[data-active="refs"]{--accent:#32b8a8;--frame-bg:#e7f0f0;--frame-border:#b5dad4}
-body[data-active="tiers"]{--accent:#e5b956;--frame-bg:#f2f1e9;--frame-border:#e1d8b8}
-body[data-active="tiers"] .portal-header{background:linear-gradient(115deg,#2d302c,#465147 52%,#252e29)}
-body[data-active="time"] .portal-header{background:linear-gradient(115deg,#293348,#475067 52%,#293348)}
 body[data-active="sports"] .portal-header{background:linear-gradient(115deg,#0b2344,#123d73 52%,#0b2344)}
-body[data-active="refs"] .portal-header{background:linear-gradient(115deg,#112d3e,#173e58 52%,#112d3e)}
-.product-tabs{grid-template-columns:repeat(7,minmax(0,1fr));width:min(100%,1110px);gap:8px}
+.product-tabs{grid-template-columns:repeat(6,minmax(0,1fr));width:min(100%,1110px);gap:8px}
 .product-tab{min-width:0;padding:4px 7px;height:56px}
 .product-tab img,.product-tab[data-product="archives"] img,.product-tab[data-product="stickers"] img,.product-tab[data-product="tools"] img{
   width:100%;max-width:100%!important;max-height:47px!important;object-fit:contain
@@ -171,21 +165,14 @@ body[data-active="refs"] .portal-header{background:linear-gradient(115deg,#112d3
 @media(prefers-reduced-motion:reduce){.global-cloud-controls button.is-busy svg{animation:none}}
 
 
-/* RapliLab workspaces including Top Tiers, Top 10, Coach and LP. */
-.product-tab[data-product="tiers"][aria-selected="true"]{background-color:rgba(230,183,66,.18)!important}
-body[data-active="top10"]{--accent:#f5e6c3;--frame-bg:#e9eef5;--frame-border:#b9cde5}
-body[data-active="top10"] .portal-header{background:linear-gradient(115deg,#071d3e,#17457e 52%,#071d3e)}
-.product-tab[data-product="top10"][aria-selected="true"]{background-color:rgba(245,230,195,.20)!important}
-body[data-active="coach"]{--accent:#9abb9d;--frame-bg:#e9efe9;--frame-border:#bdcfc0}
-body[data-active="coach"] .portal-header{background:linear-gradient(115deg,#24352d,#465e4b 52%,#25352b)}
-.product-tab[data-product="coach"][aria-selected="true"]{background-color:rgba(190,212,184,.22)!important}
+/* RapliLab workspaces — espaces actifs. */
 body[data-active="lp"]{--accent:#c5c6ca;--frame-bg:#e6e6e8;--frame-border:#b5b5ba}
 body[data-active="regatta"]{--accent:#03bac8;--frame-bg:#ebf7f6;--frame-border:#bedede}
 body[data-active="regatta"] .portal-header{background:linear-gradient(120deg,#102c3f,#006174 53%,#112a40)}
 .product-tab[data-product="regatta"][aria-selected="true"]{background-color:rgba(0,200,212,.16)!important}
 body[data-active="lp"] .portal-header{background:linear-gradient(115deg,#101114,#32333a 52%,#111215)}
 .product-tab[data-product="lp"][aria-selected="true"]{background-color:rgba(215,216,220,.2)!important}
-@media(min-width:801px){.product-tabs{grid-template-columns:repeat(11,minmax(0,1fr));width:min(100%,1018px)}}
+@media(min-width:801px){.product-tabs{grid-template-columns:repeat(6,minmax(0,1fr));width:min(100%,1018px)}}
 /* Mobile: eleven tabs stay on a single swipeable rail without shrinking. */
 @media(max-width:800px){
   .portal-header{min-height:0}
@@ -214,13 +201,8 @@ body[data-active="lp"] .portal-header{background:linear-gradient(115deg,#101114,
   body { --side-theme:#1a416c; --side-logo:url("assets/archives-logo.webp"); background:#050708; isolation:isolate; }
   body[data-active="archives"] {--side-theme:#1a416c;--side-logo:url("assets/archives-logo.webp")}
   body[data-active="sports"] {--side-theme:#15519b;--side-logo:url("sports/assets/logo.png")}
-  body[data-active="time"] {--side-theme:#76603f;--side-logo:url("time/assets/logo.png")}
-  body[data-active="refs"] {--side-theme:#176d67;--side-logo:url("refs/assets/logo.png")}
   body[data-active="stickers"] {--side-theme:#19715b;--side-logo:url("assets/stickers-logo.webp")}
   body[data-active="tools"] {--side-theme:#a86521;--side-logo:url("assets/tools-logo.webp")}
-  body[data-active="tiers"] {--side-theme:#766b32;--side-logo:url("assets/tiers-mosaic-hd.webp")}
-  body[data-active="top10"] {--side-theme:#24548e;--side-logo:url("assets/top10-mosaic-hd.webp")}
-  body[data-active="coach"] {--side-theme:#4e6c51;--side-logo:url("assets/coach-mosaic-hd.webp")}
   body[data-active="lp"] {--side-theme:#40414d;--side-logo:url("assets/lp-mosaic-hd.webp")}
   body[data-active="regatta"] {--side-theme:#006d7a;--side-logo:url("regatta/assets/logo.webp")}
   body::before,body::after {
@@ -316,26 +298,11 @@ body[data-active="lp"] .portal-header{background:linear-gradient(115deg,#101114,
         <button type="button" id="tab-sports" class="product-tab" data-product="sports" role="tab" aria-selected="false" aria-controls="panel-sports" tabindex="-1" title="Rapli Sports — collection de cartes">
           <img src="sports/assets/logo.png" alt="Rapli Sports" draggable="false">
         </button>
-        <button type="button" id="tab-time" class="product-tab" data-product="time" role="tab" aria-selected="false" aria-controls="panel-time" tabindex="-1" title="Rapli Time — collection de montres">
-          <img src="time/assets/logo.png" alt="Rapli Time" draggable="false">
-        </button>
-        <button type="button" id="tab-refs" class="product-tab" data-product="refs" role="tab" aria-selected="false" aria-controls="panel-refs" tabindex="-1" title="Rapli Refs — carnet de références">
-          <img src="refs/assets/logo.png" alt="Rapli Refs" draggable="false">
-        </button>
         <button type="button" id="tab-stickers" class="product-tab" data-product="stickers" role="tab" aria-selected="false" aria-controls="panel-stickers" tabindex="-1" title="Rapli Stickers Lab">
           <img src="assets/stickers-logo.webp" alt="Rapli Stickers Lab" width="218" height="58" draggable="false">
         </button>
         <button type="button" id="tab-tools" class="product-tab" data-product="tools" role="tab" aria-selected="true" aria-controls="panel-tools" tabindex="0" title="Rapli Tools">
           <img src="assets/tools-logo.webp" alt="Rapli Tools" width="172" height="80" draggable="false">
-        </button>
-        <button type="button" id="tab-tiers" class="product-tab" data-product="tiers" role="tab" aria-selected="false" aria-controls="panel-tiers" tabindex="-1" title="Rapli Top Tiers — Tier Lists">
-          <img src="tiers/assets/logo.webp" alt="Rapli Top Tiers" draggable="false">
-        </button>
-        <button type="button" id="tab-top10" class="product-tab" data-product="top10" role="tab" aria-selected="false" aria-controls="panel-top10" tabindex="-1" title="Rapli Top 10 — classements">
-          <img src="top10/assets/logo.webp" alt="Rapli Top 10" draggable="false">
-        </button>
-        <button type="button" id="tab-coach" class="product-tab" data-product="coach" role="tab" aria-selected="false" aria-controls="panel-coach" tabindex="-1" title="Rapli Coach — compositions football et basket">
-          <img src="coach/assets/logo.webp" alt="Rapli Coach" draggable="false">
         </button>
         <button type="button" id="tab-lp" class="product-tab" data-product="lp" role="tab" aria-selected="false" aria-controls="panel-lp" tabindex="-1" title="Rapli LP — collection de CD">
           <img src="lp/assets/logo.webp" alt="Rapli LP" draggable="false">
@@ -346,10 +313,10 @@ body[data-active="lp"] .portal-header{background:linear-gradient(115deg,#101114,
       </nav>
 
       <div class="global-cloud-controls" role="group" aria-label="Synchronisation globale RapliLab">
-        <button id="global-cloud-save" type="button" title="Enregistrer les onze espaces dans Supabase" aria-label="Enregistrer tous les espaces RapliLab dans le cloud">
+        <button id="global-cloud-save" type="button" title="Enregistrer les six espaces dans Supabase" aria-label="Enregistrer tous les espaces RapliLab dans le cloud">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18h10a4 4 0 0 0 .65-7.95A6.2 6.2 0 0 0 6 8.6 4.7 4.7 0 0 0 7 18Z"/><path d="M12 10v8m-3-3 3 3 3-3"/></svg>
         </button>
-        <button id="global-cloud-refresh" type="button" title="Actualiser les onze espaces depuis Supabase" aria-label="Récupérer les modifications de tous les espaces RapliLab depuis le cloud">
+        <button id="global-cloud-refresh" type="button" title="Actualiser les six espaces depuis Supabase" aria-label="Récupérer les modifications de tous les espaces RapliLab depuis le cloud">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14.25-5L3 8.5"/><path d="M3 3.5v5h5"/><path d="M4 13a8 8 0 0 0 14.25 5L21 15.5"/><path d="M21 20.5v-5h-5"/></svg>
         </button>
       </div>
@@ -363,23 +330,8 @@ body[data-active="lp"] .portal-header{background:linear-gradient(115deg,#101114,
       <section id="panel-sports" role="tabpanel" aria-labelledby="tab-sports" hidden>
         <iframe id="frame-sports" class="app-frame" data-src="sports/index.html" title="Rapli Sports — cartes de sport" loading="lazy"></iframe>
       </section>
-      <section id="panel-time" role="tabpanel" aria-labelledby="tab-time" hidden>
-        <iframe id="frame-time" class="app-frame" data-src="time/index.html" title="Rapli Time — montres personnelles" loading="lazy"></iframe>
-      </section>
-      <section id="panel-refs" role="tabpanel" aria-labelledby="tab-refs" hidden>
-        <iframe id="frame-refs" class="app-frame" data-src="refs/index.html" title="Rapli Refs — carnet de références" loading="lazy"></iframe>
-      </section>
       <section id="panel-stickers" role="tabpanel" aria-labelledby="tab-stickers" hidden>
         <iframe id="frame-stickers" class="app-frame" data-src="stickers/index.html" title="Rapli Stickers Lab — éditeur de stickers" allow="clipboard-read; clipboard-write" loading="lazy"></iframe>
-      </section>
-      <section id="panel-tiers" role="tabpanel" aria-labelledby="tab-tiers" hidden>
-        <iframe id="frame-tiers" class="app-frame" data-src="tiers/index.html" title="Rapli Top Tiers — classements personnalisables" allow="clipboard-read; clipboard-write" loading="lazy"></iframe>
-      </section>
-      <section id="panel-top10" role="tabpanel" aria-labelledby="tab-top10" hidden>
-        <iframe id="frame-top10" class="app-frame" data-src="top10/index.html" title="Rapli Top 10 — classement personnalisé" allow="clipboard-read; clipboard-write" loading="lazy"></iframe>
-      </section>
-      <section id="panel-coach" role="tabpanel" aria-labelledby="tab-coach" hidden>
-        <iframe id="frame-coach" class="app-frame" data-src="coach/index.html" title="Rapli Coach — football et basketball" loading="lazy"></iframe>
       </section>
       <section id="panel-lp" role="tabpanel" aria-labelledby="tab-lp" hidden>
         <iframe id="frame-lp" class="app-frame" data-src="lp/index.html" title="Rapli LP — collection de CD de musique" loading="lazy"></iframe>
@@ -395,7 +347,7 @@ body[data-active="lp"] .portal-header{background:linear-gradient(115deg,#101114,
   <script>
   (() => {
     'use strict';
-    const projects=['archives','sports','time','refs','stickers','tools','tiers','top10','coach','lp','regatta'];
+    const projects=['archives','sports','stickers','tools','lp','regatta'];
     const tabs=Object.fromEntries(projects.map(name=>[name,document.getElementById('tab-'+name)]));
     const panels=Object.fromEntries(projects.map(name=>[name,document.getElementById('panel-'+name)]));
     const frames=Object.fromEntries(projects.map(name=>[name,document.getElementById('frame-'+name)]));
@@ -405,15 +357,6 @@ body[data-active="lp"] .portal-header{background:linear-gradient(115deg,#101114,
     const fromHash=()=>{const name=location.hash.slice(1).toLowerCase();return projects.includes(name)?name:'tools';};
     function select(name, updateHash=false, focus=false) {
       if(!projects.includes(name))name='tools';
-      if(name!==current && current==='coach'){
-        try{
-          if(frames.coach?.contentWindow?.RapliCoach?.hasUnsaved?.() &&
-             !confirm('Rapli Coach contient des modifications non enregistrées. Quitter ce terrain ?')){
-            if(location.hash!=='#coach')history.replaceState({project:'coach'},'', '#coach');
-            return;
-          }
-        }catch(e){/* iframe not yet initialized */ }
-      }
       current=name;
       // Do not launch the heavyweight editors (and their model libraries) until visited.
       const frame=frames[name];
@@ -427,7 +370,7 @@ body[data-active="lp"] .portal-header{background:linear-gradient(115deg,#101114,
         frames[project].hidden=!active;
         sendActivity(project,active);
       }
-      document.title=({archives:'RAPLI — Archives · Dragon Blanc aux Yeux Bleus',sports:'RAPLI — Sports',time:'RAPLI — Time',refs:'RAPLI — Refs',stickers:'RAPLI — Stickers Lab',tools:'RAPLI — Tools',tiers:'RAPLI — Top Tiers',top10:'RAPLI — Top 10',coach:'RAPLI — Coach',lp:'RAPLI — LP',regatta:'RAPLI — Regatta'})[name];
+      document.title=({archives:'RAPLI — Archives · Dragon Blanc aux Yeux Bleus',sports:'RAPLI — Sports',stickers:'RAPLI — Stickers Lab',tools:'RAPLI — Tools',lp:'RAPLI — LP',regatta:'RAPLI — Regatta'})[name];
       if(updateHash && location.hash !=='#'+name)history.pushState({project:name},'', '#'+name);
       // Keep the active tab visible in the one-row mobile scroll rail.
       if(window.matchMedia('(max-width: 800px)').matches){
@@ -457,7 +400,7 @@ body[data-active="lp"] .portal-header{background:linear-gradient(115deg,#101114,
 
     // One global action, executed separately for each isolated private collection.
     // Lazy iframes are loaded on demand, including the inactive modules.
-    const cloudNames={archives:'Archives',sports:'Sports',time:'Time',refs:'Refs',stickers:'Stickers Lab',tools:'Tools',tiers:'Top Tiers',top10:'Top 10',coach:'Coach',lp:'LP',regatta:'Regatta'};
+    const cloudNames={archives:'Archives',sports:'Sports',stickers:'Stickers Lab',tools:'Tools',lp:'LP',regatta:'Regatta'};
     const cloudSave=document.getElementById('global-cloud-save');
     const cloudRefresh=document.getElementById('global-cloud-refresh');
     const cloudFeedback=document.getElementById('global-cloud-feedback');
@@ -522,7 +465,7 @@ body[data-active="lp"] .portal-header{background:linear-gradient(115deg,#101114,
           ? '<details open><summary>'+errors.length+' espace(s) à vérifier</summary><ul>'+
               errors.map(e=>'<li><strong>'+escapeCloud(cloudNames[e.name])+'</strong> : '+escapeCloud(e.message)+'</li>').join('')+
             '</ul></details>'
-          : '<details><summary>Afficher le détail des onze espaces</summary><ul>'+
+          : '<details><summary>Afficher le détail des six espaces</summary><ul>'+
               results.map(e=>'<li>'+escapeCloud(cloudNames[e.name])+' : '+escapeCloud(e.message)+'</li>').join('')+
             '</ul></details>';
         cloudFeedback.innerHTML='<strong>'+escapeCloud(summary)+'</strong>'+detail+

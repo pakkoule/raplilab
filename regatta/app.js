@@ -248,8 +248,8 @@ async function deleteRow(id){if(!db){localStorage.setItem('rapli-regatta-v1',JSO
 async function replaceRows(next){if(!db){localStorage.setItem('rapli-regatta-v1',JSON.stringify(next));}else{const tx=db.transaction('races','readwrite'),store=tx.objectStore('races');store.clear();next.forEach(x=>store.put(x));await done(tx);}rows=next.map(normal);render();}
 
  function localDateTime(date,time=''){
-   if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(String(date||'')))return null;
-   const p=/^(\\d{2}):(\\d{2})(?::(\\d{2}))?$/.exec(time||'00:00');
+   if(!/^\d{4}-\d{2}-\d{2}$/.test(String(date||'')))return null;
+   const p=/^(\d{2}):(\d{2})(?::(\d{2}))?$/.exec(time||'00:00');
    if(!p)return null;
    const [year,month,day]=date.split('-').map(Number);
    const d=new Date(year,month-1,day,Number(p[1]),Number(p[2]),Number(p[3]||0));

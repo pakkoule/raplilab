@@ -1199,8 +1199,11 @@ body::before{display:none!important}
           tierColors:collectorColors(saved.tierColors),
           gradientMode:['uniform','tier'].includes(saved.gradientMode)?saved.gradientMode:'solid',
           gradientGlobal:collectorGradientNormalize(saved.gradientGlobal||{preset:'gold',colors:collectorMetal('gold').colors}),
-          gradientTiers:Object.fromEntries(COLLECTOR_TIERS.map(t=>[t.key,
-            collectorGradientNormalize(saved.gradientTiers?.[t.key]||{preset:'gold',colors:collectorMetal('gold').colors})]))
+          gradientTiers:Object.fromEntries(COLLECTOR_TIERS.map((t,i)=>{
+            const choice=['gold','rose','copper','platinum','chrome','titanium','bronze','gunmetal'][i];
+            return [t.key,collectorGradientNormalize(saved.gradientTiers?.[t.key]||
+              {preset:choice,colors:collectorMetal(choice).colors})];
+          }))
         };
       }
       function collectorStyle(){

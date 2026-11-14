@@ -184,9 +184,11 @@ function normalizeRanking(r){
    else {r[key]='';r[totalKey]='';}
  }
 }
-function normal(x={}){const r={id:typeof x.id==='string'&&x.id.length<130?x.id:uid(),createdAt:x.createdAt||now(),updatedAt:x.updatedAt||now(),live:!!x.live&&!x.dnf,upcoming:!!x.upcoming&&!x.live&&!x.dnf,dnf:!!x.dnf,kind:['race','event','record'].includes(x.kind)?x.kind:'race',eventId:clean(x.eventId,130),eventClosed:!!x.eventClosed,joker:!!x.joker,equipment:validEquipment(x.equipment),edition:clean(x.edition,100)};for(const [k,n] of Object.entries(props))r[k]=clean(x[k],n);
+function normal(x={}){const r={id:typeof x.id==='string'&&x.id.length<130?x.id:uid(),createdAt:x.createdAt||now(),updatedAt:x.updatedAt||now(),live:!!x.live&&!x.dnf,upcoming:!!x.upcoming&&!x.live&&!x.dnf,dnf:!!x.dnf,kind:['race','event','record'].includes(x.kind)?x.kind:'race',eventId:clean(x.eventId,130),eventClosed:!!x.eventClosed,recordClosed:!!x.recordClosed,joker:!!x.joker,equipment:validEquipment(x.equipment),edition:clean(x.edition,100)};for(const [k,n] of Object.entries(props))r[k]=clean(x[k],n);
  r.classColor=colorSafe(x.classColor);r.notes=clean(x.notes,2500);r.vsr=VSR[r.vsr]?r.vsr:'';
  r.attempts=window.RapliRegattaRecordAttempts.normalize(x.attempts);
+ if(r.kind==='record'&&r.recordClosed)r.live=false;
+ if(r.kind!=='record')r.recordClosed=false;
  if(r.kind==='record'){
   // Older record entries had one start date on the parent. Preserve it as the first
   // attempt's departure, never duplicate it across all attempts.
@@ -220,7 +222,7 @@ async function load(){return db?(await req(db.transaction('races').objectStore('
 async function saveRow(row){if(!db){localStorage.setItem('rapli-regatta-v1',JSON.stringify([...rows.filter(x=>x.id!==row.id),row]));return;}const tx=db.transaction('races','readwrite');tx.objectStore('races').put(row);await done(tx);}
 async function deleteRow(id){if(!db){localStorage.setItem('rapli-regatta-v1',JSON.stringify(rows.filter(x=>x.id!==id)));return;}const tx=db.transaction('races','readwrite');tx.objectStore('races').delete(id);await done(tx);}
 async function replaceRows(next){if(!db){localStorage.setItem('rapli-regatta-v1',JSON.stringify(next));}else{const tx=db.transaction('races','readwrite'),store=tx.objectStore('races');store.clear();next.forEach(x=>store.put(x));await done(tx);}rows=next.map(normal);render();}
-const raceStatus=r=>{if(r.kind==='record')return r.live?'record-live':'record';if(r.dnf)return 'dnf';if(r.kind==='event')return r.eventClosed?'finished':r.live?'live':'planned';if(r.upcoming)return 'planned';if(r.live)return 'live';if(rankPairs.some(([key])=>r[key]))return 'finished';if(!r.end)return 'planned';if(!r.endTime)return 'finished';const current=new Date();const local=[current.getFullYear(),String(current.getMonth()+1).padStart(2,'0'),String(current.getDate()).padStart(2,'0')].join('-')+'T'+String(current.getHours()).padStart(2,'0')+':'+String(current.getMinutes()).padStart(2,'0');return (r.end+'T'+r.endTime)<=local?'finished':'planned';},statusTitle={live:'COURSE EN COURS',finished:'TERMINÉE',planned:'À VENIR',dnf:'DNF · ABANDON',record:'COURSE RECORD','record-live':'RECORD EN COURS'};
+const raceStatus=r=>{if(r.kind==='record')return r.recordClosed?'record-closed':r.live?'record-live':'record';if(r.dnf)return 'dnf';if(r.kind==='event')return r.eventClosed?'finished':r.live?'live':'planned';if(r.upcoming)return 'planned';if(r.live)return 'live';if(rankPairs.some(([key])=>r[key]))return 'finished';if(!r.end)return 'planned';if(!r.endTime)return 'finished';const current=new Date();const local=[current.getFullYear(),String(current.getMonth()+1).padStart(2,'0'),String(current.getDate()).padStart(2,'0')].join('-')+'T'+String(current.getHours()).padStart(2,'0')+':'+String(current.getMinutes()).padStart(2,'0');return (r.end+'T'+r.endTime)<=local?'finished':'planned';},statusTitle={live:'COURSE EN COURS',finished:'TERMINÉE',planned:'À VENIR',dnf:'DNF · ABANDON',record:'COURSE RECORD','record-live':'RECORD EN COURS','record-closed':'RECORD CLÔTURÉ'};
 const dateFR=v=>/^\d{4}-\d{2}-\d{2}$/.test(v)?v.slice(8)+'/'+v.slice(5,7)+'/'+v.slice(0,4):'';
 const scoreEngine=window.RapliRegattaScore;
 const recordEngine=window.RapliRegattaRecordAttempts;
@@ -244,13 +246,14 @@ function card(r){
  // La note n'a ni cartouche ni mention, elle est placée à droite du classement général.
  const scoreRing=score.available?
   '<button type="button" class="score-orb'+(score.value>=95?' score-epic':'')+(score.value===0?' score-zero':'')+'" style="--score-sweep:'+(Math.min(100,Math.max(0,score.value))*3.6)+'deg;--score-glow:'+(score.value/100)+'" data-action="score" aria-label="Voir le détail de la note Rapli : '+safe(score.value)+' sur 100"><span>'+safe(score.value)+'</span></button>':'';
- const generalRank=(status==='dnf'||r.kind==='record')?'':rankHtml('🏆','CLASSEMENT GÉNÉRAL',r.rank,r.rankTotal,'rank-main',podiumMedalFor(r,'rank','rankTotal'));
- const rankBlocks=(status==='dnf'||r.kind==='record'?'':(generalRank?'<div class="rank-main-row">'+generalRank+scoreRing+'</div>':'')+
+ const showRecordRanking=r.kind==='record'&&r.recordClosed;
+ const generalRank=(status==='dnf'||(r.kind==='record'&&!showRecordRanking))?'':rankHtml('🏆','CLASSEMENT GÉNÉRAL',r.rank,r.rankTotal,'rank-main',podiumMedalFor(r,'rank','rankTotal'));
+ const rankBlocks=(status==='dnf'||(r.kind==='record'&&!showRecordRanking)?'':(generalRank?'<div class="rank-main-row">'+generalRank+(showRecordRanking?'':scoreRing)+'</div>':'')+
    rankHtml('🇫🇷','NATIONAL',r.rankNational,r.rankNationalTotal,'rank-national',podiumMedalFor(r,'rankNational','rankNationalTotal'))+
    rankHtml('🇨🇶','DÉPARTEMENTAL',r.rankDepartment,r.rankDepartmentTotal,'rank-department',podiumMedalFor(r,'rankDepartment','rankDepartmentTotal'))+
    rankHtml('🏙️','VILLE',r.rankCity,r.rankCityTotal,'rank-city',podiumMedalFor(r,'rankCity','rankCityTotal'))+
    rankHtml('🏴‍☠️','TEAM',r.rankTeam,r.rankTeamTotal,'rank-team',podiumMedalFor(r,'rankTeam','rankTeamTotal')));
- return '<article class="card'+((status==='live'||status==='record-live')?' live':'')+(status==='planned'&&r.upcoming?' upcoming':'')+(status==='dnf'?' dnf':'')+(r.kind==='event'?' event':'')+(r.kind==='record'?' record':'')+'" data-id="'+safe(r.id)+'" style="--class-tag:'+tag+';--class-ink:'+classTextColor(tag)+';--vsr-color:'+vsrTag+';--vsr-ink:'+classTextColor(vsrTag)+'">'+
+ return '<article class="card'+((status==='live'||status==='record-live')?' live':'')+(status==='planned'&&r.upcoming?' upcoming':'')+(status==='dnf'?' dnf':'')+(r.kind==='event'?' event':'')+(r.kind==='record'?' record':'')+(showRecordRanking?' record-closed':'')+'" data-id="'+safe(r.id)+'" style="--class-tag:'+tag+';--class-ink:'+classTextColor(tag)+';--vsr-color:'+vsrTag+';--vsr-ink:'+classTextColor(vsrTag)+'">'+
  '<div class="card-top"><div class="race-icon card-photo">'+(validImage(r.icon)?imageTag(r.icon,'Affiche '+r.name):'<div class="icon-placeholder">⛵</div>')+'</div><span class="badge-status">'+statusTitle[status]+'</span></div>'+
  '<div class="card-content"><div class="card-title-row"><h2 title="'+safe(r.name)+'">'+safe(r.name)+'</h2>'+
  '<div class="card-tag-row"><span class="class-tag" title="'+safe(r.boatClass||'VIRTUAL REGATTA')+'">'+safe(r.boatClass||'VIRTUAL REGATTA')+'</span>'+
@@ -264,10 +267,12 @@ function card(r){
  (r.kind!=='record'&&moneyNumber(r.gainCredits)?'<span class="stat-chip reward-credits">🪙 +'+safe(Number(r.gainCredits).toLocaleString('fr-FR'))+' CRÉDITS VR</span>':'')+'</div>'+
  (r.kind==='record'?recordCardContent(r):'')+
  (!score.available&&r.kind!=='record'&&(status==='dnf'||status==='finished')?'<p class="score-pending">'+safe(score.reason||'Note en attente')+'</p>':'')+
+ (showRecordRanking&&!rankPairs.some(([key])=>r[key])?'<p class="score-pending">Record clôturé · renseigne les classements finaux avec MODIFIER.</p>':'')+
  (rankBlocks?'<div class="rank-grid">'+rankBlocks+'</div>':'')+
  '<div class="shots"><div class="shot"><label>'+(r.kind==='record'?'CAPTURE DU RECORD':'CLASSEMENT FINAL')+'</label><div class="shot-box image-preview">'+imageTag(r.result,'Classement '+r.name)+'</div></div>'+
  '<div class="shot"><label>TRACÉ</label><div class="shot-box image-preview">'+imageTag(r.route,'Tracé '+r.name)+'</div></div></div>'+
  '<div class="card-actions"><button type="button" class="btn secondary" data-action="edit">MODIFIER</button><button type="button" class="btn subtle" data-action="png">↓ PNG</button>'+
+ (r.kind==='record'&&!r.recordClosed?'<button type="button" class="btn record-close-btn" data-action="record-close" title="Clôturer le record et débloquer les classements finaux">✓ CLÔTURER LE RECORD</button>':'')+
  (r.upcoming?'<button type="button" class="btn calendar-btn" data-action="calendar" title="Ajouter cette course à Apple Calendrier">📅 CALENDRIER</button>':'')+
  '<button type="button" class="btn subtle" data-action="delete">×</button></div></div></article>';
 }
@@ -299,7 +304,7 @@ function render(){
  $('filter-class').innerHTML='<option value="">Toutes les classes</option>'+classes.map(x=>'<option value="'+safe(x)+'">'+safe(x)+'</option>').join('');
  if(classes.includes(selected))$('filter-class').value=selected;
  const q=$('search').value.toLocaleLowerCase('fr').trim(),status=$('filter-status').value,cls=$('filter-class').value,vsr=$('filter-vsr').value;
- const filtered=rows.filter(r=>(!status||(status==='record'?r.kind==='record':status==='live'?['live','record-live'].includes(raceStatus(r)):raceStatus(r)===status))&&(!cls||r.boatClass===cls)&&(!vsr||r.vsr===vsr)&&
+ const filtered=rows.filter(r=>(!status||(status==='record'?r.kind==='record':status==='live'?['live','record-live'].includes(raceStatus(r)):status==='finished'?['finished','record-closed'].includes(raceStatus(r)):raceStatus(r)===status))&&(!cls||r.boatClass===cls)&&(!vsr||r.vsr===vsr)&&
    (!q||[r.name,r.boatClass,r.boat,r.rank,r.rankNational,r.rankDepartment,r.rankCity,r.rankTeam,
            r.startTime,r.end,r.endTime,...(r.kind==='record'?recordEngine.normalize(r.attempts).map(x=>x.startDate+' '+x.startTime):[]),VSR[r.vsr]||'',equipmentModes[r.equipment]||''].some(v=>String(v||'').toLocaleLowerCase('fr').includes(q))));
  const out=[...filtered],sort=$('sort').value;
@@ -311,7 +316,7 @@ function render(){
   chronological(b).localeCompare(chronological(a))||b.createdAt.localeCompare(a.createdAt));
  const raceRows=rows.filter(r=>r.kind==='race');
  $('count-total').textContent=raceRows.length;$('count-live').textContent=rows.filter(r=>['live','record-live'].includes(raceStatus(r))).length;
- $('count-finished').textContent=raceRows.filter(r=>raceStatus(r)==='finished').length;
+ $('count-finished').textContent=raceRows.filter(r=>raceStatus(r)==='finished').length+rows.filter(r=>r.kind==='record'&&r.recordClosed).length;
  $('count-dnf').textContent=raceRows.filter(r=>raceStatus(r)==='dnf').length;
  $('count-record').textContent=rows.filter(r=>r.kind==='record').length;
  $('result-count').textContent=out.length+' / '+rows.length;

@@ -440,6 +440,7 @@ dialog form{border-radius:18px;background:#fff;display:flex;flex-direction:colum
 .record-add-btn{margin-top:12px;width:100%}
 .card.record{border-color:#b9d0e3}
 .card.record .badge-status{background:#245e91}
+.card.record.live .badge-status{background:#e9007c;color:#fff;box-shadow:0 0 13px #f5008b55}
 .record-card{margin-top:13px}
 .record-card-summary{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px 10px;align-items:center;padding:11px;border-radius:9px;background:#eaf3fa;border:1px solid #d5e5f0}
 .record-card-summary>span{font-size:9px;font-weight:800;color:#62829d}
@@ -456,3 +457,16 @@ dialog form{border-radius:18px;background:#fff;display:flex;flex-direction:colum
 .fields .rewards-field[hidden],.fields .equipment-choice[hidden],.fields .arrival-field[hidden],
 .fields .arrival-feedback[hidden],.fields #race-participant-help[hidden]{display:none!important}
 @media(max-width:580px){.record-attempt-row{padding:9px}.record-time-grid{gap:4px}.fields .record-time-grid input{font-size:15px;padding:6px 1px}.record-card-summary>strong{font-size:11px}}
+
+/* Each record attempt owns an independent departure date and clock time. */
+.fields .race-global-start[hidden]{display:none!important}
+.record-start-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:11px}
+.fields .record-start-grid label{font-size:9px;min-width:0;gap:4px}
+.fields .record-start-grid input{min-width:0;width:100%;min-height:40px;padding:7px 8px;font-size:13px;font-variant-numeric:tabular-nums}
+.record-attempt-chip>span{min-width:0}
+.record-attempt-chip>span small{display:block;margin-top:4px;font-size:9px;line-height:1.35;color:#7790a3;font-weight:600}
+@media(max-width:410px){
+ .record-start-grid{grid-template-columns:minmax(0,1fr);gap:5px}
+ .record-attempt-chip{align-items:flex-start;flex-direction:column}
+ .record-attempt-chip>strong{align-self:flex-end}
+}

@@ -286,8 +286,10 @@ function render(){
   sort==='recent'?b.updatedAt.localeCompare(a.updatedAt):
   sort==='vsr'?VSR_PRIORITY(a.vsr)-VSR_PRIORITY(b.vsr)||chronological(b).localeCompare(chronological(a)):
   chronological(b).localeCompare(chronological(a))||b.createdAt.localeCompare(a.createdAt));
- $('count-total').textContent=rows.length;$('count-live').textContent=rows.filter(r=>r.live).length;
- $('count-finished').textContent=rows.filter(r=>raceStatus(r)==='finished').length;
+ const raceRows=rows.filter(r=>r.kind!=='event');
+ $('count-total').textContent=raceRows.length;$('count-live').textContent=raceRows.filter(r=>raceStatus(r)==='live').length;
+ $('count-finished').textContent=raceRows.filter(r=>raceStatus(r)==='finished').length;
+ $('count-dnf').textContent=raceRows.filter(r=>raceStatus(r)==='dnf').length;
  $('result-count').textContent=out.length+' / '+rows.length;
  $('cards').innerHTML=out.map(card).join('')||(rows.length?'<p>Aucune course ne correspond aux filtres.</p>':'');
  scheduleRankingFit();
@@ -366,8 +368,9 @@ function computeRaceStatistics(items){
    points:rewardsUnknown.reduce((a,r)=>a+rewardValue(r.gainPoints),0),
    credits:rewardsUnknown.reduce((a,r)=>a+rewardValue(r.gainCredits),0)});
 
- const live=items.filter(r=>r.live&&!r.upcoming);
- const upcoming=items.filter(r=>r.upcoming);
+ const live=items.filter(r=>raceStatus(r)==='live');
+ const upcoming=items.filter(r=>raceStatus(r)==='planned');
+ const dnf=items.filter(r=>raceStatus(r)==='dnf');
  const ranked=finished.filter(r=>statRank(r)!==null);
  const sortedRanks=ranked.map(r=>statRank(r)).sort((a,b)=>a-b);
  const best=ranked.reduce((acc,r)=>!acc||statRank(r)<statRank(acc)?r:acc,null);
@@ -396,7 +399,7 @@ function computeRaceStatistics(items){
  const yearly=[...years.values()].sort((x,y)=>
    x.year==='Sans date'?1:y.year==='Sans date'?-1:Number(y.year)-Number(x.year));
  return {
-   total,finished,live,upcoming,ranked,relative,best,bestRelative,bestRegional,durationRows,totalSeconds,
+   total,finished,live,upcoming,dnf,ranked,relative,best,bestRelative,bestRegional,durationRows,totalSeconds,
    shortest,longest,yearly,podiumTypes,podiumYears,
    totalPoints,totalCredits,pointRows,creditRows,maxPoints,maxCredits,
    meanPoints:pointRows.length?totalPoints/pointRows.length:null,
@@ -413,7 +416,8 @@ function computeRaceStatistics(items){
  };
 }
 function renderStatistics(){
- const stats=computeRaceStatistics(rows);
+ const raceRows=rows.filter(r=>r.kind!=='event');
+ const stats=computeRaceStatistics(raceRows);
  const statValue=(value)=>value===null?'—':statInt(value);
  const percent=value=>value===null?'—':statDecimal(value,2)+' %';
  const blocks=[
@@ -421,7 +425,8 @@ function renderStatistics(){
      ['COURSES RECENSÉES',statInt(stats.total),'Toutes les fiches'],
      ['TERMINÉES',statInt(stats.finished.length),'Selon le statut de course'],
      ['EN COURS',statInt(stats.live.length),'Halo turquoise'],
-     ['À VENIR',statInt(stats.upcoming.length),'Halo bleu']
+     ['À VENIR',statInt(stats.upcoming.length),'Halo bleu'],
+     ['DNF · ABANDONS',statInt(stats.dnf.length),'Hors palmarès']
    ]},
    {title:'PALMARÈS',items:[
      ['VICTOIRES 🥇',statInt(stats.winners),'1re place au général'],
@@ -541,10 +546,10 @@ function renderStatistics(){
  $('stats-content').innerHTML=blocks.map(counterSection).join('')+podiumPanel+rewardChart+
   '<section class="stats-metric-section"><h3>ÉVOLUTION PAR ANNÉE</h3><p class="stats-caption">Nombre de courses selon la date de départ ; la partie foncée représente les courses terminées.</p>'+annual+'</section>'+
   '<section class="stats-metric-section"><h3>MES HABITUDES DE COURSE</h3><div class="stats-breakdowns">'+
-    distribution('CATÉGORIES VSR',group(rows,r=>VSR[r.vsr]||'Non renseignée'))+
-    distribution('CLASSES DE BATEAUX',group(rows,r=>r.boatClass||'Non renseignée'))+
-    distribution('ÉQUIPEMENTS',group(rows,r=>equipmentModes[r.equipment]||'Non renseigné'))+
-    distribution('STATUTS',group(rows,r=>statusTitle[raceStatus(r)]))+
+    distribution('CATÉGORIES VSR',group(raceRows,r=>VSR[r.vsr]||'Non renseignée'))+
+    distribution('CLASSES DE BATEAUX',group(raceRows,r=>r.boatClass||'Non renseignée'))+
+    distribution('ÉQUIPEMENTS',group(raceRows,r=>equipmentModes[r.equipment]||'Non renseigné'))+
+    distribution('STATUTS',group(raceRows,r=>statusTitle[raceStatus(r)]))+
   '</div></section>'+
   '<section class="stats-metric-section"><h3>PERFORMANCES PAR TYPE DE COURSE</h3><p class="stats-caption">Sur les courses terminées avec classement général. Top % = place divisée par le nombre de participants ; plus bas signifie mieux classé. « — » lorsqu’il manque les participants.</p><div class="stats-breakdowns">'+
     performance('PAR CATÉGORIE VSR',r=>VSR[r.vsr]||'Non renseignée')+
@@ -640,7 +645,7 @@ function pdfMatches(r,v){
   (!v.status||raceStatus(r)===v.status);
 }
 function updatePdfCount(){
- const v=pdfValues(),count=rows.filter(r=>pdfMatches(r,v)).length;
+ const v=pdfValues(),count=rows.filter(r=>r.kind!=='event'&&pdfMatches(r,v)).length;
  $('pdf-match-count').textContent=count;
  $('pdf-generate').disabled=count===0;
 }
@@ -666,7 +671,7 @@ async function exportGeneralPdf(event){
  button.disabled=true;button.textContent='CRÉATION DU PDF…';
  try{
   const report=await import('./report.js');
-  const selection=rows.map(reportRace);
+  const selection=rows.filter(r=>r.kind!=='event').map(reportRace);
   const result=await report.generateGeneralPDF({races:selection,filters:pdfValues(),settings:classSettings});
   closePdfDialog();toast('Rapport PDF téléchargé : '+result.count+' courses, '+result.pages+' pages ✓');
  }catch(error){console.error(error);toast('Export PDF impossible : '+(error?.message||error),true);}
@@ -674,6 +679,14 @@ async function exportGeneralPdf(event){
 }
 
 function preview(k){const img=$('preview-'+k),ph=$('placeholder-'+k);img.hidden=!validImage(pictures[k]);ph.hidden=validImage(pictures[k]);if(validImage(pictures[k]))img.src=pictures[k];else img.removeAttribute('src');}
+function updateKindFields(){
+ const isEvent=$('race-kind').value==='event';
+ $('race-event-id').closest('label').hidden=isEvent;
+ $('race-event-controls').hidden=!isEvent;
+ $('race-joker-control').hidden=isEvent||!$('race-event-id').value;
+ $('race-live').closest('label').hidden=isEvent;
+ $('race-upcoming').closest('label').hidden=isEvent;
+}
 function openEditor(r){
  editId=r?.id||'';
  const data=r||normal();
@@ -682,6 +695,14 @@ function openEditor(r){
  updateArrival();
  $('race-live').checked=!!data.live;
  $('race-upcoming').checked=!!data.upcoming;
+ $('race-dnf').checked=!!data.dnf;
+ $('race-kind').value=data.kind||'race';
+ $('race-event-closed').checked=!!data.eventClosed;
+ $('race-joker').checked=!!data.joker;
+ const parentSelect=$('race-event-id');
+ parentSelect.innerHTML='<option value="">Aucune · course indépendante</option>'+rows.filter(x=>x.kind==='event'&&x.id!==data.id).map(x=>'<option value="'+safe(x.id)+'">'+safe(x.name)+'</option>').join('');
+ parentSelect.value=data.eventId||'';
+ updateKindFields();
  equipmentInputs().forEach(input=>{input.checked=input.value===validEquipment(data.equipment);});
  for(const k of imageKeys){pictures[k]=data[k]||'';preview(k);}
  $('dialog-title').textContent=editId?'MODIFIER LA COURSE':'AJOUTER UNE COURSE';
@@ -695,8 +716,13 @@ dialog.addEventListener('close',()=>{document.body.style.overflow='';editId='';}
 document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',closeEditor));
 async function saveEditor(e){
  e.preventDefault();if(writeBusy||uploads)return;
- const old=rows.find(x=>x.id===editId);const r={...(old||normal()),updatedAt:now(),live:$('race-live').checked,upcoming:$('race-upcoming').checked};
- if(r.live&&r.upcoming){toast('Une course ne peut pas être à venir et en cours simultanément.',true);return;}
+ const old=rows.find(x=>x.id===editId);const r={...(old||normal()),updatedAt:now(),live:$('race-live').checked,upcoming:$('race-upcoming').checked,dnf:$('race-dnf').checked};
+ if([r.live,r.upcoming,r.dnf].filter(Boolean).length>1){toast('Choisis un seul statut manuel : en cours, à venir ou DNF.',true);return;}
+ r.kind=$('race-kind').value==='event'?'event':'race';
+ r.eventId=r.kind==='event'?'':clean($('race-event-id').value,130);
+ r.eventClosed=r.kind==='event'&&$('race-event-closed').checked;
+ r.joker=r.kind!=='event'&&!!r.eventId&&$('race-joker').checked;
+ if(r.kind==='event'&&(r.live||r.upcoming)){toast('Pour un événement, utilise le statut « Compétition clôturée ».',true);return;}
  const arrival=updateArrival();if(arrival.status==='invalid-duration'||arrival.status==='invalid-date'){toast('Corrige la durée ou les horaires avant d’enregistrer.',true);getField(arrival.status==='invalid-duration'?'durationDays':'start').focus();return;}
  if(syncDurationInput()==='invalid'){toast('Durée incorrecte : vérifie les jours, heures, minutes et secondes.',true);getField('durationDays').focus();return;}
  for(const k of Object.keys(props))r[k]=clean(getField(k).value,props[k]);
@@ -719,6 +745,7 @@ async function saveEditor(e){
  const chosen=equipmentInputs().filter(input=>input.checked);if(chosen.length>1){toast('Une seule méthode d’équipement est autorisée.',true);return;}
  r.equipment=validEquipment(chosen[0]?.value);
  if(!r.name){getField('name').focus();return;}for(const k of imageKeys)r[k]=pictures[k]||'';
+ if(!old?.scoreSnapshot){const initial=scoreEngine.scoreFor(r,[...rows.filter(x=>x.id!==r.id),r],raceStatus);if(initial.available)r.scoreSnapshot={...initial,signature:scoreEngine.signature(r),calculatedAt:now()};}
  writeBusy=true;$('save-race').disabled=true;
  try{await saveRow(r);rows=[...rows.filter(x=>x.id!==r.id),r];render();window.RapliModuleCloud?.changed?.();closeEditor();toast('Course enregistrée ✓');}
  catch(err){console.error(err);toast('Impossible de sauvegarder : '+err.message,true);}
@@ -792,11 +819,11 @@ async function exportPNG(r){
   const posterY=STRIP;
   ctx.fillStyle='#e4f4f3';ctx.fillRect(0,posterY,W,PHOTO);
   contain(ctx,im,0,posterY,W,PHOTO);
-  if(r.upcoming||r.live){
-   ctx.fillStyle=r.upcoming?'#176cce':'#eb007c';
+  if(r.upcoming||r.live||r.dnf){
+   ctx.fillStyle=r.dnf?'#aa4939':r.upcoming?'#176cce':'#eb007c';
    ctx.fillRect(30,posterY+22,330,43);
    ctx.font='900 19px Poppins,sans-serif';ctx.fillStyle='#fff';
-   ctx.fillText(r.upcoming?'🔵 À VENIR':'COURSE EN COURS',44,posterY+51);
+   ctx.fillText(r.dnf?'DNF · ABANDON':r.upcoming?'À VENIR':'COURSE EN COURS',44,posterY+51);
   }
   const y=STRIP+PHOTO;
   ctx.fillStyle='#123648';ctx.font='900 39px Poppins,sans-serif';
@@ -817,7 +844,7 @@ async function exportPNG(r){
   }
   ctx.fillStyle='#245c6c';ctx.font='800 17px Poppins,sans-serif';
   if(r.start)ctx.fillText('DÉPART · '+dateTimeFR(r.start,r.startTime),left,y+datesTop,right-left);
-  if(r.end)ctx.fillText('ARRIVÉE · '+dateTimeFR(r.end,r.endTime),left,y+datesTop+28,530);
+  if(!r.dnf&&r.end)ctx.fillText('ARRIVÉE · '+dateTimeFR(r.end,r.endTime),left,y+datesTop+28,530);
   if(r.duration){
    ctx.font='700 21px "Courier Prime","American Typewriter",monospace';ctx.fillStyle='#1a5368';
    ctx.fillText('DURÉE · '+r.duration,618,y+datesTop+28,515);
@@ -847,7 +874,7 @@ async function exportPNG(r){
    ctx.font='800 14px Poppins,sans-serif';ctx.fillText(label,x+56,top+28);
    ctx.font=(i===0?'800 39px':'800 34px')+' "Barlow Condensed","Arial Narrow",sans-serif';
    ctx.fillStyle=i===0?'#fff':'#193e57';
-   let value=rankDisplay(place,total)||'—';
+   let value=r.dnf?(i===0?'DNF':'—'):(rankDisplay(place,total)||'—');
    const available=width-75-(medal?42:0);
    while(ctx.measureText(value).width>available&&value.length>2)value=value.slice(0,-2)+'…';
    ctx.fillText(value,x+56,top+h-14,available);

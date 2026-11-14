@@ -1829,7 +1829,17 @@ const imageFor=v=>/^data:image\/(?:jpeg|png|webp);base64,/i.test(v.image||'')||/
 function toast(message,isError=false){let root=$('#toast-root');if(!root)return;const node=document.createElement('div');node.className='toast'+(isError?' error':'');node.textContent=message;root.appendChild(node);setTimeout(()=>node.remove(),4200);}
 function openStorage(){return new Promise((resolve,reject)=>{if(!('indexedDB' in window))return reject(new Error('IndexedDB unavailable'));const req=indexedDB.open(DB_NAME,1);req.onupgradeneeded=()=>{if(!req.result.objectStoreNames.contains(DB_STORE))req.result.createObjectStore(DB_STORE)};req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);});}
 function idbOp(type,value){return new Promise((resolve,reject)=>{const tx=db.transaction(DB_STORE,type);const os=tx.objectStore(DB_STORE);const req=type==='readonly'?os.get(DB_KEY):os.put(value,DB_KEY);req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);});}
-async function save(){try{if(storageMode==='indexeddb')await idbOp('readwrite',archive);else if(storageMode==='localstorage')localStorage.setItem(DB_KEY,JSON.stringify(archive));return true;}catch(e){console.error('Save failed',e);toast('Enregistrement impossible. Exporte une sauvegarde et vérifie le stockage.',true);return false;}}
+async function save(){try{
+ if(storageMode==='indexeddb')await idbOp('readwrite',archive);
+ else if(storageMode==='localstorage')localStorage.setItem(DB_KEY,JSON.stringify(archive));
+ // Last persistence on THIS device, not the original creation date of a card.
+ if(storageMode!=='memory'){
+  const savedAt=now();
+  window.rapliArchivesLocalSavedAt=savedAt;
+  try{localStorage.setItem('rapli-archives-local-saved-at-v1',savedAt);}catch(_){}
+ }
+ return true;
+}catch(e){console.error('Save failed',e);toast('Enregistrement impossible. Exporte une sauvegarde et vérifie le stockage.',true);return false;}}
 async function initialize(){try{db=await openStorage();const saved=await idbOp('readonly');if(saved)archive=normalizeState(saved);}catch(e){console.warn('IndexedDB unavailable:',e);try{localStorage.setItem('__ma_test','1');localStorage.removeItem('__ma_test');storageMode='localstorage';const saved=localStorage.getItem(DB_KEY);if(saved)archive=normalizeState(JSON.parse(saved));toast('Stockage de secours activé : pense à exporter tes sauvegardes.');}catch(err){storageMode='memory';toast('Stockage persistant indisponible : tes modifications seront temporaires.',true);}}await importRapliPdfCatalogue();render();}
 function normalizeState(s){if(!s||!Array.isArray(s.groups)||!Array.isArray(s.variants)||!Array.isArray(s.copies)||!Array.isArray(s.wishlist))throw new Error('Fichier de sauvegarde non conforme');return {version:1,groups:s.groups,variants:s.variants,copies:s.copies,wishlist:s.wishlist,createdAt:s.createdAt||now()};}
 function navigate(view,group=null,variant=null){currentView=view;currentGroup=group;currentVariant=variant;searchTerm='';activeFilter='all';$('#sidebar')?.classList.remove('open');$('#mobile-backdrop').hidden=true;render();window.scrollTo({top:0,behavior:'instant'});}
@@ -2701,6 +2711,7 @@ initialize().then(() => {
     persist: () => rapliOriginalSave(),
     refresh: () => render(),
     notify: (message, isError=false) => toast(message,isError),
+    exportLocalSnapshot: () => {exportJson();return true;},
     openBackups: () => {
       if(window.parent!==window) window.parent.postMessage({type:'RAPLI_SHOW_BACKUP_MANAGER'},location.origin);
       else navigate('tools');

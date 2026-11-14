@@ -15,6 +15,7 @@
   let context, client, userId, ownerId, ready = false, connecting = false, uploading = false;
   let suspended = false, conflict = false, pending = false, refreshing = false, timer, status = 'Local uniquement';
   let error = false, remote = null, remoteRevision = 0, rowExists = false;
+  let remoteUpdatedAt = null, observedRemoteRevision = null;
   let lastConfirmed = '', storageReady = false;
   const uploadedImages = new Set();
   const SYNC_MARK = 'rapli-archives-last-successful-cloud-v1';
@@ -34,6 +35,39 @@
     }catch(_){return false;}
   }
 
+  const validStamp=value=>{
+    if(typeof value!=='string'||!value.trim())return null;
+    const time=Date.parse(value);
+    return Number.isFinite(time)&&time>0?new Date(time).toISOString():null;
+  };
+  function lastLocalSave(){
+    const live=validStamp(window.rapliArchivesLocalSavedAt);
+    if(live)return live;
+    try{return validStamp(localStorage.getItem('rapli-archives-local-saved-at-v1'));}
+    catch(_){return null;}
+  }
+  function latestRecordEdit(){
+    if(!context)return null;
+    const collection=context.get();
+    let latest=0;
+    for(const key of ['groups','variants','copies','wishlist']){
+      for(const item of Array.isArray(collection[key])?collection[key]:[]){
+        const time=Date.parse(item?.updatedAt||item?.createdAt||'');
+        if(Number.isFinite(time)&&time>0&&time<=Date.now()+86400000)latest=Math.max(latest,time);
+      }
+    }
+    return latest?new Date(latest).toISOString():null;
+  }
+  // Read-only: never advances the revision used for optimistic concurrency.
+  async function refreshBackupInfo(){
+    if(!ready||!client||!ownerId)return false;
+    const result=await client.from(TABLE).select('state_revision,updated_at')
+      .eq('user_id',ownerId).maybeSingle();
+    if(result.error)throw result.error;
+    remoteUpdatedAt=validStamp(result.data?.updated_at);
+    observedRemoteRevision=Number(result.data?.state_revision||0);
+    return true;
+  }
   function state() {
     const a = context.get();
     return Object.fromEntries(FIELDS.filter(k => Object.prototype.hasOwnProperty.call(a, k))
@@ -237,6 +271,8 @@
       if (result.error) throw result.error;
       rowExists = !!result.data;
       remoteRevision = Number(result.data?.state_revision || 0);
+      observedRemoteRevision = remoteRevision;
+      remoteUpdatedAt = validStamp(result.data?.updated_at);
       remote = result.data?.archive_state ? normalize(result.data.archive_state) : null;
       ready = true;
       try { localStorage.setItem(FLAG, '1'); } catch (_) {}
@@ -295,7 +331,7 @@
           .insert({user_id:ownerId,archive_state:packed,
             payload:{copies:snapshot.copies,wishlist:snapshot.wishlist},state_revision:1,
             updated_at:new Date().toISOString()})
-          .select('state_revision').single();
+          .select('state_revision,updated_at').single();
         if (result.error) throw result.error;
         output = result.data;
       } else {
@@ -304,7 +340,7 @@
             payload:{copies:snapshot.copies,wishlist:snapshot.wishlist},
             state_revision:remoteRevision+1,updated_at:new Date().toISOString()})
           .eq('user_id',ownerId).eq('state_revision',remoteRevision)
-          .select('state_revision').maybeSingle();
+          .select('state_revision,updated_at').maybeSingle();
         if (result.error) throw result.error;
         output = result.data;
         if (!output) {
@@ -314,6 +350,8 @@
       }
       rowExists = true;
       remoteRevision = Number(output.state_revision);
+      observedRemoteRevision = remoteRevision;
+      remoteUpdatedAt = validStamp(output.updated_at);
       remote = packed;
       lastConfirmed = stable(packed);
       rememberSynced(packed);
@@ -367,11 +405,13 @@
     if (!conflict || !ready) return;
     if (!confirm('Remplacer la version Supabase par toutes les données de cet appareil ? Exporte le JSON avant de continuer.')) return;
     // Re-read latest revision before editing, so concurrent writes cannot silently disappear.
-    const result = await client.from(TABLE).select('archive_state,state_revision')
+    const result = await client.from(TABLE).select('archive_state,state_revision,updated_at')
       .eq('user_id',ownerId).maybeSingle();
     if (result.error) { show('Impossible de vérifier la version cloud : ' + result.error.message, true); return; }
     if (Number(result.data?.state_revision || 0) !== remoteRevision) {
       remoteRevision = Number(result.data?.state_revision || 0);
+      observedRemoteRevision = remoteRevision;
+      remoteUpdatedAt = validStamp(result.data?.updated_at);
       remote = result.data?.archive_state || null;
       show('Le cloud a changé. Actualise la page avant de remplacer sa version.', true);
       return;
@@ -410,11 +450,13 @@
       ownerId=data.owner_id;
       // Never send the phone's local state automatically to the newly linked owner.
       clearTimeout(timer); pending=false; conflict=true; remote=null; rowExists=false;
-      const result=await client.from(TABLE).select('archive_state,payload,state_revision')
+      const result=await client.from(TABLE).select('archive_state,payload,state_revision,updated_at')
         .eq('user_id',ownerId).maybeSingle();
       if(result.error || !result.data?.archive_state)throw new Error(result.error?.message||'Collection principale introuvable');
       rowExists=true;
       remoteRevision=Number(result.data.state_revision||0);
+      observedRemoteRevision=remoteRevision;
+      remoteUpdatedAt=validStamp(result.data.updated_at);
       remote=normalize(result.data.archive_state);
       show('Appareil associé ✓ · choisis « Restaurer le cloud » pour afficher la même collection.');
       if(input)input.value='';
@@ -429,11 +471,13 @@
     refreshing = true;
     ui();
     try {
-      const latest = await client.from(TABLE).select('archive_state,state_revision')
+      const latest = await client.from(TABLE).select('archive_state,state_revision,updated_at')
         .eq('user_id',ownerId).maybeSingle();
       if (latest.error) throw latest.error;
       if (!latest.data?.archive_state) return 'unchanged';
       const newer = Number(latest.data.state_revision || 0);
+      observedRemoteRevision=newer;
+      remoteUpdatedAt=validStamp(latest.data.updated_at);
       if (newer <= remoteRevision) return 'unchanged';
       const cloudState = normalize(latest.data.archive_state);
       const localPacked = await convertImages(state(), false);
@@ -574,8 +618,14 @@
     getManagerState:()=>({
       ready,connecting,uploading,refreshing,conflict,pending,error,status,
       primary:ready&&ownerId===userId,
-      linked:ready&&!!userId&&ownerId!==userId
+      linked:ready&&!!userId&&ownerId!==userId,
+      localSavedAt:lastLocalSave(),localEditedAt:latestRecordEdit(),
+      remoteSavedAt:remoteUpdatedAt,
+      remoteRevision:observedRemoteRevision??remoteRevision,
+      remoteInfoOutdated:observedRemoteRevision!==null&&observedRemoteRevision!==remoteRevision
     }),
+    refreshBackupInfo,
+    exportLocalSnapshot:()=>{if(!context?.exportLocalSnapshot)throw Error('Export Archives non disponible.');return context.exportLocalSnapshot();},
     enableManager:start,
     issuePairingCode:issueCode,
     redeemPairingCode:redeemCode,

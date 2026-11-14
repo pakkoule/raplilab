@@ -289,6 +289,14 @@ body[data-active="regatta"] .portal-header{background:linear-gradient(120deg,#10
 #global-manager-conflict[hidden],#global-manager-enable[hidden],#global-pair-create[hidden]{display:none!important}
 #global-manager-conflict{border-color:#e8c8a2;background:#fff8ef}
 #global-manager-conflict h3{color:#8d551e}
+.global-manager-backup-dates{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:11px 0}
+.global-manager-date{min-width:0;padding:10px;border:1px solid #d2e0ec;border-radius:9px;background:#fff}
+.global-manager-date strong{display:block;margin-bottom:5px;font:800 11px/1.35 Inter,system-ui,sans-serif;color:#244b67}
+.global-manager-date output{display:block;font:750 12px/1.45 Inter,system-ui,sans-serif;color:#163f61;overflow-wrap:anywhere}
+.global-manager-date small{display:block;margin-top:5px;font:500 10px/1.5 Inter,system-ui,sans-serif;color:#617487}
+#global-manager-conflict .global-manager-export{background:#fff;border-color:#7dadd0;color:#154b73}
+#global-manager-dates-warning[data-warning=true]{color:#983f31!important;font-weight:700!important}
+@media(max-width:420px){.global-manager-backup-dates{grid-template-columns:1fr}}
 @media(max-width:800px){
  .portal-nav-strip{overflow-x:visible;overflow-y:visible;touch-action:auto;gap:6px}
  .portal-nav-strip .product-tabs{flex:1 1 auto;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
@@ -371,7 +379,23 @@ body[data-active="regatta"] .portal-header{background:linear-gradient(120deg,#10
         </section>
         <section id="global-manager-conflict" class="global-manager-box" hidden aria-label="Résoudre un conflit de sauvegarde Archives">
           <h3>Deux versions d’Archives différentes</h3>
-          <p>Choisis la version à conserver. Aucune restauration ne se fait automatiquement et chaque action demande confirmation.</p>
+          <p>Compare les dates et exporte le JSON de cet appareil avant de choisir. Les dates seules ne prouvent pas quelle version est la plus complète.</p>
+          <div class="global-manager-backup-dates" role="group" aria-label="Dates des sauvegardes Archives">
+            <div class="global-manager-date">
+              <strong>Sur cet appareil</strong>
+              <output id="global-manager-local-date">Date locale inconnue</output>
+              <small id="global-manager-local-edit">Dernière date de fiche : indisponible</small>
+            </div>
+            <div class="global-manager-date">
+              <strong>Dans Supabase</strong>
+              <output id="global-manager-remote-date">Date cloud inconnue</output>
+              <small id="global-manager-remote-revision">Révision : indisponible</small>
+            </div>
+          </div>
+          <p id="global-manager-dates-warning">La date locale est suivie depuis cette mise à jour ; les anciennes sauvegardes peuvent ne pas avoir d’horodatage.</p>
+          <div class="global-manager-buttons">
+            <button type="button" id="global-manager-export-local" class="global-manager-export">Exporter la version locale (JSON)</button>
+          </div>
           <div class="global-manager-buttons">
             <button type="button" id="global-manager-restore" class="primary">Restaurer Archives depuis Supabase</button>
             <button type="button" id="global-manager-keep-local">Conserver Archives de cet appareil</button>
@@ -567,7 +591,12 @@ body[data-active="regatta"] .portal-header{background:linear-gradient(120deg,#10
     const managerConflict=document.getElementById('global-manager-conflict');
     let managerBusy=false,managerReady=false;
     const managerActionIds=['global-manager-enable','global-pair-create','global-pair-redeem',
-      'global-manager-save','global-manager-refresh','global-manager-restore','global-manager-keep-local'];
+      'global-manager-save','global-manager-refresh','global-manager-export-local','global-manager-restore','global-manager-keep-local'];
+    const readableSaveDate=value=>{
+      if(typeof value!=='string'||!value)return null;
+      const date=new Date(value);
+      return Number.isNaN(date.getTime())?null:new Intl.DateTimeFormat('fr-FR',{dateStyle:'medium',timeStyle:'short'}).format(date);
+    };
     function managerMessage(message,bad=false){
       managerFeedback.textContent=message;
       managerFeedback.dataset.error=String(!!bad);
@@ -580,11 +609,32 @@ body[data-active="regatta"] .portal-header{background:linear-gradient(120deg,#10
       managerEnable.hidden=!!state.ready;
       managerPairCreate.hidden=!state.ready||!state.primary;
       managerConflict.hidden=!state.conflict;
+      const localDate=readableSaveDate(state.localSavedAt);
+      const recordDate=readableSaveDate(state.localEditedAt);
+      const cloudDate=readableSaveDate(state.remoteSavedAt);
+      document.getElementById('global-manager-local-date').textContent=localDate
+        ?'Dernier enregistrement local : '+localDate
+        :'Enregistrement local : date inconnue';
+      document.getElementById('global-manager-local-edit').textContent=recordDate
+        ?'Dernière date de fiche : '+recordDate+' (indicatif)'
+        :'Dernière date de fiche : indisponible';
+      document.getElementById('global-manager-remote-date').textContent=cloudDate
+        ?'Dernière sauvegarde : '+cloudDate
+        :'Dernière sauvegarde : date inconnue';
+      document.getElementById('global-manager-remote-revision').textContent=state.remoteRevision
+        ?'Révision Supabase n° '+state.remoteRevision
+        :'Aucune révision renseignée';
+      const warning=document.getElementById('global-manager-dates-warning');
+      warning.dataset.warning=String(!!state.remoteInfoOutdated);
+      warning.textContent=state.remoteInfoOutdated
+        ?'Supabase a été modifié depuis le chargement de cette version. Recharge Archives avant de choisir une restauration.'
+        :'Dates indicatives : la plus récente n’est pas forcément la plus complète. Une ancienne sauvegarde locale peut ne pas être horodatée.';
       managerActionIds.forEach(id=>{
         const button=document.getElementById(id);
         if(button)button.disabled=managerBusy ||
-          (!state.ready&&id!=='global-manager-enable'&&!['global-manager-save','global-manager-refresh'].includes(id)) ||
-          (id==='global-pair-create'&&!state.primary);
+          (!state.ready&&id!=='global-manager-enable'&&!['global-manager-save','global-manager-refresh','global-manager-export-local'].includes(id)) ||
+          (id==='global-pair-create'&&!state.primary) ||
+          (state.remoteInfoOutdated&&['global-manager-restore','global-manager-keep-local'].includes(id));
       });
     }
     async function withManager(message,work){
@@ -610,7 +660,11 @@ body[data-active="regatta"] .portal-header{background:linear-gradient(120deg,#10
     function openCloudManager(){
       if(!manager.open)manager.showModal();
       managerMessage('Lecture des sauvegardes et de l’appairage...');
-      void withManager('Connexion au gestionnaire...',async api=>({message:api.getManagerState().status}));
+      void withManager('Connexion au gestionnaire...',async api=>{
+        try{await api.refreshBackupInfo?.();}
+        catch(error){return {message:'Dates Supabase non actualisées : '+(error?.message||'connexion indisponible'),error:true};}
+        return {message:api.getManagerState().status};
+      });
     }
     document.getElementById('global-cloud-manage').addEventListener('click',openCloudManager);
     document.getElementById('global-manager-close').addEventListener('click',()=>manager.close());
@@ -633,6 +687,15 @@ body[data-active="regatta"] .portal-header{background:linear-gradient(120deg,#10
       return {message:linked?'Appareil associé ✓ Choisis la version Archives à conserver, puis actualise les autres onglets.'
         :api.getManagerState().status,error:!linked};
     }));
+    // Synchronous same-origin call keeps the download inside Safari's user gesture.
+    document.getElementById('global-manager-export-local').addEventListener('click',()=>{
+      try{
+        const api=frames.archives?.contentWindow?.RapliCloud;
+        if(!api?.exportLocalSnapshot)throw Error('Archive non initialisée : rouvre Sauvegardes.');
+        const started=api.exportLocalSnapshot();
+        managerMessage(started?'Export JSON de la version locale lancé. Garde ce fichier avant toute restauration.':'Export local indisponible.',!started);
+      }catch(error){managerMessage('Export local impossible : '+(error?.message||error),true);}
+    });
     document.getElementById('global-manager-restore').addEventListener('click',()=>void withManager('Restauration Archives...',async api=>{
       const restored=await api.restoreFromCloud();
       return {message:restored?'Archives restaurées ✓ Pour les autres collections, clique « Actualiser les 3 onglets ».'

@@ -684,7 +684,7 @@ function scoreText(score,kind){
  const rows=kind==='event'?
   [['Classement général', 'overall',70],['Régularité des étapes','regularity',20],['Étapes terminées','completion',10]]:
   [['Classement relatif','relative',35],['Progression personnelle','progress',20],['Difficulté VSR','vsr',10],['Affluence relative','attendance',15],['Équipement utilisé','equipment',20]];
- const value=x=>Number.isFinite(Number(x))?Number(x).toLocaleString('fr-FR',{maximumFractionDigits:2}):'—';
+ const value=x=>x===null||x===undefined||x===''?'—':Number.isFinite(Number(x))?Number(x).toLocaleString('fr-FR',{maximumFractionDigits:2}):'—';
  return '<div class="score-dialog-total">'+value(score.value)+'/100</div>'+
   '<div class="score-dialog-mention">'+safe(score.mention)+(score.provisional?' · PROVISOIRE':'')+'</div>'+
   '<p class="score-note">Note éditoriale Rapli, indépendante du classement officiel Virtual Regatta.</p>'+

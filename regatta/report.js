@@ -48,7 +48,7 @@ export function reportTotals(items){
  const unknown=items.filter(r=>!vsrNames[r.vsr]).length;
  if(unknown)cats.push({key:'',name:'NON RENSEIGNEE',count:unknown});
  return {count:items.length,finished:done.length,live:items.filter(r=>r.reportStatus==='live').length,
-  upcoming:items.filter(r=>r.reportStatus==='planned').length,medalCounts,seconds,withDuration,points,credits,cats};
+  upcoming:items.filter(r=>r.reportStatus==='planned').length,dnf:items.filter(r=>r.reportStatus==='dnf').length,medalCounts,seconds,withDuration,points,credits,cats};
 }
 function timeText(seconds){
  if(!Number.isFinite(seconds)||seconds<=0)return '—';
@@ -86,22 +86,22 @@ export async function generateGeneralPDF({races,filters={},settings={},outputNam
   filters.vsr?(vsrNames[filters.vsr]||'VSR'):'TOUTES VSR',
   filters.boatClass?'CLASSE '+filters.boatClass:'TOUTES CLASSES',
   filters.boat?'BATEAU '+filters.boat:'TOUS BATEAUX',
-  filters.status?filters.status.toUpperCase():'TOUS STATUTS'
+  filters.status?(filters.status==='dnf'?'DNF - ABANDON':filters.status.toUpperCase()):'TOUS STATUTS'
  ];
  header('BILAN GENERAL · '+selection.length+' COURSES');
  note(doc,'RAPPORT DE COLLECTION',margin,31,19,navy,'bold');
  note(doc,'SELECTION : '+filterTokens.map(text).join('  /  '),margin,38,8,'#6e8392','normal',269);
  const metrics=[
   ['COURSES',number(summary.count)],['TERMINEES',number(summary.finished)],
-  ['EN COURS',number(summary.live)],['A VENIR',number(summary.upcoming)],
+  ['EN COURS',number(summary.live)],['A VENIR',number(summary.upcoming)],['DNF',number(summary.dnf)],
   ['PODIUMS GENERAL',number(summary.medalCounts[0].podiums)],['TEMPS TOTAL',timeText(summary.seconds)],
   ['POINTS VSR',number(summary.points)],['CREDITS VR',number(summary.credits)]
  ];
  for(let i=0;i<metrics.length;i++){
-  const [label,value]=metrics[i],x=margin+(i%4)*69,y=44+Math.floor(i/4)*29;
-  rect(x,y,65,25,i===6||i===7?'#f5f7e8':'#eaf5f7');
-  note(doc,label,x+4,y+7,8,'#617a8a','bold',56);
-  note(doc,value,x+4,y+19.8,16,i>=6?'#8e6818':teal,'bold',58);
+  const [label,value]=metrics[i],x=margin+(i%5)*55,y=44+Math.floor(i/4)*29;
+  rect(x,y,53,25,i===7||i===8?'#f5f7e8':'#eaf5f7');
+  note(doc,label,x+3,y+7,7.5,'#617a8a','bold',47);
+  note(doc,value,x+3,y+19.8,15,i>=7?'#8e6818':teal,'bold',47);
  }
  note(doc,'PODIUMS PAR CLASSEMENT',margin,112,11,navy,'bold');
  const widths=[51,56,56,51,51],xs=[11,64,122,180,234],mc=summary.medalCounts;
@@ -145,11 +145,11 @@ export async function generateGeneralPDF({races,filters={},settings={},outputNam
    }
    const vals=[
     dateFR(r.start),
-    (r.name||'—')+(r.boat?' / '+r.boat:''),
+    (r.name||'—')+(r.reportStatus==='dnf'?' [DNF]':'')+(r.boat?' / '+r.boat:''),
     vsrNames[r.vsr]||'—',
-    r.boatClass||'—',fmtRank(r.rank,r.rankTotal),
-    fmtRank(r.rankNational,r.rankNationalTotal),fmtRank(r.rankDepartment,r.rankDepartmentTotal),
-    fmtRank(r.rankCity,r.rankCityTotal),fmtRank(r.rankTeam,r.rankTeamTotal),
+    r.boatClass||'—',r.reportStatus==='dnf'?'—':fmtRank(r.rank,r.rankTotal),
+    r.reportStatus==='dnf'?'—':fmtRank(r.rankNational,r.rankNationalTotal),r.reportStatus==='dnf'?'—':fmtRank(r.rankDepartment,r.rankDepartmentTotal),
+    r.reportStatus==='dnf'?'—':fmtRank(r.rankCity,r.rankCityTotal),r.reportStatus==='dnf'?'—':fmtRank(r.rankTeam,r.rankTeamTotal),
     r.duration||'—',r.reportStatus==='finished'&&r.gainPoints?number(r.gainPoints):'—',
     r.reportStatus==='finished'&&r.gainCredits?number(r.gainCredits):'—'
    ];

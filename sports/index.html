@@ -560,8 +560,8 @@ body::before{display:none!important}
 .collector-badge.has-logo{min-width:65px;padding:4px 7px}
 .collector-badge-logo{display:block;max-width:78px;max-height:27px;object-fit:contain;width:auto;height:auto;filter:none}
 /* Logo RC importé : visuel seul, sans fond, contour ou légende du badge collector. */
-.collector-rookie-logo{display:block;flex:0 1 auto;width:auto;height:auto;max-width:100px;max-height:72px;object-fit:contain;border:0;border-radius:0;padding:0;margin:0;background:none;box-shadow:none;filter:none}
-@media(max-width:410px){.collector-rookie-logo{max-width:78px;max-height:58px}}
+.collector-rookie-logo{display:block;flex:0 1 auto;width:auto;height:auto;max-width:84px;max-height:60px;object-fit:contain;border:0;border-radius:0;padding:0;margin:0;background:none;box-shadow:none;filter:none}
+@media(max-width:410px){.collector-rookie-logo{max-width:68px;max-height:49px}}
 .collector-no-number{font:700 9px Poppins,sans-serif;color:#8696ac}
 .card-bottom{align-items:end;flex-wrap:wrap;gap:8px}
 .card-bottom .move-card{margin-left:auto}
@@ -579,7 +579,56 @@ body::before{display:none!important}
 .logo-tabs{flex-wrap:wrap}
 @media(max-width:750px){.collector-badge{min-width:58px;min-height:44px;padding:4px 6px}.collector-badge-main{font-size:23px;min-height:24px}.collector-badge-logo{max-height:24px;max-width:67px}.collector-badge-caption{font-size:6px}.collector-row{gap:5px}}
 @media(max-width:420px){.collector-badge{min-width:55px}.collector-badge-main{font-size:21px}.collector-settings-grid{grid-template-columns:1fr}}
-</style>  <link rel="stylesheet" href="../shared/photo-zoom.css">
+</style>
+<style id="rapli-sports-own-stats-and-pickers">
+/* Imported sports logos have no own badge, backing, outline or repeated text. */
+.brand-lockup img.logo-tiny.has-image,.team-row img.logo-tiny.has-image,.logo-entry img.logo-tiny.has-image{
+  display:block;flex:0 1 auto;object-fit:contain;background:transparent!important;border:0!important;
+  border-radius:0!important;box-shadow:none!important;padding:0!important;filter:none!important;
+  width:auto;height:auto;max-width:99px;max-height:43px;min-width:0;
+}
+.team-row img.logo-tiny.has-image{max-width:76px;max-height:36px}
+.saved-value-picker{margin:4px 0 7px;min-height:40px}
+.players-editor .player-picker{font-size:11px;margin:5px 0 7px}
+#collectionPanel[hidden],#statsPanel[hidden]{display:none!important}
+.stats-panel{display:grid;gap:19px;margin-top:8px;color:#20375b}
+.stats-panel-head{display:flex;justify-content:space-between;align-items:end;flex-wrap:wrap;gap:6px;border-bottom:1px solid #d9e4f4;padding:8px 2px 17px}
+.stats-panel-head h3{font-size:18px;letter-spacing:.02em;margin:0;color:#123c84;font-weight:900}
+.stats-panel-head p{font-size:11px;color:#667e9e;margin:5px 0 0;line-height:1.6}
+.stats-own-count{font:900 14px Poppins,sans-serif;color:#2056d6}
+.stats-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.stats-kpi{border:1px solid #d5e2f3;border-radius:12px;background:linear-gradient(135deg,#fff,#f0f5ff);padding:15px 12px;min-width:0}
+.stats-kpi-label{display:block;font-size:10px;font-weight:800;text-transform:uppercase;color:#617a9a;letter-spacing:.04em}
+.stats-kpi-value{display:block;font:900 26px/1.2 Poppins,sans-serif;color:#1c4daf;margin-top:6px;font-variant-numeric:tabular-nums}
+.stats-kpi-sub{display:block;color:#7a91ab;font-size:9px;margin-top:3px}
+.stats-breakdowns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.stats-breakdown{background:#fff;border:1px solid #dae5f4;border-radius:14px;padding:16px;min-width:0}
+.stats-breakdown h4{font-size:13px;font-weight:900;color:#1b416f;margin:0 0 13px}
+.stats-rank-row{margin:12px 0;min-width:0}
+.stats-rank-top{display:flex;justify-content:space-between;align-items:baseline;gap:12px;color:#456282;font-size:11px;font-weight:700}
+.stats-rank-top>span{min-width:0;overflow-wrap:anywhere}
+.stats-rank-top strong{font-weight:900;color:#2056d6;white-space:nowrap}
+.stats-track{height:6px;background:#e7effa;border-radius:50px;overflow:hidden;margin-top:6px}
+.stats-track span{display:block;height:100%;background:#2056d6;border-radius:inherit}
+.stats-empty{padding:28px 18px;text-align:center;border:1px dashed #bed3ef;border-radius:14px;background:#f6f9ff;color:#65809d;font-size:12px}
+@media(max-width:750px){
+ .stats-kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ .stats-breakdowns{grid-template-columns:minmax(0,1fr);gap:9px}
+ .stats-kpi{padding:12px 10px}
+ .stats-kpi-value{font-size:23px}
+ .tabs{gap:3px;min-width:0}
+ .tabs .tab{padding:13px 10px;font-size:11px;letter-spacing:.03em;gap:5px}
+ .section-nav{gap:8px;flex-wrap:wrap}
+ .nav-actions{margin-left:auto}
+}
+@media(max-width:410px){
+ .tabs{width:100%;justify-content:space-between}
+ .tabs .tab{padding:12px 7px;font-size:10px}
+ .team-row img.logo-tiny.has-image{max-width:60px;max-height:30px}
+ .brand-lockup img.logo-tiny.has-image{max-width:76px;max-height:38px}
+}
+</style>
+  <link rel="stylesheet" href="../shared/photo-zoom.css">
 </head>
 <body>
   <div class="app-shell">
@@ -610,12 +659,14 @@ body::before{display:none!important}
           <div class="tabs" role="tablist" aria-label="Collection">
             <button type="button" role="tab" aria-selected="true" class="tab active" data-view="own">OWN <b id="tabOwnCount">0</b></button>
             <button type="button" role="tab" aria-selected="false" class="tab" data-view="wishlist">WISHLIST <b id="tabWishCount">0</b></button>
+            <button type="button" role="tab" aria-selected="false" class="tab" data-view="stats">STATISTIQUES</button>
           </div>
           <div class="nav-actions">
             <button id="logosBtn" type="button" class="button button-soft"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg> Gérer les logos</button>
             <button id="addCardBtn" type="button" class="button button-primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg> Ajouter une carte</button>
           </div>
         </div>
+        <div id="collectionPanel">
         <div class="filters">
           <div class="field search-field"><label class="field-label" for="filterSearch">RECHERCHE</label><div class="input-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input class="input with-icon" id="filterSearch" type="search" autocomplete="off" placeholder="Joueur, référence, équipe, tag…" aria-label="Rechercher des cartes"></div></div>
           <div class="field"><label class="field-label" for="filterBrand">MARQUE</label><select class="select" id="filterBrand"><option value="">Toutes les marques</option></select></div>
@@ -644,6 +695,8 @@ body::before{display:none!important}
         <div id="demoBanner" class="demo-strip hidden"><span><strong>APERÇU DE DÉMONSTRATION</strong> — Ces cartes sont des exemples modifiables.</span><button class="link-btn" id="clearDemoBtn" type="button">Supprimer les exemples</button></div>
         <div id="cardGrid" class="cards-grid" aria-live="polite"></div>
         <div id="emptyState" class="empty hidden"><div class="empty-mark" id="emptyIcon"></div><h3 id="emptyTitle">Aucune carte pour le moment</h3><p id="emptyCopy">Ta collection commence ici.</p><button type="button" class="button button-primary" id="emptyAddBtn">Ajouter une carte</button></div>
+        </div>
+        <div id="statsPanel" class="stats-panel" role="tabpanel" aria-label="Statistiques des cartes OWN" hidden></div>
       </section>
     </main>
     <footer class="footer"><span>© RAPLI SPORTS · PERSONAL COLLECTION</span><span>SAUVEGARDE LOCALE · EXPORT JSON DISPONIBLE</span></footer>
@@ -668,9 +721,9 @@ body::before{display:none!important}
               <div id="playerEntries" class="player-entries" aria-label="Joueurs et caractéristiques de la carte"></div>
               <div id="playerCount" class="field-hint" role="status">1 / 5 joueurs · Auto et Patch rattachés à chaque joueur</div>
             </div>
-            <div class="input-group"><label for="cardTeam">Équipe</label><input id="cardTeam" class="input" name="team" list="teamsList" maxlength="100" placeholder="Philadelphia 76ers"><datalist id="teamsList"></datalist></div>
+            <div class="input-group"><label for="cardTeam">Équipe</label><select id="cardTeamPicker" class="select saved-value-picker" aria-label="Choisir une équipe déjà enregistrée"><option value="">Choisir une équipe enregistrée…</option></select><input id="cardTeam" class="input" name="team" list="teamsList" maxlength="100" placeholder="Ou saisir une nouvelle équipe"><datalist id="teamsList"></datalist></div>
             <div class="input-group"><label for="cardReference">Référence</label><input id="cardReference" class="input" name="reference" maxlength="180" placeholder="2025-26 Topps Chrome #…"></div>
-            <div class="input-group"><label for="tagField">Variations / tags</label><div id="chipEditor" class="chip-editor"><div id="editChips" style="display:contents"></div><input id="tagField" class="tag-input" placeholder="Chrome, Refractor…" maxlength="60" autocomplete="off"></div><div class="field-hint">Entrée ou virgule pour ajouter plusieurs tags.</div></div>
+            <div class="input-group"><label for="tagField">Variations / tags</label><select id="tagPicker" class="select saved-value-picker" aria-label="Ajouter un tag déjà enregistré"><option value="">Ajouter un tag existant…</option></select><div id="chipEditor" class="chip-editor"><div id="editChips" style="display:contents"></div><input id="tagField" class="tag-input" placeholder="Chrome, Refractor…" maxlength="60" autocomplete="off"></div><div class="field-hint">Sélectionne un tag existant, ou saisis-en un nouveau puis appuie sur Entrée.</div></div>
             <div class="number-control"><div class="number-head"><label for="cardNumbered"><input id="cardNumbered" class="custom" type="checkbox"><span class="box-check"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></span> CARTE NUMÉROTÉE</label><span class="field-hint">Ex. 12 / 99</span></div><div id="serialFields" class="number-row hidden"><div class="input-group"><label for="cardSerial">Numéro de la carte</label><input id="cardSerial" class="input" maxlength="8" inputmode="numeric" pattern="[0-9]*" placeholder="12"></div><span class="slash">/</span><div class="input-group"><label for="cardPrintRun">Tirage total</label><input id="cardPrintRun" class="input" maxlength="8" inputmode="numeric" pattern="[0-9]*" placeholder="99"></div></div></div><div class="rookie-control"><label for="cardRookie"><input id="cardRookie" class="custom" type="checkbox"><span class="box-check"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></span> ROOKIE CARD (RC)</label><span class="field-hint">Logo personnalisé selon le sport, sinon RC</span></div>
           </div>
         </div>

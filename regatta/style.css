@@ -381,6 +381,7 @@ dialog form{border-radius:18px;background:#fff;display:flex;flex-direction:colum
 .rank-main-row .rank-main .rank-type{font-size:9px}
 .score-orb{--score-sweep:0deg;--score-glow:0;position:relative;isolation:isolate;display:grid;place-items:center;flex:0 0 72px;width:72px;height:72px;padding:0;border:0;border-radius:50%;background:#142a50;color:#fff;font:900 27px/1 Poppins,sans-serif;cursor:pointer;box-shadow:0 0 calc(3px + 14px * var(--score-glow)) rgba(218,52,143,calc(.08 + .34 * var(--score-glow)));transition:transform .15s,box-shadow .15s;touch-action:manipulation}
 .score-orb::before{content:"";position:absolute;inset:0;border-radius:inherit;background:conic-gradient(from -90deg,#268fe4 0deg,#d73e9a var(--score-sweep),transparent var(--score-sweep) 360deg);z-index:0}
+.score-orb.score-zero::before{display:none}
 .score-orb::after{content:"";position:absolute;inset:6px;border-radius:50%;background:#142a50;z-index:0}
 .score-orb span{position:relative;z-index:1;pointer-events:none}
 .score-orb:hover,.score-orb:focus-visible{transform:scale(1.06);outline:2px solid #229ddd;outline-offset:3px}

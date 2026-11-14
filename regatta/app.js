@@ -770,6 +770,9 @@ function renderRecordAttempts(attempts){
    '<label>'+label+'<input type="number" min="0" max="'+max+'" inputmode="numeric" data-attempt-part="'+key+'" value="'+safe(values[key])+'" aria-label="Tentative '+(i+1)+' : '+label.toLowerCase()+'"></label>').join('');
   return '<div class="record-attempt-row'+(a.aborted?' is-aborted':'')+'" data-record-id="'+safe(a.id)+'">'+
    '<div class="record-attempt-head"><strong>TENTATIVE '+(i+1)+'</strong><button type="button" class="btn subtle tiny" data-record-remove aria-label="Supprimer tentative '+(i+1)+'">SUPPRIMER</button></div>'+
+   '<div class="record-start-grid">'+
+   '<label>DATE DE DÉPART<input type="date" data-attempt-start-date value="'+safe(a.startDate)+'" aria-label="Tentative '+(i+1)+' : date de départ"></label>'+
+   '<label>HEURE DE DÉPART<input type="time" step="60" data-attempt-start-time value="'+safe(a.startTime)+'" aria-label="Tentative '+(i+1)+' : heure de départ"></label></div>'+
    '<div class="record-time-grid">'+inputs+'</div>'+
    '<label class="record-abort-label"><input type="checkbox" data-record-aborted '+(a.aborted?'checked':'')+'><span>TENTATIVE AVORTÉE</span></label></div>';
  }).join('');
@@ -781,17 +784,23 @@ function readRecordAttempts(){
   for(const key of ['days','hours','minutes','seconds'])inputs[key]=row.querySelector('[data-attempt-part="'+key+'"]').value;
   const time=recordEngine.fromParts(inputs);
   if(!time.valid)throw Error('Tentative '+(i+1)+' : '+time.reason);
-  return {id:row.dataset.recordId,seconds:time.seconds,aborted:row.querySelector('[data-record-aborted]').checked};
+  const startDate=row.querySelector('[data-attempt-start-date]').value;
+  const startTime=row.querySelector('[data-attempt-start-time]').value;
+  if(startDate&&!recordEngine.validDate(startDate))throw Error('Tentative '+(i+1)+' : date de départ incorrecte.');
+  if(startTime&&!recordEngine.validTime(startTime))throw Error('Tentative '+(i+1)+' : heure de départ incorrecte.');
+  if(startTime&&!startDate)throw Error('Tentative '+(i+1)+' : renseigne la date avant l’heure de départ.');
+  return {id:row.dataset.recordId,seconds:time.seconds,aborted:row.querySelector('[data-record-aborted]').checked,startDate,startTime};
  });
 }
 function updateKindFields(){
  const kind=$('race-kind').value,isEvent=kind==='event',isRecord=kind==='record';
- if(isEvent||isRecord){$('race-live').checked=false;$('race-upcoming').checked=false;}
- if(isRecord)$('race-dnf').checked=false;
+ if(isEvent){$('race-live').checked=false;$('race-upcoming').checked=false;}
+ if(isRecord){$('race-upcoming').checked=false;$('race-dnf').checked=false;}
  $('race-event-id').closest('label').hidden=isEvent||isRecord;
  $('race-event-controls').hidden=!isEvent;
  $('race-joker-control').hidden=isEvent||isRecord||!$('race-event-id').value;
- $('race-live').closest('label').hidden=isEvent||isRecord;
+ $('race-live').closest('label').hidden=isEvent;
+ document.querySelectorAll('.race-global-start').forEach(el=>{el.hidden=isRecord;});
  $('race-upcoming').closest('label').hidden=isEvent||isRecord;
  $('race-dnf').closest('label').hidden=isRecord;
  $('race-record-attempts').hidden=!isRecord;
@@ -820,7 +829,7 @@ function openEditor(r){
  const parentSelect=$('race-event-id');
  parentSelect.innerHTML='<option value="">Aucune · course indépendante</option>'+rows.filter(x=>x.kind==='event'&&x.id!==data.id).map(x=>'<option value="'+safe(x.id)+'">'+safe(x.name)+'</option>').join('');
  parentSelect.value=data.eventId||'';
- renderRecordAttempts(data.kind==='record'&&data.attempts.length?data.attempts:[{id:uid(),seconds:null,aborted:false}]);
+ renderRecordAttempts(data.kind==='record'&&data.attempts.length?data.attempts:[{id:uid(),seconds:null,aborted:false,startDate:'',startTime:''}]);
  updateKindFields();
  equipmentInputs().forEach(input=>{input.checked=input.value===validEquipment(data.equipment);});
  for(const k of imageKeys){pictures[k]=data[k]||'';preview(k);}
@@ -866,7 +875,10 @@ async function saveEditor(e){
  if(!r.name){getField('name').focus();return;}for(const k of imageKeys)r[k]=pictures[k]||'';
  if(r.kind==='record'){
   try{r.attempts=recordEngine.normalize(readRecordAttempts());}catch(error){toast(error.message,true);return;}
-  r.live=false;r.upcoming=false;r.dnf=false;r.eventClosed=false;r.eventId='';r.joker=false;
+  // Course record may stay EN COURS across several independent departures.
+  r.upcoming=false;r.dnf=false;r.eventClosed=false;r.eventId='';r.joker=false;
+  const earliest=recordEngine.earliestStart(r.attempts);
+  r.start=earliest.date;r.startTime=earliest.time;
   r.scoreSnapshot=null;
   for(const [place,total] of rankPairs){r[place]='';r[total]='';}
   for(const key of ['duration','durationDays','durationHours','durationMinutes','durationSeconds','end','endTime','vsr','gainPoints','gainCredits','participantCount'])r[key]='';
@@ -1157,7 +1169,7 @@ $('record-add-attempt').addEventListener('click',()=>{
  let attempts;
  try{attempts=readRecordAttempts();}catch(error){toast(error.message,true);return;}
  if(attempts.length>=recordEngine.MAX){toast('Maximum de '+recordEngine.MAX+' tentatives par course record.',true);return;}
- renderRecordAttempts([...attempts,{id:uid(),seconds:null,aborted:false}]);
+ renderRecordAttempts([...attempts,{id:uid(),seconds:null,aborted:false,startDate:'',startTime:''}]);
 });
 $('record-attempts-list').addEventListener('click',event=>{
  if(!event.target.closest('[data-record-remove]'))return;

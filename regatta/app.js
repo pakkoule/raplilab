@@ -1311,6 +1311,9 @@ $('record-attempts-list').addEventListener('change',event=>{
 $('race-kind').addEventListener('change',updateKindFields);
 $('race-event-id').addEventListener('change',updateKindFields);
 for(const view of ['races','stats','colors'])$('view-'+view).addEventListener('click',()=>selectWorkspace(view));
+// Palette des classes: disponible dans la barre d'actions de Courses, sans troisième onglet encombrant.
+$('manage-class-colors').addEventListener('click',()=>selectWorkspace('colors'));
+$('colors-back-races').addEventListener('click',()=>selectWorkspace('races'));
 $('default-class-color').addEventListener('change',event=>changeDefaultClassColor(event.target.value));
 $('class-colors-list').addEventListener('change',event=>{
  const el=event.target;

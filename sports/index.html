@@ -490,6 +490,20 @@ body::before{display:none!important}
 @media(max-width:780px){#rapli-module-cloud-status{max-width:135px;font-size:9px}}
 @media(max-width:580px){#rapli-module-cloud-status{display:none}.rapli-utility-strip{gap:6px}.rapli-cloud-module-group .rapli-cloud-module-btn{min-width:36px;width:36px;height:36px;border-radius:9px}}
 @media(prefers-reduced-motion:reduce){.rapli-cloud-module-btn.is-refreshing svg{animation:none}}
+</style><style id="rapli-sports-feature-filters">
+/* Rapli Sports — compact filters for autograph and patch attributes. */
+.feature-filter-row{
+  grid-column:1 / -1;
+  display:flex;align-items:end;flex-wrap:wrap;gap:9px;
+  padding-top:9px;margin-top:2px;border-top:1px solid #dbe4f0;
+}
+.feature-filter-row .field{flex:0 1 220px;min-width:165px}
+.feature-filter-row .select{height:39px}
+@media(max-width:750px){
+ .feature-filter-row{gap:8px;padding-top:10px}
+ .feature-filter-row .field{flex:1 1 calc(50% - 4px);min-width:0}
+}
+
 </style><style id="rapli-sports-player-autos-patches">
 /* RAPLI SPORTS — per-player autographs & patches (maximum five). */
 .players-editor{min-width:0}
@@ -606,6 +620,22 @@ body::before{display:none!important}
           <div class="field"><label class="field-label" for="filterTag">VARIATION / TAG</label><select class="select" id="filterTag"><option value="">Toutes les variations</option></select></div>
           <div class="field filter-sport"><label class="field-label" for="filterSport">SPORT</label><select class="select" id="filterSport"><option value="">Tous les sports</option></select></div>
           <div class="field filter-number"><span class="field-label">NUMÉROTATION</span><label class="check-filter"><input id="filterNumbered" class="custom" type="checkbox"><span class="box-check"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></span> Numérotées</label></div>
+          <div class="feature-filter-row" role="group" aria-label="Filtres Auto et Patch">
+            <div class="field"><label class="field-label" for="filterAuto">AUTO</label><select class="select" id="filterAuto">
+              <option value="">Toutes les autos</option>
+              <option value="with">Avec Auto</option>
+              <option value="stickers">Auto Stickers</option>
+              <option value="on-card">Auto On Card</option>
+              <option value="without">Sans Auto</option>
+            </select></div>
+            <div class="field"><label class="field-label" for="filterPatch">PATCH</label><select class="select" id="filterPatch">
+              <option value="">Tous les patchs</option>
+              <option value="with">Avec Patch</option>
+              <option value="game-worn">Patch Game Worn</option>
+              <option value="not-affiliated">Patch Not Affiliated</option>
+              <option value="without">Sans Patch</option>
+            </select></div>
+          </div>
         </div>
         <div class="toolbar-foot"><span class="results-label" id="resultsLabel">0 carte</span><div class="results-right"><button id="clearFiltersBtn" type="button" class="link-btn">Effacer les filtres</button><select id="sortSelect" class="sorter" aria-label="Trier les cartes"><option value="recent">Plus récentes</option><option value="name">Joueur A – Z</option><option value="brand">Marque A – Z</option><option value="team">Équipe A – Z</option></select></div></div>
         <div id="demoBanner" class="demo-strip hidden"><span><strong>APERÇU DE DÉMONSTRATION</strong> — Ces cartes sont des exemples modifiables.</span><button class="link-btn" id="clearDemoBtn" type="button">Supprimer les exemples</button></div>
@@ -866,7 +896,45 @@ body::before{display:none!important}
       }
       function optionList(id,values,all){const select=$(id),old=select.value;select.replaceChildren(new Option(all,''));[...new Set(values.map(x=>String(x||'').trim()).filter(Boolean))].sort(collator.compare).forEach(x=>select.add(new Option(x,x)));select.value=[...select.options].some(o=>o.value===old)?old:''}
       function refreshFilterOptions(){optionList('filterBrand',cards.map(x=>x.brand),'Toutes les marques');optionList('filterTeam',cards.map(x=>x.team),'Toutes les équipes');optionList('filterTag',cards.flatMap(x=>Array.isArray(x.tags)?x.tags:[]),'Toutes les variations');optionList('filterSport',cards.map(x=>x.sport),'Tous les sports');for(const [id,items] of [['brandsList',cards.map(x=>x.brand).concat(logos.filter(x=>x.type==='brand').map(x=>x.name))],['teamsList',cards.map(x=>x.team).concat(logos.filter(x=>x.type==='team').map(x=>x.name))]]){const list=$(id);list.replaceChildren();[...new Set(items.filter(Boolean))].sort(collator.compare).forEach(x=>list.append(new Option(x,x)))}}
-      function filterCards(){const query=normalize($('filterSearch').value),brand=normalize($('filterBrand').value),team=normalize($('filterTeam').value),tag=normalize($('filterTag').value),sport=normalize($('filterSport').value),onlyNumbered=$('filterNumbered').checked;let matches=cards.filter(c=>{if(c.status!==currentView)return false;if(brand&&normalize(c.brand)!==brand)return false;if(team&&normalize(c.team)!==team)return false;if(tag&&!(c.tags||[]).some(x=>normalize(x)===tag))return false;if(sport&&normalize(c.sport)!==sport)return false;if(onlyNumbered&&!c.numbered)return false;if(query&&!normalize([c.player,...cardPlayers(c).flatMap(p=>[p.name,p.auto?("Auto "+AUTO_TYPES[p.auto]):"",p.patch?("Patch "+PATCH_TYPES[p.patch]):""]),c.brand,c.sport,c.team,c.reference,...(c.tags||[]),c.numbered?`${c.serial}/${c.printRun}`:''].join(' ')).includes(query))return false;return true});const sort=$('sortSelect').value;matches.sort((a,b)=>sort==='name'?collator.compare(a.player,b.player):sort==='brand'?collator.compare(a.brand,b.brand):sort==='team'?collator.compare(a.team,b.team):(b.createdAt||0)-(a.createdAt||0));return matches}
+      function matchesPlayerFeature(card,kind,criterion){
+        if(!criterion)return true;
+        const assignments=cardPlayers(card).map(p=>p[kind]);
+        if(criterion==='with')return assignments.some(Boolean);
+        if(criterion==='without')return assignments.every(type=>!type);
+        return assignments.includes(criterion);
+      }
+      function filterCards(){
+        const query=normalize($('filterSearch').value),
+          brand=normalize($('filterBrand').value),
+          team=normalize($('filterTeam').value),
+          tag=normalize($('filterTag').value),
+          sport=normalize($('filterSport').value),
+          auto=$('filterAuto').value,patch=$('filterPatch').value,
+          onlyNumbered=$('filterNumbered').checked;
+        const matches=cards.filter(c=>{
+          if(c.status!==currentView)return false;
+          if(brand&&normalize(c.brand)!==brand)return false;
+          if(team&&normalize(c.team)!==team)return false;
+          if(tag&&!(c.tags||[]).some(x=>normalize(x)===tag))return false;
+          if(sport&&normalize(c.sport)!==sport)return false;
+          if(onlyNumbered&&!c.numbered)return false;
+          // A multi-player card matches if one of its assigned players has the chosen tag.
+          // Auto and Patch filters may match different players on the same card.
+          if(!matchesPlayerFeature(c,'auto',auto)||!matchesPlayerFeature(c,'patch',patch))return false;
+          if(query&&!normalize([c.player,...cardPlayers(c).flatMap(p=>[
+            p.name,p.auto?("Auto "+AUTO_TYPES[p.auto]):"",
+            p.patch?("Patch "+PATCH_TYPES[p.patch]):""
+          ]),c.brand,c.sport,c.team,c.reference,...(c.tags||[]),
+            c.numbered?`${c.serial}/${c.printRun}`:''].join(' ')).includes(query))return false;
+          return true;
+        });
+        const sort=$('sortSelect').value;
+        matches.sort((a,b)=>sort==='name'?collator.compare(a.player,b.player):
+          sort==='brand'?collator.compare(a.brand,b.brand):
+          sort==='team'?collator.compare(a.team,b.team):
+          (b.createdAt||0)-(a.createdAt||0));
+        return matches;
+      }
       function cardMarkup(c){const photo=imgSafe(c.photo)?`<img src="${c.photo}" alt="Carte de ${safeText(c.player)}" loading="lazy">`:`<div class="placeholder"><span class="mini-logo">RAPLI / SPORTS</span><div class="place-center">${ico('layers')}</div><span class="place-foot">COLLECTOR'S CARD</span></div>`;const tags=(c.tags||[]).slice(0,4).map(t=>`<span class="tag">${safeText(t)}</span>`).join('')+((c.tags||[]).length>4?`<span class="tag more">+${c.tags.length-4}</span>`:'');return `<article class="card-item" data-id="${safeText(c.id)}"><div class="photo-side"><div class="card-photo">${photo}${c.demo?'<span class="photo-flag">DÉMO</span>':''}</div></div><div class="card-info"><div class="card-top"><div class="brand-lockup">${brandBadge('brand',c.brand)}<span>${safeText(c.brand||'Sans marque')}</span></div><div class="card-controls"><button type="button" class="icon-btn" data-action="edit" data-id="${safeText(c.id)}" aria-label="Modifier cette carte" title="Modifier">${ico('edit')}</button><button type="button" class="icon-btn delete" data-action="delete" data-id="${safeText(c.id)}" aria-label="Supprimer cette carte" title="Supprimer">${ico('trash')}</button></div></div>${playerCardSummary(c)}<div class="team-row">${c.team?brandBadge('team',c.team):''}<span>${safeText(c.team||'Équipe non renseignée')}</span>${c.sport?`<span class="sport-chip">${safeText(c.sport)}</span>`:''}</div><div class="reference"><small>RÉFÉRENCE</small>${safeText(c.reference||'Non renseignée')}</div><div class="tags">${tags||'<span class="blank-tag">Aucune variation</span>'}</div><div class="card-bottom">${collectorBadgeMarkup(c)}<button type="button" class="move-card" data-action="move" data-id="${safeText(c.id)}">${c.status==='own'?'→ WISHLIST':'→ OWN'}</button></div></div></article>`}
       function renderAll(){refreshFilterOptions();$('statTotal').textContent=cards.length.toLocaleString('fr-FR');$('statOwn').textContent=cards.filter(x=>x.status==='own').length.toLocaleString('fr-FR');$('statWish').textContent=cards.filter(x=>x.status==='wishlist').length.toLocaleString('fr-FR');$('statNumber').textContent=cards.filter(x=>x.numbered).length.toLocaleString('fr-FR');$('tabOwnCount').textContent=cards.filter(x=>x.status==='own').length;$('tabWishCount').textContent=cards.filter(x=>x.status==='wishlist').length;document.querySelectorAll('.tab').forEach(t=>{const active=t.dataset.view===currentView;t.classList.toggle('active',active);t.setAttribute('aria-selected',String(active))});const match=filterCards();$('resultsLabel').innerHTML=`<strong>${match.length}</strong> carte${match.length>1?'s':''} ${currentView==='own'?'possédée':'recherchée'}${match.length>1?'s':''}`;$('cardGrid').innerHTML=match.map(cardMarkup).join('');const hasAny=cards.some(x=>x.status===currentView);$('emptyState').classList.toggle('hidden',match.length!==0);$('emptyTitle').textContent=hasAny?'Aucune carte ne correspond aux filtres':currentView==='own'?'Ta collection OWN est vide':'Ta WISHLIST est vide';$('emptyCopy').textContent=hasAny?'Essaie une recherche plus large ou réinitialise les filtres.':'Ajoute ta première carte pour constituer ta collection.';$('demoBanner').classList.toggle('hidden',!cards.some(c=>c.demo));}
       function openModal(id){$(id).showModal();document.body.style.overflow='hidden'}
@@ -908,7 +976,7 @@ body::before{display:none!important}
         catch(err){console.error(err);showToast('Enregistrement impossible. Essaie un export puis une image plus légère.');}
       }
       async function cardAction(e){const btn=e.target.closest('[data-action]');if(!btn)return;const card=cards.find(x=>x.id===btn.dataset.id);if(!card)return;if(btn.dataset.action==='edit')openCard(card);else if(btn.dataset.action==='delete'){if(confirm(`Supprimer la carte de ${card.player} ?`)){try{await removeCard(card.id);renderAll();showToast('Carte supprimée')}catch(err){showToast('Suppression impossible')}}}else if(btn.dataset.action==='move'){try{await saveCard({...card,status:card.status==='own'?'wishlist':'own',updatedAt:Date.now(),demo:false});renderAll();showToast('Carte transférée vers '+(card.status==='own'?'WISHLIST':'OWN'))}catch(e){showToast('Transfert impossible')}}}
-      function clearFilters(){$('filterSearch').value='';['filterBrand','filterTeam','filterTag','filterSport'].forEach(id=>$(id).value='');$('filterNumbered').checked=false;renderAll()}
+      function clearFilters(){$('filterSearch').value='';['filterBrand','filterTeam','filterTag','filterSport','filterAuto','filterPatch'].forEach(id=>$(id).value='');$('filterNumbered').checked=false;renderAll()}
       function setLogoType(type){
         if(!['brand','team','rookie','collector'].includes(type))type='brand';
         logoType=type;pendingLogoPhoto='';$('logoName').value='';$('logoFileInput').value='';$('logoFileText').textContent='Choisir';
@@ -966,7 +1034,7 @@ body::before{display:none!important}
       document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>closeModal(b.dataset.close)));
       document.querySelectorAll('dialog').forEach(d=>{d.addEventListener('close',()=>{if(!document.querySelector('dialog[open]'))document.body.style.overflow=''})});
       document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{currentView=t.dataset.view;renderAll()}));
-      ['filterSearch','filterBrand','filterTeam','filterTag','filterSport','filterNumbered','sortSelect'].forEach(id=>$(id).addEventListener(['filterSearch'].includes(id)?'input':'change',renderAll));
+      ['filterSearch','filterBrand','filterTeam','filterTag','filterSport','filterAuto','filterPatch','filterNumbered','sortSelect'].forEach(id=>$(id).addEventListener(id==='filterSearch'?'input':'change',renderAll));
       $('clearFiltersBtn').addEventListener('click',clearFilters);$('addCardBtn').addEventListener('click',()=>openCard());$('emptyAddBtn').addEventListener('click',()=>openCard());$('cardForm').addEventListener('submit',submitCard);$('cardGrid').addEventListener('click',cardAction);
       $('addPlayerBtn').addEventListener('click',()=>{
         const row=addPlayerRow();

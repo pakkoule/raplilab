@@ -834,12 +834,12 @@ async function saveEditor(e){
  const arrival=r.kind==='record'?{status:'waiting'}:updateArrival();if(arrival.status==='invalid-duration'||arrival.status==='invalid-date'){toast('Corrige la durée ou les horaires avant d’enregistrer.',true);getField(arrival.status==='invalid-duration'?'durationDays':'start').focus();return;}
  if(r.kind!=='record'&&syncDurationInput()==='invalid'){toast('Durée incorrecte : vérifie les jours, heures, minutes et secondes.',true);getField('durationDays').focus();return;}
  for(const k of Object.keys(props))r[k]=clean(getField(k).value,props[k]);
- for(const key of ['gainPoints','gainCredits']){
+ for(const key of r.kind==='record'?[]:['gainPoints','gainCredits']){
    const value=String(getField(key).value||'').trim();
    if(value&&!moneyNumber(value)){toast('Les gains doivent être des nombres entiers positifs.',true);getField(key).focus();return;}
    r[key]=moneyNumber(value);
  }
- for(const [place,total] of rankPairs){
+ for(const [place,total] of r.kind==='record'?[]:rankPairs){
    const input=getField(place),run=getField(total);
    const placeText=input.value.trim(),totalText=run.value.trim();
    if(placeText&&!intString(placeText)){toast('Classement invalide : saisis une position numérique.',true);input.focus();return;}
@@ -850,7 +850,7 @@ async function saveEditor(e){
  }
  r.vsr=VSR[r.vsr]?r.vsr:'';
  if(arrival.status==='ready'){r.end=arrival.end;r.endTime=arrival.endTime;}
- const chosen=equipmentInputs().filter(input=>input.checked);if(chosen.length>1){toast('Une seule méthode d’équipement est autorisée.',true);return;}
+ const chosen=r.kind==='record'?[]:equipmentInputs().filter(input=>input.checked);if(chosen.length>1){toast('Une seule méthode d’équipement est autorisée.',true);return;}
  r.equipment=validEquipment(chosen[0]?.value);
  if(!r.name){getField('name').focus();return;}for(const k of imageKeys)r[k]=pictures[k]||'';
  if(r.kind==='record'){

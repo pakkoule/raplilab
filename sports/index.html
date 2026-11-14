@@ -807,6 +807,13 @@ body::before{display:none!important}
 .collector-tier-metal>strong{font:900 9px Poppins,sans-serif;color:#597ba0}
 @media(max-width:530px){.collector-metal-editor{grid-template-columns:1fr 100px}.collector-metal-colors label{flex-basis:42px}}
 </style>
+<style id="sports-gallery-dream-tags">
+.sports-gallery-tile.is-dream-gallery{border:1px solid #aa79d3;box-shadow:0 3px 15px #ab84d036}
+.sports-gallery-dream{position:absolute;left:6px;top:6px;z-index:2;border-radius:6px;background:#56346e;
+ border:1px solid #c49ce0;padding:5px 7px;color:#fff;font:900 9px Poppins,sans-serif}
+.sports-gallery-tags{position:absolute;display:flex;gap:4px;align-items:center;flex-wrap:wrap;bottom:5px;left:5px;right:5px;z-index:2}
+.sports-gallery-tags img{width:auto;height:18px;max-width:41px;object-fit:contain;filter:drop-shadow(0 1px 2px #0006)}
+</style>
 </head>
 <body>
   <div class="app-shell">
@@ -1380,10 +1387,16 @@ body::before{display:none!important}
         const photo=imgSafe(item.photo)?'<img src="'+item.photo+'" alt="Photo de '+safeText(item.player||'la carte')+'" loading="lazy" decoding="async">':
           '<div class="sports-gallery-placeholder">'+ico('layers')+'<span>PHOTO NON AJOUTÉE</span></div>';
         const sub=[item.brand,item.team,item.reference].filter(Boolean).join(' · ');
-        return '<article class="sports-gallery-tile">'+
+        const tagLogos=(item.tags||[]).slice(0,5).map(t=>{
+          const logo=logoFor('tag',t);
+          return logo?'<img src="'+logo+'" alt="'+safeText(t)+'" title="'+safeText(t)+'" loading="lazy">':'';
+        }).filter(Boolean).join('');
+        return '<article class="sports-gallery-tile'+(item.status==='wishlist'&&item.dream?' is-dream-gallery':'')+'">'+
          '<button type="button" class="sports-gallery-card-action" data-sports-gallery-card="'+safeText(item.id)+'" aria-label="Ouvrir la fiche de '+safeText(item.player||'cette carte')+'">'+
          '<span class="sports-gallery-media">'+photo+(item.demo?'<span class="photo-flag">DÉMO</span>':'')+
-         (item.status==='own'&&!item.demo?'<span class="sports-gallery-own">OWN</span>':'')+'</span>'+
+         (item.status==='own'&&!item.demo?'<span class="sports-gallery-own">OWN</span>':'')+
+         (item.status==='wishlist'&&item.dream?'<span class="sports-gallery-dream">✨ RÊVE</span>':'')+
+         (tagLogos?'<span class="sports-gallery-tags">'+tagLogos+'</span>':'')+'</span>'+
          '<span class="sports-gallery-caption"><strong>'+safeText(item.player||'Sans athlète')+'</strong>'+
          (sub?'<small>'+safeText(sub)+'</small>':'')+'</span></button></article>';
       }

@@ -559,6 +559,9 @@ body::before{display:none!important}
 .collector-badge-caption{font:800 7px/1.2 Poppins,sans-serif;letter-spacing:.09em;opacity:.91;text-transform:uppercase;margin-top:3px}
 .collector-badge.has-logo{min-width:65px;padding:4px 7px}
 .collector-badge-logo{display:block;max-width:78px;max-height:27px;object-fit:contain;width:auto;height:auto;filter:none}
+/* Logo RC importé : visuel seul, sans fond, contour ou légende du badge collector. */
+.collector-rookie-logo{display:block;flex:0 1 auto;width:auto;height:auto;max-width:100px;max-height:72px;object-fit:contain;border:0;border-radius:0;padding:0;margin:0;background:none;box-shadow:none;filter:none}
+@media(max-width:410px){.collector-rookie-logo{max-width:78px;max-height:58px}}
 .collector-no-number{font:700 9px Poppins,sans-serif;color:#8696ac}
 .card-bottom{align-items:end;flex-wrap:wrap;gap:8px}
 .card-bottom .move-card{margin-left:auto}
@@ -861,7 +864,9 @@ body::before{display:none!important}
         }
         if(rookie){
           const logo=logoFor('rookie',card.sport);
-          badges+=`<span class="collector-badge collector-badge--rookie ${logo?'has-logo ':''}${'font-'+collectorFont(style.rookieFont)}" aria-label="Rookie Card ${safeText(card.sport||'')}"><span class="collector-badge-main">${logo?`<img class="collector-badge-logo" src="${logo}" alt="Logo Rookie ${safeText(card.sport||'')}">`:'RC'}</span><span class="collector-badge-caption">ROOKIE CARD</span></span>`;
+          badges+=logo
+            ? `<img class="collector-rookie-logo" src="${logo}" alt="Logo Rookie ${safeText(card.sport||'')}">`
+            : `<span class="collector-badge collector-badge--rookie ${'font-'+collectorFont(style.rookieFont)}" aria-label="Rookie Card ${safeText(card.sport||'')}"><span class="collector-badge-main">RC</span><span class="collector-badge-caption">ROOKIE CARD</span></span>`;
         }
         return `<div class="collector-row ${style.premium?'is-premium':''}" style="--collector-bg:${style.background};--collector-ink:${style.foreground}">${badges}</div>`;
       }

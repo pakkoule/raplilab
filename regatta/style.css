@@ -568,3 +568,10 @@ dialog form{border-radius:18px;background:#fff;display:flex;flex-direction:colum
  .regatta-inline-actions .regatta-pdf-action{font-size:8px}
  .regatta-catalogue-controls>.regatta-filter-disclosure>summary{font-size:9px;padding:6px;min-height:36px;white-space:normal}
 }
+
+/* PR1 — continuous gradient under Regatta's tabs / shared header. */
+.shell>.topline{
+  height:6px;
+  background:linear-gradient(100deg,#f60077 0%,#d34da4 22%,#238fbd 49%,#12c9be 76%,#142d40 100%)!important;
+  box-shadow:0 2px 7px rgba(13,107,131,.18);
+}

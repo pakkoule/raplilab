@@ -739,57 +739,6 @@ function selectWorkspace(view){
  if(view==='colors')renderClassColors();
 }
 
-/* PDF collection : filtres cumulables et export A4 paysage. */
-const pdfDialog=$('pdf-dialog'),pdfFilterIds=['pdf-year','pdf-vsr','pdf-class','pdf-boat','pdf-status','pdf-order'];
-const pdfValues=()=>({
- year:$('pdf-year').value,vsr:$('pdf-vsr').value,
- boatClass:$('pdf-class').value,boat:$('pdf-boat').value,
- status:$('pdf-status').value,order:$('pdf-order').value
-});
-const reportRace=r=>{
- const parsed=parseRaceDuration(r.duration);
- return {...r,reportStatus:raceStatus(r),durationSecondsTotal:parsed.status==='valid'?parsed.seconds:0};
-};
-function pdfMatches(r,v){
- return (!v.year||r.start?.slice(0,4)===v.year)&&(!v.vsr||r.vsr===v.vsr)&&
-  (!v.boatClass||r.boatClass===v.boatClass)&&(!v.boat||r.boat===v.boat)&&
-  (!v.status||raceStatus(r)===v.status);
-}
-function updatePdfCount(){
- const v=pdfValues(),count=rows.filter(r=>r.kind==='race'&&pdfMatches(r,v)).length;
- $('pdf-match-count').textContent=count;
- $('pdf-generate').disabled=count===0;
-}
-function setPdfSelect(id,values,label){
- const el=$(id),selected=el.value;
- el.innerHTML='<option value="">'+label+'</option>'+
-  values.map(value=>'<option value="'+safe(value)+'">'+safe(value)+'</option>').join('');
- if(values.includes(selected))el.value=selected;
-}
-function openPdfDialog(){
- const unique=values=>[...new Set(values.filter(Boolean))].sort((a,b)=>a.localeCompare(b,'fr'));
- const raceRows=rows.filter(r=>r.kind==='race');
- setPdfSelect('pdf-year',unique(raceRows.map(r=>r.start?.slice(0,4))).sort((a,b)=>b.localeCompare(a)),'Toutes les années');
- setPdfSelect('pdf-class',unique(raceRows.map(r=>r.boatClass)),'Toutes les classes');
- setPdfSelect('pdf-boat',unique(raceRows.map(r=>r.boat)),'Tous les bateaux');
- updatePdfCount();
- if(!pdfDialog.open)pdfDialog.showModal();
-}
-function closePdfDialog(){if(pdfDialog.open)pdfDialog.close();}
-async function exportGeneralPdf(event){
- event.preventDefault();
- if($('pdf-generate').disabled)return;
- const button=$('pdf-generate'),label=button.textContent;
- button.disabled=true;button.textContent='CRÉATION DU PDF…';
- try{
-  const report=await import('./report.js');
-  const selection=rows.filter(r=>r.kind==='race').map(reportRace);
-  const result=await report.generateGeneralPDF({races:selection,filters:pdfValues(),settings:classSettings});
-  closePdfDialog();toast('Rapport PDF téléchargé : '+result.count+' courses, '+result.pages+' pages ✓');
- }catch(error){console.error(error);toast('Export PDF impossible : '+(error?.message||error),true);}
- finally{button.textContent=label;updatePdfCount();}
-}
-
 const scoreDialog=$('score-dialog'),recalcDialog=$('score-recalc-dialog');
 function scoreText(score,kind){
  const rows=kind==='event'?
@@ -1323,11 +1272,6 @@ $('vsr-colors-list').addEventListener('change',event=>{
  const el=event.target;
  if(el.matches?.('input[data-vsr-key]'))changeVSRColor(el.dataset.vsrKey,el.value);
 });
-$('export-general-pdf').addEventListener('click',openPdfDialog);
-$('pdf-form').addEventListener('submit',exportGeneralPdf);
-document.querySelectorAll('[data-pdf-close]').forEach(button=>button.addEventListener('click',closePdfDialog));
-pdfDialog.addEventListener('click',event=>{if(event.target===pdfDialog)closePdfDialog();});
-for(const id of pdfFilterIds)$(id).addEventListener('change',updatePdfCount);
 $('new-race').addEventListener('click',()=>openEditor());$('empty-add').addEventListener('click',()=>openEditor());$('race-form').addEventListener('submit',saveEditor);$('delete-race').addEventListener('click',()=>{if(editId)deleteRace(editId);});
 for(const id of ['search','filter-status','filter-vsr','filter-class','sort'])$(id).addEventListener(id==='search'?'input':'change',()=>{
  regattaPage=1;render();

@@ -1659,7 +1659,7 @@ function exportCsv(){const cols=['edition_groupe','reference','edition','rarete'
 async function toggleTileOwn(id){const current=archive.copies.filter(c=>c.variantId===id);if(!current.length)archive.copies.push({id:uid(),variantId:id,condition:'',acquiredAt:'',price:null,serialNo:'',purchaseSource:'',notes:'',createdAt:now(),updatedAt:now()});else if(current.length===1)archive.copies=archive.copies.filter(c=>c.id!==current[0].id);else return toast('Plusieurs exemplaires : utilise l’aperçu pour les gérer.');if(await save()){render();toast(ownedCount(id)?'Référence possédée ✓':'Référence retirée de ma collection.');}}
 async function toggleTileWish(id){const w=wishFor(id);if(w)archive.wishlist=archive.wishlist.filter(x=>x.id!==w.id);else archive.wishlist.push({id:uid(),variantId:id,priority:'Normale',targetPrice:null,notes:'',createdAt:now(),updatedAt:now()});if(await save()){render();toast(w?'Retirée de la wishlist.':'Ajoutée à la wishlist ♡');}}
 function pickAdd(){const g=archive.groups.find(g=>g.category==='dragons');if(g)variantModal('',g.id);else groupModal('','dragons');}
-function handleAction(action,el){const id=el.dataset.id;switch(action){case 'rapli-more':rapliVisibleLimit+=60;render();return;case 'dashboard-tab':{const next=el.dataset.category;if(MODULES[next]){dashboardModule=next;searchTerm='';activeFilter='all';render();}return;}case 'tile-own':toggleTileOwn(id);return;case 'copy-reference':copyVariantReference(id);return;case 'download-artwork':downloadVariantArtwork(id);return;case 'pick-add':pickAdd();return;case 'add-in-module':{pickAdd();return;}case 'module-settings':openModuleSettings(el.dataset.category||currentView);return;case 'settings-section-tab':{const next=el.dataset.settingsSection;if(next==='number'||MODULES.dragons.fields.some(([field])=>field===next)){activeSettingsSection=next;showSettingsContent();}return;}case 'module-tab':editingModule='dragons';showSettingsContent();return;case 'tax-add':{const key=el.dataset.field;draftModuleSettings[editingModule].taxonomies[key].push({id:uid(),label:'',icon:'',color:'#93bca9',logo:''});showSettingsContent();return;}case 'artwork-preview-remove':{const item=draftModuleSettings?.dragons?.taxonomies?.artwork?.[Number(el.dataset.index)];if(item){item.preview='';showSettingsContent();}return;}case 'tax-remove':{const key=el.dataset.field,idx=Number(el.dataset.index);draftModuleSettings[editingModule].taxonomies[key].splice(idx,1);showSettingsContent();return;}case 'save-module-settings':saveModuleSettings();return;case 'new-group':groupModal('','dragons');return;case 'new-variant':variantModal('',el.dataset.group||'');return;default:return legacyHandleAction(action,el);}}
+function handleAction(action,el){const id=el.dataset.id;switch(action){case 'rapli-more':rapliVisibleLimit+=60;render();return;case 'dashboard-tab':{const next=el.dataset.category;if(MODULES[next]){dashboardModule=next;searchTerm='';activeFilter='all';render();}return;}case 'tile-own':toggleTileOwn(id);return;case 'copy-reference':copyVariantReference(id);return;case 'download-artwork':downloadVariantArtwork(id);return;case 'pick-add':pickAdd();return;case 'add-in-module':{pickAdd();return;}case 'module-settings':openModuleSettings(el.dataset.category||currentView);return;case 'settings-section-tab':{const next=el.dataset.settingsSection;if(next==='number'||MODULES.dragons.fields.some(([field])=>field===next)){activeSettingsSection=next;showSettingsContent();document.querySelector('.module-settings-tab[data-settings-section="'+next+'"]')?.focus({preventScroll:true});}return;}case 'module-tab':editingModule='dragons';showSettingsContent();return;case 'tax-add':{const key=el.dataset.field;draftModuleSettings[editingModule].taxonomies[key].push({id:uid(),label:'',icon:'',color:'#93bca9',logo:''});showSettingsContent();return;}case 'artwork-preview-remove':{const item=draftModuleSettings?.dragons?.taxonomies?.artwork?.[Number(el.dataset.index)];if(item){item.preview='';showSettingsContent();}return;}case 'tax-remove':{const key=el.dataset.field,idx=Number(el.dataset.index);draftModuleSettings[editingModule].taxonomies[key].splice(idx,1);showSettingsContent();return;}case 'save-module-settings':saveModuleSettings();return;case 'new-group':groupModal('','dragons');return;case 'new-variant':variantModal('',el.dataset.group||'');return;default:return legacyHandleAction(action,el);}}
 function openModuleSettings(preferred='dragons'){moduleSettings();draftModuleSettings=structuredClone(archive.settings);editingModule='dragons';activeSettingsSection='edition';const body='<div class="module-settings"><p class="helper">Personnalise les éditions, raretés, artworks et langues : icône, drapeau, couleur ou logo. Les tuiles utilisent ces réglages automatiquement.</p><div id="module-settings-container"></div></div>';openModal('Personnaliser Dragon Blanc',body);showSettingsContent();}
 function showSettingsContent(){
  const root=$('#module-settings-container');if(!root||!draftModuleSettings)return;
@@ -1756,6 +1756,19 @@ async function badgeLogo(file){
 }
 async function saveModuleSettings(){if(!draftModuleSettings)return;for(const [cat,cfg] of Object.entries(draftModuleSettings)){if(cat!=='dragons')continue;for(const [key,entries] of Object.entries(cfg.taxonomies)){const seen=new Set();cfg.taxonomies[key]=entries.filter(entry=>entry.label?.trim()).map(entry=>({...entry,label:entry.label.trim(),color:/^#[0-9a-f]{6}$/i.test(entry.color)?entry.color:'#99b9aa',icon:(entry.icon||'').trim()})).filter(entry=>{const k=entry.label.toLowerCase();if(seen.has(k))return false;seen.add(k);return true;});}cfg.numberLabel=String(cfg.numberLabel||'N° de carte').trim().slice(0,40);}
 const old=moduleSettings();for(const cat of Object.keys(MODULES)){for(const [key] of MODULES[cat].fields){const before=old[cat]?.taxonomies?.[key]||[],after=draftModuleSettings[cat]?.taxonomies?.[key]||[];for(const prev of before){const renamed=after.find(x=>x.id===prev.id);if(renamed&&prev.label!==renamed.label&&renamed.label){for(const v of archive.variants){if(catForGroup(v.groupId)===cat&&v[key]===prev.label)v[key]=renamed.label;}}}}}archive.settings=structuredClone(draftModuleSettings);const saved=await save();closeModal();render();if(saved)toast('Réglages des modules enregistrés ✓');}
+// Accessible horizontal navigation between settings categories.
+document.addEventListener('keydown',event=>{
+  const selected=event.target.closest?.('.module-settings-tab');
+  if(!selected||!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
+  const tabs=['number',...MODULES.dragons.fields.map(([field])=>field)];
+  const current=tabs.indexOf(selected.dataset.settingsSection);
+  const next=event.key==='Home'?0:event.key==='End'?tabs.length-1:
+    (current+(event.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length;
+  event.preventDefault();
+  activeSettingsSection=tabs[next];
+  showSettingsContent();
+  document.querySelector('.module-settings-tab[data-settings-section="'+activeSettingsSection+'"]')?.focus({preventScroll:true});
+});
 // Non-destructive event handlers: one compact settings UI, all data stays local.
 document.addEventListener('input',e=>{const el=e.target;if(!draftModuleSettings||!el.closest('.module-settings'))return;if(el.dataset.settingField){const list=draftModuleSettings[editingModule]?.taxonomies?.[el.dataset.settingField];if(list?.[Number(el.dataset.index)])list[Number(el.dataset.index)][el.dataset.settingPart]=el.value;}else if(el.dataset.settingNumber==='label')draftModuleSettings.dragons.numberLabel=el.value;else if(el.dataset.settingNumber==='visible')draftModuleSettings.dragons.showNumber=el.checked;});
 document.addEventListener('change',async e=>{const el=e.target;if(!draftModuleSettings||!el.closest('.module-settings'))return;if(el.dataset.settingNumber==='visible')draftModuleSettings.dragons.showNumber=el.checked;if(el.dataset.settingLogo){const list=draftModuleSettings[editingModule]?.taxonomies?.[el.dataset.settingLogo],index=Number(el.dataset.index);if(!list?.[index]||!el.files?.[0])return;try{list[index].logo=await badgeLogo(el.files[0]);const label=el.closest('.file-logo');if(label)label.firstChild.textContent='✓ Logo';toast('Logo prêt à enregistrer');}catch(err){toast(err.message,true);}}});
@@ -1946,6 +1959,13 @@ async function importRapliPdfCatalogue(){
  await save();
 }
 
+// Shared backup manager is in the RapliLab navigation, but the Archives JSON tools
+// remain accessible as an advanced option without duplicating the diskette.
+window.addEventListener('message', event => {
+  if(event.source!==window.parent || event.origin!==location.origin ||
+     event.data?.type!=='RAPLI_OPEN_ARCHIVES_BACKUPS')return;
+  navigate('tools');
+});
 // Dragon Blanc is the exclusive visible catalogue.
 const rapliOriginalSave = save;
 save = async (...args) => {
@@ -1959,7 +1979,10 @@ initialize().then(() => {
     persist: () => rapliOriginalSave(),
     refresh: () => render(),
     notify: (message, isError=false) => toast(message,isError),
-    openBackups: () => navigate('tools')
+    openBackups: () => {
+      if(window.parent!==window) window.parent.postMessage({type:'RAPLI_SHOW_BACKUP_MANAGER'},location.origin);
+      else navigate('tools');
+    }
   });
 }).catch(error => console.error('Initialisation Rapli Archives:', error));
 </script>

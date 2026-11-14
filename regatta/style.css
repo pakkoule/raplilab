@@ -479,3 +479,26 @@ dialog form{border-radius:18px;background:#fff;display:flex;flex-direction:colum
 .record-closed-help{background:#ecf7f3;border:1px solid #b6dcd2;border-radius:9px;padding:10px 12px;font-size:11px;line-height:1.6;color:#285b55}
 .record-closed-help strong{font-weight:900}
 .fields #record-closed-help[hidden],.record-add-btn[hidden],.record-attempt-head [data-record-remove][hidden]{display:none!important}
+
+/* Rapli Regatta : 30 courses par page, accès haut et bas. */
+.regatta-pagination-host:empty{display:none}
+.regatta-pagination{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:7px;
+ padding:10px 25px 14px;min-width:0}
+#regatta-pagination-bottom .regatta-pagination{padding-top:17px;padding-bottom:20px}
+.regatta-pagination button{display:grid;place-items:center;min-width:35px;min-height:35px;
+ padding:7px 10px;background:#fff;color:#176784;border:1px solid #b4d8df;border-radius:8px;
+ font:900 11px/1 Poppins,sans-serif;font-variant-numeric:tabular-nums;cursor:pointer;
+ transition:background .16s,transform .16s}
+.regatta-pagination button:not(:disabled):hover{background:#e9f8fa}
+.regatta-pagination button:focus-visible{outline:3px solid #3cb8d2;outline-offset:2px}
+.regatta-pagination button[aria-current=page]{position:relative;color:#fff;background:#0d728c;border-color:#0d728c;
+ box-shadow:0 0 0 3px #31b5c13d,0 3px 12px #08738a33;transform:translateY(-1px);cursor:default}
+.regatta-pagination button[aria-current=page]::after{content:"";width:5px;height:5px;border-radius:50%;
+ background:#fff;margin:2px auto -3px;display:block}
+.regatta-pagination button:disabled{opacity:.35;cursor:default}
+.regatta-page-ellipsis{font:750 11px Poppins,sans-serif;color:#7b98a6;padding:0 3px}
+.regatta-page-caption{width:100%;text-align:center;color:#507985;font:750 10px Poppins,sans-serif;
+ padding-top:3px}
+@media(max-width:580px){.regatta-pagination{padding:8px 11px 12px;gap:5px}
+ .regatta-pagination button{min-width:32px;min-height:32px;padding:6px 8px}
+}

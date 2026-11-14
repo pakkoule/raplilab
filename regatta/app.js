@@ -214,6 +214,28 @@ function normal(x={}){const r={id:typeof x.id==='string'&&x.id.length<130?x.id:u
  if(formatted!==null&&formatted!=='')r.duration=formatted;
  for(const k of imageKeys)r[k]=validImage(x[k])?x[k]:'';if(r.kind!=='record'){const arrival=calculateArrival(r.start,r.startTime,r.duration);if(arrival.status==='ready'){r.end=arrival.end;r.endTime=arrival.endTime;}}return r;}
 let rows=[],db=null,editId='',pictures={icon:'',result:'',route:''},uploads=0,writeBusy=false,timer;
+ let regattaPage=1,regattaResultsCount=0;
+ const REGATTA_PAGE_SIZE=30;
+ function regattaPager(total){
+   const pages=Math.ceil(total/REGATTA_PAGE_SIZE);
+   regattaPage=Math.max(1,Math.min(regattaPage,Math.max(1,pages)));
+   if(total<=0)return '';
+   const visible=[...new Set([1,pages,regattaPage-1,regattaPage,regattaPage+1]
+     .filter(n=>n>=1&&n<=pages))].sort((a,b)=>a-b);
+   let previous=0,links='';
+   for(const n of visible){
+     if(n-previous>1)links+='<span class="regatta-page-ellipsis" aria-hidden="true">…</span>';
+     links+='<button type="button" data-regatta-page="'+n+'" aria-label="Page '+n+' sur '+pages+'"'+
+       (n===regattaPage?' aria-current="page" class="regatta-page-active"':'')+'>'+n+'</button>';
+     previous=n;
+   }
+   const first=(regattaPage-1)*REGATTA_PAGE_SIZE+1,last=Math.min(total,regattaPage*REGATTA_PAGE_SIZE);
+   return '<nav class="regatta-pagination" aria-label="Pagination des courses">'+
+     '<button type="button" data-regatta-page="'+(regattaPage-1)+'" aria-label="Page précédente"'+(regattaPage===1?' disabled':'')+'>‹</button>'+
+     links+
+     '<button type="button" data-regatta-page="'+(regattaPage+1)+'" aria-label="Page suivante"'+(regattaPage===pages?' disabled':'')+'>›</button>'+
+     '<span class="regatta-page-caption">Page '+regattaPage+' / '+pages+' · courses '+first+'–'+last+' sur '+total+'</span></nav>';
+ }
 const dialog=$('race-dialog'),getField=k=>$('race-'+({boatClass:'class',startTime:'start-time',endTime:'end-time',rankDepartment:'rank-department',rankNational:'rank-national',rankTotal:'rank-total',rankNationalTotal:'rank-national-total',rankDepartmentTotal:'rank-department-total',rankCity:'rank-city',rankCityTotal:'rank-city-total',rankTeam:'rank-team',rankTeamTotal:'rank-team-total',durationDays:'days',durationHours:'hours',durationMinutes:'minutes',durationSeconds:'seconds',gainPoints:'gain-points',gainCredits:'gain-credits',participantCount:'participant-count'}[k]||k));
 function toast(t,error=false){$('notice').textContent=t;$('notice').dataset.error=String(error);clearTimeout(timer);timer=setTimeout(()=>{$('notice').textContent='';},7000);}
 const req=r=>new Promise((yes,no)=>{r.onsuccess=()=>yes(r.result);r.onerror=()=>no(r.error||Error('IndexedDB inaccessible'));});
@@ -322,7 +344,14 @@ function render(){
  $('count-dnf').textContent=raceRows.filter(r=>raceStatus(r)==='dnf').length;
  $('count-record').textContent=rows.filter(r=>r.kind==='record').length;
  $('result-count').textContent=out.length+' / '+rows.length;
- $('cards').innerHTML=out.map(card).join('')||(rows.length?'<p>Aucune course ne correspond aux filtres.</p>':'');
+ regattaResultsCount=out.length;
+ regattaPage=Math.max(1,Math.min(regattaPage,Math.max(1,Math.ceil(out.length/REGATTA_PAGE_SIZE))));
+ const pageStart=(regattaPage-1)*REGATTA_PAGE_SIZE;
+ const controls=regattaPager(out.length);
+ $('regatta-pagination-top').innerHTML=controls;
+ $('regatta-pagination-bottom').innerHTML=controls;
+ $('cards').innerHTML=out.slice(pageStart,pageStart+REGATTA_PAGE_SIZE).map(card).join('')||
+   (rows.length?'<p>Aucune course ne correspond aux filtres.</p>':'');
  scheduleRankingFit();
  $('empty').hidden=rows.length!==0;
  renderStatistics();renderClassColors();
@@ -1246,7 +1275,18 @@ document.querySelectorAll('[data-pdf-close]').forEach(button=>button.addEventLis
 pdfDialog.addEventListener('click',event=>{if(event.target===pdfDialog)closePdfDialog();});
 for(const id of pdfFilterIds)$(id).addEventListener('change',updatePdfCount);
 $('new-race').addEventListener('click',()=>openEditor());$('empty-add').addEventListener('click',()=>openEditor());$('race-form').addEventListener('submit',saveEditor);$('delete-race').addEventListener('click',()=>{if(editId)deleteRace(editId);});
-for(const id of ['search','filter-status','filter-vsr','filter-class','sort'])$(id).addEventListener(id==='search'?'input':'change',render);
+for(const id of ['search','filter-status','filter-vsr','filter-class','sort'])$(id).addEventListener(id==='search'?'input':'change',()=>{
+ regattaPage=1;render();
+});
+for(const id of ['regatta-pagination-top','regatta-pagination-bottom'])$(id).addEventListener('click',event=>{
+ const control=event.target.closest('[data-regatta-page]');
+ if(!control)return;
+ const next=Number(control.dataset.regattaPage);
+ const pageCount=Math.ceil(regattaResultsCount/REGATTA_PAGE_SIZE);
+ if(!Number.isInteger(next)||next<1||next>pageCount)return;
+ regattaPage=next;render();
+ $('regatta-pagination-top').scrollIntoView?.({behavior:'smooth',block:'start'});
+});
 $('recalculate-scores').addEventListener('click',openScoreRecalc);
 $('score-recalc-confirm').addEventListener('click',confirmScoreRecalc);
 document.querySelectorAll('[data-score-close]').forEach(x=>x.addEventListener('click',()=>scoreDialog.close()));

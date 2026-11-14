@@ -41,6 +41,7 @@
     <button type="button" id="view-colors" class="workspace-tab" role="tab" aria-selected="false" aria-controls="colors-panel" tabindex="-1">COULEURS DES CLASSES</button>
   </nav>
   <div id="races-panel" role="tabpanel" aria-labelledby="view-races">
+  <details class="regatta-filter-disclosure" id="regattaFilterDisclosure"><summary>☷ FILTRES ET TRI <span>Afficher les options de recherche</span></summary>
   <section class="filters" aria-label="Filtres de la collection">
     <label class="search">RECHERCHE<input id="search" type="search" placeholder="Course, bateau, année…" autocomplete="off"></label>
     <label>STATUT<select id="filter-status"><option value="">Toutes les courses</option><option value="live">En cours</option><option value="finished">Terminées</option><option value="planned">À venir</option><option value="dnf">DNF · Abandon</option><option value="record">Courses record</option></select></label>
@@ -48,6 +49,7 @@
     <label>CLASSE<select id="filter-class"><option value="">Toutes les classes</option></select></label>
     <label>TRIER PAR<select id="sort"><option value="start">Départ récent → ancien</option><option value="vsr">VSR · importance</option><option value="recent">Modifications récentes</option><option value="old">Ajout ancien</option><option value="name">Nom A → Z</option></select></label>
   </section>
+  </details>
   <div class="collection-head"><strong>MES COURSES <span class="mini-accent">/ RACE ARCHIVE</span></strong><span id="result-count"></span></div>
   <div class="regatta-pagination-host" id="regatta-pagination-top" aria-label="Pagination supérieure des courses"></div>
   <section id="cards" class="cards" aria-live="polite"></section>

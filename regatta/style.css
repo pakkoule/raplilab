@@ -509,3 +509,13 @@ dialog form{border-radius:18px;background:#fff;display:flex;flex-direction:colum
 .race-live-clock>strong{font:900 19px 'Courier Prime',monospace;letter-spacing:.02em;color:#08798c}
 .race-live-clock--countdown{background:linear-gradient(105deg,#edf4ff,#dce7ff);border-color:#afc5fa;color:#285392}
 .race-live-clock--countdown>strong{color:#2656ae}
+
+.regatta-filter-disclosure{margin:0 25px 14px;border:1px solid #bfdee2;border-radius:12px;background:#f7fcfc}
+.regatta-filter-disclosure>summary{cursor:pointer;display:flex;align-items:center;gap:9px;list-style:none;
+ padding:12px 14px;color:#0d7184;font:900 11px Poppins,sans-serif}
+.regatta-filter-disclosure>summary::-webkit-details-marker{display:none}
+.regatta-filter-disclosure>summary span{margin-left:auto;color:#678995;font:700 10px Poppins,sans-serif}
+.regatta-filter-disclosure>summary::after{content:"⌄";font-size:20px}
+.regatta-filter-disclosure[open]>summary::after{content:"⌃"}
+.regatta-filter-disclosure .filters{padding:12px 14px;border:0;border-top:1px solid #d6e8eb;border-radius:0 0 12px 12px}
+@media(max-width:780px){.regatta-filter-disclosure{margin:0 14px 13px}}

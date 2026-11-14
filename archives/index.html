@@ -1362,6 +1362,41 @@ main#main-content {
 
   <link rel="stylesheet" href="../shared/ios-input-focus.css">
   <script defer src="../shared/ios-input-focus.js"></script>
+<style id="archive-collapse-all-filters">
+.site-header{display:none!important}
+.archive-filter-panel{width:min(calc(100% - 24px),880px);margin:10px auto 13px;border:1px solid #b9d3eb;
+ background:#f8fbff;border-radius:11px;color:#244d72}
+.archive-filter-panel[hidden]{display:none!important}
+.archive-filter-panel>summary{display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;
+ font:900 11px Poppins,sans-serif;list-style:none}
+.archive-filter-panel>summary::-webkit-details-marker{display:none}
+.archive-filter-panel>summary::after{content:"⌄";font-size:21px;margin-left:3px}
+.archive-filter-panel[open]>summary::after{content:"⌃"}
+.archive-filter-panel>summary span{margin-left:auto;font:650 10px Poppins,sans-serif;color:#7892ad}
+#archiveFilterBody{padding:12px 14px;border-top:1px solid #dbe8f4}
+#archiveFilterBody .site-navigation{display:flex!important;flex-wrap:wrap!important;gap:8px!important;
+ align-items:end!important;justify-content:flex-start!important;width:100%!important;min-width:0!important}
+#archiveFilterBody .header-edition-field{display:grid;gap:5px;min-width:180px;max-width:240px;flex:1}
+#archiveFilterBody .header-edition-field>span{font:850 10px Poppins,sans-serif;color:#52748f}
+#archiveFilterBody #edition-filter{width:100%;height:42px;border-radius:8px}
+#archiveFilterBody .header-artwork-filter{flex:1;min-width:180px;max-width:260px;position:relative}
+#archiveFilterBody #artwork-filter-trigger{height:42px;min-width:0;width:100%}
+#archiveFilterBody .header-owned{height:42px;min-width:80px}
+#archiveFilterBody #header-counter-host{display:none!important}
+#archiveFilterDynamic .toolbar{display:flex!important;flex-wrap:wrap;gap:8px;width:100%;margin:10px 0 0}
+#archiveFilterDynamic .search-field{flex:1 1 200px;max-width:none}
+#archiveFilterDynamic .filter-select{flex:1 1 110px;min-width:130px;max-width:none}
+.archive-filter-panel .artwork-menu{z-index:100;max-height:320px;overflow:auto}
+@media(max-width:600px){
+ .archive-filter-panel{width:calc(100% - 12px);margin:7px auto 11px}
+ #archiveFilterBody .header-edition-field,#archiveFilterBody .header-artwork-filter{min-width:0;max-width:none;flex:1 1 145px}
+ #archiveFilterBody .site-navigation{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ #archiveFilterDynamic .toolbar{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))}
+ #archiveFilterDynamic .search-field{grid-column:1/-1;min-width:0}
+ #archiveFilterDynamic .filter-select{min-width:0;width:100%}
+ .archive-filter-panel>summary span{font-size:9px}
+}
+</style>
 </head>
 <body>
 <div class="app-shell">
@@ -1385,6 +1420,10 @@ main#main-content {
     </div>
   </header>
   <div class="main-column">
+    <details id="archiveFilterPanel" class="archive-filter-panel">
+      <summary>☷ FILTRES DU CATALOGUE <span>Tous les filtres au même endroit</span></summary>
+      <div id="archiveFilterBody"><div id="archiveFilterDynamic"></div></div>
+    </details>
     <div class="topbar" aria-label="Contexte de navigation">
       <div class="topbar-left"><span class="crumb-root">ARCHIVES PERSONNELLES</span><span class="crumb-divider">/</span><span id="breadcrumb">CATALOGUE</span></div>
       <div class="topbar-right">
@@ -1774,6 +1813,14 @@ function render(){const main=$('#main-content');if(!main)return;let breadcrumb='
  else if(currentView==='dragons'){breadcrumb='ÉDITIONS';if(currentGroup&&getGroup(currentGroup)?.category==='dragons'){const g=getGroup(currentGroup);html=groupView(g);breadcrumb+=' / '+g.name.toUpperCase();}else{currentGroup=null;html=categoryView('dragons');}}
  else if(currentView==='tools'){breadcrumb='SAUVEGARDES';html=toolsView();}
  main.innerHTML=html;
+  const panel=document.getElementById('archiveFilterPanel');
+  const dynamic=document.getElementById('archiveFilterDynamic');
+  if(panel&&dynamic){
+    const toolbar=main.querySelector('.toolbar');
+    dynamic.replaceChildren();
+    if(toolbar){toolbar.classList.add('archive-filter-toolbar');dynamic.appendChild(toolbar);}
+    panel.hidden=currentView==='tools'||currentView==='stats';
+  }
   // Déplacer le vrai compteur illustré du corps du catalogue vers la barre de filtres.
   const counterHost=document.getElementById('header-counter-host');
   if(counterHost){
@@ -1786,7 +1833,7 @@ function render(){const main=$('#main-content');if(!main)return;let breadcrumb='
   const crumb=$('#breadcrumb');if(crumb)crumb.textContent=breadcrumb;
   syncHeaderControls();
 }
-function navigate(view,group=null,variant=null){if(!['dashboard','dragons','tools'].includes(view))view='dashboard';currentView=view;currentGroup=group;currentVariant=variant;searchTerm='';activeFilter='all';metaFilters={};archivePage=1;archiveArtworkSelection=null;render();window.scrollTo({top:0,behavior:'instant'});}
+function navigate(view,group=null,variant=null){if(!['dashboard','dragons','stats','tools'].includes(view))view='dashboard';currentView=view;currentGroup=group;currentVariant=variant;searchTerm='';activeFilter='all';metaFilters={};archivePage=1;archiveArtworkSelection=null;render();window.scrollTo({top:0,behavior:'instant'});}
 function categoryView(view){const groups=archive.groups.filter(g=>g.category==='dragons').filter(g=>!searchTerm||[g.name,g.description].join(' ').toLowerCase().includes(searchTerm.toLowerCase()));return `<button type="button" class="back-button" data-action="navigate" data-view="dashboard" aria-label="Retour au catalogue Dragon Blanc">← Retour au catalogue</button>${header('DRAGON BLANC','Gérer les éditions','',`<button class="primary-button" data-action="new-group" data-category="dragons">＋ Nouvelle édition</button>`)}<div class="toolbar">${searchBar('Chercher une édition…')}</div><div class="group-grid">${groups.length?groups.map(groupCard).join(''):empty('Aucune édition',searchTerm?'Essaie une autre recherche.':'Crée ta première édition.','new-group','Créer une édition','dragons')}</div>`;}
 function groupView(g){const variants=groupVariants(g.id);const filtered=dragonFilter(variants);const owned=variants.filter(v=>ownedCount(v.id)).length;return `<button class="back-button" data-action="back-category">← Éditions</button>${header('',h(g.name),'',`<button class="secondary-button" data-action="edit-group" data-id="${attr(g.id)}">Modifier l’édition</button><button class="primary-button" data-action="new-variant" data-group="${attr(g.id)}">＋ Référence</button>`)}<div class="group-progress"><strong>${owned} / ${variants.length}</strong> possédées <span>${variants.length?Math.round(100*owned/variants.length):0}%</span></div>${filteredCardCounter(filtered.length)}<div class="toolbar">${searchBar('Chercher une référence…')}${dragonFilterControls(variants)}</div>${filtered.length?archivePagedCards(filtered,referenceCard,'reference-grid'):empty('Aucune référence',searchTerm||activeFilter==='owned'||Object.values(metaFilters).some(Boolean)?'Aucun résultat pour ces filtres.':'Ajoute une référence à cette édition.','new-variant','Ajouter une référence',g.id)}`;}
 function openQuickView(v){const g=getGroup(v.groupId),own=ownedCount(v.id),copies=archive.copies.filter(c=>c.variantId===v.id);const facts=tagFact('dragons','edition','Édition',v.edition||g?.name)+tagFact('dragons','rarity','Rareté',v.rarity)+tagFact('dragons','artwork','Artwork',v.artwork)+tagFact('dragons','language','Langue',v.language)+textFact('Couleur du nom',v.nameColor||'')+textFact('Mention',v.editionStatus||'')+textFact('Marché',v.market||'')+textFact(moduleSettings().dragons.numberLabel||'N°',moduleSettings().dragons.showNumber?v.dragonNumber:'');const body=`<div class="quick-preview"><div class="quick-photo">${imageFor(v)}</div><div class="quick-code">${h(v.reference)}</div><div class="quick-group">${h(g?.name||'')}</div><div class="quick-module-facts">${facts.replaceAll('tile-fact','info-pill')}</div><div class="quick-status"><button class="status-action ${own?'selected is-owned':''}" data-action="peek-own" data-id="${attr(v.id)}" aria-pressed="${!!own}"><span class="owned-led"></span>OWN${own>1?' ×'+own:''}</button></div>${own?`<div class="quick-copies">${copies.map((c,i)=>`<div class="quick-copy"><span>Exemplaire ${i+1}${c.condition?' · '+h(c.condition):''}</span><button class="mini-action" data-action="edit-copy" data-id="${attr(c.id)}">✎</button><button class="mini-action" data-action="delete-copy" data-id="${attr(c.id)}">×</button></div>`).join('')}<button class="quick-text-action" data-action="quick-own" data-id="${attr(v.id)}">＋ Ajouter un doublon</button></div>`:''}<div class="quick-footer"><button class="quick-text-action" data-action="edit-variant" data-id="${attr(v.id)}">Modifier</button><button class="quick-text-action" data-action="duplicate-variant" data-id="${attr(v.id)}">Dupliquer</button><button class="quick-text-action danger-text" data-action="delete-variant" data-id="${attr(v.id)}">Supprimer</button></div></div>`;openModal('',body,true);$('#modal-root .modal-header')?.classList.add('quick-modal-header');}
@@ -1996,6 +2043,9 @@ function syncHeaderControls(){
  const toggle=document.getElementById('header-owned');
  if(toggle){const checked=activeFilter==='owned';toggle.classList.toggle('is-active',checked);toggle.setAttribute('aria-checked',String(checked));}
 }
+// Keep the original header controls and their attached listeners, but relocate
+// the actual DOM nodes into the shared collapsible filter panel.
+document.getElementById('archiveFilterBody')?.prepend(document.querySelector('.site-navigation'));
 document.getElementById('header-owned').addEventListener('click',()=>{activeFilter=activeFilter==='owned'?'all':'owned';archivePage=1;archiveArtworkSelection=null;render();});
 document.getElementById('edition-filter').addEventListener('change',e=>{
  const value=e.target.value;

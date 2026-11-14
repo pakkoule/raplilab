@@ -778,6 +778,18 @@ body::before{display:none!important}
  font:900 10px Poppins,sans-serif;letter-spacing:.05em;max-width:max-content}
 .card-dream-badge small{font:650 9px Poppins,sans-serif;color:#f2deff;letter-spacing:0}
 </style>
+<style id="rapli-sports-filter-collapse">
+.rapli-collapsible-filters{margin:0 0 12px;border:1px solid #cbd8e9;border-radius:13px;background:#f8fafd;overflow:visible}
+.rapli-collapsible-filters>summary{display:flex;justify-content:space-between;gap:10px;align-items:center;
+ cursor:pointer;list-style:none;padding:12px 16px;font:900 11px Poppins,sans-serif;color:#2852a0}
+.rapli-collapsible-filters>summary::-webkit-details-marker{display:none}
+.rapli-collapsible-filters>summary::after{content:"⌄";font-size:19px;line-height:.8}
+.rapli-collapsible-filters[open]>summary::after{content:"⌃"}
+.rapli-collapsible-filters>summary span{margin-left:auto;font:650 10px Poppins,sans-serif;color:#7f90af}
+.rapli-collapsible-filters .filters{border:0;border-top:1px solid #dce6f2;border-radius:0 0 12px 12px}
+.rapli-collapsible-filters .toolbar-foot{padding:9px 12px 13px}
+@media(max-width:540px){.rapli-collapsible-filters>summary{padding:11px 12px}.rapli-collapsible-filters>summary span{font-size:9px}}
+</style>
 </head>
 <body>
   <div class="app-shell">
@@ -796,6 +808,7 @@ body::before{display:none!important}
           </div>
         </div>
         <div id="collectionPanel">
+        <details class="rapli-collapsible-filters" id="sportsCollapsibleFilters"><summary>☷ FILTRES ET TRI <span>Ouvrir / masquer les filtres</span></summary>
         <div class="filters">
           <div class="field search-field"><label class="field-label" for="filterSearch">RECHERCHE</label><div class="input-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input class="input with-icon" id="filterSearch" type="search" autocomplete="off" placeholder="Joueur, référence, équipe, tag…" aria-label="Rechercher des cartes"></div></div>
           <div class="field"><label class="field-label" for="filterBrand">MARQUE</label><select class="select" id="filterBrand"><option value="">Toutes les marques</option></select></div>
@@ -821,6 +834,7 @@ body::before{display:none!important}
           </div>
         </div>
         <div class="toolbar-foot"><span class="results-label" id="resultsLabel">0 carte</span><div class="results-right"><button id="clearFiltersBtn" type="button" class="link-btn">Effacer les filtres</button><select id="sortSelect" class="sorter" aria-label="Trier les cartes"><option value="recent">Plus récentes</option><option value="name">Joueur A – Z</option><option value="brand">Marque A – Z</option><option value="team">Équipe A – Z</option></select></div></div>
+        </details>
         <div id="sportsGalleryToolbar" class="sports-gallery-switch" role="group" aria-label="Mode de consultation des cartes">
           <span class="sports-gallery-title">AFFICHAGE</span>
           <button type="button" class="sports-gallery-option" data-sports-layout="details" aria-pressed="true">Fiches</button>

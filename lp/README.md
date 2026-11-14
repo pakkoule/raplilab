@@ -10,7 +10,7 @@ Module ajouté à la **PR #1** RapliLab le 13 novembre 2026.
 ## Fonctionnalités
 
 - Album représenté par une **pochette carrée**, même avec une photo de dimensions différentes : fond sombre, image `object-fit:contain`, **sans déformation ni recadrage destructif**.
-- Zoom photo partagé avec les modules Sports, Time, Refs et Archives : clic sur l'image, pince +/−, déplacement, fermeture.
+- Zoom photo partagé avec les modules Sports et Archives : clic sur l'image, pince +/−, déplacement, fermeture.
 - Champs de fiche : **Artiste (obligatoire), Album (obligatoire), Note d'édition (libre), Tags d'édition (multiples)**, photo facultative.
 - Tags comme Rapli Sports : saisie Entrée/virgule/point-virgule, retrait avec × et possibilité de nombreux tags.
 - Statut **JE POSSÈDE / ENVIES** comme les autres modules, compteurs albums/possédés/envies.
@@ -22,7 +22,7 @@ Module ajouté à la **PR #1** RapliLab le 13 novembre 2026.
 
 ## Synchronisation Supabase
 
-- Module `lp` intégré dans **`shared/module-cloud.js`**, en mode autosync comme Sports/Refs/Time.
+- Module `lp` intégré dans **`shared/module-cloud.js`**, en mode autosync comme Sports, Stickers Lab et Regatta.
 - Utilise la table existante `public.rapli_module_collections` avec `module='lp'` et `state={records: albums, logos: []}`.
 - Appairage PC/iPhone et protections RLS/révisions déjà présents, **aucune nouvelle table**.
 - Les photos sont stockées dans le bucket privé `rapli-archives-private/{owner}/lp/{hash}.webp` via le pont partagé.

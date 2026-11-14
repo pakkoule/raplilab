@@ -1685,7 +1685,7 @@ function archivePager(total,pageSize=ARCHIVE_PAGE_SIZE){
  return '<nav class="archive-pagination" aria-label="Pagination du catalogue">'+
   '<button type="button" data-action="archive-page" data-page="'+(archivePage-1)+'" '+(archivePage===1?'disabled':'')+' aria-label="Page précédente">‹</button>'+
   links+'<button type="button" data-action="archive-page" data-page="'+(archivePage+1)+'" '+(archivePage===pages?'disabled':'')+' aria-label="Page suivante">›</button>'+
-  '<span class="archive-page-caption">Page '+archivePage+' / '+pages+' · références '+first+'–'+last+' sur '+total+'</span></nav>';
+  '</nav>';
 }
 function archivePagedCards(items,renderer,cssClass){
  const pageSize=ARCHIVE_PAGE_SIZE,pages=Math.max(1,Math.ceil(items.length/pageSize));

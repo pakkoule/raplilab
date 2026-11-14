@@ -234,7 +234,7 @@ let rows=[],db=null,editId='',pictures={icon:'',result:'',route:''},uploads=0,wr
      '<button type="button" data-regatta-page="'+(regattaPage-1)+'" aria-label="Page précédente"'+(regattaPage===1?' disabled':'')+'>‹</button>'+
      links+
      '<button type="button" data-regatta-page="'+(regattaPage+1)+'" aria-label="Page suivante"'+(regattaPage===pages?' disabled':'')+'>›</button>'+
-     '<span class="regatta-page-caption">Page '+regattaPage+' / '+pages+' · courses '+first+'–'+last+' sur '+total+'</span></nav>';
+     '</nav>';
  }
 const dialog=$('race-dialog'),getField=k=>$('race-'+({boatClass:'class',startTime:'start-time',endTime:'end-time',rankDepartment:'rank-department',rankNational:'rank-national',rankTotal:'rank-total',rankNationalTotal:'rank-national-total',rankDepartmentTotal:'rank-department-total',rankCity:'rank-city',rankCityTotal:'rank-city-total',rankTeam:'rank-team',rankTeamTotal:'rank-team-total',durationDays:'days',durationHours:'hours',durationMinutes:'minutes',durationSeconds:'seconds',gainPoints:'gain-points',gainCredits:'gain-credits',participantCount:'participant-count'}[k]||k));
 function toast(t,error=false){$('notice').textContent=t;$('notice').dataset.error=String(error);clearTimeout(timer);timer=setTimeout(()=>{$('notice').textContent='';},7000);}
@@ -246,7 +246,47 @@ async function load(){return db?(await req(db.transaction('races').objectStore('
 async function saveRow(row){if(!db){localStorage.setItem('rapli-regatta-v1',JSON.stringify([...rows.filter(x=>x.id!==row.id),row]));return;}const tx=db.transaction('races','readwrite');tx.objectStore('races').put(row);await done(tx);}
 async function deleteRow(id){if(!db){localStorage.setItem('rapli-regatta-v1',JSON.stringify(rows.filter(x=>x.id!==id)));return;}const tx=db.transaction('races','readwrite');tx.objectStore('races').delete(id);await done(tx);}
 async function replaceRows(next){if(!db){localStorage.setItem('rapli-regatta-v1',JSON.stringify(next));}else{const tx=db.transaction('races','readwrite'),store=tx.objectStore('races');store.clear();next.forEach(x=>store.put(x));await done(tx);}rows=next.map(normal);render();}
-const raceStatus=r=>{if(r.kind==='record')return r.recordClosed?'record-closed':r.live?'record-live':'record';if(r.dnf)return 'dnf';if(r.kind==='event')return r.eventClosed?'finished':r.live?'live':'planned';if(r.upcoming)return 'planned';if(r.live)return 'live';if(rankPairs.some(([key])=>r[key]))return 'finished';if(!r.end)return 'planned';if(!r.endTime)return 'finished';const current=new Date();const local=[current.getFullYear(),String(current.getMonth()+1).padStart(2,'0'),String(current.getDate()).padStart(2,'0')].join('-')+'T'+String(current.getHours()).padStart(2,'0')+':'+String(current.getMinutes()).padStart(2,'0');return (r.end+'T'+r.endTime)<=local?'finished':'planned';},statusTitle={live:'COURSE EN COURS',finished:'TERMINÉE',planned:'À VENIR',dnf:'DNF · ABANDON',record:'COURSE RECORD','record-live':'RECORD EN COURS','record-closed':'RECORD CLÔTURÉ'};
+
+ function localDateTime(date,time=''){
+   if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(String(date||'')))return null;
+   const p=/^(\\d{2}):(\\d{2})(?::(\\d{2}))?$/.exec(time||'00:00');
+   if(!p)return null;
+   const [year,month,day]=date.split('-').map(Number);
+   const d=new Date(year,month-1,day,Number(p[1]),Number(p[2]),Number(p[3]||0));
+   return d.getFullYear()===year&&d.getMonth()===month-1&&d.getDate()===day?d.getTime():null;
+ }
+ function raceClockInfo(row){
+   const st=raceStatus(row);
+   const live=st==='live'||st==='record-live';
+   if(!live&&st!=='planned')return null;
+   const attempt=row.kind==='record'?recordEngine.latestStart(row.attempts):null;
+   const start=localDateTime(attempt?.date||row.start,attempt?.time||row.startTime);
+   return start===null?null:{mode:live?'elapsed':'countdown',start};
+ }
+ function formatRaceClock(seconds){
+   const sec=Math.floor(Math.max(0,seconds)),days=Math.floor(sec/86400);
+   const inner=[Math.floor(sec%86400/3600),Math.floor(sec%3600/60),sec%60].map(n=>String(n).padStart(2,'0')).join(':');
+   return days?days+'j '+inner:inner;
+ }
+ function updateRaceClocks(){
+   const now=Date.now();
+   document.querySelectorAll('[data-race-clock]').forEach(el=>{
+     const start=Number(el.dataset.start);
+     if(!Number.isFinite(start))return;
+     const delta=(el.dataset.raceClock==='countdown'?start-now:now-start)/1000;
+     el.textContent=delta<0&&el.dataset.raceClock==='countdown'?'DÉPART IMMINENT':formatRaceClock(delta);
+   });
+ }
+ function raceClockMarkup(row){
+   const clock=raceClockInfo(row);
+   if(!clock)return '';
+   return '<div class="race-live-clock '+(clock.mode==='countdown'?'race-live-clock--countdown':'')+'">'+
+      '<span aria-hidden="true">⏱</span><span>'+(clock.mode==='countdown'?'DÉPART DANS':'EN COURSE DEPUIS')+'</span>'+
+      '<strong data-race-clock="'+clock.mode+'" data-start="'+clock.start+'">'+
+      formatRaceClock((clock.mode==='countdown'?clock.start-Date.now():Date.now()-clock.start)/1000)+'</strong></div>';
+ }
+
+ const raceStatus=r=>{if(r.kind==='record')return r.recordClosed?'record-closed':r.live?'record-live':'record';if(r.dnf)return 'dnf';if(r.kind==='event')return r.eventClosed?'finished':r.live?'live':'planned';if(r.upcoming)return 'planned';if(r.live)return 'live';if(rankPairs.some(([key])=>r[key]))return 'finished';if(!r.end)return 'planned';if(!r.endTime)return 'finished';const current=new Date();const local=[current.getFullYear(),String(current.getMonth()+1).padStart(2,'0'),String(current.getDate()).padStart(2,'0')].join('-')+'T'+String(current.getHours()).padStart(2,'0')+':'+String(current.getMinutes()).padStart(2,'0');return (r.end+'T'+r.endTime)<=local?'finished':'planned';},statusTitle={live:'COURSE EN COURS',finished:'TERMINÉE',planned:'À VENIR',dnf:'DNF · ABANDON',record:'COURSE RECORD','record-live':'RECORD EN COURS','record-closed':'RECORD CLÔTURÉ'};
 const dateFR=v=>/^\d{4}-\d{2}-\d{2}$/.test(v)?v.slice(8)+'/'+v.slice(5,7)+'/'+v.slice(0,4):'';
 const scoreEngine=window.RapliRegattaScore;
 const recordEngine=window.RapliRegattaRecordAttempts;
@@ -283,7 +323,7 @@ function card(r){
  '<div class="card-tag-row"><span class="class-tag" title="'+safe(r.boatClass||'VIRTUAL REGATTA')+'">'+safe(r.boatClass||'VIRTUAL REGATTA')+'</span>'+
  (mode?'<span class="vsr-badge vsr-'+r.vsr+(r.vsr==='hc'?' hc':'')+'" title="Importance VSR : '+(VSR_PRIORITY(r.vsr)+1)+' sur 4">'+safe(mode)+'</span>':'')+'</div></div>'+
  '<div class="card-boat">'+safe(r.boat)+(r.kind==='record'?' · COURSE RECORD':r.kind==='event'?' · COMPÉTITION':r.eventId?' · ÉTAPE'+(r.joker?' JOKER':''):'')+'</div>'+
- '<div class="card-stats">'+(r.kind!=='record'&&r.start?'<span class="stat-chip">DÉPART '+safe(dateTimeFR(r.start,r.startTime))+'</span>':'')+
+ raceClockMarkup(r)+'<div class="card-stats">'+(r.kind!=='record'&&r.start?'<span class="stat-chip">DÉPART '+safe(dateTimeFR(r.start,r.startTime))+'</span>':'')+
  (r.kind!=='record'&&status!=='dnf'&&r.end?'<span class="stat-chip arrival-chip">ARRIVÉE '+safe(dateTimeFR(r.end,r.endTime))+'</span>':'')+
  (r.kind!=='record'&&r.duration?'<span class="stat-chip duration-chip">⏱ '+safe(r.duration)+'</span>':'')+
  (r.kind!=='record'&&validEquipment(r.equipment)?'<span class="stat-chip equipment">ÉQUIPEMENT · '+safe(equipmentModes[r.equipment])+'</span>':'')+
@@ -332,8 +372,15 @@ function render(){
    (!q||[r.name,r.boatClass,r.boat,r.rank,r.rankNational,r.rankDepartment,r.rankCity,r.rankTeam,
            r.startTime,r.end,r.endTime,...(r.kind==='record'?recordEngine.normalize(r.attempts).map(x=>x.startDate+' '+x.startTime):[]),VSR[r.vsr]||'',equipmentModes[r.equipment]||''].some(v=>String(v||'').toLocaleLowerCase('fr').includes(q))));
  const out=[...filtered],sort=$('sort').value;
+ const noFilters=!q&&!status&&!cls&&!vsr;
+ const statusPriority=item=>{
+   const state=raceStatus(item);
+   return state==='live'||state==='record-live'?0:state==='planned'?1:2;
+ };
  const chronological=r=>{const start=r.kind==='record'?recordEngine.latestStart(r.attempts):{date:r.start,time:r.startTime};return start.date?start.date+'T'+(start.time||'00:00'):r.createdAt||'';};
- out.sort((a,b)=>sort==='name'?a.name.localeCompare(b.name,'fr'):
+ out.sort((a,b)=>noFilters&&statusPriority(a)!==statusPriority(b)?
+   statusPriority(a)-statusPriority(b):
+   sort==='name'?a.name.localeCompare(b.name,'fr'):
   sort==='old'?a.createdAt.localeCompare(b.createdAt):
   sort==='recent'?b.updatedAt.localeCompare(a.updatedAt):
   sort==='vsr'?VSR_PRIORITY(a.vsr)-VSR_PRIORITY(b.vsr)||chronological(b).localeCompare(chronological(a)):
@@ -352,7 +399,7 @@ function render(){
  $('regatta-pagination-bottom').innerHTML=controls;
  $('cards').innerHTML=out.slice(pageStart,pageStart+REGATTA_PAGE_SIZE).map(card).join('')||
    (rows.length?'<p>Aucune course ne correspond aux filtres.</p>':'');
- scheduleRankingFit();
+ scheduleRankingFit();updateRaceClocks();
  $('empty').hidden=rows.length!==0;
  renderStatistics();renderClassColors();
 }
@@ -1311,6 +1358,8 @@ for(const key of imageKeys){$('image-'+key).addEventListener('change',e=>{const 
 $('cards').addEventListener('click',e=>{const btn=e.target.closest('[data-action]');if(!btn)return;const r=rows.find(x=>x.id===btn.closest('[data-id]')?.dataset.id);if(!r)return;if(btn.dataset.action==='edit')openEditor(r);if(btn.dataset.action==='record-close')closeRecord(r.id);if(btn.dataset.action==='delete')deleteRace(r.id);if(btn.dataset.action==='png')exportPNG(r);if(btn.dataset.action==='score'&&!longPressOpened)openScoreDetail(r);if(btn.dataset.action==='score')longPressOpened=false;if(btn.dataset.action==='calendar')exportCalendar(r);});
 document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'&&!dialog.open){e.preventDefault();$('search').focus();}});
 window.addEventListener?.('resize',scheduleRankingFit);
+const regattaClockTicker=window.setInterval(updateRaceClocks,1000);
+window.addEventListener('pagehide',()=>window.clearInterval(regattaClockTicker));
 const bridge=window.RapliModuleBridge={module:'regatta',ready:false,
  getState:()=>({records:rows,logos:colorSettingsState()}),notify:msg=>toast(msg),
  replaceState:async data=>{

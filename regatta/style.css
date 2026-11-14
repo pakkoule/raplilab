@@ -502,3 +502,10 @@ dialog form{border-radius:18px;background:#fff;display:flex;flex-direction:colum
 @media(max-width:580px){.regatta-pagination{padding:8px 11px 12px;gap:5px}
  .regatta-pagination button{min-width:32px;min-height:32px;padding:6px 8px}
 }
+
+.race-live-clock{display:flex;align-items:center;gap:9px;flex-wrap:wrap;padding:9px 12px;margin:8px 0;
+ border:1px solid #5ec0c9;border-radius:9px;background:linear-gradient(105deg,#e2faf8,#d7eef1);
+ color:#17617a;font:800 10px Poppins,sans-serif;font-variant-numeric:tabular-nums}
+.race-live-clock>strong{font:900 19px 'Courier Prime',monospace;letter-spacing:.02em;color:#08798c}
+.race-live-clock--countdown{background:linear-gradient(105deg,#edf4ff,#dce7ff);border-color:#afc5fa;color:#285392}
+.race-live-clock--countdown>strong{color:#2656ae}

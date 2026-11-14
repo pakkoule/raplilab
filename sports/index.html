@@ -880,6 +880,38 @@ body::before{display:none!important}
  .card-item .reference-code{font-size:12px}
 }
 </style>
+
+<style id="rapli-sports-cma-cgm-pr1">
+/* Decathlon CMA CGM cycling jersey: mint sleeve, royal-blue chest, navy shoulder and coral hem. */
+:root{--bg:#09172b;--panel:#102844;--panel-2:#15365a;--panel-3:#173b62;--stroke:#345677;--ink:#f8fbff;--muted:#a3bcd1;--blue:#166ac4;--blue-2:#0755a9;--cyan:#53dab0;--red:#fb563b}
+body{background:#09172b}
+body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,222,170,.22),transparent 75%),radial-gradient(ellipse 850px 500px at 85% 24%,rgba(19,113,206,.24),transparent 76%),radial-gradient(ellipse 720px 440px at 55% 105%,rgba(253,82,56,.17),transparent 72%),linear-gradient(155deg,#09172b 0%,#0e3158 50%,#111a32 100%)}
+.app-shell{background:linear-gradient(166deg,#102e50 0%,#0c2342 31%,#0a1b33 64%,#192b40 86%,#2e2033 100%);border-color:#416481}
+.topline{background:linear-gradient(90deg,#56dfb0 0%,#56dfb0 21%,#126cc7 40%,#12274e 64%,#fb513a 100%)}
+.section-nav{border-bottom-color:#41617b}
+.tab{color:#a7c1d7}.tab:hover{color:#e9fff6}.tab.active{color:#fff}
+.tab.active::after{background:linear-gradient(90deg,#55dab0,#1377d0 56%,#fc6247);box-shadow:0 0 15px #50c8be66}
+.tab b{background:#204569;color:#b5e5ec}.tab.active b{background:#136bb0;color:#fff}
+.button-primary{border-color:#ff7859;background:linear-gradient(125deg,#0a70b7 0%,#236ec2 46%,#fb5942 100%);color:#fff;box-shadow:0 4px 14px #ff58372b}
+.button-primary:hover{border-color:#ffc3ad;background:linear-gradient(125deg,#137dc5,#fb6048)}
+.button-soft{background:#153b58;border-color:#5bbfb1;color:#b7ffdf}
+.sports-catalogue-controls{display:grid;grid-template-columns:auto minmax(0,1fr);gap:9px;align-items:start;margin:1px 0 13px}
+.sports-catalogue-controls>.nav-actions{display:flex;gap:7px;margin:0;padding:0;min-width:0}
+.sports-icon-action{width:42px;height:42px;min-height:42px;padding:0!important;display:inline-flex;justify-content:center;align-items:center;flex:none;border-radius:11px}
+.sports-icon-action svg{width:21px;height:21px}
+.sports-catalogue-controls>.rapli-collapsible-filters{min-width:0;margin:0}
+.sports-catalogue-controls>.rapli-collapsible-filters[open]{grid-column:1/-1}
+.sports-catalogue-controls .rapli-collapsible-filters>summary{min-height:42px;padding:11px 13px;background:linear-gradient(115deg,#e5f5ee,#f5f9ff 62%,#ffe5da);border-radius:12px;color:#154e79}
+.sports-catalogue-controls .rapli-collapsible-filters[open]>summary{border-radius:12px 12px 0 0}
+.card-item .sport-chip,.sports-gallery-sport .sport-chip,.card-item .player-trait,.sports-label-preview{
+  background:var(--sports-label-gradient,var(--sports-label-bg))!important;
+  box-shadow:inset 0 1px 0 #ffffff6b,0 2px 5px #071f2e22;
+  text-shadow:0 1px 0 #ffffff2b
+}
+.sports-label-controls{grid-template-columns:minmax(120px,1.8fr) repeat(3,minmax(48px,.6fr)) repeat(2,minmax(110px,1fr))}
+@media(max-width:720px){.sports-label-controls{grid-template-columns:repeat(3,minmax(0,1fr))}.sports-label-controls label:first-child{grid-column:1/-1}}
+@media(max-width:530px){.sports-catalogue-controls{gap:7px;grid-template-columns:82px minmax(0,1fr)}.sports-icon-action{width:37px;height:40px;min-height:40px}.sports-catalogue-controls>.nav-actions{gap:7px}.sports-catalogue-controls .rapli-collapsible-filters>summary{min-height:40px;padding:10px 9px;font-size:10px}.sports-catalogue-controls .rapli-collapsible-filters>summary span{display:none}}
+</style>
 </head>
 <body>
   <div class="app-shell">
@@ -892,12 +924,13 @@ body::before{display:none!important}
             <button type="button" role="tab" aria-selected="false" class="tab" data-view="wishlist">WISHLIST <b id="tabWishCount">0</b></button>
             <button type="button" role="tab" aria-selected="false" class="tab" data-view="stats">STATISTIQUES</button>
           </div>
-          <div class="nav-actions">
-            <button id="logosBtn" type="button" class="button button-soft"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg> Gérer les logos</button>
-            <button id="addCardBtn" type="button" class="button button-primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg> Ajouter une carte</button>
-          </div>
         </div>
         <div id="collectionPanel">
+        <div class="sports-catalogue-controls">
+          <div class="nav-actions" role="group" aria-label="Actions sur les cartes">
+            <button id="logosBtn" type="button" class="button button-soft sports-icon-action" aria-label="Gérer les logos" title="Gérer les logos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="m9.4 2.7.4 1.7-2.1 1.2-1.6-.8-2.5 2.5.8 1.6-1.2 2.1-1.7.4v3.4l1.7.4 1.2 2.1-.8 1.6 2.5 2.5 1.6-.8 2.1 1.2.4 1.7h3.4l.4-1.7 2.1-1.2 1.6.8 2.5-2.5-.8-1.6 1.2-2.1 1.7-.4v-3.4l-1.7-.4-1.2-2.1.8-1.6-2.5-2.5-1.6.8-2.1-1.2-.4-1.7z"/></svg></button>
+            <button id="addCardBtn" type="button" class="button button-primary sports-icon-action" aria-label="Ajouter une carte" title="Ajouter une carte"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
+          </div>
         <details class="rapli-collapsible-filters" id="sportsCollapsibleFilters"><summary>☷ FILTRES ET TRI <span>Ouvrir / masquer les filtres</span></summary>
         <div class="filters">
           <div class="field search-field"><label class="field-label" for="filterSearch">RECHERCHE</label><div class="input-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input class="input with-icon" id="filterSearch" type="search" autocomplete="off" placeholder="Joueur, référence, équipe, tag…" aria-label="Rechercher des cartes"></div></div>
@@ -925,6 +958,7 @@ body::before{display:none!important}
         </div>
         <div class="toolbar-foot"><span class="results-label" id="resultsLabel">0 carte</span><div class="results-right"><button id="clearFiltersBtn" type="button" class="link-btn">Effacer les filtres</button><select id="sortSelect" class="sorter" aria-label="Trier les cartes"><option value="recent">Plus récentes</option><option value="name">Joueur A – Z</option><option value="brand">Marque A – Z</option><option value="team">Équipe A – Z</option></select></div></div>
         </details>
+        </div>
         <div id="sportsGalleryToolbar" class="sports-gallery-switch" role="group" aria-label="Mode de consultation des cartes">
           <span class="sports-gallery-title">AFFICHAGE</span>
           <button type="button" class="sports-gallery-option" data-sports-layout="details" aria-pressed="true">Fiches</button>
@@ -1214,7 +1248,8 @@ body::before{display:none!important}
             bg:safeLabelColor(item.bg,def.bg),
             ink:safeLabelColor(item.ink,def.ink),
             border:safeLabelColor(item.border,def.border),
-            shape:['rounded','pill','square'].includes(item.shape)?item.shape:'rounded'
+            shape:['rounded','pill','square'].includes(item.shape)?item.shape:'rounded',
+            gradient:typeof item.gradient==='string'&&(['solid','foil'].includes(item.gradient)||COLLECTOR_METALS.some(m=>m.key===item.gradient))?item.gradient:'foil'
           };
         }
         return output;
@@ -1228,13 +1263,22 @@ body::before{display:none!important}
           text:typeof stored.text==='string'&&stored.text.trim()?stored.text.trim().slice(0,52):def.text,
           bg:safeLabelColor(stored.bg,def.bg),ink:safeLabelColor(stored.ink,def.ink),
           border:safeLabelColor(stored.border,def.border),
-          shape:['rounded','pill','square'].includes(stored.shape)?stored.shape:'rounded'
+          shape:['rounded','pill','square'].includes(stored.shape)?stored.shape:'rounded',
+          gradient:typeof stored.gradient==='string'&&(['solid','foil'].includes(stored.gradient)||COLLECTOR_METALS.some(m=>m.key===stored.gradient))?stored.gradient:'foil'
         };
       }
       function labelInlineStyle(cfg){
         const radius=cfg.shape==='pill'?'999px':cfg.shape==='square'?'2px':'6px';
+        // Same 117deg multi-stop metallic foils as serial numbers; older plain labels remain import-compatible.
+        const metal=COLLECTOR_METALS.find(m=>m.key===cfg.gradient);
+        const gradient=metal?'linear-gradient(117deg,'+metal.colors.join(',')+')':
+          cfg.gradient==='solid'?cfg.bg:
+          'linear-gradient(117deg,color-mix(in srgb,'+cfg.bg+' 66%,white) 0%,'+
+          cfg.bg+' 29%,color-mix(in srgb,'+cfg.bg+' 82%,black) 67%,'+
+          'color-mix(in srgb,'+cfg.bg+' 76%,white) 100%)';
         return '--sports-label-bg:'+cfg.bg+';--sports-label-text:'+cfg.ink+
-          ';--sports-label-border:'+cfg.border+';--sports-label-radius:'+radius;
+          ';--sports-label-border:'+cfg.border+';--sports-label-radius:'+radius+
+          ';--sports-label-gradient:'+gradient+';';
       }
       function sportsSportBadge(sport){
         const value=String(sport||'').trim();
@@ -1265,6 +1309,10 @@ body::before{display:none!important}
           '<label>Contour<input type="color" data-label-border value="'+cfg.border+'" aria-label="Contour '+safeText(def.title)+'"></label>'+
           '<label>Forme<select class="select" data-label-shape aria-label="Forme '+safeText(def.title)+'">'+
           shapes.map(([value,title])=>'<option value="'+value+'"'+(cfg.shape===value?' selected':'')+'>'+title+'</option>').join('')+
+          '</select></label>'+
+          '<label>Dégradé<select class="select" data-label-gradient aria-label="Dégradé '+safeText(def.title)+'">'+
+          [['foil','Foil · couleur actuelle'],['solid','Fond uni'],...COLLECTOR_METALS.map(m=>[m.key,m.label])].map(([value,title])=>
+            '<option value="'+value+'"'+(cfg.gradient===value?' selected':'')+'>'+safeText(title)+'</option>').join('')+
           '</select></label></div></section>';
       }
       function renderLabelEditors(settings=storedLabelSettings()){
@@ -1290,6 +1338,7 @@ body::before{display:none!important}
         root.querySelector('[data-label-ink]').value=cfg.ink;
         root.querySelector('[data-label-border]').value=cfg.border;
         root.querySelector('[data-label-shape]').value=cfg.shape;
+        root.querySelector('[data-label-gradient]').value=cfg.gradient;
         const preview=root.querySelector('[data-label-preview]');
         preview.style.cssText=labelInlineStyle(cfg);
         preview.textContent=cfg.text;
@@ -1304,7 +1353,8 @@ body::before{display:none!important}
           bg:row.querySelector('[data-label-bg]').value,
           ink:row.querySelector('[data-label-ink]').value,
           border:row.querySelector('[data-label-border]').value,
-          shape
+          shape,
+          gradient:row.querySelector('[data-label-gradient]').value
         }});
       }
       function updateLabelPreview(row){

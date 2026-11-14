@@ -214,6 +214,7 @@ function normal(x={}){const r={id:typeof x.id==='string'&&x.id.length<130?x.id:u
  if(formatted!==null&&formatted!=='')r.duration=formatted;
  for(const k of imageKeys)r[k]=validImage(x[k])?x[k]:'';if(r.kind!=='record'){const arrival=calculateArrival(r.start,r.startTime,r.duration);if(arrival.status==='ready'){r.end=arrival.end;r.endTime=arrival.endTime;}}return r;}
 let rows=[],db=null,editId='',pictures={icon:'',result:'',route:''},uploads=0,writeBusy=false,timer;
+let storageRecoveryBlocked=false;
  let regattaPage=1,regattaResultsCount=0;
  const REGATTA_PAGE_SIZE=30;
  function regattaPager(total){
@@ -241,11 +242,11 @@ function toast(t,error=false){$('notice').textContent=t;$('notice').dataset.erro
 const req=r=>new Promise((yes,no)=>{r.onsuccess=()=>yes(r.result);r.onerror=()=>no(r.error||Error('IndexedDB inaccessible'));});
 const done=tx=>new Promise((yes,no)=>{tx.oncomplete=yes;tx.onerror=()=>no(tx.error||Error('Sauvegarde locale impossible'));tx.onabort=()=>no(tx.error||Error('Stockage local annulé'));});
 async function openDB(){if(!window.indexedDB)return;const r=indexedDB.open('rapli-regatta-v1',1);r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains('races'))r.result.createObjectStore('races',{keyPath:'id'});};db=await req(r);}
-function backup(){try{return JSON.parse(localStorage.getItem('rapli-regatta-v1')||'[]');}catch{return [];}}
+function backup(){const raw=localStorage.getItem('rapli-regatta-v1');if(raw===null)return [];const stored=JSON.parse(raw);if(!Array.isArray(stored))throw Error('Sauvegarde Regatta invalide');return stored;}
 async function load(){return db?(await req(db.transaction('races').objectStore('races').getAll())).map(normal):backup().map(normal);}
-async function saveRow(row){if(!db){localStorage.setItem('rapli-regatta-v1',JSON.stringify([...rows.filter(x=>x.id!==row.id),row]));return;}const tx=db.transaction('races','readwrite');tx.objectStore('races').put(row);await done(tx);}
-async function deleteRow(id){if(!db){localStorage.setItem('rapli-regatta-v1',JSON.stringify(rows.filter(x=>x.id!==id)));return;}const tx=db.transaction('races','readwrite');tx.objectStore('races').delete(id);await done(tx);}
-async function replaceRows(next){if(!db){localStorage.setItem('rapli-regatta-v1',JSON.stringify(next));}else{const tx=db.transaction('races','readwrite'),store=tx.objectStore('races');store.clear();next.forEach(x=>store.put(x));await done(tx);}rows=next.map(normal);render();}
+async function saveRow(row){if(storageRecoveryBlocked)throw Error('Stockage des courses inaccessible : enregistrement bloqué.');if(!db){localStorage.setItem('rapli-regatta-v1',JSON.stringify([...rows.filter(x=>x.id!==row.id),row]));return;}const tx=db.transaction('races','readwrite');tx.objectStore('races').put(row);await done(tx);}
+async function deleteRow(id){if(storageRecoveryBlocked)throw Error('Stockage des courses inaccessible : suppression bloquée.');if(!db){localStorage.setItem('rapli-regatta-v1',JSON.stringify(rows.filter(x=>x.id!==id)));return;}const tx=db.transaction('races','readwrite');tx.objectStore('races').delete(id);await done(tx);}
+async function replaceRows(next){if(storageRecoveryBlocked)throw Error('Stockage des courses inaccessible : restauration bloquée.');if(!db){localStorage.setItem('rapli-regatta-v1',JSON.stringify(next));}else{const tx=db.transaction('races','readwrite'),store=tx.objectStore('races');store.clear();next.forEach(x=>store.put(x));await done(tx);}rows=next.map(normal);render();}
 
  function localDateTime(date,time=''){
    if(!/^\d{4}-\d{2}-\d{2}$/.test(String(date||'')))return null;
@@ -1309,8 +1310,9 @@ for(const key of imageKeys){$('image-'+key).addEventListener('change',e=>{const 
 $('cards').addEventListener('click',e=>{const btn=e.target.closest('[data-action]');if(!btn)return;const r=rows.find(x=>x.id===btn.closest('[data-id]')?.dataset.id);if(!r)return;if(btn.dataset.action==='edit')openEditor(r);if(btn.dataset.action==='record-close')closeRecord(r.id);if(btn.dataset.action==='delete')deleteRace(r.id);if(btn.dataset.action==='png')exportPNG(r);if(btn.dataset.action==='score'&&!longPressOpened)openScoreDetail(r);if(btn.dataset.action==='score')longPressOpened=false;if(btn.dataset.action==='calendar')exportCalendar(r);});
 document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'&&!dialog.open){e.preventDefault();$('search').focus();}});
 window.addEventListener?.('resize',scheduleRankingFit);
-const regattaClockTicker=window.setInterval(updateRaceClocks,1000);
-window.addEventListener('pagehide',()=>window.clearInterval(regattaClockTicker));
+let regattaClockTicker=window.setInterval(updateRaceClocks,1000);
+window.addEventListener('pagehide',()=>{window.clearInterval(regattaClockTicker);regattaClockTicker=null;});
+window.addEventListener('pageshow',()=>{if(regattaClockTicker===null){updateRaceClocks();regattaClockTicker=window.setInterval(updateRaceClocks,1000);}});
 const bridge=window.RapliModuleBridge={module:'regatta',ready:false,
  getState:()=>({records:rows,logos:colorSettingsState()}),notify:msg=>toast(msg),
  replaceState:async data=>{
@@ -1323,5 +1325,17 @@ const bridge=window.RapliModuleBridge={module:'regatta',ready:false,
   storeClassSettings(data.logos[0]||defaultClassSettings(),{notifyCloud:false});
  }};
 window.RapliRegatta={getCount:()=>rows.length};
-(async()=>{try{await openDB();rows=await load();render();}catch(err){console.warn(err);rows=[];render();toast('Stockage local indisponible',true);}bridge.ready=true;window.dispatchEvent(new Event('rapli-module-ready'));})();
+(async()=>{try{await openDB();rows=await load();render();}catch(err){
+ console.warn('Regatta : IndexedDB indisponible',err);db=null;
+ try{
+  if(localStorage.getItem('rapli-regatta-v1')===null)throw Error('Aucune sauvegarde de secours');
+  rows=backup().map(normal);
+  toast('IndexedDB indisponible : sauvegarde locale de secours chargée.',true);
+ }catch(recoveryError){
+  console.warn('Regatta : récupération locale impossible',recoveryError);
+  storageRecoveryBlocked=true;rows=[];
+  toast('Stockage des courses inaccessible. Modifications bloquées pour protéger tes données.',true);
+ }
+ render();
+}bridge.ready=true;window.dispatchEvent(new Event('rapli-module-ready'));})();
 })();

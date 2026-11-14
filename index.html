@@ -314,6 +314,28 @@ body[data-active="regatta"] .portal-header{background:linear-gradient(120deg,#10
  .portal-nav-strip .global-cloud-controls button svg{width:18px;height:18px}
  .global-manager-content{padding:12px}
 }
+
+/* Site brand: fixed at the start of the navigation without creating an extra row. */
+.portal-nav-strip .portal-brand{
+  position:relative;z-index:2;display:flex;align-items:center;justify-content:center;
+  flex:0 0 102px;width:102px;height:56px;min-width:0;
+}
+.portal-nav-strip .portal-brand img{
+  display:block;width:100%;height:100%;object-fit:contain;object-position:center;
+}
+@media(max-width:1120px){
+  .portal-nav-strip .portal-brand{flex-basis:96px;width:96px;height:48px}
+}
+@media(max-width:800px){
+  .portal-nav-strip .portal-brand{flex-basis:62px;width:62px;height:40px}
+  .portal-nav-strip{gap:5px}
+}
+@media(max-width:420px){
+  .portal-nav-strip .portal-brand{flex-basis:54px;width:54px;height:35px}
+}
+@media(max-width:360px){
+  .portal-nav-strip .portal-brand{flex-basis:44px;width:44px;height:30px}
+}
 </style>
   
   <link rel="stylesheet" href="shared/ios-input-focus.css">
@@ -323,6 +345,9 @@ body[data-active="regatta"] .portal-header{background:linear-gradient(120deg,#10
   <div class="portal">
     <header class="portal-header">
       <div class="portal-nav-strip">
+      <div class="portal-brand">
+        <img src="assets/rapli-lab-logo.png" alt="Rapli Lab" width="220" height="131" draggable="false">
+      </div>
       <nav class="product-tabs" role="tablist" aria-label="Choisir le projet Rapli">
         <button type="button" id="tab-archives" class="product-tab" data-product="archives" role="tab" aria-selected="true" aria-controls="panel-archives" tabindex="0" title="Rapli Archives">
           <img src="assets/archives-logo.webp" alt="Rapli Archives" width="100" height="57" draggable="false">

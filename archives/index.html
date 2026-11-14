@@ -1255,6 +1255,61 @@ main#main-content {
   }
 }
 </style>
+
+<style id="rapli-archives-gallery-pagination">
+.archive-view-switch{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:3px 0 14px}
+.archive-view-switch .archive-switch-label{color:#5a6f8a;font:850 10px Poppins,sans-serif;letter-spacing:.09em;margin-right:5px}
+.archive-view-button{border:1px solid #bfcfe3;background:#f7f9fc;color:#315273;border-radius:9px;padding:9px 12px;cursor:pointer;
+  font:800 11px/1.2 Poppins,system-ui,sans-serif;white-space:nowrap;transition:background .16s}
+.archive-view-button:hover{background:#e3f0ff}
+.archive-view-button[aria-pressed=true]{background:#174b86;border-color:#174b86;color:#fff}
+.archive-view-button:focus-visible,.archive-pagination button:focus-visible,.archive-artwork-tile:focus-visible,
+.archive-vignette-open:focus-visible{outline:3px solid #5bb6f5;outline-offset:2px}
+.archive-gallery-count{font-size:10px;color:#68809b;font-weight:800;margin-left:auto}
+.archive-vignettes,.archive-artwork-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin:12px 0 20px}
+.archive-vignette,.archive-artwork-tile{min-width:0;display:flex;flex-direction:column;overflow:hidden;border:1px solid #d4dfeb;border-radius:12px;
+  background:#fff;box-shadow:0 3px 13px rgba(12,40,76,.07);color:#224466}
+.archive-vignette{position:relative}
+.archive-vignette.is-owned{border-color:#66b99e;box-shadow:0 0 0 1px rgba(37,164,120,.14)}
+.archive-vignette-open,.archive-artwork-tile{cursor:pointer}
+.archive-vignette-open{display:flex;flex-direction:column;min-width:0;flex:1;background:transparent;border:0;padding:0;text-align:left;color:inherit}
+.archive-vignette-picture,.archive-artwork-picture{display:grid;place-items:center;position:relative;width:100%;aspect-ratio:3/4;
+  background:linear-gradient(135deg,#f3f7fc,#e7eff9);padding:10px;overflow:hidden}
+.archive-vignette-picture img,.archive-artwork-picture img{width:100%;height:100%;max-height:100%;object-fit:contain;display:block}
+.archive-vignette-picture .placeholder-icon,.archive-artwork-picture .placeholder-icon{font-size:34px;color:#7e9ebf}
+.archive-vignette-text{display:flex;flex-direction:column;gap:4px;padding:9px 10px 11px;min-width:0}
+.archive-vignette-text strong{font:900 11px Poppins,sans-serif;color:#173d71;overflow-wrap:anywhere}
+.archive-vignette-text small{font:700 9px/1.45 Poppins,sans-serif;color:#6581a0;overflow-wrap:anywhere}
+.archive-vignette-own{position:absolute;right:6px;top:6px;z-index:2;padding:4px 6px;border-radius:6px;
+ background:#168e68;color:#fff;font:900 9px Poppins,sans-serif;pointer-events:none}
+.archive-artwork-tile{border-color:#a8c1dc;padding:0;text-align:left}
+.archive-artwork-picture{aspect-ratio:1/1;background:linear-gradient(150deg,#eaf5ff,#dceafb)}
+.archive-artwork-picture>.artwork-placeholder{font-size:44px}
+.archive-artwork-picture img{border-radius:7px}
+.archive-artwork-info{display:grid;gap:5px;padding:11px 10px}
+.archive-artwork-info strong{font:900 12px/1.35 Poppins,sans-serif;color:#204873;overflow-wrap:anywhere}
+.archive-artwork-info span{font:750 10px Poppins,sans-serif;color:#5c7798}
+.archive-artwork-tile:hover,.archive-vignette:hover{transform:translateY(-2px);box-shadow:0 8px 18px rgba(12,39,78,.13)}
+.archive-gallery-back{display:inline-flex;border:1px solid #b8cee5;border-radius:9px;background:#edf5fe;color:#205186;
+ font:800 11px Poppins,sans-serif;cursor:pointer;padding:9px 12px;margin-bottom:8px}
+.archive-pagination{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:7px;margin:20px auto 8px}
+.archive-pagination button{border:1px solid #c2d4e8;border-radius:8px;background:white;color:#1b5185;cursor:pointer;
+ min-width:36px;min-height:36px;padding:7px 10px;font:900 11px Poppins,sans-serif}
+.archive-pagination button[aria-current=page]{background:#174c87;border-color:#174c87;color:white;cursor:default}
+.archive-pagination button:disabled{opacity:.36;cursor:not-allowed}
+.archive-page-ellipsis,.archive-page-caption{color:#6d83a1;font:750 10px Poppins,sans-serif;padding:0 4px}
+.archive-page-caption{width:100%;text-align:center;margin-top:2px}
+@media(max-width:900px){.archive-vignettes,.archive-artwork-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}}
+@media(max-width:620px){.archive-vignettes,.archive-artwork-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+ .archive-vignette-picture,.archive-artwork-picture{padding:5px}
+ .archive-vignette-text{padding:7px 6px 8px}
+ .archive-vignette-text strong{font-size:10px}
+ .archive-vignette-text small{font-size:8px}
+ .archive-view-button{font-size:10px;padding:8px 9px}
+ .archive-gallery-count{width:100%;margin-left:0}
+}
+@media(max-width:370px){.archive-vignettes,.archive-artwork-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+</style>
   <link rel="stylesheet" href="../shared/photo-zoom.css">
   <link rel="stylesheet" href="../shared/ios-input-focus.css">
 <style id="rapli-archives-compact-header-and-settings">
@@ -1457,7 +1512,7 @@ function legacyHandleAction(action,el){const id=el.dataset.id;switch(action){cas
 document.addEventListener('click',e=>{const el=e.target.closest('[data-action]');if(el){e.preventDefault();handleAction(el.dataset.action,el);return;}if(e.target.classList.contains('modal-screen'))closeModal();});
 document.addEventListener('submit',e=>{if(e.target.id==='edit-form')onSaveForm(e);});
 let rapliSearchTimer=0;
-document.addEventListener('input',e=>{if(e.target.id==='list-search'){const start=e.target.selectionStart,end=e.target.selectionEnd;searchTerm=e.target.value;clearTimeout(rapliSearchTimer);rapliSearchTimer=setTimeout(()=>{if(document.activeElement?.id!=='list-search')return;render();const input=$('#list-search');if(input){input.focus({preventScroll:true});input.setSelectionRange(start,end);}},90);}});
+document.addEventListener('input',e=>{if(e.target.id==='list-search'){const start=e.target.selectionStart,end=e.target.selectionEnd;searchTerm=e.target.value;archivePage=1;clearTimeout(rapliSearchTimer);rapliSearchTimer=setTimeout(()=>{if(document.activeElement?.id!=='list-search')return;render();const input=$('#list-search');if(input){input.focus({preventScroll:true});input.setSelectionRange(start,end);}},90);}});
 document.addEventListener('change',async e=>{if(e.target.id==='status-filter'){activeFilter=e.target.value;render();}else if(e.target.id==='f-image'&&e.target.files?.[0]){try{const preview=await compressImage(e.target.files[0]);$('#image-preview').innerHTML=`<img src="${attr(preview)}" alt="Aperçu"><span class="file-note">Photo prête à enregistrer</span>`;$('#remove-image-value').value='no';}catch(err){toast(err.message,true)}}else if(e.target.id==='import-json'){await importJson(e.target.files?.[0]);e.target.value='';}});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();$('#sidebar')?.classList.remove('open');$('#mobile-backdrop').hidden=true;}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();$('#list-search')?.focus();}});
 $('#menu-toggle').addEventListener('click',()=>{$('#sidebar').classList.add('open');$('#mobile-backdrop').hidden=false;});$('#mobile-backdrop').addEventListener('click',()=>{$('#sidebar').classList.remove('open');$('#mobile-backdrop').hidden=true;});
@@ -1604,25 +1659,107 @@ function catalogueStatCounter(label,count){
  const n=Math.max(0,Math.floor(Number(count)||0));
  return `<div class="catalogue-stat" aria-label="${n} ${label==='OWN'?'références possédées':'références au catalogue'}"><span class="catalogue-stat-vortex filter-counter">${rapliIllustratedDigits(n)}</span><span class="catalogue-stat-label">${label}</span></div>`;
 }
-let rapliVisibleLimit=60;
-function dashboardView(){const entries=dragonVariants();const owned=entries.filter(v=>ownedCount(v.id)).length;const list=dragonFilter(entries);
+
+let archiveLayout='details',archivePage=1,archiveArtworkSelection=null;
+const ARCHIVE_PAGE_SIZE=60;
+function archivePager(total,pageSize=ARCHIVE_PAGE_SIZE){
+ const pages=Math.ceil(total/pageSize);
+ archivePage=Math.max(1,Math.min(archivePage,Math.max(1,pages)));
+ if(pages<=1)return '';
+ const visible=new Set([1,pages,archivePage-1,archivePage,archivePage+1].filter(n=>n>=1&&n<=pages));
+ const slots=[...visible].sort((a,b)=>a-b);
+ let previous=0,links='';
+ for(const n of slots){
+   if(n-previous>1)links+='<span class="archive-page-ellipsis" aria-hidden="true">…</span>';
+   links+='<button type="button" data-action="archive-page" data-page="'+n+'"'+(n===archivePage?' aria-current="page"':'')+' aria-label="Page '+n+' sur '+pages+'">'+n+'</button>';
+   previous=n;
+ }
+ const first=(archivePage-1)*pageSize+1,last=Math.min(total,archivePage*pageSize);
+ return '<nav class="archive-pagination" aria-label="Pagination du catalogue">'+
+  '<button type="button" data-action="archive-page" data-page="'+(archivePage-1)+'" '+(archivePage===1?'disabled':'')+' aria-label="Page précédente">‹</button>'+
+  links+'<button type="button" data-action="archive-page" data-page="'+(archivePage+1)+'" '+(archivePage===pages?'disabled':'')+' aria-label="Page suivante">›</button>'+
+  '<span class="archive-page-caption">Page '+archivePage+' / '+pages+' · références '+first+'–'+last+' sur '+total+'</span></nav>';
+}
+function archivePagedCards(items,renderer,cssClass){
+ const pageSize=ARCHIVE_PAGE_SIZE,pages=Math.max(1,Math.ceil(items.length/pageSize));
+ archivePage=Math.max(1,Math.min(archivePage,pages));
+ const offset=(archivePage-1)*pageSize;
+ return '<div class="'+cssClass+'">'+items.slice(offset,offset+pageSize).map(renderer).join('')+'</div>'+archivePager(items.length);
+}
+function archiveViewSwitcher(count){
+ const options=[['details','Fiches'],['cards','Vignettes cartes'],['artworks','Vignettes artworks']];
+ return '<div class="archive-view-switch" role="group" aria-label="Mode d’affichage du catalogue">'+
+  '<span class="archive-switch-label">AFFICHAGE</span>'+options.map(([value,label])=>
+    '<button type="button" class="archive-view-button" data-action="archive-layout" data-layout="'+value+'" aria-pressed="'+(archiveLayout===value)+'">'+label+'</button>'
+  ).join('')+'<span class="archive-gallery-count">'+count+' références correspondant aux filtres</span></div>';
+}
+function archiveVignette(v){
+ const own=ownedCount(v.id),sub=[v.artwork,v.rarity,v.language].filter(Boolean).join(' · ');
+ return '<article class="archive-vignette '+(own?'is-owned':'')+'">'+
+  (own?'<span class="archive-vignette-own">OWN'+(own>1?' ×'+own:'')+'</span>':'')+
+  '<button type="button" class="archive-vignette-open" data-action="open-variant" data-id="'+attr(v.id)+'" aria-label="Ouvrir '+attr(v.reference||titleFor(v))+'">'+
+   '<span class="archive-vignette-picture">'+imageFor(v)+'</span>'+
+   '<span class="archive-vignette-text"><strong>'+h(v.reference||titleFor(v))+'</strong>'+
+   (sub?'<small>'+h(sub)+'</small>':'')+'</span></button></article>';
+}
+function archiveArtworkGroups(items){
+ const grouped=new Map();
+ for(const v of items){
+   const label=String(v.artwork||'Sans artwork').trim(),key=label.toLocaleLowerCase('fr');
+   if(!grouped.has(key))grouped.set(key,{label,items:[]});
+   grouped.get(key).items.push(v);
+ }
+ return [...grouped.values()].sort((a,b)=>a.label.localeCompare(b.label,'fr',{numeric:true,sensitivity:'base'}));
+}
+function archiveArtworkVignette(group){
+ const tax=moduleSettings().dragons.taxonomies.artwork||[];
+ const entry=tax.find(x=>x.label===group.label),hasPicture=entry?.preview||entry?.logo;
+ const artworkPicture=hasPicture?artworkThumbMarkup(entry):imageFor(group.items.find(v=>v.image)||group.items[0]);
+ const own=group.items.filter(v=>ownedCount(v.id)).length;
+ return '<button type="button" class="archive-artwork-tile" data-action="archive-artwork-open" data-artwork="'+attr(group.label)+'"'+
+  ' aria-label="Afficher les '+group.items.length+' références de '+attr(group.label)+'">'+
+  '<span class="archive-artwork-picture">'+artworkPicture+'</span>'+
+  '<span class="archive-artwork-info"><strong>'+h(group.label)+'</strong>'+
+  '<span>'+group.items.length+' référence'+(group.items.length>1?'s':'')+' · '+own+' OWN</span></span></button>';
+}
+
+
+function dashboardView(){
+ const entries=dragonVariants(),owned=entries.filter(v=>ownedCount(v.id)).length;
+ const all=dragonFilter(entries);
+ const selected=archiveLayout==='artworks'&&archiveArtworkSelection;
+ const visible=selected?all.filter(v=>(v.artwork||'Sans artwork')===archiveArtworkSelection):all;
+ const sorted=[...visible].sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||''));
+ let gallery='';
+ if(archiveLayout==='artworks'&&!selected){
+   const groups=archiveArtworkGroups(all);
+   gallery=groups.length?archivePagedCards(groups,archiveArtworkVignette,'archive-artwork-grid'):
+     '<div class="stats-empty">Aucun artwork correspondant aux filtres.</div>';
+ }else{
+   const gridClass=archiveLayout==='details'?'reference-grid recent-grid':'archive-vignettes';
+   gallery=sorted.length?archivePagedCards(sorted,archiveLayout==='details'?referenceCard:archiveVignette,gridClass):
+     empty(entries.length?'Aucun résultat':'Ton catalogue est prêt',entries.length?'Essaie d’autres filtres.':'Crée une édition, puis ajoute tes premières cartes Dragon Blanc.',entries.length?'navigate':'new-group',entries.length?'Voir les éditions':'Créer une édition', 'dragons');
+ }
  return `
  <div class="catalogue-stats" role="group" aria-label="Compteurs du catalogue Dragon Blanc">
    ${catalogueStatCounter('Références',entries.length)}
    ${catalogueStatCounter('OWN',owned)}
    <div class="catalogue-quick-actions" role="group" aria-label="Gestion du catalogue">
     <button type="button" class="catalogue-quick-action" data-action="module-settings" aria-label="Gérer les logos et catégories" title="Gérer les éditions, les artworks et les logos">
-     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.7 3.5 10.1 2h3.8l.4 1.5 1.5.9 1.5-.5 2.7 2.7-.5 1.5.9 1.5 1.5.4v3.8l-1.5.4-.9 1.5.5 1.5-2.7 2.7-1.5-.5-1.5.9-.4 1.5h-3.8l-.4-1.5-1.5-.9-1.5.5-2.7-2.7.5-1.5-.9-1.5-1.5-.4V10l1.5-.4.9-1.5-.5-1.5 2.7-2.7 1.5.5z"/><circle cx="12" cy="12" r="3.2"/></svg>
+     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.7 3.5 10.1 2h3.8l.4 1.5 1.5.9 1.5-.5 2.7 2.7-.5 1.5 1.5 1.5.4v3.8l-1.5.4-.9 1.5.5 1.5-2.7 2.7-1.5-.5-1.5.9-.4 1.5h-3.8l-.4-1.5-1.5-.9-1.5.5-2.7-2.7.5-1.5-.9-1.5-1.5-.4V10l1.5-.4.9-1.5-.5-1.5 2.7-2.7 1.5.5z"/><circle cx="12" cy="12" r="3.2"/></svg>
     </button>
     <button type="button" class="catalogue-quick-action add" data-action="pick-add" aria-label="Ajouter une nouvelle référence" title="Ajouter une nouvelle carte">
      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4.5v15M4.5 12h15"/></svg>
     </button>
    </div>
  </div>
- ${filteredCardCounter(list.length)}
- <div class="archive-module-heading dragon-heading"><div><h2>Catalogue</h2><span>${list.length} cartes affichées sur ${entries.length}</span></div></div>
+ ${filteredCardCounter(visible.length)}
+ <div class="archive-module-heading dragon-heading"><div><h2>Catalogue</h2><span>${all.length} références sur ${entries.length}</span></div></div>
  <div class="toolbar dragon-toolbar">${searchBar('Chercher une carte, une édition, une langue…')}${dragonFilterControls(entries)}</div>
- ${list.length?`<div class="reference-grid recent-grid">${[...list].sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||'')).slice(0,rapliVisibleLimit).map(referenceCard).join('')}</div>${list.length>rapliVisibleLimit?`<div class="rapli-more-wrap"><button class="rapli-more-button" data-action="rapli-more">Afficher 60 cartes supplémentaires <span>(${rapliVisibleLimit} / ${list.length})</span></button></div>`:''}`:empty(entries.length?'Aucun résultat':'Ton catalogue est prêt',entries.length?'Essaie d’autres filtres.':'Crée une édition, puis ajoute tes premières cartes Dragon Blanc.',entries.length?'navigate':'new-group',entries.length?'Voir les éditions':'Créer une édition', 'dragons')}`;}
+ ${archiveViewSwitcher(all.length)}
+ ${selected?'<button type="button" class="archive-gallery-back" data-action="archive-artwork-back">← Tous les artworks</button><div class="archive-module-heading"><h2>'+h(archiveArtworkSelection)+'</h2><span>'+visible.length+' références</span></div>':''}
+ ${gallery}`;
+}
 function render(){const main=$('#main-content');if(!main)return;let breadcrumb='DRAGON BLANC',html='';
  if(!['dashboard','dragons','tools'].includes(currentView))currentView='dashboard';
  if(currentView==='dashboard')html=dashboardView();
@@ -1641,7 +1778,7 @@ function render(){const main=$('#main-content');if(!main)return;let breadcrumb='
   const crumb=$('#breadcrumb');if(crumb)crumb.textContent=breadcrumb;
   syncHeaderControls();
 }
-function navigate(view,group=null,variant=null){if(!['dashboard','dragons','tools'].includes(view))view='dashboard';currentView=view;currentGroup=group;currentVariant=variant;searchTerm='';activeFilter='all';metaFilters={};render();window.scrollTo({top:0,behavior:'instant'});}
+function navigate(view,group=null,variant=null){if(!['dashboard','dragons','tools'].includes(view))view='dashboard';currentView=view;currentGroup=group;currentVariant=variant;searchTerm='';activeFilter='all';metaFilters={};archivePage=1;archiveArtworkSelection=null;render();window.scrollTo({top:0,behavior:'instant'});}
 function categoryView(view){const groups=archive.groups.filter(g=>g.category==='dragons').filter(g=>!searchTerm||[g.name,g.description].join(' ').toLowerCase().includes(searchTerm.toLowerCase()));return `<button type="button" class="back-button" data-action="navigate" data-view="dashboard" aria-label="Retour au catalogue Dragon Blanc">← Retour au catalogue</button>${header('DRAGON BLANC','Gérer les éditions','',`<button class="primary-button" data-action="new-group" data-category="dragons">＋ Nouvelle édition</button>`)}<div class="toolbar">${searchBar('Chercher une édition…')}</div><div class="group-grid">${groups.length?groups.map(groupCard).join(''):empty('Aucune édition',searchTerm?'Essaie une autre recherche.':'Crée ta première édition.','new-group','Créer une édition','dragons')}</div>`;}
 function groupView(g){const variants=groupVariants(g.id);const filtered=dragonFilter(variants);const owned=variants.filter(v=>ownedCount(v.id)).length;return `<button class="back-button" data-action="back-category">← Éditions</button>${header('',h(g.name),'',`<button class="secondary-button" data-action="edit-group" data-id="${attr(g.id)}">Modifier l’édition</button><button class="primary-button" data-action="new-variant" data-group="${attr(g.id)}">＋ Référence</button>`)}<div class="group-progress"><strong>${owned} / ${variants.length}</strong> possédées <span>${variants.length?Math.round(100*owned/variants.length):0}%</span></div>${filteredCardCounter(filtered.length)}<div class="toolbar">${searchBar('Chercher une référence…')}${dragonFilterControls(variants)}</div><div class="reference-grid">${filtered.length?filtered.map(referenceCard).join(''):empty('Aucune référence',searchTerm||activeFilter==='owned'||Object.values(metaFilters).some(Boolean)?'Aucun résultat pour ces filtres.':'Ajoute une référence à cette édition.','new-variant','Ajouter une référence',g.id)}</div>`;}
 function openQuickView(v){const g=getGroup(v.groupId),own=ownedCount(v.id),copies=archive.copies.filter(c=>c.variantId===v.id);const facts=tagFact('dragons','edition','Édition',v.edition||g?.name)+tagFact('dragons','rarity','Rareté',v.rarity)+tagFact('dragons','artwork','Artwork',v.artwork)+tagFact('dragons','language','Langue',v.language)+textFact('Couleur du nom',v.nameColor||'')+textFact('Mention',v.editionStatus||'')+textFact('Marché',v.market||'')+textFact(moduleSettings().dragons.numberLabel||'N°',moduleSettings().dragons.showNumber?v.dragonNumber:'');const body=`<div class="quick-preview"><div class="quick-photo">${imageFor(v)}</div><div class="quick-code">${h(v.reference)}</div><div class="quick-group">${h(g?.name||'')}</div><div class="quick-module-facts">${facts.replaceAll('tile-fact','info-pill')}</div><div class="quick-status"><button class="status-action ${own?'selected is-owned':''}" data-action="peek-own" data-id="${attr(v.id)}" aria-pressed="${!!own}"><span class="owned-led"></span>OWN${own>1?' ×'+own:''}</button></div>${own?`<div class="quick-copies">${copies.map((c,i)=>`<div class="quick-copy"><span>Exemplaire ${i+1}${c.condition?' · '+h(c.condition):''}</span><button class="mini-action" data-action="edit-copy" data-id="${attr(c.id)}">✎</button><button class="mini-action" data-action="delete-copy" data-id="${attr(c.id)}">×</button></div>`).join('')}<button class="quick-text-action" data-action="quick-own" data-id="${attr(v.id)}">＋ Ajouter un doublon</button></div>`:''}<div class="quick-footer"><button class="quick-text-action" data-action="edit-variant" data-id="${attr(v.id)}">Modifier</button><button class="quick-text-action" data-action="duplicate-variant" data-id="${attr(v.id)}">Dupliquer</button><button class="quick-text-action danger-text" data-action="delete-variant" data-id="${attr(v.id)}">Supprimer</button></div></div>`;openModal('',body,true);$('#modal-root .modal-header')?.classList.add('quick-modal-header');}
@@ -1659,7 +1796,10 @@ function exportCsv(){const cols=['edition_groupe','reference','edition','rarete'
 async function toggleTileOwn(id){const current=archive.copies.filter(c=>c.variantId===id);if(!current.length)archive.copies.push({id:uid(),variantId:id,condition:'',acquiredAt:'',price:null,serialNo:'',purchaseSource:'',notes:'',createdAt:now(),updatedAt:now()});else if(current.length===1)archive.copies=archive.copies.filter(c=>c.id!==current[0].id);else return toast('Plusieurs exemplaires : utilise l’aperçu pour les gérer.');if(await save()){render();toast(ownedCount(id)?'Référence possédée ✓':'Référence retirée de ma collection.');}}
 async function toggleTileWish(id){const w=wishFor(id);if(w)archive.wishlist=archive.wishlist.filter(x=>x.id!==w.id);else archive.wishlist.push({id:uid(),variantId:id,priority:'Normale',targetPrice:null,notes:'',createdAt:now(),updatedAt:now()});if(await save()){render();toast(w?'Retirée de la wishlist.':'Ajoutée à la wishlist ♡');}}
 function pickAdd(){const g=archive.groups.find(g=>g.category==='dragons');if(g)variantModal('',g.id);else groupModal('','dragons');}
-function handleAction(action,el){const id=el.dataset.id;switch(action){case 'rapli-more':rapliVisibleLimit+=60;render();return;case 'dashboard-tab':{const next=el.dataset.category;if(MODULES[next]){dashboardModule=next;searchTerm='';activeFilter='all';render();}return;}case 'tile-own':toggleTileOwn(id);return;case 'copy-reference':copyVariantReference(id);return;case 'download-artwork':downloadVariantArtwork(id);return;case 'pick-add':pickAdd();return;case 'add-in-module':{pickAdd();return;}case 'module-settings':openModuleSettings(el.dataset.category||currentView);return;case 'settings-section-tab':{const next=el.dataset.settingsSection;if(next==='number'||MODULES.dragons.fields.some(([field])=>field===next)){activeSettingsSection=next;showSettingsContent();document.querySelector('.module-settings-tab[data-settings-section="'+next+'"]')?.focus({preventScroll:true});}return;}case 'module-tab':editingModule='dragons';showSettingsContent();return;case 'tax-add':{const key=el.dataset.field;draftModuleSettings[editingModule].taxonomies[key].push({id:uid(),label:'',icon:'',color:'#93bca9',logo:''});showSettingsContent();return;}case 'artwork-preview-remove':{const item=draftModuleSettings?.dragons?.taxonomies?.artwork?.[Number(el.dataset.index)];if(item){item.preview='';showSettingsContent();}return;}case 'tax-remove':{const key=el.dataset.field,idx=Number(el.dataset.index);draftModuleSettings[editingModule].taxonomies[key].splice(idx,1);showSettingsContent();return;}case 'save-module-settings':saveModuleSettings();return;case 'new-group':groupModal('','dragons');return;case 'new-variant':variantModal('',el.dataset.group||'');return;default:return legacyHandleAction(action,el);}}
+function handleAction(action,el){const id=el.dataset.id;switch(action){case 'archive-layout':{const next=el.dataset.layout;if(['details','cards','artworks'].includes(next)){archiveLayout=next;archivePage=1;archiveArtworkSelection=null;render();}return;}
+ case 'archive-page':{const next=Number(el.dataset.page);if(Number.isInteger(next)&&next>=1){archivePage=next;render();window.scrollTo({top:0,behavior:'instant'});}return;}
+ case 'archive-artwork-open':{archiveArtworkSelection=el.dataset.artwork||'Sans artwork';archivePage=1;render();return;}
+ case 'archive-artwork-back':archiveArtworkSelection=null;archivePage=1;render();return;case 'dashboard-tab':{const next=el.dataset.category;if(MODULES[next]){dashboardModule=next;searchTerm='';activeFilter='all';render();}return;}case 'tile-own':toggleTileOwn(id);return;case 'copy-reference':copyVariantReference(id);return;case 'download-artwork':downloadVariantArtwork(id);return;case 'pick-add':pickAdd();return;case 'add-in-module':{pickAdd();return;}case 'module-settings':openModuleSettings(el.dataset.category||currentView);return;case 'settings-section-tab':{const next=el.dataset.settingsSection;if(next==='number'||MODULES.dragons.fields.some(([field])=>field===next)){activeSettingsSection=next;showSettingsContent();document.querySelector('.module-settings-tab[data-settings-section="'+next+'"]')?.focus({preventScroll:true});}return;}case 'module-tab':editingModule='dragons';showSettingsContent();return;case 'tax-add':{const key=el.dataset.field;draftModuleSettings[editingModule].taxonomies[key].push({id:uid(),label:'',icon:'',color:'#93bca9',logo:''});showSettingsContent();return;}case 'artwork-preview-remove':{const item=draftModuleSettings?.dragons?.taxonomies?.artwork?.[Number(el.dataset.index)];if(item){item.preview='';showSettingsContent();}return;}case 'tax-remove':{const key=el.dataset.field,idx=Number(el.dataset.index);draftModuleSettings[editingModule].taxonomies[key].splice(idx,1);showSettingsContent();return;}case 'save-module-settings':saveModuleSettings();return;case 'new-group':groupModal('','dragons');return;case 'new-variant':variantModal('',el.dataset.group||'');return;default:return legacyHandleAction(action,el);}}
 function openModuleSettings(preferred='dragons'){moduleSettings();draftModuleSettings=structuredClone(archive.settings);editingModule='dragons';activeSettingsSection='edition';const body='<div class="module-settings"><p class="helper">Personnalise les éditions, raretés, artworks et langues : icône, drapeau, couleur ou logo. Les tuiles utilisent ces réglages automatiquement.</p><div id="module-settings-container"></div></div>';openModal('Personnaliser Dragon Blanc',body);showSettingsContent();}
 function showSettingsContent(){
  const root=$('#module-settings-container');if(!root||!draftModuleSettings)return;
@@ -1774,7 +1914,7 @@ document.addEventListener('input',e=>{const el=e.target;if(!draftModuleSettings|
 document.addEventListener('change',async e=>{const el=e.target;if(!draftModuleSettings||!el.closest('.module-settings'))return;if(el.dataset.settingNumber==='visible')draftModuleSettings.dragons.showNumber=el.checked;if(el.dataset.settingLogo){const list=draftModuleSettings[editingModule]?.taxonomies?.[el.dataset.settingLogo],index=Number(el.dataset.index);if(!list?.[index]||!el.files?.[0])return;try{list[index].logo=await badgeLogo(el.files[0]);const label=el.closest('.file-logo');if(label)label.firstChild.textContent='✓ Logo';toast('Logo prêt à enregistrer');}catch(err){toast(err.message,true);}}});
 // Catalogue + action is delegated because dashboard tiles rerender.
 
-document.addEventListener('change',e=>{if(e.target.matches('.meta-filter')){metaFilters[e.target.dataset.metaField]=e.target.value;render();}});
+document.addEventListener('change',e=>{if(e.target.matches('.meta-filter')){metaFilters[e.target.dataset.metaField]=e.target.value;archivePage=1;archiveArtworkSelection=null;render();}});
 
 function collectionView(){const vs=dragonVariants().filter(v=>ownedCount(v.id)).filter(v=>!searchTerm||[v.reference,v.label,v.edition,v.rarity,v.artwork,v.language].join(' ').toLowerCase().includes(searchTerm.toLowerCase()));return `${header('DRAGON BLANC','Ma collection',`${dragonCopies().length} exemplaires · ${vs.length} références distinctes`,`<button class="primary-button" data-action="new-copy">＋ Exemplaire</button>`)}<div class="toolbar">${searchBar('Rechercher parmi mes cartes…')}</div>${vs.length?`<div class="reference-grid">${vs.map(referenceCard).join('')}</div>`:empty('Aucune carte possédée',searchTerm?'Aucun résultat.':'Coche OWN sur une tuile pour l’ajouter à ta collection.','navigate','Explorer le catalogue','dashboard')}`;}
 function wishlistView(){const vs=dragonVariants().filter(v=>wishFor(v.id)).filter(v=>!searchTerm||[v.reference,v.label,v.edition,v.rarity,v.artwork,v.language].join(' ').toLowerCase().includes(searchTerm.toLowerCase()));return `${header('DRAGON BLANC','Wishlist','Les versions que tu recherches encore.')}<div class="toolbar">${searchBar('Rechercher dans la wishlist…')}</div>${vs.length?`<div class="reference-grid">${vs.map(referenceCard).join('')}</div>`:empty('Wishlist vide',searchTerm?'Aucun résultat.':'Ajoute des cartes avec le cœur sur leur tuile.','navigate','Explorer le catalogue','dashboard')}`;}
@@ -1848,12 +1988,12 @@ function syncHeaderControls(){
  const toggle=document.getElementById('header-owned');
  if(toggle){const checked=activeFilter==='owned';toggle.classList.toggle('is-active',checked);toggle.setAttribute('aria-checked',String(checked));}
 }
-document.getElementById('header-owned').addEventListener('click',()=>{activeFilter=activeFilter==='owned'?'all':'owned';render();});
+document.getElementById('header-owned').addEventListener('click',()=>{activeFilter=activeFilter==='owned'?'all':'owned';archivePage=1;archiveArtworkSelection=null;render();});
 document.getElementById('edition-filter').addEventListener('change',e=>{
  const value=e.target.value;
  if(value==='__manage__'){navigate('dragons');return;}
  if(currentView!=='dashboard'){currentView='dashboard';currentGroup=null;searchTerm='';}
- metaFilters.edition=value;render();
+ metaFilters.edition=value;archivePage=1;archiveArtworkSelection=null;render();
 });
 
 // Custom illustrated artwork picker: native <select> cannot show thumbnail images.
@@ -1862,7 +2002,7 @@ document.getElementById('artwork-filter-trigger').addEventListener('click',()=>{
 });
 document.getElementById('artwork-filter-options').addEventListener('click',e=>{
  const btn=e.target.closest('[data-artwork-option]');if(!btn)return;
- metaFilters.artwork=btn.dataset.artworkOption||'';
+ metaFilters.artwork=btn.dataset.artworkOption||'';archivePage=1;archiveArtworkSelection=null;
  if(currentView!=='dashboard'){currentView='dashboard';currentGroup=null;searchTerm='';}
  setArtworkMenuOpen(false);render();
 });

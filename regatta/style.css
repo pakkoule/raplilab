@@ -372,3 +372,39 @@ dialog form{border-radius:18px;background:#fff;display:flex;flex-direction:colum
 .pdf-hint{margin-bottom:0}
 @media(max-width:780px){.vsr-colors-list,.reward-chart{grid-template-columns:1fr}}
 @media(max-width:580px){.rewards-grid{gap:7px}.rewards-field{padding:11px}.rewards-grid input{font-size:18px!important}#pdf-dialog .dialog-scroll{padding:14px}.pdf-fields{grid-template-columns:1fr}.rank-main .rank-line strong{font-size:clamp(20px,10cqi,32px)!important}}
+
+/* Note Rapli Regatta — cercle compact; le /100 est réservé à la bulle. */
+.score-surface{display:flex;align-items:center;gap:13px;margin-top:13px;padding:11px 12px;border-radius:12px;background:#f4f8fc;border:1px solid #dae7f1}
+.score-orb{--score-glow:.35;position:relative;isolation:isolate;display:grid;place-items:center;flex:none;width:72px;height:72px;padding:0;border:3px solid transparent;border-radius:50%;background:linear-gradient(#132851,#132851) padding-box,linear-gradient(140deg,#1e8cdb,#db348f) border-box;color:#fff;font:900 27px/1 Poppins,sans-serif;cursor:pointer;box-shadow:0 0 calc(7px + 20px * var(--score-glow)) rgba(218,52,143,calc(.13 + .36 * var(--score-glow))),0 0 calc(5px + 14px * var(--score-glow)) rgba(30,140,219,calc(.14 + .34 * var(--score-glow)));transition:transform .15s,box-shadow .15s}
+.score-orb:hover,.score-orb:focus-visible{transform:scale(1.06);outline:2px solid #229ddd;outline-offset:4px}
+.score-orb.score-epic{box-shadow:0 0 31px #de3d9999,0 0 17px #258dddbb,inset 0 0 18px #e534a944}
+.score-orb span{position:relative;z-index:1}
+.score-descriptor{display:flex;flex-direction:column;gap:3px;min-width:0}
+.score-descriptor strong{font-size:12px;font-weight:900;color:#1d4f72}
+.score-descriptor small{font-size:9px;color:#6b8799;line-height:1.5}
+.score-pending{font-size:10px;color:#718a99;margin-top:13px;padding:9px 12px;border-radius:9px;background:#f1f6f8}
+#score-dialog,#score-recalc-dialog{width:min(560px,calc(100vw - 20px));max-height:92dvh;overflow:hidden;padding:0;border:1px solid #d1e1ea;border-radius:16px;background:#fff;color:#17354c;box-shadow:0 20px 65px #142d4355}
+.score-dialog-body{padding:19px;overflow:auto;max-height:70dvh;font-size:12px;line-height:1.6}
+.score-dialog-total{font:900 34px/1.2 Poppins,sans-serif;color:#163d72}
+.score-dialog-mention{font-size:12px;font-weight:900;color:#b92e83;margin:3px 0 15px}
+.score-rows{display:grid;gap:4px;margin:12px 0}
+.score-row{display:flex;justify-content:space-between;gap:15px;padding:8px 0;border-bottom:1px solid #e4ecf1}
+.score-row strong{white-space:nowrap;color:#215981}
+.score-note{margin:7px 0;font-size:10px;color:#587e90}
+.score-flag{background:#fff6e9;border:1px solid #f1dec3;padding:7px 10px;border-radius:7px;font-size:10px;margin:5px 0}
+.score-recalc-line{display:flex;justify-content:space-between;gap:15px;padding:11px 0;border-bottom:1px solid #e3edf0}
+.score-recalc-line span{font-weight:900}
+.score-recalc-line small{display:block;font-weight:500;color:#778e99}
+#race-event-controls,#race-joker-control{display:flex;flex-direction:row;align-items:center;gap:10px;padding:9px 12px;border-radius:9px;background:#f1f6fc;border:1px solid #d6e3ee}
+#race-event-controls input,#race-joker-control input{width:18px;height:18px;min-height:18px;flex:none;accent-color:#1475c5}
+.fields .check-dnf{display:flex;flex-direction:row;align-items:center;gap:10px;background:#fff4f1;border:1px solid #ecc8bf;border-radius:10px;padding:13px 15px;cursor:pointer}
+.check-dnf input{width:20px;min-height:20px;min-width:20px;flex:none;accent-color:#a94738}
+.dnf-indicator{width:14px;height:14px;border-radius:50%;background:#b84336;flex:none}
+.check-dnf span:last-child{display:flex;flex-direction:column;gap:3px}
+.check-dnf strong{font-size:12px;color:#a04334}
+.check-dnf small{font-size:10px;font-weight:500;color:#a37f76}
+.card.dnf{border-color:#c98c80}
+.card.dnf .badge-status{background:#ac4737}
+.card.event{border-color:#6c82bc}
+.card.event .badge-status{background:#3956a1}
+@media(max-width:580px){.score-orb{width:64px;height:64px;font-size:24px}.score-dialog-body{padding:13px}}

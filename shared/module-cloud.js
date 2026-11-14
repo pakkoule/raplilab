@@ -1,4 +1,4 @@
-/* RapliLab Cloud Bridge for Time, Sports and Refs.
+/* RapliLab Cloud Bridge for the six maintained workspaces.
  * No service role key. Uses the anonymous Supabase session and existing Archives device pairing.
  * Local IndexedDB is authoritative until a safe, revision-checked synchronization completes. */
 (() => {
@@ -10,9 +10,9 @@
   const REF_PREFIX = 'rapli-private://';
   const MAX_IMAGE = 10 * 1024 * 1024;
   const bridge = window.RapliModuleBridge;
-  if (!bridge || !['time','sports','refs','stickers','tools','tiers','top10','coach','lp','regatta'].includes(bridge.module)) return;
+  if (!bridge || !['sports','stickers','tools','lp','regatta'].includes(bridge.module)) return;
   const MODULE = bridge.module;
-  const manualOnly = ['tiers','top10','coach'].includes(MODULE);
+  const manualOnly = false;
   const el = id => document.getElementById(id);
   let client, userId, ownerId, revision = 0, exists = false, ready = false, busy = false;
   let dirty = false, conflict = false, error = false, hydratedBaseline = null;
@@ -250,7 +250,7 @@
     }finally{busy=false;paint();}
   }
   function queueSave() {
-    if(manualOnly)return; // Tiers List: explicit manual saves only.
+    if(manualOnly)return; // Reserved for a future manual-save module.
     clearTimeout(timer);
     timer=setTimeout(()=>{if(dirty&&!conflict&&!busy)void saveNow(true);},1400);
   }
@@ -317,9 +317,7 @@
       try{
         if(bridge.ready){
           // Global save never asks to force-overwrite another device's newer data.
-          success=manualOnly && operation==='save' && (MODULE==='tiers'?window.RapliTiers?.hasUnsaved?.():MODULE==='top10'?window.RapliTop10?.hasUnsaved?.():window.RapliCoach?.hasUnsaved?.())
-            ? !!(await (MODULE==='tiers'?window.RapliTiers.saveCurrent():MODULE==='top10'?window.RapliTop10.saveCurrent():window.RapliCoach.saveCurrent()))
-            : operation==='save'?await saveNow(true):await refresh(true);
+          success=operation==='save'?await saveNow(true):await refresh(true);
         }else{
           setStatus('Application non initialisée','error');
         }

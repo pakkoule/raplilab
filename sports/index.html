@@ -1162,6 +1162,169 @@ body::before{display:none!important}
         }
         return roster;
       }
+
+      const LABEL_STYLE_ID='labels:style';
+      const LABEL_FEATURES=Object.freeze([
+        {key:'auto:stickers',type:'auto',title:'Auto Stickers',text:'AUTO STICKERS',bg:'#e8f1ff',ink:'#2056ae',border:'#bad3f7'},
+        {key:'auto:on-card',type:'auto',title:'Auto On Card',text:'AUTO ON CARD',bg:'#dceaff',ink:'#174ca4',border:'#a5c4ef'},
+        {key:'patch:game-worn',type:'patch',title:'Patch Game Worn',text:'PATCH GAME WORN',bg:'#fff0df',ink:'#94522a',border:'#e7cba2'},
+        {key:'patch:not-affiliated',type:'patch',title:'Patch Not Affiliated',text:'PATCH NOT AFFILIATED',bg:'#f1eff5',ink:'#624c75',border:'#d6c8e0'}
+      ]);
+      const SPORT_LABEL_COLORS=Object.freeze({
+        basketball:['#e8efff','#1e54a9','#c0d3f7'],
+        football:['#e6f5ed','#206f50','#b3ddc5'],
+        'football americain':['#edf2ff','#3454a2','#c2cfee'],
+        baseball:['#fff0ec','#a34f3e','#efd0c8'],
+        hockey:['#e5f3fa','#236d8d','#bddfeb'],
+        'formule 1':['#fff0f2','#a12847','#efc4cf'],
+        tennis:['#f0f6dc','#5f7824','#dae5af'],
+        cyclisme:['#fffae7','#96722d','#eddfa9'],
+        rugby:['#e8f2ed','#26684c','#b8d7ca']
+      });
+      function sportsLabelDefs(){
+        const defaults=[...document.querySelectorAll('#cardSport option')].map(el=>el.value||el.textContent).filter(Boolean);
+        const sports=savedValues(defaults.concat(cards.map(card=>card.sport)));
+        return {
+          sports:sports.map(name=>{
+            const [bg,ink,border]=SPORT_LABEL_COLORS[normalize(name)]||['#f4f7fd','#2457c6','#d7e3f7'];
+            return {key:'sport:'+normalize(name),type:'sport',title:name,text:name,bg,ink,border};
+          }),
+          features:LABEL_FEATURES
+        };
+      }
+      function sportsDefaultLabel(key){
+        const defs=sportsLabelDefs();
+        return [...defs.sports,...defs.features].find(def=>def.key===key)||{
+          key,type:'sport',title:key.replace(/^sport:/,''),text:key.replace(/^sport:/,''),
+          bg:'#f4f7fd',ink:'#2457c6',border:'#d7e3f7'
+        };
+      }
+      function safeLabelColor(value,fallback){
+        return typeof value==='string'&&/^#[0-9a-f]{6}$/i.test(value)?value:fallback;
+      }
+      function normalizeLabelSettings(value={}){
+        const source=value&&typeof value==='object'&&!Array.isArray(value)?value:{};
+        const output={};
+        for(const [key,item] of Object.entries(source).slice(0,120)){
+          if(typeof key!=='string'||key.length>135||!(/^(sport:[^<>]*|auto:(?:stickers|on-card)|patch:(?:game-worn|not-affiliated))$/).test(key))continue;
+          if(!item||typeof item!=='object'||Array.isArray(item))continue;
+          const def=sportsDefaultLabel(key);
+          output[key]={
+            text:typeof item.text==='string'&&item.text.trim()?item.text.trim().slice(0,52):def.text,
+            bg:safeLabelColor(item.bg,def.bg),
+            ink:safeLabelColor(item.ink,def.ink),
+            border:safeLabelColor(item.border,def.border),
+            shape:['rounded','pill','square'].includes(item.shape)?item.shape:'rounded'
+          };
+        }
+        return output;
+      }
+      function storedLabelSettings(){
+        return logos.find(item=>item.id===LABEL_STYLE_ID)?.settings||{};
+      }
+      function labelConfig(def,settings=storedLabelSettings()){
+        const stored=settings?.[def.key]||{};
+        return {
+          text:typeof stored.text==='string'&&stored.text.trim()?stored.text.trim().slice(0,52):def.text,
+          bg:safeLabelColor(stored.bg,def.bg),ink:safeLabelColor(stored.ink,def.ink),
+          border:safeLabelColor(stored.border,def.border),
+          shape:['rounded','pill','square'].includes(stored.shape)?stored.shape:'rounded'
+        };
+      }
+      function labelInlineStyle(cfg){
+        const radius=cfg.shape==='pill'?'999px':cfg.shape==='square'?'2px':'6px';
+        return '--sports-label-bg:'+cfg.bg+';--sports-label-text:'+cfg.ink+
+          ';--sports-label-border:'+cfg.border+';--sports-label-radius:'+radius;
+      }
+      function sportsSportBadge(sport){
+        const value=String(sport||'').trim();
+        if(!value)return '';
+        const key='sport:'+normalize(value);
+        const def=sportsLabelDefs().sports.find(item=>item.key===key)||sportsDefaultLabel(key);
+        const cfg=labelConfig(def);
+        return '<span class="sport-chip" style="'+labelInlineStyle(cfg)+'" title="'+safeText(value)+'">'+safeText(cfg.text)+'</span>';
+      }
+      function sportsFeatureBadge(kind,value,prefix=''){
+        const def=LABEL_FEATURES.find(item=>item.key===kind+':'+value);
+        if(!def)return '';
+        const cfg=labelConfig(def);
+        return '<span class="player-trait player-trait--'+kind+'" style="'+labelInlineStyle(cfg)+'">'+
+          prefix+safeText(cfg.text)+'</span>';
+      }
+      function labelEditorRow(def){
+        const cfg=labelConfig(def);
+        const id=safeText(def.key);
+        const shapes=[['rounded','Arrondie'],['pill','Pilule'],['square','Carrée']];
+        return '<section class="sports-label-row" data-label-row="'+id+'">'+
+          '<div class="sports-label-row-header"><strong>'+safeText(def.title)+'</strong>'+
+          '<span class="sports-label-preview" data-label-preview style="'+labelInlineStyle(cfg)+'">'+safeText(cfg.text)+'</span></div>'+
+          '<div class="sports-label-controls">'+
+          '<label>Texte<input class="input" type="text" maxlength="52" data-label-caption value="'+safeText(cfg.text)+'" aria-label="Texte '+safeText(def.title)+'"></label>'+
+          '<label>Fond<input type="color" data-label-bg value="'+cfg.bg+'" aria-label="Fond '+safeText(def.title)+'"></label>'+
+          '<label>Texte<input type="color" data-label-ink value="'+cfg.ink+'" aria-label="Texte '+safeText(def.title)+'"></label>'+
+          '<label>Contour<input type="color" data-label-border value="'+cfg.border+'" aria-label="Contour '+safeText(def.title)+'"></label>'+
+          '<label>Forme<select class="select" data-label-shape aria-label="Forme '+safeText(def.title)+'">'+
+          shapes.map(([value,title])=>'<option value="'+value+'"'+(cfg.shape===value?' selected':'')+'>'+title+'</option>').join('')+
+          '</select></label></div></section>';
+      }
+      function renderLabelEditors(settings=storedLabelSettings()){
+        const defs=sportsLabelDefs();
+        // Render the saved settings or a reset-to-default draft, without altering any saved cards.
+        const withDraft=def=>{
+          const d={...def};
+          return labelEditorRowWithConfig(d,labelConfig(d,settings));
+        };
+        $('sportLabelEditors').innerHTML=defs.sports.map(withDraft).join('');
+        $('featureLabelEditors').innerHTML=defs.features.map(withDraft).join('');
+      }
+      function labelEditorRowWithConfig(def,cfg){
+        // Reuse the same row renderer with an explicit draft configuration.
+        const initial=labelConfig(def);
+        const row=labelEditorRow(def);
+        if(JSON.stringify(initial)===JSON.stringify(cfg))return row;
+        const holder=document.createElement('div');
+        holder.innerHTML=row;
+        const root=holder.firstElementChild;
+        root.querySelector('[data-label-caption]').value=cfg.text;
+        root.querySelector('[data-label-bg]').value=cfg.bg;
+        root.querySelector('[data-label-ink]').value=cfg.ink;
+        root.querySelector('[data-label-border]').value=cfg.border;
+        root.querySelector('[data-label-shape]').value=cfg.shape;
+        const preview=root.querySelector('[data-label-preview]');
+        preview.style.cssText=labelInlineStyle(cfg);
+        preview.textContent=cfg.text;
+        return holder.innerHTML;
+      }
+      function labelConfigFromRow(row){
+        const key=row.dataset.labelRow;
+        const def=sportsDefaultLabel(key);
+        const shape=row.querySelector('[data-label-shape]').value;
+        return labelConfig(def,{[key]:{
+          text:row.querySelector('[data-label-caption]').value,
+          bg:row.querySelector('[data-label-bg]').value,
+          ink:row.querySelector('[data-label-ink]').value,
+          border:row.querySelector('[data-label-border]').value,
+          shape
+        }});
+      }
+      function updateLabelPreview(row){
+        const cfg=labelConfigFromRow(row);
+        const preview=row.querySelector('[data-label-preview]');
+        preview.style.cssText=labelInlineStyle(cfg);
+        preview.textContent=cfg.text;
+      }
+      async function saveLabelSettings(){
+        const settings={};
+        document.querySelectorAll('#labelSettingsPanel [data-label-row]').forEach(row=>{
+          settings[row.dataset.labelRow]=labelConfigFromRow(row);
+        });
+        const button=$('labelSaveBtn');button.disabled=true;
+        try{
+          await saveLogo({id:LABEL_STYLE_ID,type:'labels',name:'Étiquettes Sports',settings:normalizeLabelSettings(settings)});
+          renderAll();showToast('Étiquettes enregistrées et appliquées ✓');
+        }catch(error){console.error(error);showToast('Impossible d’enregistrer les étiquettes');}
+        finally{button.disabled=false;}
+      }
       function playerCardSummary(card){
         const roster=cardPlayers(card).filter(p=>p.name);
         const first=roster[0]?.name||card.player||'Joueur non renseigné';
@@ -1170,8 +1333,8 @@ body::before{display:none!important}
         const badges=roster.flatMap(p=>{
           const prefix=roster.length>1?'<strong>'+safeText(p.name)+' ·</strong> ':'';
           const out=[];
-          if(p.auto)out.push('<span class="player-trait player-trait--auto">'+prefix+'AUTO '+AUTO_TYPES[p.auto]+'</span>');
-          if(p.patch)out.push('<span class="player-trait player-trait--patch">'+prefix+'PATCH '+PATCH_TYPES[p.patch]+'</span>');
+          if(p.auto)out.push(sportsFeatureBadge('auto',p.auto,prefix));
+          if(p.patch)out.push(sportsFeatureBadge('patch',p.patch,prefix));
           return out;
         });
         return '<h3 class="player">'+safeText(first)+'</h3>'+names+
@@ -1546,7 +1709,7 @@ body::before{display:none!important}
         return logo?'<img class="card-tag-logo" src="'+logo+'" alt="'+safeText(t)+'" title="'+safeText(t)+'" loading="lazy">':
           '<span class="tag">'+safeText(t)+'</span>';
       }
-      function cardMarkup(c){const photo=imgSafe(c.photo)?`<img src="${c.photo}" alt="Carte de ${safeText(c.player)}" loading="lazy">`:`<div class="placeholder"><span class="mini-logo">RAPLI / SPORTS</span><div class="place-center">${ico('layers')}</div><span class="place-foot">COLLECTOR'S CARD</span></div>`;const tags=(c.tags||[]).slice(0,8).map(cardTagMarkup).join('')+((c.tags||[]).length>8?`<span class="tag more">+${c.tags.length-8}</span>`:'');return `<article class="card-item${c.status==='wishlist'&&c.dream?' is-dream-card':''}" data-id="${safeText(c.id)}"><div class="photo-side"><div class="card-photo">${photo}${c.demo?'<span class="photo-flag">DÉMO</span>':''}</div></div><div class="card-info"><div class="card-top"><div class="card-athlete">${playerCardSummary(c)}</div><div class="card-controls"><button type="button" class="icon-btn" data-action="edit" data-id="${safeText(c.id)}" aria-label="Modifier cette carte" title="Modifier">${ico('edit')}</button><button type="button" class="icon-btn delete" data-action="delete" data-id="${safeText(c.id)}" aria-label="Supprimer cette carte" title="Supprimer">${ico('trash')}</button></div></div><div class="identity-row"><div class="identity-logos"><div class="brand-lockup">${brandBadge('brand',c.brand)}${logoFor('brand',c.brand)?'':'<span>'+safeText(c.brand||'Sans marque')+'</span>'}</div><div class="team-identity">${c.team?brandBadge('team',c.team):''}${logoFor('team',c.team)?'':'<span>'+safeText(c.team||'Équipe non renseignée')+'</span>'}</div></div>${c.sport?`<span class="sport-chip">${safeText(c.sport)}</span>`:''}</div><div class="reference"><small>RÉFÉRENCE</small><span class="reference-code">${safeText(c.reference||'Non renseignée')}</span></div>${c.status==='wishlist'&&c.dream?'<span class="card-dream-badge">✨ DANS MES RÊVES <small>Un jour, peut-être…</small></span>':''}<div class="tags">${tags||'<span class="blank-tag">Aucune variation</span>'}</div><div class="card-bottom">${collectorBadgeMarkup(c)}<button type="button" class="move-card" data-action="move" data-id="${safeText(c.id)}">${c.status==='own'?'→ WISHLIST':'→ OWN'}</button></div></div></article>`}
+      function cardMarkup(c){const photo=imgSafe(c.photo)?`<img src="${c.photo}" alt="Carte de ${safeText(c.player)}" loading="lazy">`:`<div class="placeholder"><span class="mini-logo">RAPLI / SPORTS</span><div class="place-center">${ico('layers')}</div><span class="place-foot">COLLECTOR'S CARD</span></div>`;const tags=(c.tags||[]).slice(0,8).map(cardTagMarkup).join('')+((c.tags||[]).length>8?`<span class="tag more">+${c.tags.length-8}</span>`:'');return `<article class="card-item${c.status==='wishlist'&&c.dream?' is-dream-card':''}" data-id="${safeText(c.id)}"><div class="photo-side"><div class="card-photo">${photo}${c.demo?'<span class="photo-flag">DÉMO</span>':''}</div></div><div class="card-info"><div class="card-top"><div class="card-athlete">${playerCardSummary(c)}</div><div class="card-controls"><button type="button" class="icon-btn" data-action="edit" data-id="${safeText(c.id)}" aria-label="Modifier cette carte" title="Modifier">${ico('edit')}</button><button type="button" class="icon-btn delete" data-action="delete" data-id="${safeText(c.id)}" aria-label="Supprimer cette carte" title="Supprimer">${ico('trash')}</button></div></div><div class="identity-row"><div class="identity-logos"><div class="brand-lockup">${brandBadge('brand',c.brand)}${logoFor('brand',c.brand)?'':'<span>'+safeText(c.brand||'Sans marque')+'</span>'}</div><div class="team-identity">${c.team?brandBadge('team',c.team):''}${logoFor('team',c.team)?'':'<span>'+safeText(c.team||'Équipe non renseignée')+'</span>'}</div></div>${sportsSportBadge(c.sport)}</div><div class="reference"><small>RÉFÉRENCE</small><span class="reference-code">${safeText(c.reference||'Non renseignée')}</span></div>${c.status==='wishlist'&&c.dream?'<span class="card-dream-badge">✨ DANS MES RÊVES <small>Un jour, peut-être…</small></span>':''}<div class="tags">${tags||'<span class="blank-tag">Aucune variation</span>'}</div><div class="card-bottom">${collectorBadgeMarkup(c)}<button type="button" class="move-card" data-action="move" data-id="${safeText(c.id)}">${c.status==='own'?'→ WISHLIST':'→ OWN'}</button></div></div></article>`}
       const statsEngine=window.RapliSportsStats;
       const statsVisuals=window.RapliSportsStatsVisuals;
       function renderOwnedStatistics(data=statsEngine.calculate(cards)){
@@ -1674,13 +1837,14 @@ body::before{display:none!important}
       async function cardAction(e){const btn=e.target.closest('[data-action]');if(!btn)return;const card=cards.find(x=>x.id===btn.dataset.id);if(!card)return;if(btn.dataset.action==='edit')openCard(card);else if(btn.dataset.action==='delete'){if(confirm(`Supprimer la carte de ${card.player} ?`)){try{await removeCard(card.id);renderAll();showToast('Carte supprimée')}catch(err){showToast('Suppression impossible')}}}else if(btn.dataset.action==='move'){try{await saveCard({...card,status:card.status==='own'?'wishlist':'own',dream:false,updatedAt:Date.now(),demo:false});renderAll();showToast('Carte transférée vers '+(card.status==='own'?'WISHLIST':'OWN'))}catch(e){showToast('Transfert impossible')}}}
       function clearFilters(){$('filterSearch').value='';['filterBrand','filterTeam','filterTag','filterSport','filterAuto','filterPatch'].forEach(id=>$(id).value='');$('filterNumbered').checked=false;sportsGalleryPage=1;sportsGallerySelected=null;renderAll()}
       function setLogoType(type){
-        if(!['brand','team','rookie','athlete','tag','collector'].includes(type))type='brand';
+        if(!['brand','team','rookie','athlete','tag','labels','collector'].includes(type))type='brand';
         logoType=type;pendingLogoPhoto='';$('logoName').value='';$('logoFileInput').value='';$('logoFileText').textContent='Choisir';
         $('logoAthletePicker').hidden=type!=='athlete';$('logoAthletePicker').value='';
         $('logoTeamPicker').hidden=type!=='team';$('logoTeamPicker').value='';
         $('logoTagPicker').hidden=type!=='tag';$('logoTagPicker').value='';
-        const styleTab=type==='collector';
-        $('logoCreatePanel').hidden=styleTab;$('logoList').hidden=styleTab;$('collectorSettingsPanel').hidden=!styleTab;
+        const styleTab=type==='collector',labelsTab=type==='labels',customTab=styleTab||labelsTab;
+        $('logoCreatePanel').hidden=customTab;$('logoList').hidden=customTab;
+        $('collectorSettingsPanel').hidden=!styleTab;$('labelSettingsPanel').hidden=!labelsTab;
         $('logoNameLabel').textContent=type==='rookie'?'Sport concerné':type==='team'?'Nom de l’équipe':type==='athlete'?'Nom de l’athlète':type==='tag'?'Nom du tag':'Nom de la marque';
         $('logoName').placeholder=type==='rookie'?'Basketball':type==='team'?'Philadelphia 76ers':type==='athlete'?'Tyrese Maxey':type==='tag'?'Gold Refractor':'Topps';
         $('logoCreateHelp').textContent=type==='rookie'
@@ -1690,7 +1854,7 @@ body::before{display:none!important}
           : 'Associe un logo à une marque ou une équipe pour l’afficher sur les cartes correspondantes.';
         $('saveLogoBtn').textContent=type==='rookie'?'Enregistrer le logo RC':type==='athlete'?'Enregistrer le portrait':type==='tag'?'Enregistrer le tag':'Ajouter';
         document.querySelectorAll('.logo-tab').forEach(b=>b.classList.toggle('active',b.dataset.logoType===type));
-        if(styleTab)openCollectorSettings();else renderLogos();
+        if(styleTab)openCollectorSettings();else if(labelsTab)renderLabelEditors();else renderLogos();
       }
       function renderLogos(){const data=logos.filter(l=>l.type===logoType).sort((a,b)=>collator.compare(a.name,b.name));$('logoList').innerHTML=data.length?data.map(l=>`<div class="logo-entry" data-logo-type="${logoType}">${brandBadge(logoType,l.name)}<span class="logo-entry-name">${safeText(l.name)}</span><button type="button" class="icon-btn delete" data-remove-logo="${safeText(l.id)}" aria-label="Supprimer le logo de ${safeText(l.name)}">${ico('trash')}</button></div>`).join(''):`<div class="blank-tag" style="padding:10px">Aucun logo enregistré dans cette catégorie.</div>`;const list=$('logoNamesList');list.replaceChildren();
         const names=logoType==='rookie'
@@ -1702,7 +1866,7 @@ body::before{display:none!important}
         if(logoType==='team')fillSavedPicker($('logoTeamPicker'),names,'Choisir une équipe enregistrée…');
         if(logoType==='tag')fillSavedPicker($('logoTagPicker'),names,'Choisir un tag enregistré…');
       }
-      async function saveNewLogo(){const name=$('logoName').value.trim();if(!name)return showToast(logoType==='rookie'?'Sélectionne un sport.':logoType==='athlete'?'Renseigne le nom de l’athlète.':logoType==='tag'?'Renseigne le nom du tag.':'Renseigne un nom de marque ou d’équipe.');if(logoType==='collector')return;if(!pendingLogoPhoto)return showToast(logoType==='athlete'?'Sélectionne un portrait.':'Sélectionne une image de logo.');const id=`${logoType}:${normalize(name)}`;try{await saveLogo({id,type:logoType,name,image:pendingLogoPhoto});setLogoType(logoType);renderAll();showToast('Logo enregistré et associé automatiquement')}catch(e){showToast('Impossible d’enregistrer le logo')}}
+      async function saveNewLogo(){const name=$('logoName').value.trim();if(!name)return showToast(logoType==='rookie'?'Sélectionne un sport.':logoType==='athlete'?'Renseigne le nom de l’athlète.':logoType==='tag'?'Renseigne le nom du tag.':'Renseigne un nom de marque ou d’équipe.');if(['collector','labels'].includes(logoType))return;if(!pendingLogoPhoto)return showToast(logoType==='athlete'?'Sélectionne un portrait.':'Sélectionne une image de logo.');const id=`${logoType}:${normalize(name)}`;try{await saveLogo({id,type:logoType,name,image:pendingLogoPhoto});setLogoType(logoType);renderAll();showToast('Logo enregistré et associé automatiquement')}catch(e){showToast('Impossible d’enregistrer le logo')}}
       async function exportData(){const data={app:'Rapli Sports',version:1,exportedAt:new Date().toISOString(),cards,logos};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`Rapli_Sports_${new Date().toISOString().slice(0,10)}.json`;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),3000);showToast('Sauvegarde JSON exportée')}
       function importCard(x){
         const now=Date.now(),players=cardPlayers(x).filter(p=>p.name);
@@ -1725,6 +1889,8 @@ body::before{display:none!important}
       async function importData(file){try{if(file.size>170*1024*1024)throw new Error('Fichier trop volumineux.');const contents=await file.text();const data=JSON.parse(contents);if(!data||!Array.isArray(data.cards)||!Array.isArray(data.logos))throw new Error('Format de sauvegarde non reconnu.');if(!confirm(`Importer ${data.cards.length} carte(s) et ${data.logos.length} logo(s) ?\n\nLes entrées existantes ayant le même identifiant seront mises à jour. Les autres seront conservées.`))return;let count=0;for(const x of data.cards){if(x&&typeof x==='object'){await saveCard(importCard(x));count++}}for(const x of data.logos){
           if(x&&typeof x==='object'&&['brand','team','rookie','athlete','tag'].includes(x.type)&&typeof x.name==='string'&&imgSafe(x.image)){
             await saveLogo({id:`${x.type}:${normalize(x.name)}`,type:x.type,name:x.name.slice(0,100),image:x.image});
+          }else if(x?.id===LABEL_STYLE_ID&&x?.type==='labels'&&x.settings&&typeof x.settings==='object'){
+            await saveLogo({id:LABEL_STYLE_ID,type:'labels',name:'Étiquettes Sports',settings:normalizeLabelSettings(x.settings)});
           }else if(x?.id===COLLECTOR_STYLE_ID&&x?.type==='collector'&&x.settings&&typeof x.settings==='object'){
             const p=x.settings;
             await saveLogo({id:COLLECTOR_STYLE_ID,type:'collector',name:'Style des badges',
@@ -1855,6 +2021,19 @@ body::before{display:none!important}
         if(event.target.matches('[data-collector-color]'))updateCollectorPreview();
       });
       $('saveCollectorStyleBtn').addEventListener('click',saveCollectorSettings);
+      $('labelSaveBtn').addEventListener('click',saveLabelSettings);
+      $('labelResetBtn').addEventListener('click',()=>{
+        renderLabelEditors({});
+        showToast('Valeurs par défaut prévisualisées — enregistre pour confirmer.');
+      });
+      $('labelSettingsPanel').addEventListener('input',event=>{
+        const row=event.target.closest('[data-label-row]');
+        if(row)updateLabelPreview(row);
+      });
+      $('labelSettingsPanel').addEventListener('change',event=>{
+        const row=event.target.closest('[data-label-row]');
+        if(row)updateLabelPreview(row);
+      });
       $('logoList').addEventListener('click',async e=>{const btn=e.target.closest('[data-remove-logo]');if(!btn)return;const logo=logos.find(x=>x.id===btn.dataset.removeLogo);if(!logo)return;if(confirm(`Supprimer le logo « ${logo.name} » ? Les cartes seront conservées.`)){try{await removeLogo(logo.id);renderLogos();renderAll();showToast('Logo supprimé')}catch(err){showToast('Suppression impossible')}}});
       
       $('clearDemoBtn').addEventListener('click',async()=>{if(!confirm('Supprimer toutes les cartes de démonstration ?'))return;try{for(const c of cards.filter(c=>c.demo))await removeCard(c.id);renderAll();showToast('Exemples supprimés')}catch(e){showToast('Impossible de supprimer les exemples')}});

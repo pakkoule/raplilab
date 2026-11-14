@@ -1,7 +1,7 @@
 /* Visionneuse photo partagée. Aucun accès au stockage ni modification des images. */
 (() => {
   'use strict';
-  const selector = '.tile-picture img, .reference-image img, .quick-photo img, .card-photo img, .image-preview img';
+  const selector = '.tile-picture img, .reference-image img, .quick-photo img, .card-photo img, .image-preview img, .archive-vignette-picture img, .sports-gallery-media img';
   const MIN = 1, MAX = 6;
   let root, stage, picture, percent, closeButton, minusButton, plusButton;
   let scale = 1, x = 0, y = 0, oldOverflow = '', previousFocus = null;

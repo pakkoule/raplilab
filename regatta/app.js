@@ -198,7 +198,7 @@ function normal(x={}){const r={id:typeof x.id==='string'&&x.id.length<130?x.id:u
  if(formatted!==null&&formatted!=='')r.duration=formatted;
  for(const k of imageKeys)r[k]=validImage(x[k])?x[k]:'';const arrival=calculateArrival(r.start,r.startTime,r.duration);if(arrival.status==='ready'){r.end=arrival.end;r.endTime=arrival.endTime;}return r;}
 let rows=[],db=null,editId='',pictures={icon:'',result:'',route:''},uploads=0,writeBusy=false,timer;
-const dialog=$('race-dialog'),getField=k=>$('race-'+({boatClass:'class',startTime:'start-time',endTime:'end-time',rankDepartment:'rank-department',rankNational:'rank-national',rankTotal:'rank-total',rankNationalTotal:'rank-national-total',rankDepartmentTotal:'rank-department-total',rankCity:'rank-city',rankCityTotal:'rank-city-total',rankTeam:'rank-team',rankTeamTotal:'rank-team-total',durationDays:'days',durationHours:'hours',durationMinutes:'minutes',durationSeconds:'seconds',gainPoints:'gain-points',gainCredits:'gain-credits'}[k]||k));
+const dialog=$('race-dialog'),getField=k=>$('race-'+({boatClass:'class',startTime:'start-time',endTime:'end-time',rankDepartment:'rank-department',rankNational:'rank-national',rankTotal:'rank-total',rankNationalTotal:'rank-national-total',rankDepartmentTotal:'rank-department-total',rankCity:'rank-city',rankCityTotal:'rank-city-total',rankTeam:'rank-team',rankTeamTotal:'rank-team-total',durationDays:'days',durationHours:'hours',durationMinutes:'minutes',durationSeconds:'seconds',gainPoints:'gain-points',gainCredits:'gain-credits',participantCount:'participant-count'}[k]||k));
 function toast(t,error=false){$('notice').textContent=t;$('notice').dataset.error=String(error);clearTimeout(timer);timer=setTimeout(()=>{$('notice').textContent='';},7000);}
 const req=r=>new Promise((yes,no)=>{r.onsuccess=()=>yes(r.result);r.onerror=()=>no(r.error||Error('IndexedDB inaccessible'));});
 const done=tx=>new Promise((yes,no)=>{tx.oncomplete=yes;tx.onerror=()=>no(tx.error||Error('Sauvegarde locale impossible'));tx.onabort=()=>no(tx.error||Error('Stockage local annulé'));});
@@ -678,6 +678,64 @@ async function exportGeneralPdf(event){
  finally{button.textContent=label;updatePdfCount();}
 }
 
+const scoreDialog=$('score-dialog'),recalcDialog=$('score-recalc-dialog');
+function scoreText(score,kind){
+ const rows=kind==='event'?
+  [['Classement général', 'overall',70],['Régularité des étapes','regularity',20],['Étapes terminées','completion',10]]:
+  [['Classement relatif','relative',35],['Progression personnelle','progress',20],['Difficulté VSR','vsr',10],['Affluence relative','attendance',15],['Équipement utilisé','equipment',20]];
+ const value=x=>Number.isFinite(Number(x))?Number(x).toLocaleString('fr-FR',{maximumFractionDigits:2}):'—';
+ return '<div class="score-dialog-total">'+value(score.value)+'/100</div>'+
+  '<div class="score-dialog-mention">'+safe(score.mention)+(score.provisional?' · PROVISOIRE':'')+'</div>'+
+  '<p class="score-note">Note éditoriale Rapli, indépendante du classement officiel Virtual Regatta.</p>'+
+  (score.stale?'<p class="score-flag">Données modifiées : la note reste figée jusqu’à recalcul volontaire.</p>':'')+
+  (!score.stored?'<p class="score-flag">Aperçu : note non encore enregistrée. Utilise « Recalculer notes » pour la figer.</p>':'')+
+  '<div class="score-rows">'+rows.map(([label,key,max])=>'<div class="score-row"><span>'+safe(label)+'</span><strong>'+value(score.parts?.[key])+' / '+max+'</strong></div>').join('')+'</div>'+
+  '<div class="score-row"><span>Total brut</span><strong>'+value(score.raw)+' / 100</strong></div>'+
+  '<div class="score-row"><span>Prime d’exploit</span><strong>'+safe(score.bonus!==null&&score.bonus!==undefined?value(score.bonus)+'/100':'Aucune prime appliquée')+'</strong></div>'+
+  (score.bonusFloor!==null&&score.bonusFloor!==undefined?'<p class="score-note">Plancher de podium '+value(score.bonusFloor)+'/100 · effectif requis : '+value(score.bonusThreshold)+'</p>':'')+
+  (score.reference?'<p class="score-note">Référence historique : '+value(score.reference.count)+' course(s) · médiane '+value(score.reference.median)+' participant(s).</p>':'')+
+  (score.stages?'<p class="score-note">Étapes normales : '+value(score.stages.finished)+' / '+value(score.stages.normal)+' · Joker exclues : '+value(score.stages.joker)+'</p>':'')+
+  (score.flags||[]).map(flag=>'<p class="score-flag">'+safe(flag)+'</p>').join('');
+}
+function openScoreDetail(r){
+ const score=scoreView(r);
+ if(!score.available){toast(score.reason||'Note non disponible',true);return;}
+ $('score-dialog-title').textContent='NOTE · '+r.name;
+ $('score-dialog-body').innerHTML=scoreText(score,r.kind);
+ if(!scoreDialog.open)scoreDialog.showModal();
+}
+let scoreRecalcChanges=[],scoreRecalcGuard='';
+const scoreComparison=s=>s?.available?JSON.stringify([s.value,s.raw,s.parts,s.bonus,s.bonusThreshold,s.flags,s.reference,s.stages]):'none';
+function openScoreRecalc(){
+ scoreRecalcChanges=rows.map(row=>{
+  const before=row.scoreSnapshot;
+  const after=scoreNow(row);
+  return {row,before,after};
+ }).filter(({before,after})=>(before?.available||after.available)&&scoreComparison(before)!==scoreComparison(after));
+ if(!scoreRecalcChanges.length){toast('Aucune note à recalculer ✓');return;}
+ scoreRecalcGuard=JSON.stringify(rows.map(x=>[x.id,x.updatedAt,x.scoreSnapshot?.calculatedAt||'']));
+ $('score-recalc-body').innerHTML='<p class="score-note">Aucune note n’est modifiée avant validation. Seules les fiches concernées sont listées.</p>'+
+  scoreRecalcChanges.map(({row,before,after})=>'<div class="score-recalc-line"><div><span>'+safe(row.name)+'</span><small>'+safe(after.available?after.mention:after.reason||'Indisponible')+'</small></div><strong>'+safe(before?.available?before.value+'/100':'—')+' → '+safe(after.available?after.value+'/100':'—')+'</strong></div>').join('');
+ $('score-recalc-confirm').disabled=false;
+ if(!recalcDialog.open)recalcDialog.showModal();
+}
+async function confirmScoreRecalc(){
+ if(!scoreRecalcChanges.length)return;
+ if(JSON.stringify(rows.map(x=>[x.id,x.updatedAt,x.scoreSnapshot?.calculatedAt||'']))!==scoreRecalcGuard){
+  toast('La collection a changé. Relance le recalcul.',true);recalcDialog.close();return;
+ }
+ const updates=new Map(scoreRecalcChanges.map(({row,after})=>[row.id,after.available?{...after,signature:scoreEngine.signature(row),calculatedAt:now()}:null]));
+ const previous=rows;
+ const revised=rows.map(row=>updates.has(row.id)?{...row,scoreSnapshot:updates.get(row.id)}:row);
+ $('score-recalc-confirm').disabled=true;
+ try{
+  await replaceRows(revised);
+  window.RapliModuleCloud?.changed?.();
+  recalcDialog.close();
+  toast('Notes recalculées et enregistrées ✓ ('+updates.size+')');
+ }catch(error){rows=previous;render();toast('Recalcul impossible : '+(error?.message||error),true);}
+ finally{$('score-recalc-confirm').disabled=false;scoreRecalcChanges=[];}
+}
 function preview(k){const img=$('preview-'+k),ph=$('placeholder-'+k);img.hidden=!validImage(pictures[k]);ph.hidden=validImage(pictures[k]);if(validImage(pictures[k]))img.src=pictures[k];else img.removeAttribute('src');}
 function updateKindFields(){
  const isEvent=$('race-kind').value==='event';
@@ -981,8 +1039,11 @@ for(const key of ['start','startTime','durationDays','durationHours','durationMi
   getField(key).addEventListener('input',updateArrival);
 for(const key of ['start','startTime','durationDays','durationHours','durationMinutes','durationSeconds'])
   getField(key).addEventListener('change',updateArrival);
-$('race-live').addEventListener('change',event=>{if(event.target.checked)$('race-upcoming').checked=false;});
-$('race-upcoming').addEventListener('change',event=>{if(event.target.checked)$('race-live').checked=false;});
+for(const [selected,others] of [['race-live',['race-upcoming','race-dnf']],['race-upcoming',['race-live','race-dnf']],['race-dnf',['race-live','race-upcoming']]]){
+ $(selected).addEventListener('change',event=>{if(event.target.checked)others.forEach(id=>$(id).checked=false);});
+}
+$('race-kind').addEventListener('change',updateKindFields);
+$('race-event-id').addEventListener('change',updateKindFields);
 for(const view of ['races','stats','colors'])$('view-'+view).addEventListener('click',()=>selectWorkspace(view));
 $('default-class-color').addEventListener('change',event=>changeDefaultClassColor(event.target.value));
 $('class-colors-list').addEventListener('change',event=>{
@@ -1000,8 +1061,28 @@ pdfDialog.addEventListener('click',event=>{if(event.target===pdfDialog)closePdfD
 for(const id of pdfFilterIds)$(id).addEventListener('change',updatePdfCount);
 $('new-race').addEventListener('click',()=>openEditor());$('empty-add').addEventListener('click',()=>openEditor());$('race-form').addEventListener('submit',saveEditor);$('delete-race').addEventListener('click',()=>{if(editId)deleteRace(editId);});
 for(const id of ['search','filter-status','filter-vsr','filter-class','sort'])$(id).addEventListener(id==='search'?'input':'change',render);
+$('recalculate-scores').addEventListener('click',openScoreRecalc);
+$('score-recalc-confirm').addEventListener('click',confirmScoreRecalc);
+document.querySelectorAll('[data-score-close]').forEach(x=>x.addEventListener('click',()=>scoreDialog.close()));
+document.querySelectorAll('[data-recalc-close]').forEach(x=>x.addEventListener('click',()=>recalcDialog.close()));
+for(const modal of [scoreDialog,recalcDialog])modal.addEventListener('click',event=>{if(event.target===modal)modal.close();});
+const cardContainer=$('cards');
+cardContainer.addEventListener('contextmenu',event=>{
+ const orb=event.target.closest('.score-orb');if(!orb)return;
+ event.preventDefault();
+ const r=rows.find(x=>x.id===orb.closest('[data-id]')?.dataset.id);if(r)openScoreDetail(r);
+});
+let longPress=null,longPressOpened=false;
+function clearLongPress(){if(longPress!==null){clearTimeout(longPress);longPress=null;}}
+cardContainer.addEventListener('pointerdown',event=>{
+ if(event.pointerType!=='touch')return;
+ const orb=event.target.closest('.score-orb');if(!orb)return;
+ longPressOpened=false;clearLongPress();
+ longPress=setTimeout(()=>{longPressOpened=true;const r=rows.find(x=>x.id===orb.closest('[data-id]')?.dataset.id);if(r)openScoreDetail(r);},600);
+});
+for(const name of ['pointerup','pointercancel','pointermove'])cardContainer.addEventListener(name,clearLongPress);
 for(const key of imageKeys){$('image-'+key).addEventListener('change',e=>{const f=e.target.files[0];e.target.value='';fileData(f,key);});document.querySelector('[data-remove="'+key+'"]').addEventListener('click',()=>{pictures[key]='';preview(key);});const zone=document.querySelector('[data-image="'+key+'"] .upload-preview');zone.addEventListener('dragover',e=>{e.preventDefault();});zone.addEventListener('drop',e=>{e.preventDefault();fileData(e.dataTransfer?.files[0],key);});}
-$('cards').addEventListener('click',e=>{const btn=e.target.closest('[data-action]');if(!btn)return;const r=rows.find(x=>x.id===btn.closest('[data-id]')?.dataset.id);if(!r)return;if(btn.dataset.action==='edit')openEditor(r);if(btn.dataset.action==='delete')deleteRace(r.id);if(btn.dataset.action==='png')exportPNG(r);if(btn.dataset.action==='calendar')exportCalendar(r);});
+$('cards').addEventListener('click',e=>{const btn=e.target.closest('[data-action]');if(!btn)return;const r=rows.find(x=>x.id===btn.closest('[data-id]')?.dataset.id);if(!r)return;if(btn.dataset.action==='edit')openEditor(r);if(btn.dataset.action==='delete')deleteRace(r.id);if(btn.dataset.action==='png')exportPNG(r);if(btn.dataset.action==='score'&&!longPressOpened)openScoreDetail(r);if(btn.dataset.action==='score')longPressOpened=false;if(btn.dataset.action==='calendar')exportCalendar(r);});
 $('export-json').addEventListener('click',exportJSON);$('import-json').addEventListener('change',e=>importJSON(e.target.files[0]));document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'&&!dialog.open){e.preventDefault();$('search').focus();}});
 window.addEventListener?.('resize',scheduleRankingFit);
 const bridge=window.RapliModuleBridge={module:'regatta',ready:false,

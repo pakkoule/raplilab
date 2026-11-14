@@ -1257,6 +1257,49 @@ main#main-content {
 </style>
   <link rel="stylesheet" href="../shared/photo-zoom.css">
   <link rel="stylesheet" href="../shared/ios-input-focus.css">
+<style id="rapli-archives-compact-header-and-settings">
+/* One filter row; editing controls placed by collection counters */
+.site-header .site-header-inner{
+ display:flex!important;flex-flow:row nowrap!important;align-items:center!important;justify-content:center!important;
+ grid-template-areas:none!important;grid-template-rows:none!important;grid-template-columns:none!important;
+ min-height:49px!important;height:auto!important;padding:6px 12px!important;gap:0!important;
+}
+.site-header .site-navigation{grid-area:auto!important;align-self:center!important;justify-self:center!important;
+ margin:0 auto!important;width:min(100%,680px)!important;max-width:680px!important}
+.site-header .site-header-actions{display:none!important}
+.topbar{display:none!important}
+.catalogue-stats{align-items:center;gap:clamp(14px,3vw,28px)}
+.catalogue-quick-actions{display:flex;align-items:center;gap:8px;flex:0 0 auto}
+.catalogue-quick-action{display:grid;place-items:center;width:43px;height:43px;flex:none;
+ color:#fff;background:#173d61;border:1px solid #426b92;border-radius:11px;
+ cursor:pointer;box-shadow:0 3px 9px rgba(8,32,62,.13);transition:background .17s,transform .17s}
+.catalogue-quick-action:hover{background:#245b89;transform:translateY(-1px)}
+.catalogue-quick-action:focus-visible{outline:3px solid #64b9f6;outline-offset:2px}
+.catalogue-quick-action svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.catalogue-quick-action.add{background:#dcefff;color:#153d61;border-color:#9bd0f0}
+.catalogue-quick-action.add:hover{background:#c2e4fd}
+.module-settings-tabs{display:flex;gap:6px;overflow-x:auto;max-width:100%;padding:2px 0 11px;scrollbar-width:thin;overscroll-behavior-x:contain}
+.module-settings-tab{white-space:nowrap;flex:0 0 auto;padding:10px 13px;border-radius:9px;border:1px solid #c5d4e2;
+ background:#f3f7fc;color:#274765;font:800 11px/1.2 Poppins,system-ui,sans-serif;cursor:pointer}
+.module-settings-tab[aria-selected=true]{color:#fff;background:#17446c;border-color:#17446c;box-shadow:0 2px 7px rgba(20,60,96,.2)}
+.module-settings-tab:focus-visible{outline:2px solid #468ece;outline-offset:2px}
+#module-settings-container .settings-section{min-height:160px}
+@media(max-width:650px){
+ .site-header .site-header-inner{min-height:43px!important;padding:4px 7px!important}
+ .site-header .site-navigation{grid-area:auto!important;width:100%!important;max-width:100%!important}
+ .catalogue-stats{gap:14px;margin:3px auto 13px}
+ .catalogue-quick-actions{gap:5px}
+ .catalogue-quick-action{width:34px;height:34px;border-radius:9px}
+ .catalogue-quick-action svg{width:20px;height:20px}
+ .module-settings-tab{font-size:10px;padding:9px 10px}
+}
+@media(max-width:360px){
+ .catalogue-stats{gap:9px}
+ .catalogue-quick-action{width:31px;height:31px}
+ .catalogue-quick-action svg{width:19px;height:19px}
+}
+</style>
+
 </head>
 <body>
 <div class="app-shell">
@@ -1275,11 +1318,6 @@ main#main-content {
           <div id="artwork-filter-options" class="artwork-menu" role="listbox" aria-label="Artworks" hidden></div>
         </div>
         <button type="button" class="header-owned" id="header-owned" role="checkbox" aria-checked="false" aria-label="Afficher uniquement les cartes possédées"><span class="led" aria-hidden="true"></span><span>OWN</span></button>
-      </div>
-            <div class="site-header-actions">
-        <button type="button" class="icon-control" data-action="module-settings"  title="Personnalisation et paramètres" aria-label="Personnalisation et paramètres"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.7 3.5 10.1 2h3.8l.4 1.5 1.5.9 1.5-.5 2.7 2.7-.5 1.5.9 1.5 1.5.4v3.8l-1.5.4-.9 1.5.5 1.5-2.7 2.7-1.5-.5-1.5.9-.4 1.5h-3.8l-.4-1.5-1.5-.9-1.5.5-2.7-2.7.5-1.5-.9-1.5-1.5-.4V10l1.5-.4.9-1.5-.5-1.5 2.7-2.7 1.5.5z"/><circle cx="12" cy="12" r="3.2"/></svg></button>
-        <button type="button" class="icon-control" data-action="navigate" data-view="tools" title="Gestion des sauvegardes" aria-label="Gestion des sauvegardes"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 3.5H17l2.5 2.5v14.5h-15z"/><path d="M8 3.5v6h8v-6M8 20.5v-7h8v7"/></svg></button>
-        <button type="button" class="icon-control header-add" id="quick-add" aria-label="Ajouter une nouvelle référence" title="Ajouter une nouvelle référence"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4.5v15M4.5 12h15"/></svg></button>
       </div>
       <button id="menu-toggle" type="button" hidden aria-hidden="true" tabindex="-1">☰</button>
     </div>
@@ -1422,7 +1460,7 @@ let rapliSearchTimer=0;
 document.addEventListener('input',e=>{if(e.target.id==='list-search'){const start=e.target.selectionStart,end=e.target.selectionEnd;searchTerm=e.target.value;clearTimeout(rapliSearchTimer);rapliSearchTimer=setTimeout(()=>{if(document.activeElement?.id!=='list-search')return;render();const input=$('#list-search');if(input){input.focus({preventScroll:true});input.setSelectionRange(start,end);}},90);}});
 document.addEventListener('change',async e=>{if(e.target.id==='status-filter'){activeFilter=e.target.value;render();}else if(e.target.id==='f-image'&&e.target.files?.[0]){try{const preview=await compressImage(e.target.files[0]);$('#image-preview').innerHTML=`<img src="${attr(preview)}" alt="Aperçu"><span class="file-note">Photo prête à enregistrer</span>`;$('#remove-image-value').value='no';}catch(err){toast(err.message,true)}}else if(e.target.id==='import-json'){await importJson(e.target.files?.[0]);e.target.value='';}});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();$('#sidebar')?.classList.remove('open');$('#mobile-backdrop').hidden=true;}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();$('#list-search')?.focus();}});
-$('#quick-add').addEventListener('click',()=>variantModal('',''));$('#menu-toggle').addEventListener('click',()=>{$('#sidebar').classList.add('open');$('#mobile-backdrop').hidden=false;});$('#mobile-backdrop').addEventListener('click',()=>{$('#sidebar').classList.remove('open');$('#mobile-backdrop').hidden=true;});
+$('#menu-toggle').addEventListener('click',()=>{$('#sidebar').classList.add('open');$('#mobile-backdrop').hidden=false;});$('#mobile-backdrop').addEventListener('click',()=>{$('#sidebar').classList.remove('open');$('#mobile-backdrop').hidden=true;});
 /* initialization deferred until Dragon Blanc module loads */
 
 </script>
@@ -1430,7 +1468,7 @@ $('#quick-add').addEventListener('click',()=>variantModal('',''));$('#menu-toggl
 <script src="cloud-sync.js"></script>
 <script>
 /* RAPLI ARCHIVES 1.3 — module tabs & compact catalogue */
-let metaFilters={},draftModuleSettings=null,editingModule='dragons',dashboardModule='dragons';
+let metaFilters={},draftModuleSettings=null,editingModule='dragons',dashboardModule='dragons',activeSettingsSection='edition';
 const MODULES={dragons:{label:'DRAGON BLANC',friendly:'Dragon Blanc',icon:'🐉',group:'Édition',fields:[['edition','Éditions'],['rarity','Raretés'],['artwork','Artworks'],['language','Langues / drapeaux']]}};
 const defaultTags={
  dragons:{edition:[['Legend of Blue Eyes White Dragon','✦','#8b9fc9'],['Starter Deck Kaiba','◆','#7b9fce'],['Anniversary','★','#d0b777']],rarity:[['Common','●','#8e9799'],['Rare','◆','#5e87c8'],['Super Rare','✧','#78b9c7'],['Ultra Rare','★','#c5a75e'],['Secret Rare','✦','#9e8acb'],['Quarter Century Secret Rare','✶','#d3bd8b']],artwork:[['Original','◈','#6b94c0'],['Alternatif','✧','#9b82cd'],['Anniversaire','★','#dfbd6c']],language:[['Français','🇫🇷','#426dc7'],['Anglais','🇬🇧','#b34e55'],['Japonais','🇯🇵','#be464a'],['Coréen','🇰🇷','#6b90ca'],['Allemand','🇩🇪','#d9ae52'],['Italien','🇮🇹','#4a9c76'],['Espagnol','🇪🇸','#d5ad3f']]}
@@ -1572,6 +1610,14 @@ function dashboardView(){const entries=dragonVariants();const owned=entries.filt
  <div class="catalogue-stats" role="group" aria-label="Compteurs du catalogue Dragon Blanc">
    ${catalogueStatCounter('Références',entries.length)}
    ${catalogueStatCounter('OWN',owned)}
+   <div class="catalogue-quick-actions" role="group" aria-label="Gestion du catalogue">
+    <button type="button" class="catalogue-quick-action" data-action="module-settings" aria-label="Gérer les logos et catégories" title="Gérer les éditions, les artworks et les logos">
+     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.7 3.5 10.1 2h3.8l.4 1.5 1.5.9 1.5-.5 2.7 2.7-.5 1.5.9 1.5 1.5.4v3.8l-1.5.4-.9 1.5.5 1.5-2.7 2.7-1.5-.5-1.5.9-.4 1.5h-3.8l-.4-1.5-1.5-.9-1.5.5-2.7-2.7.5-1.5-.9-1.5-1.5-.4V10l1.5-.4.9-1.5-.5-1.5 2.7-2.7 1.5.5z"/><circle cx="12" cy="12" r="3.2"/></svg>
+    </button>
+    <button type="button" class="catalogue-quick-action add" data-action="pick-add" aria-label="Ajouter une nouvelle référence" title="Ajouter une nouvelle carte">
+     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4.5v15M4.5 12h15"/></svg>
+    </button>
+   </div>
  </div>
  ${filteredCardCounter(list.length)}
  <div class="archive-module-heading dragon-heading"><div><h2>Catalogue</h2><span>${list.length} cartes affichées sur ${entries.length}</span></div></div>
@@ -1613,12 +1659,14 @@ function exportCsv(){const cols=['edition_groupe','reference','edition','rarete'
 async function toggleTileOwn(id){const current=archive.copies.filter(c=>c.variantId===id);if(!current.length)archive.copies.push({id:uid(),variantId:id,condition:'',acquiredAt:'',price:null,serialNo:'',purchaseSource:'',notes:'',createdAt:now(),updatedAt:now()});else if(current.length===1)archive.copies=archive.copies.filter(c=>c.id!==current[0].id);else return toast('Plusieurs exemplaires : utilise l’aperçu pour les gérer.');if(await save()){render();toast(ownedCount(id)?'Référence possédée ✓':'Référence retirée de ma collection.');}}
 async function toggleTileWish(id){const w=wishFor(id);if(w)archive.wishlist=archive.wishlist.filter(x=>x.id!==w.id);else archive.wishlist.push({id:uid(),variantId:id,priority:'Normale',targetPrice:null,notes:'',createdAt:now(),updatedAt:now()});if(await save()){render();toast(w?'Retirée de la wishlist.':'Ajoutée à la wishlist ♡');}}
 function pickAdd(){const g=archive.groups.find(g=>g.category==='dragons');if(g)variantModal('',g.id);else groupModal('','dragons');}
-function handleAction(action,el){const id=el.dataset.id;switch(action){case 'rapli-more':rapliVisibleLimit+=60;render();return;case 'dashboard-tab':{const next=el.dataset.category;if(MODULES[next]){dashboardModule=next;searchTerm='';activeFilter='all';render();}return;}case 'tile-own':toggleTileOwn(id);return;case 'copy-reference':copyVariantReference(id);return;case 'download-artwork':downloadVariantArtwork(id);return;case 'pick-add':pickAdd();return;case 'add-in-module':{pickAdd();return;}case 'module-settings':openModuleSettings(el.dataset.category||currentView);return;case 'module-tab':editingModule='dragons';showSettingsContent();return;case 'tax-add':{const key=el.dataset.field;draftModuleSettings[editingModule].taxonomies[key].push({id:uid(),label:'',icon:'',color:'#93bca9',logo:''});showSettingsContent();return;}case 'artwork-preview-remove':{const item=draftModuleSettings?.dragons?.taxonomies?.artwork?.[Number(el.dataset.index)];if(item){item.preview='';showSettingsContent();}return;}case 'tax-remove':{const key=el.dataset.field,idx=Number(el.dataset.index);draftModuleSettings[editingModule].taxonomies[key].splice(idx,1);showSettingsContent();return;}case 'save-module-settings':saveModuleSettings();return;case 'new-group':groupModal('','dragons');return;case 'new-variant':variantModal('',el.dataset.group||'');return;default:return legacyHandleAction(action,el);}}
-function openModuleSettings(preferred='dragons'){moduleSettings();draftModuleSettings=structuredClone(archive.settings);editingModule='dragons';const body='<div class="module-settings"><p class="helper">Personnalise les éditions, raretés, artworks et langues : icône, drapeau, couleur ou logo. Les tuiles utilisent ces réglages automatiquement.</p><div id="module-settings-container"></div></div>';openModal('Personnaliser Dragon Blanc',body);showSettingsContent();}
+function handleAction(action,el){const id=el.dataset.id;switch(action){case 'rapli-more':rapliVisibleLimit+=60;render();return;case 'dashboard-tab':{const next=el.dataset.category;if(MODULES[next]){dashboardModule=next;searchTerm='';activeFilter='all';render();}return;}case 'tile-own':toggleTileOwn(id);return;case 'copy-reference':copyVariantReference(id);return;case 'download-artwork':downloadVariantArtwork(id);return;case 'pick-add':pickAdd();return;case 'add-in-module':{pickAdd();return;}case 'module-settings':openModuleSettings(el.dataset.category||currentView);return;case 'settings-section-tab':{const next=el.dataset.settingsSection;if(next==='number'||MODULES.dragons.fields.some(([field])=>field===next)){activeSettingsSection=next;showSettingsContent();}return;}case 'module-tab':editingModule='dragons';showSettingsContent();return;case 'tax-add':{const key=el.dataset.field;draftModuleSettings[editingModule].taxonomies[key].push({id:uid(),label:'',icon:'',color:'#93bca9',logo:''});showSettingsContent();return;}case 'artwork-preview-remove':{const item=draftModuleSettings?.dragons?.taxonomies?.artwork?.[Number(el.dataset.index)];if(item){item.preview='';showSettingsContent();}return;}case 'tax-remove':{const key=el.dataset.field,idx=Number(el.dataset.index);draftModuleSettings[editingModule].taxonomies[key].splice(idx,1);showSettingsContent();return;}case 'save-module-settings':saveModuleSettings();return;case 'new-group':groupModal('','dragons');return;case 'new-variant':variantModal('',el.dataset.group||'');return;default:return legacyHandleAction(action,el);}}
+function openModuleSettings(preferred='dragons'){moduleSettings();draftModuleSettings=structuredClone(archive.settings);editingModule='dragons';activeSettingsSection='edition';const body='<div class="module-settings"><p class="helper">Personnalise les éditions, raretés, artworks et langues : icône, drapeau, couleur ou logo. Les tuiles utilisent ces réglages automatiquement.</p><div id="module-settings-container"></div></div>';openModal('Personnaliser Dragon Blanc',body);showSettingsContent();}
 function showSettingsContent(){
  const root=$('#module-settings-container');if(!root||!draftModuleSettings)return;
  const settings=draftModuleSettings[editingModule];
- const sections=MODULES[editingModule].fields.map(([field,label])=>{
+ const tabs=[['number','Numérotation'],...MODULES[editingModule].fields];
+  const tabNav='<div class="module-settings-tabs" role="tablist" aria-label="Catégories de personnalisation">'+tabs.map(([field,label])=>`<button type="button" class="module-settings-tab" role="tab" data-action="settings-section-tab" data-settings-section="${field}" aria-selected="${activeSettingsSection===field}" tabindex="${activeSettingsSection===field?'0':'-1'}">${h(label)}</button>`).join('')+'</div>';
+  const sections=MODULES[editingModule].fields.filter(([field])=>field===activeSettingsSection).map(([field,label])=>{
   const entries=settings.taxonomies[field]||[];
   const rows=entries.map((item,i)=>{
    const imageControl=field==='artwork'?`<div class="artwork-settings-control"><label class="artwork-file-label" title="Choisir ou remplacer la miniature"><span class="artwork-thumb artwork-settings-thumb">${artworkThumbMarkup(item)}</span><span class="artwork-choose-text">Changer miniature</span><input type="file" accept="image/*,.heic,.heif" data-artwork-file="${i}" aria-label="Choisir ou remplacer la miniature de ${attr(item.label||'cet artwork')}"></label>${item.preview?`<button type="button" class="artwork-remove-preview" data-action="artwork-preview-remove" data-index="${i}" title="Retirer la miniature" aria-label="Retirer la miniature de ${attr(item.label)}">×</button>`:''}</div>`:'';
@@ -1628,7 +1676,7 @@ function showSettingsContent(){
   return `<section class="settings-section"><h3>${h(label)}</h3><p class="settings-intro">${intro}</p>${rows}<button class="tax-add" type="button" data-action="tax-add" data-field="${field}">＋ Ajouter une valeur</button></section>`;
  }).join('');
  const numbering=`<section class="settings-section"><h3>Numérotation des cartes Dragon Blanc</h3><p class="settings-intro">Définis le titre affiché sur les tuiles, puis choisis de montrer ou non le numéro.</p><div class="settings-number"><input type="text" data-setting-number="label" value="${attr(settings.numberLabel||'N° de carte')}" aria-label="Titre du numéro"><label><input type="checkbox" data-setting-number="visible" ${settings.showNumber?'checked':''}> Afficher le numéro sur la tuile</label></div></section>`;
- root.innerHTML=`${numbering}${sections}<div class="settings-footer"><button class="secondary-button" type="button" data-action="close-modal">Annuler</button><button class="primary-button" type="button" data-action="save-module-settings">Enregistrer les réglages</button></div>`;
+ root.innerHTML=`${tabNav}${activeSettingsSection==='number'?numbering:sections}<div class="settings-footer"><button class="secondary-button" type="button" data-action="close-modal">Annuler</button><button class="primary-button" type="button" data-action="save-module-settings">Enregistrer les réglages</button></div>`;
 }
 // Crop only truly transparent padding; never stretch/distort uploaded logos.
 function cropTransparentLogo(source){
@@ -1711,7 +1759,7 @@ const old=moduleSettings();for(const cat of Object.keys(MODULES)){for(const [key
 // Non-destructive event handlers: one compact settings UI, all data stays local.
 document.addEventListener('input',e=>{const el=e.target;if(!draftModuleSettings||!el.closest('.module-settings'))return;if(el.dataset.settingField){const list=draftModuleSettings[editingModule]?.taxonomies?.[el.dataset.settingField];if(list?.[Number(el.dataset.index)])list[Number(el.dataset.index)][el.dataset.settingPart]=el.value;}else if(el.dataset.settingNumber==='label')draftModuleSettings.dragons.numberLabel=el.value;else if(el.dataset.settingNumber==='visible')draftModuleSettings.dragons.showNumber=el.checked;});
 document.addEventListener('change',async e=>{const el=e.target;if(!draftModuleSettings||!el.closest('.module-settings'))return;if(el.dataset.settingNumber==='visible')draftModuleSettings.dragons.showNumber=el.checked;if(el.dataset.settingLogo){const list=draftModuleSettings[editingModule]?.taxonomies?.[el.dataset.settingLogo],index=Number(el.dataset.index);if(!list?.[index]||!el.files?.[0])return;try{list[index].logo=await badgeLogo(el.files[0]);const label=el.closest('.file-logo');if(label)label.firstChild.textContent='✓ Logo';toast('Logo prêt à enregistrer');}catch(err){toast(err.message,true);}}});
-document.querySelector('#quick-add').addEventListener('click',e=>{e.stopImmediatePropagation();pickAdd();},true);
+// Catalogue + action is delegated because dashboard tiles rerender.
 
 document.addEventListener('change',e=>{if(e.target.matches('.meta-filter')){metaFilters[e.target.dataset.metaField]=e.target.value;render();}});
 

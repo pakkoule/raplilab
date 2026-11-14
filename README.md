@@ -10,6 +10,19 @@
 
 ---
 
+## Interface du 14 novembre — disquette globale et Archives compactes
+
+- **Barre commune RapliLab** : nouveau bouton disquette, disponible sur Archives / Sports / Regatta, ouvrant un seul gestionnaire de sauvegarde.
+- **Sauvegarde globale** : le gestionnaire permet d'enregistrer et d'actualiser les trois collections, et conserve les protections de révisions existantes.
+- **PC et iPhone** : génération d'un code à usage unique (10 minutes) et saisie du code sur un second appareil. Le même rattachement sécurisé Supabase couvre les trois modules ; les autres collections ne sont jamais écrasées automatiquement après la liaison.
+- **Versions en conflit** : choix explicite pour Archives, confirmations préservées, puis actualisation des autres onglets à la demande.
+- **Archives** : suppression de l'ancienne disquette dans l'en-tête ; filtres sur une seule ligne ; boutons Ajouter (+) et Paramètres (⚙) désormais à côté des compteurs de collection.
+- **Personnalisation Archives** : onglets Éditions, Raretés, Artworks, Langues / drapeaux et Numérotation. Le brouillon est conservé entre onglets et un seul bouton enregistre le tout.
+- **Maintenance** : accès aux outils JSON avancés d'Archives depuis le gestionnaire global. Aucun changement de format de stockage de la collection.
+- **Vérification** : scripts JavaScript vérifiés statiquement ; Deploy Preview Netlify validée. Parcours réel d'appairage PC/iPhone et contrôle visuel Safari iOS restent à tester avant fusion.
+
+---
+
 # RAPLI TRIO V3.0 — Ergonomie des onglets
 
 Cette version part de V2.9 et conserve les trois applications et toutes les fonctions.

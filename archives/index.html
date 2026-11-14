@@ -1648,6 +1648,22 @@ main#main-content:has(.dragon-heading) .archive-module-heading.dragon-heading{ma
  .archive-filter-trigger{font-size:8.5px}
 }
 </style>
+
+<style id="rapli-archives-edition-copy">
+/* Quick-copy next to the edit menu, without changing the card-opening area. */
+.group-grid .edition-tile .group-copy{
+ position:absolute;top:8px;right:49px;z-index:3;
+ width:36px;height:36px;display:grid;place-items:center;
+ padding:0;border:0;border-radius:8px;background:transparent;
+ color:#8297ac;cursor:pointer;transition:background .16s,color .16s;
+}
+.group-grid .edition-tile .group-copy svg{width:17px;height:17px}
+.group-grid .edition-tile .group-copy:hover{background:#e9f3ff;color:#1769b7}
+.group-grid .edition-tile .group-copy:focus-visible{outline:2px solid #2b8de4;outline-offset:1px}
+@media(max-width:700px){
+ .group-grid .edition-tile .group-copy{top:7px;right:44px;width:34px;height:34px}
+}
+</style>
 </head>
 <body>
 <div class="app-shell">
@@ -1754,7 +1770,7 @@ function groupCard(g){
  const logo=String(info?.logo||'');
  const hasLogo=/^data:image\/(?:png|jpe?g|webp);base64,/i.test(logo);
  const badge=hasLogo?'<img src="'+attr(logo)+'" alt="" decoding="async" />':info?.icon?h(info.icon):iconFor(g.category);
- return `<article class="group-card edition-tile"><button class="group-open" data-action="open-group" data-id="${attr(g.id)}" aria-label="Ouvrir ${attr(g.name)}"><span class="group-icon ${hasLogo?'has-edition-logo':''}">${badge}</span><span class="group-main"><strong title="${attr(g.name)}">${h(g.name)}</strong><small>${count} références · ${own} possédées</small></span></button><button class="group-edit" data-action="edit-group" data-id="${attr(g.id)}" title="Modifier le groupe" aria-label="Modifier ${attr(g.name)}">⋯</button></article>`;
+ return `<article class="group-card edition-tile"><button class="group-open" data-action="open-group" data-id="${attr(g.id)}" aria-label="Ouvrir ${attr(g.name)}"><span class="group-icon ${hasLogo?'has-edition-logo':''}">${badge}</span><span class="group-main"><strong title="${attr(g.name)}">${h(g.name)}</strong><small>${count} références · ${own} possédées</small></span></button>${g.category==='dragons'?'<button type="button" class="group-copy" data-action="copy-edition-name" data-id="${attr(g.id)}" title="Copier le nom de l’édition : ${attr(g.name)}" aria-label="Copier le nom complet de l’édition ${attr(g.name)}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg></button>':''}<button class="group-edit" data-action="edit-group" data-id="${attr(g.id)}" title="Modifier le groupe" aria-label="Modifier ${attr(g.name)}">⋯</button></article>`;
 }
 function referenceCard(v){const own=ownedCount(v.id),wish=wishFor(v.id);const state=own?`<span class="tile-indicator owned" title="Possédée" aria-label="Possédée">✓</span>`:wish?`<span class="tile-indicator wish" title="Wishlist" aria-label="Wishlist">♡</span>`:'';
 const cat=catForGroup(v.groupId);const secondary=(cat==='cards'?[v.player,v.parallel,v.serial]:[v.color,v.strapColor]).filter(Boolean).join(' · ');
@@ -1893,6 +1909,21 @@ function directDownload(url,filename){
   document.body.appendChild(anchor);
   anchor.click();
   anchor.remove();
+}
+async function copyEditionName(id){
+ const group=getGroup(id),name=String(group?.name||'');
+ if(!group||group.category!=='dragons'||!name.trim()){toast('Nom de l’édition indisponible.',true);return;}
+ let copied=false;
+ try{if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(name);copied=true;}}catch(_error){}
+ if(!copied){
+  const input=document.createElement('textarea');
+  input.value=name;input.readOnly=true;input.style.position='fixed';
+  input.style.opacity='0';input.style.pointerEvents='none';
+  document.body.appendChild(input);input.focus();input.select();
+  try{copied=!!document.execCommand('copy');}catch(_error){}
+  input.remove();
+ }
+ toast(copied?'Nom de l’édition copié : '+name:'Impossible de copier le nom de l’édition.',!copied);
 }
 async function copyVariantReference(id){
   const reference=String(getVariant(id)?.reference||'').trim();
@@ -2211,7 +2242,7 @@ function pickAdd(){const g=archive.groups.find(g=>g.category==='dragons');if(g)v
 function handleAction(action,el){const id=el.dataset.id;switch(action){case 'archive-layout':{const next=el.dataset.layout;if(['details','cards','artworks'].includes(next)){archiveLayout=next;archivePage=1;archiveArtworkSelection=null;render();}return;}
  case 'archive-page':{const next=Number(el.dataset.page);if(Number.isInteger(next)&&next>=1){archivePage=next;render();window.scrollTo({top:0,behavior:'instant'});}return;}
  case 'archive-artwork-open':{archiveArtworkSelection=el.dataset.artwork||'Sans artwork';archivePage=1;render();return;}
- case 'archive-artwork-back':archiveArtworkSelection=null;archivePage=1;render();return;case 'dashboard-tab':{const next=el.dataset.category;if(MODULES[next]){dashboardModule=next;searchTerm='';activeFilter='all';render();}return;}case 'tile-own':toggleTileOwn(id);return;case 'copy-reference':copyVariantReference(id);return;case 'download-artwork':downloadVariantArtwork(id);return;case 'pick-add':pickAdd();return;case 'add-in-module':{pickAdd();return;}case 'module-settings':openModuleSettings(el.dataset.category||currentView);return;case 'settings-section-tab':{const next=el.dataset.settingsSection;if(next==='number'||MODULES.dragons.fields.some(([field])=>field===next)){activeSettingsSection=next;showSettingsContent();document.querySelector('.module-settings-tab[data-settings-section="'+next+'"]')?.focus({preventScroll:true});}return;}case 'module-tab':editingModule='dragons';showSettingsContent();return;case 'tax-add':{const key=el.dataset.field;draftModuleSettings[editingModule].taxonomies[key].push({id:uid(),label:'',icon:'',color:'#93bca9',logo:''});showSettingsContent();return;}case 'artwork-preview-remove':{const item=draftModuleSettings?.dragons?.taxonomies?.artwork?.[Number(el.dataset.index)];if(item){item.preview='';showSettingsContent();}return;}case 'tax-remove':{const key=el.dataset.field,idx=Number(el.dataset.index);draftModuleSettings[editingModule].taxonomies[key].splice(idx,1);showSettingsContent();return;}case 'save-module-settings':saveModuleSettings();return;case 'new-group':groupModal('','dragons');return;case 'new-variant':variantModal('',el.dataset.group||'');return;default:return legacyHandleAction(action,el);}}
+ case 'archive-artwork-back':archiveArtworkSelection=null;archivePage=1;render();return;case 'dashboard-tab':{const next=el.dataset.category;if(MODULES[next]){dashboardModule=next;searchTerm='';activeFilter='all';render();}return;}case 'tile-own':toggleTileOwn(id);return;case 'copy-edition-name':copyEditionName(id);return;case 'copy-reference':copyVariantReference(id);return;case 'download-artwork':downloadVariantArtwork(id);return;case 'pick-add':pickAdd();return;case 'add-in-module':{pickAdd();return;}case 'module-settings':openModuleSettings(el.dataset.category||currentView);return;case 'settings-section-tab':{const next=el.dataset.settingsSection;if(next==='number'||MODULES.dragons.fields.some(([field])=>field===next)){activeSettingsSection=next;showSettingsContent();document.querySelector('.module-settings-tab[data-settings-section="'+next+'"]')?.focus({preventScroll:true});}return;}case 'module-tab':editingModule='dragons';showSettingsContent();return;case 'tax-add':{const key=el.dataset.field;draftModuleSettings[editingModule].taxonomies[key].push({id:uid(),label:'',icon:'',color:'#93bca9',logo:''});showSettingsContent();return;}case 'artwork-preview-remove':{const item=draftModuleSettings?.dragons?.taxonomies?.artwork?.[Number(el.dataset.index)];if(item){item.preview='';showSettingsContent();}return;}case 'tax-remove':{const key=el.dataset.field,idx=Number(el.dataset.index);draftModuleSettings[editingModule].taxonomies[key].splice(idx,1);showSettingsContent();return;}case 'save-module-settings':saveModuleSettings();return;case 'new-group':groupModal('','dragons');return;case 'new-variant':variantModal('',el.dataset.group||'');return;default:return legacyHandleAction(action,el);}}
 function openModuleSettings(preferred='dragons'){moduleSettings();draftModuleSettings=structuredClone(archive.settings);editingModule='dragons';activeSettingsSection='edition';const body='<div class="module-settings"><p class="helper">Personnalise les éditions, raretés, artworks et langues : icône, drapeau, couleur ou logo. Les tuiles utilisent ces réglages automatiquement.</p><div id="module-settings-container"></div></div>';openModal('Personnaliser Dragon Blanc',body);showSettingsContent();}
 function showSettingsContent(){
  const root=$('#module-settings-container');if(!root||!draftModuleSettings)return;

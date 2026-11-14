@@ -378,7 +378,8 @@
     }
     conflict = false;
     pending = true;
-    void flush();
+    await flush();
+    return !conflict && !pending && !error;
   }
   async function issueCode() {
     if (!ready || ownerId !== userId || uploading) {
@@ -392,15 +393,16 @@
       const el=document.getElementById('rapli-cloud-pair-code');
       if(el)el.textContent=data.code+' · valable 10 minutes';
       show('Code créé : saisis-le sur ton téléphone');
-    } catch(e){show('Impossible de créer le code : '+e.message,true);}
+      return data.code;
+    } catch(e){show('Impossible de créer le code : '+e.message,true);return null;}
   }
-  async function redeemCode() {
-    if(!ready || uploading) return;
+  async function redeemCode(codeOverride) {
+    if(!ready || uploading) return false;
     const input=document.getElementById('rapli-cloud-pair-input');
-    const code=(input?.value||'').trim().toUpperCase();
-    if(!code){show('Saisis le code affiché sur ton PC',true);return;}
-    const consent=confirm('Associer cet appareil à la collection du PC ? Fais une sauvegarde JSON avant de restaurer les données du PC. Les données actuelles du téléphone resteront locales tant que tu ne choisis pas de restaurer le cloud.');
-    if(!consent)return;
+    const code=(typeof codeOverride==='string'?codeOverride:input?.value||'').trim().toUpperCase();
+    if(!code){show('Saisis le code affiché sur ton PC',true);return false;}
+    const consent=confirm('Associer cet appareil à la collection du PC ? Fais une sauvegarde de tes données avant de restaurer celles du PC. Les données actuelles restent locales tant que tu ne choisis pas de restaurer le cloud.');
+    if(!consent)return false;
     try {
       show('Association des appareils…');
       const {data,error:problem}=await client.functions.invoke('rapli-archives-pair',{body:{action:'redeem',code}});
@@ -416,7 +418,8 @@
       remote=normalize(result.data.archive_state);
       show('Appareil associé ✓ · choisis « Restaurer le cloud » pour afficher la même collection.');
       if(input)input.value='';
-    } catch(e){show('Liaison impossible : '+e.message,true);}
+      return true;
+    } catch(e){show('Liaison impossible : '+e.message,true);return false;}
   }
   // Read the server before replacing anything. Local edits never get discarded silently.
   async function checkRemoteChanges() {
@@ -565,5 +568,18 @@
     try { if (localStorage.getItem(FLAG) === '1') void start(); } catch (_) {}
     ui();
   }
-  window.RapliCloud = { init, changed, card, ui, isInitialized:()=>!!context };
+  window.RapliCloud = {
+    init, changed, card, ui,
+    isInitialized:()=>!!context,
+    getManagerState:()=>({
+      ready,connecting,uploading,refreshing,conflict,pending,error,status,
+      primary:ready&&ownerId===userId,
+      linked:ready&&!!userId&&ownerId!==userId
+    }),
+    enableManager:start,
+    issuePairingCode:issueCode,
+    redeemPairingCode:redeemCode,
+    restoreFromCloud:()=>restoreCloud(false),
+    keepLocalVersion:keepLocal
+  };
 })();

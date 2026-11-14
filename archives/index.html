@@ -1295,10 +1295,15 @@ main#main-content {
 .archive-pagination{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:7px;margin:20px auto 8px}
 .archive-pagination button{border:1px solid #c2d4e8;border-radius:8px;background:white;color:#1b5185;cursor:pointer;
  min-width:36px;min-height:36px;padding:7px 10px;font:900 11px Poppins,sans-serif}
-.archive-pagination button[aria-current=page]{background:#174c87;border-color:#174c87;color:white;cursor:default}
+.archive-pagination button[aria-current=page]{position:relative;background:#174c87;border-color:#174c87;color:white;
+ cursor:default;box-shadow:0 0 0 3px rgba(29,121,207,.22),0 3px 12px rgba(13,65,126,.23);transform:translateY(-1px)}
+.archive-pagination button[aria-current=page]::after{content:"";display:block;width:5px;height:5px;border-radius:50%;background:#fff;margin:3px auto -3px}
+.archive-pagination button[aria-current=page]:focus-visible{outline:3px solid #63b9ff;outline-offset:4px}
 .archive-pagination button:disabled{opacity:.36;cursor:not-allowed}
 .archive-page-ellipsis,.archive-page-caption{color:#6d83a1;font:750 10px Poppins,sans-serif;padding:0 4px}
 .archive-page-caption{width:100%;text-align:center;margin-top:2px}
+.archive-pagination:first-of-type{margin-top:10px;margin-bottom:16px}
+.archive-pagination button{font-variant-numeric:tabular-nums}
 @media(max-width:900px){.archive-vignettes,.archive-artwork-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}}
 @media(max-width:620px){.archive-vignettes,.archive-artwork-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
  .archive-vignette-picture,.archive-artwork-picture{padding:5px}
@@ -1661,17 +1666,17 @@ function catalogueStatCounter(label,count){
 }
 
 let archiveLayout='details',archivePage=1,archiveArtworkSelection=null;
-const ARCHIVE_PAGE_SIZE=60;
+const ARCHIVE_PAGE_SIZE=30;
 function archivePager(total,pageSize=ARCHIVE_PAGE_SIZE){
  const pages=Math.ceil(total/pageSize);
  archivePage=Math.max(1,Math.min(archivePage,Math.max(1,pages)));
- if(pages<=1)return '';
+ if(total<=0)return '';
  const visible=new Set([1,pages,archivePage-1,archivePage,archivePage+1].filter(n=>n>=1&&n<=pages));
  const slots=[...visible].sort((a,b)=>a-b);
  let previous=0,links='';
  for(const n of slots){
    if(n-previous>1)links+='<span class="archive-page-ellipsis" aria-hidden="true">…</span>';
-   links+='<button type="button" data-action="archive-page" data-page="'+n+'"'+(n===archivePage?' aria-current="page"':'')+' aria-label="Page '+n+' sur '+pages+'">'+n+'</button>';
+   links+='<button type="button" data-action="archive-page" data-page="'+n+'"'+(n===archivePage?' aria-current="page" class="archive-page-active"':'')+' aria-label="Page '+n+' sur '+pages+'">'+n+'</button>';
    previous=n;
  }
  const first=(archivePage-1)*pageSize+1,last=Math.min(total,archivePage*pageSize);
@@ -1684,7 +1689,8 @@ function archivePagedCards(items,renderer,cssClass){
  const pageSize=ARCHIVE_PAGE_SIZE,pages=Math.max(1,Math.ceil(items.length/pageSize));
  archivePage=Math.max(1,Math.min(archivePage,pages));
  const offset=(archivePage-1)*pageSize;
- return '<div class="'+cssClass+'">'+items.slice(offset,offset+pageSize).map(renderer).join('')+'</div>'+archivePager(items.length);
+ const controls=archivePager(items.length);
+ return controls+'<div class="'+cssClass+'">'+items.slice(offset,offset+pageSize).map(renderer).join('')+'</div>'+controls;
 }
 function archiveViewSwitcher(count){
  const options=[['details','Fiches'],['cards','Vignettes cartes'],['artworks','Vignettes artworks']];
@@ -1780,7 +1786,7 @@ function render(){const main=$('#main-content');if(!main)return;let breadcrumb='
 }
 function navigate(view,group=null,variant=null){if(!['dashboard','dragons','tools'].includes(view))view='dashboard';currentView=view;currentGroup=group;currentVariant=variant;searchTerm='';activeFilter='all';metaFilters={};archivePage=1;archiveArtworkSelection=null;render();window.scrollTo({top:0,behavior:'instant'});}
 function categoryView(view){const groups=archive.groups.filter(g=>g.category==='dragons').filter(g=>!searchTerm||[g.name,g.description].join(' ').toLowerCase().includes(searchTerm.toLowerCase()));return `<button type="button" class="back-button" data-action="navigate" data-view="dashboard" aria-label="Retour au catalogue Dragon Blanc">← Retour au catalogue</button>${header('DRAGON BLANC','Gérer les éditions','',`<button class="primary-button" data-action="new-group" data-category="dragons">＋ Nouvelle édition</button>`)}<div class="toolbar">${searchBar('Chercher une édition…')}</div><div class="group-grid">${groups.length?groups.map(groupCard).join(''):empty('Aucune édition',searchTerm?'Essaie une autre recherche.':'Crée ta première édition.','new-group','Créer une édition','dragons')}</div>`;}
-function groupView(g){const variants=groupVariants(g.id);const filtered=dragonFilter(variants);const owned=variants.filter(v=>ownedCount(v.id)).length;return `<button class="back-button" data-action="back-category">← Éditions</button>${header('',h(g.name),'',`<button class="secondary-button" data-action="edit-group" data-id="${attr(g.id)}">Modifier l’édition</button><button class="primary-button" data-action="new-variant" data-group="${attr(g.id)}">＋ Référence</button>`)}<div class="group-progress"><strong>${owned} / ${variants.length}</strong> possédées <span>${variants.length?Math.round(100*owned/variants.length):0}%</span></div>${filteredCardCounter(filtered.length)}<div class="toolbar">${searchBar('Chercher une référence…')}${dragonFilterControls(variants)}</div><div class="reference-grid">${filtered.length?filtered.map(referenceCard).join(''):empty('Aucune référence',searchTerm||activeFilter==='owned'||Object.values(metaFilters).some(Boolean)?'Aucun résultat pour ces filtres.':'Ajoute une référence à cette édition.','new-variant','Ajouter une référence',g.id)}</div>`;}
+function groupView(g){const variants=groupVariants(g.id);const filtered=dragonFilter(variants);const owned=variants.filter(v=>ownedCount(v.id)).length;return `<button class="back-button" data-action="back-category">← Éditions</button>${header('',h(g.name),'',`<button class="secondary-button" data-action="edit-group" data-id="${attr(g.id)}">Modifier l’édition</button><button class="primary-button" data-action="new-variant" data-group="${attr(g.id)}">＋ Référence</button>`)}<div class="group-progress"><strong>${owned} / ${variants.length}</strong> possédées <span>${variants.length?Math.round(100*owned/variants.length):0}%</span></div>${filteredCardCounter(filtered.length)}<div class="toolbar">${searchBar('Chercher une référence…')}${dragonFilterControls(variants)}</div>${filtered.length?archivePagedCards(filtered,referenceCard,'reference-grid'):empty('Aucune référence',searchTerm||activeFilter==='owned'||Object.values(metaFilters).some(Boolean)?'Aucun résultat pour ces filtres.':'Ajoute une référence à cette édition.','new-variant','Ajouter une référence',g.id)}`;}
 function openQuickView(v){const g=getGroup(v.groupId),own=ownedCount(v.id),copies=archive.copies.filter(c=>c.variantId===v.id);const facts=tagFact('dragons','edition','Édition',v.edition||g?.name)+tagFact('dragons','rarity','Rareté',v.rarity)+tagFact('dragons','artwork','Artwork',v.artwork)+tagFact('dragons','language','Langue',v.language)+textFact('Couleur du nom',v.nameColor||'')+textFact('Mention',v.editionStatus||'')+textFact('Marché',v.market||'')+textFact(moduleSettings().dragons.numberLabel||'N°',moduleSettings().dragons.showNumber?v.dragonNumber:'');const body=`<div class="quick-preview"><div class="quick-photo">${imageFor(v)}</div><div class="quick-code">${h(v.reference)}</div><div class="quick-group">${h(g?.name||'')}</div><div class="quick-module-facts">${facts.replaceAll('tile-fact','info-pill')}</div><div class="quick-status"><button class="status-action ${own?'selected is-owned':''}" data-action="peek-own" data-id="${attr(v.id)}" aria-pressed="${!!own}"><span class="owned-led"></span>OWN${own>1?' ×'+own:''}</button></div>${own?`<div class="quick-copies">${copies.map((c,i)=>`<div class="quick-copy"><span>Exemplaire ${i+1}${c.condition?' · '+h(c.condition):''}</span><button class="mini-action" data-action="edit-copy" data-id="${attr(c.id)}">✎</button><button class="mini-action" data-action="delete-copy" data-id="${attr(c.id)}">×</button></div>`).join('')}<button class="quick-text-action" data-action="quick-own" data-id="${attr(v.id)}">＋ Ajouter un doublon</button></div>`:''}<div class="quick-footer"><button class="quick-text-action" data-action="edit-variant" data-id="${attr(v.id)}">Modifier</button><button class="quick-text-action" data-action="duplicate-variant" data-id="${attr(v.id)}">Dupliquer</button><button class="quick-text-action danger-text" data-action="delete-variant" data-id="${attr(v.id)}">Supprimer</button></div></div>`;openModal('',body,true);$('#modal-root .modal-header')?.classList.add('quick-modal-header');}
 function groupModal(id='',category='dragons'){const g=getGroup(id)||{category:'dragons',name:'',description:''};if(g.category!=='dragons')return toast('Ce module n’est plus utilisé.',true);let fields=field('Édition','name',g.name,{required:true,placeholder:'Ex. Legend of Blue Eyes White Dragon'})+'<input type="hidden" name="category" value="dragons">';fields+=`<details class="advanced-fields"><summary>Note facultative</summary><div class="form-grid">${field('Note','description',g.description,{type:'textarea',full:true})}</div></details>`;if(id)fields+=`<div class="form-extra-actions"><button class="danger-button small" type="button" data-action="delete-group" data-id="${attr(id)}">Supprimer cette édition</button></div>`;openModal(id?'Modifier l’édition':'Nouvelle édition',formWrap('group',id,fields,id?'Enregistrer':'Créer'),true);}
 function taxonomySelect(module,key,label,value){const options=[['','— Choisir —'],...taxonomy(module,key).map(x=>[x.label,x.label])];if(value&&!options.some(([x])=>x===value))options.push([value,value+' (personnalisé)']);return field(label,key,value,{options});}

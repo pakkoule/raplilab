@@ -14,8 +14,9 @@
  const med=xs=>{const a=[...xs].sort((x,y)=>x-y),n=a.length;return !n?null:n%2?a[(n-1)/2]:(a[n/2-1]+a[n/2])/2;};
  const date=s=>/^\d{4}-\d{2}-\d{2}$/.test(s||'')?Date.parse(s+'T00:00:00Z'):NaN;
  const parent=r=>r.kind==='event';
+ const isRecord=r=>r.kind==='record';
  const name=s=>String(s||'').trim().toLocaleLowerCase('fr');
- const same=(a,b)=>!parent(a)&&!parent(b)&&!!a.vsr&&a.vsr===b.vsr&&!!name(a.boatClass)&&name(a.boatClass)===name(b.boatClass);
+ const same=(a,b)=>!parent(a)&&!parent(b)&&!isRecord(a)&&!isRecord(b)&&!!a.vsr&&a.vsr===b.vsr&&!!name(a.boatClass)&&name(a.boatClass)===name(b.boatClass);
  const prior=(a,b)=>Number.isFinite(date(a.start))&&Number.isFinite(date(b.start))&&date(a.start)<date(b.start);
  const completed=(r,status)=>status(r)==='finished';
  const reason=(msg,kind='race')=>({version:VERSION,kind,available:false,reason:msg});
@@ -32,6 +33,7 @@
  }
  function race(r,all,status){
   if(parent(r))return reason('La compétition possède une note globale indépendante.');
+  if(isRecord(r))return reason('Course record : classement et note VSR non applicables.','record');
   if(status(r)==='dnf')return reason('DNF — abandon : aucune note.');
   if(status(r)!=='finished')return reason('Note disponible après la fin de la course.');
   const R=rank(r),N=fleet(r);
@@ -72,7 +74,7 @@
   if(!parent(r))return reason('Fiche compétition requise.','event');
   if(status(r)==='dnf')return reason('Compétition abandonnée.','event');
   if(!r.eventClosed)return reason('Note en attente — compétition non clôturée.','event');
-  const stages=all.filter(x=>!parent(x)&&x.eventId===r.id);
+  const stages=all.filter(x=>!parent(x)&&!isRecord(x)&&x.eventId===r.id);
   const regular=stages.filter(x=>!x.joker);
   if(!regular.length)return reason('Pas de note : aucune étape normale (Joker uniquement).','event');
   const R=rank(r),N=fleet(r);

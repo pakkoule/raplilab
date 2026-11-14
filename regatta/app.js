@@ -316,7 +316,7 @@ function render(){
   chronological(b).localeCompare(chronological(a))||b.createdAt.localeCompare(a.createdAt));
  const raceRows=rows.filter(r=>r.kind==='race');
  $('count-total').textContent=raceRows.length;$('count-live').textContent=rows.filter(r=>['live','record-live'].includes(raceStatus(r))).length;
- $('count-finished').textContent=raceRows.filter(r=>raceStatus(r)==='finished').length+rows.filter(r=>r.kind==='record'&&r.recordClosed).length;
+ $('count-finished').textContent=raceRows.filter(r=>raceStatus(r)==='finished').length;
  $('count-dnf').textContent=raceRows.filter(r=>raceStatus(r)==='dnf').length;
  $('count-record').textContent=rows.filter(r=>r.kind==='record').length;
  $('result-count').textContent=out.length+' / '+rows.length;

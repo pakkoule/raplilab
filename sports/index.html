@@ -590,7 +590,9 @@ body::before{display:none!important}
 .team-row img.logo-tiny.has-image{max-width:76px;max-height:36px}
 .saved-value-picker{margin:4px 0 7px;min-height:40px}
 .players-editor .player-picker{font-size:11px;margin:5px 0 7px}
-#collectionPanel[hidden],#statsPanel[hidden],#sportsSummaryStrip[hidden]{display:none!important}
+#collectionPanel[hidden],#statsPanel[hidden]{display:none!important}
+.stats-overview-heading{font-size:10px;font-weight:900;letter-spacing:.08em;color:#637c9f;margin:0 2px -9px}
+.stats-panel #sportsSummaryStrip{margin:0 0 5px}
 .stats-panel{display:grid;gap:19px;margin-top:8px;color:#20375b}
 .stats-panel-head{display:flex;justify-content:space-between;align-items:end;flex-wrap:wrap;gap:6px;border-bottom:1px solid #d9e4f4;padding:8px 2px 17px}
 .stats-panel-head h3{font-size:18px;letter-spacing:.02em;margin:0;color:#123c84;font-weight:900}
@@ -648,12 +650,7 @@ body::before{display:none!important}
         <button id="exportBtn" class="button button-ghost" type="button" title="Exporter une sauvegarde JSON"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13m-5-5 5 5 5-5M4 17v4h16v-4"/></svg> Exporter</button>
       </div></div>
   <main>
-      <div class="stats" id="sportsSummaryStrip" aria-label="Aperçu de la collection">
-        <div class="stat"><div class="stat-top"><span>Cartes répertoriées</span><span class="stat-icon" id="statIconAll"></span></div><strong id="statTotal">0</strong></div>
-        <div class="stat"><div class="stat-top"><span>Own · Possédées</span><span class="stat-icon" id="statIconOwn"></span></div><strong id="statOwn">0</strong></div>
-        <div class="stat"><div class="stat-top"><span>Wishlist · Recherchées</span><span class="stat-icon" id="statIconWish"></span></div><strong id="statWish">0</strong></div>
-        <div class="stat"><div class="stat-top"><span>Numérotées</span><span class="stat-icon" id="statIconNumber"></span></div><strong id="statNumber">0</strong></div>
-      </div>
+
       <section aria-label="Gestion des cartes">
         <div class="section-nav">
           <div class="tabs" role="tablist" aria-label="Collection">
@@ -696,7 +693,16 @@ body::before{display:none!important}
         <div id="cardGrid" class="cards-grid" aria-live="polite"></div>
         <div id="emptyState" class="empty hidden"><div class="empty-mark" id="emptyIcon"></div><h3 id="emptyTitle">Aucune carte pour le moment</h3><p id="emptyCopy">Ta collection commence ici.</p><button type="button" class="button button-primary" id="emptyAddBtn">Ajouter une carte</button></div>
         </div>
-        <div id="statsPanel" class="stats-panel" role="tabpanel" aria-label="Statistiques des cartes OWN" hidden></div>
+        <div id="statsPanel" class="stats-panel" role="tabpanel" aria-label="Statistiques de la collection" hidden>
+          <div class="stats-overview-heading">VUE D’ENSEMBLE · TOUTES LES CARTES</div>
+      <div class="stats" id="sportsSummaryStrip" aria-label="Aperçu de la collection">
+        <div class="stat"><div class="stat-top"><span>Cartes répertoriées</span><span class="stat-icon" id="statIconAll"></span></div><strong id="statTotal">0</strong></div>
+        <div class="stat"><div class="stat-top"><span>Own · Possédées</span><span class="stat-icon" id="statIconOwn"></span></div><strong id="statOwn">0</strong></div>
+        <div class="stat"><div class="stat-top"><span>Wishlist · Recherchées</span><span class="stat-icon" id="statIconWish"></span></div><strong id="statWish">0</strong></div>
+        <div class="stat"><div class="stat-top"><span>Numérotées</span><span class="stat-icon" id="statIconNumber"></span></div><strong id="statNumber">0</strong></div>
+      </div>
+          <div id="statsDetails" aria-label="Analyses des cartes OWN"></div>
+        </div>
       </section>
     </main>
     <footer class="footer"><span>© RAPLI SPORTS · PERSONAL COLLECTION</span><span>SAUVEGARDE LOCALE · EXPORT JSON DISPONIBLE</span></footer>
@@ -1039,7 +1045,7 @@ body::before{display:none!important}
         const data=statsEngine.calculate(cards);
         const whole=data.total;
         if(!whole){
-          $('statsPanel').innerHTML='<div class="stats-panel-head"><div><h3>STATISTIQUES DE COLLECTION</h3><p>Uniquement les cartes OWN réelles · sans wishlist et sans démos.</p></div></div>'+
+          $('statsDetails').innerHTML='<div class="stats-panel-head"><div><h3>STATISTIQUES DE COLLECTION</h3><p>Uniquement les cartes OWN réelles · sans wishlist et sans démos.</p></div></div>'+
             '<div class="stats-empty">Aucune carte OWN enregistrée. Ajoute une carte possédée pour découvrir les statistiques de ta collection.</div>';
           return;
         }
@@ -1060,7 +1066,7 @@ body::before{display:none!important}
           return '<section class="stats-breakdown"><h4>'+safeText(entry.title)+'</h4>'+rows+
             (entry.data.length>8?'<p class="stats-kpi-sub">+'+num(entry.data.length-8)+' autres entrées</p>':'')+'</section>';
         };
-        $('statsPanel').innerHTML='<div class="stats-panel-head"><div><h3>STATISTIQUES DE COLLECTION</h3>'+
+        $('statsDetails').innerHTML='<div class="stats-panel-head"><div><h3>STATISTIQUES DE COLLECTION</h3>'+
           '<p>Cartes réellement possédées (OWN) uniquement · wishlist et cartes de démonstration exclues. '+
           'Une carte multi-athlètes peut compter dans plusieurs catégories.</p></div>'+
           '<strong class="stats-own-count">'+num(whole)+' CARTES OWN</strong></div>'+
@@ -1083,7 +1089,7 @@ body::before{display:none!important}
         const showStats=currentView==='stats';
         $('collectionPanel').hidden=showStats;
         $('statsPanel').hidden=!showStats;
-        $('sportsSummaryStrip').hidden=showStats;
+        
         if(showStats){renderOwnedStatistics();return;}
         const match=filterCards();
         $('resultsLabel').innerHTML='<strong>'+match.length+'</strong> carte'+(match.length>1?'s':'')+

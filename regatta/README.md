@@ -78,3 +78,14 @@ Module intégré à la PR #1 de RapliLab, non fusionnée.
 - La synchronisation IndexedDB / Supabase et les exports JSON conservent `attempts[].startDate`, `attempts[].startTime`, `attempts[].seconds`, `attempts[].aborted`.
 - Pour les anciennes fiches record qui ne connaissaient qu’un seul départ `start/startTime`, la date et l’heure historiques sont reportées sur **la première tentative uniquement**. Le champ de départ parent devient ensuite dérivé du départ le plus ancien pour compatibilité. Les dates de toutes les autres tentatives restent indépendantes.
 - Aucune note VSR /100 ni résultat de classement normal n’est généré pour une course record.
+
+
+## Courses record — clôture manuelle et classements finaux (PR #1)
+
+- Une **tentative terminée** (avec un temps) ou une tentative avortée n'a **aucun effet** sur la case **Course en cours** de la course record. Plusieurs tentatives sont donc possibles sans changement automatique de statut.
+- Une course record ouverte dispose sur sa tuile du bouton **✓ CLÔTURER LE RECORD**. L'utilisateur doit confirmer la clôture ; l'action sauvegarde explicitement `recordClosed: true`, retire l'état en cours et conserve toutes les tentatives et leurs dates.
+- Le statut devient **RECORD CLÔTURÉ**. Le record clôturé est visible parmi les courses record et dans le filtre « Terminées » ; il n'est plus comptabilisé « En cours ». Il ne gonfle pas les statistiques des courses VSR classiques.
+- Après clôture, l'éditeur s'ouvre automatiquement et révèle les cinq classements finaux (général, national, départemental, ville, team) avec positions et effectifs. Les contrôles numériques habituels s'appliquent. Ils sont affichés dans la fiche et dans l'export PNG, après le tableau des tentatives.
+- Le statut de clôture est persistant dans IndexedDB, JSON et les sauvegardes Supabase du module. Modifier ultérieurement le record ne réactive jamais « En cours », ne supprime jamais ses classements et ne le rouvre pas par accident.
+- Pour éviter de rouvrir de nouvelles tentatives une fois le record clôturé, le bouton « Ajouter une tentative » et la suppression de tentatives sont désactivés ; les données de tentatives existantes peuvent encore être corrigées dans l'éditeur.
+- Aucune notation Rapli /100 n'est calculée sur les records, même après clôture ; les cinq classements finaux sont conservés séparément de cette notation.

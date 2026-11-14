@@ -490,6 +490,44 @@ body::before{display:none!important}
 @media(max-width:780px){#rapli-module-cloud-status{max-width:135px;font-size:9px}}
 @media(max-width:580px){#rapli-module-cloud-status{display:none}.rapli-utility-strip{gap:6px}.rapli-cloud-module-group .rapli-cloud-module-btn{min-width:36px;width:36px;height:36px;border-radius:9px}}
 @media(prefers-reduced-motion:reduce){.rapli-cloud-module-btn.is-refreshing svg{animation:none}}
+</style><style id="rapli-sports-player-autos-patches">
+/* RAPLI SPORTS — per-player autographs & patches (maximum five). */
+.players-editor{min-width:0}
+.players-editor-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.players-editor-head label{font-size:10px;font-weight:800;letter-spacing:.08em;color:#415b83}
+.player-add-btn{font-size:10px!important;padding:8px 11px!important;min-height:34px}
+.player-entries{display:flex;flex-direction:column;gap:9px}
+.player-entry{min-width:0;background:#f7faff;border:1px solid #d9e4f3;border-radius:12px;padding:11px;display:flex;flex-direction:column;gap:10px}
+.player-entry-header{display:flex;align-items:center;justify-content:space-between;min-height:18px;gap:8px}
+.player-entry-header label{font-size:10px;font-weight:900;letter-spacing:.045em;color:#305da1}
+.player-entry-remove{border:1px solid #e7cad3;background:#fff5f7;color:#b73e57;border-radius:7px;padding:2px 8px;font-size:12px;line-height:1.4;font-weight:900}
+.player-entry-remove:hover{background:#ffe5ec}
+.player-entry .player-name-input{width:100%;min-width:0;height:42px;font-size:16px}
+.player-feature-groups{display:flex;flex-wrap:wrap;gap:9px}
+.player-feature-group{flex:1 1 190px;border:1px solid #dce5f2;border-radius:10px;padding:9px;background:#fff;min-width:0}
+.player-feature-group:has([data-player-toggle]:checked){border-color:#91b6ee;background:#f3f7ff}
+.player-feature-master,.player-feature-choice label{display:inline-flex!important;align-items:center;gap:7px;cursor:pointer;font-weight:800;line-height:1.25}
+.player-feature-master{font-size:11px!important;color:#244b8d!important}
+.player-feature-master input,.player-feature-choice input{width:16px;height:16px;flex:none;accent-color:#2056d6}
+.player-feature-choice{display:flex;flex-wrap:wrap;gap:7px 12px;margin:10px 0 0 2px;padding:9px 2px 0;border-top:1px solid #dce6f3}
+.player-feature-choice[hidden]{display:none!important}
+.player-feature-choice label{font-size:10px!important;letter-spacing:0!important;text-transform:none!important;color:#405774!important}
+#playerCount{font-size:10px;color:#7386a0}
+.player-extra-names{display:flex;flex-direction:column;gap:3px;margin:-2px 0 8px;font-size:11px;color:#637794;font-weight:800;overflow-wrap:anywhere}
+.player-extra-names span::before{content:"＋";color:#2056d6;margin-right:6px}
+.player-traits{display:flex;flex-wrap:wrap;gap:5px;margin:5px 0 8px;min-width:0}
+.player-trait{display:inline-flex;flex-wrap:wrap;align-items:center;gap:4px;border:1px solid #d4e4fa;border-radius:6px;background:#ebf3ff;padding:4px 6px;font-size:9px;font-weight:800;line-height:1.35;color:#1d54a8;overflow-wrap:anywhere}
+.player-trait--patch{color:#9a4d26;background:#fff5e7;border-color:#f3dcba}
+.player-trait strong{font-size:9px;color:#203b61;font-weight:900}
+@media(max-width:550px){
+ .player-feature-groups{flex-direction:column;gap:7px}
+ .player-feature-group{flex:1 1 auto}
+ .player-add-btn{padding:8px 9px!important}
+ .player-entry{padding:9px}
+ .player-traits{gap:4px}
+ .player-trait{font-size:8px;padding:3px 5px}
+}
+
 </style><style id="rapli-sports-collector-badges">
 /* Sports-card serial numbering: serif, subtle foil treatment, compact collector plates. */
 .collector-row{display:flex;align-items:center;gap:7px;flex-wrap:wrap;min-width:0;flex:1}
@@ -589,10 +627,15 @@ body::before{display:none!important}
               <div class="input-group"><label for="cardBrand">Marque <span class="required">*</span></label><input id="cardBrand" class="input" name="brand" list="brandsList" required maxlength="90" placeholder="Topps, Panini…"><datalist id="brandsList"></datalist></div>
               <div class="input-group"><label for="cardSport">Sport</label><select id="cardSport" class="select" name="sport"><option value="">Choisir un sport</option><option>Basketball</option><option>Football</option><option>Football américain</option><option>Baseball</option><option>Hockey</option><option>Formule 1</option><option>Tennis</option><option>Cyclisme</option><option>Rugby</option><option>Autre</option></select></div>
             </div>
-            <div class="form-row">
-              <div class="input-group"><label for="cardPlayer">Joueur <span class="required">*</span></label><input id="cardPlayer" class="input" name="player" required maxlength="120" placeholder="Tyrese Maxey"></div>
-              <div class="input-group"><label for="cardTeam">Équipe</label><input id="cardTeam" class="input" name="team" list="teamsList" maxlength="100" placeholder="Philadelphia 76ers"><datalist id="teamsList"></datalist></div>
+            <div class="input-group players-editor">
+              <div class="players-editor-head">
+                <label>JOUEURS <span class="required">*</span></label>
+                <button id="addPlayerBtn" class="button button-soft player-add-btn" type="button" aria-label="Ajouter un joueur">＋ AJOUTER UN JOUEUR</button>
+              </div>
+              <div id="playerEntries" class="player-entries" aria-label="Joueurs et caractéristiques de la carte"></div>
+              <div id="playerCount" class="field-hint" role="status">1 / 5 joueurs · Auto et Patch rattachés à chaque joueur</div>
             </div>
+            <div class="input-group"><label for="cardTeam">Équipe</label><input id="cardTeam" class="input" name="team" list="teamsList" maxlength="100" placeholder="Philadelphia 76ers"><datalist id="teamsList"></datalist></div>
             <div class="input-group"><label for="cardReference">Référence</label><input id="cardReference" class="input" name="reference" maxlength="180" placeholder="2025-26 Topps Chrome #…"></div>
             <div class="input-group"><label for="tagField">Variations / tags</label><div id="chipEditor" class="chip-editor"><div id="editChips" style="display:contents"></div><input id="tagField" class="tag-input" placeholder="Chrome, Refractor…" maxlength="60" autocomplete="off"></div><div class="field-hint">Entrée ou virgule pour ajouter plusieurs tags.</div></div>
             <div class="number-control"><div class="number-head"><label for="cardNumbered"><input id="cardNumbered" class="custom" type="checkbox"><span class="box-check"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></span> CARTE NUMÉROTÉE</label><span class="field-hint">Ex. 12 / 99</span></div><div id="serialFields" class="number-row hidden"><div class="input-group"><label for="cardSerial">Numéro de la carte</label><input id="cardSerial" class="input" maxlength="8" inputmode="numeric" pattern="[0-9]*" placeholder="12"></div><span class="slash">/</span><div class="input-group"><label for="cardPrintRun">Tirage total</label><input id="cardPrintRun" class="input" maxlength="8" inputmode="numeric" pattern="[0-9]*" placeholder="99"></div></div></div><div class="rookie-control"><label for="cardRookie"><input id="cardRookie" class="custom" type="checkbox"><span class="box-check"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></span> ROOKIE CARD (RC)</label><span class="field-hint">Logo personnalisé selon le sport, sinon RC</span></div>
@@ -643,6 +686,101 @@ body::before{display:none!important}
       $('statIconAll').innerHTML=ico('layers'); $('statIconOwn').innerHTML=ico('check');$('statIconWish').innerHTML=ico('heart');$('statIconNumber').innerHTML=ico('hash');$('emptyIcon').innerHTML=ico('package');
       let db=null, cards=[], logos=[], currentView='own', currentTags=[], currentPhoto='', editingId=null, logoType='brand', pendingLogoPhoto='', toastTimer=null;
       const collator=new Intl.Collator('fr',{sensitivity:'base',numeric:true});
+
+      const MAX_CARD_PLAYERS=5;
+      let playerInputSequence=0;
+      const AUTO_TYPES={stickers:'Stickers','on-card':'On Card'};
+      const PATCH_TYPES={'game-worn':'Game Worn','not-affiliated':'Not Affiliated'};
+      function normalizedPlayer(value){
+        const item=typeof value==='string'?{name:value}:value&&typeof value==='object'?value:{};
+        return {
+          name:String(item.name??'').trim().slice(0,120),
+          auto:Object.prototype.hasOwnProperty.call(AUTO_TYPES,item.auto)?item.auto:'',
+          patch:Object.prototype.hasOwnProperty.call(PATCH_TYPES,item.patch)?item.patch:''
+        };
+      }
+      function cardPlayers(card){
+        const list=Array.isArray(card?.players)?card.players.slice(0,MAX_CARD_PLAYERS).map(normalizedPlayer).filter(p=>p.name):[];
+        return list.length?list:[normalizedPlayer({name:card?.player||''})];
+      }
+      function playerRowHTML(raw,index){
+        const p=normalizedPlayer(raw);
+        const autoOn=raw?.autoEnabled===true||!!p.auto;
+        const patchOn=raw?.patchEnabled===true||!!p.patch;
+        const id=index===0?'cardPlayer':'cardPlayerExtra'+(++playerInputSequence);
+        const choice=(kind,value,label,selected)=>
+          '<label><input type="checkbox" data-player-type="'+kind+'" value="'+value+'"'+(selected?' checked':'')+'> '+label+'</label>';
+        return '<div class="player-entry" data-player-entry>'+
+          '<div class="player-entry-header"><label for="'+id+'" class="player-entry-label">JOUEUR '+(index+1)+'</label>'+
+          (index?'<button type="button" class="player-entry-remove" data-remove-player aria-label="Retirer ce joueur" title="Retirer ce joueur">×</button>':'')+'</div>'+
+          '<input id="'+id+'" class="input player-name-input" name="playerName[]" type="text" maxlength="120" autocomplete="off" placeholder="Nom du joueur"'+(index===0?' required':'')+' value="'+safeText(p.name)+'">'+
+          '<div class="player-feature-groups">'+
+            '<div class="player-feature-group"><label class="player-feature-master"><input type="checkbox" data-player-toggle="auto"'+(autoOn?' checked':'')+'> AUTO</label>'+
+              '<div class="player-feature-choice" data-player-choices="auto"'+(autoOn?'':' hidden')+'>'+
+              choice('auto','stickers','Stickers',p.auto==='stickers')+
+              choice('auto','on-card','On Card',p.auto==='on-card')+'</div></div>'+
+            '<div class="player-feature-group"><label class="player-feature-master"><input type="checkbox" data-player-toggle="patch"'+(patchOn?' checked':'')+'> PATCH</label>'+
+              '<div class="player-feature-choice" data-player-choices="patch"'+(patchOn?'':' hidden')+'>'+
+              choice('patch','game-worn','Game Worn',p.patch==='game-worn')+
+              choice('patch','not-affiliated','Not Affiliated',p.patch==='not-affiliated')+'</div></div>'+
+          '</div></div>';
+      }
+      function recountPlayers(){
+        const rows=Array.from($('playerEntries').querySelectorAll('[data-player-entry]'));
+        rows.forEach((entry,index)=>{
+          entry.querySelector('.player-entry-label').textContent='JOUEUR '+(index+1);
+          const remove=entry.querySelector('[data-remove-player]');
+          if(remove)remove.setAttribute('aria-label','Retirer le joueur '+(index+1));
+        });
+        $('playerCount').textContent=rows.length+' / '+MAX_CARD_PLAYERS+' joueurs · Auto et Patch propres à chaque joueur';
+        $('addPlayerBtn').disabled=rows.length>=MAX_CARD_PLAYERS;
+        $('addPlayerBtn').title=rows.length>=MAX_CARD_PLAYERS?'Maximum de 5 joueurs':'Ajouter un joueur à cette carte';
+      }
+      function addPlayerRow(player){
+        const entries=$('playerEntries'),count=entries.querySelectorAll('[data-player-entry]').length;
+        if(count>=MAX_CARD_PLAYERS){showToast('Maximum de cinq joueurs par carte.');return;}
+        entries.insertAdjacentHTML('beforeend',playerRowHTML(player||{},count));
+        recountPlayers();
+        return entries.lastElementChild;
+      }
+      function resetPlayersForm(card){
+        $('playerEntries').replaceChildren();
+        (card?cardPlayers(card):[normalizedPlayer({name:''})]).forEach(addPlayerRow);
+        recountPlayers();
+      }
+      function collectCardPlayers(){
+        const rows=Array.from($('playerEntries').querySelectorAll('[data-player-entry]'));
+        const roster=[];
+        if(rows.length<1||rows.length>MAX_CARD_PLAYERS)return null;
+        for(let i=0;i<rows.length;i++){
+          const row=rows[i],nameInput=row.querySelector('.player-name-input');
+          const name=nameInput.value.trim();
+          const autoOn=row.querySelector('[data-player-toggle="auto"]').checked;
+          const patchOn=row.querySelector('[data-player-toggle="patch"]').checked;
+          const auto=autoOn?(row.querySelector('[data-player-type="auto"]:checked')?.value||''):'';
+          const patch=patchOn?(row.querySelector('[data-player-type="patch"]:checked')?.value||''):'';
+          if(!name){showToast('Renseigne le nom du joueur '+(i+1)+'.');nameInput.focus();return null;}
+          if(autoOn&&!auto){showToast('Choisis Stickers ou On Card pour '+name+'.');row.querySelector('[data-player-type="auto"]').focus();return null;}
+          if(patchOn&&!patch){showToast('Choisis Game Worn ou Not Affiliated pour '+name+'.');row.querySelector('[data-player-type="patch"]').focus();return null;}
+          roster.push(normalizedPlayer({name,auto,patch}));
+        }
+        return roster;
+      }
+      function playerCardSummary(card){
+        const roster=cardPlayers(card).filter(p=>p.name);
+        const first=roster[0]?.name||card.player||'Joueur non renseigné';
+        const names=roster.length>1?
+          '<div class="player-extra-names">'+roster.slice(1).map(p=>'<span>'+safeText(p.name)+'</span>').join('')+'</div>':'';
+        const badges=roster.flatMap(p=>{
+          const prefix=roster.length>1?'<strong>'+safeText(p.name)+' ·</strong> ':'';
+          const out=[];
+          if(p.auto)out.push('<span class="player-trait player-trait--auto">'+prefix+'AUTO '+AUTO_TYPES[p.auto]+'</span>');
+          if(p.patch)out.push('<span class="player-trait player-trait--patch">'+prefix+'PATCH '+PATCH_TYPES[p.patch]+'</span>');
+          return out;
+        });
+        return '<h3 class="player">'+safeText(first)+'</h3>'+names+
+          (badges.length?'<div class="player-traits">'+badges.join('')+'</div>':'');
+      }
       function normalize(value){return String(value??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim()}
       function safeText(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
       function imgSafe(s){return typeof s==='string' && /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(s)}
@@ -728,13 +866,13 @@ body::before{display:none!important}
       }
       function optionList(id,values,all){const select=$(id),old=select.value;select.replaceChildren(new Option(all,''));[...new Set(values.map(x=>String(x||'').trim()).filter(Boolean))].sort(collator.compare).forEach(x=>select.add(new Option(x,x)));select.value=[...select.options].some(o=>o.value===old)?old:''}
       function refreshFilterOptions(){optionList('filterBrand',cards.map(x=>x.brand),'Toutes les marques');optionList('filterTeam',cards.map(x=>x.team),'Toutes les équipes');optionList('filterTag',cards.flatMap(x=>Array.isArray(x.tags)?x.tags:[]),'Toutes les variations');optionList('filterSport',cards.map(x=>x.sport),'Tous les sports');for(const [id,items] of [['brandsList',cards.map(x=>x.brand).concat(logos.filter(x=>x.type==='brand').map(x=>x.name))],['teamsList',cards.map(x=>x.team).concat(logos.filter(x=>x.type==='team').map(x=>x.name))]]){const list=$(id);list.replaceChildren();[...new Set(items.filter(Boolean))].sort(collator.compare).forEach(x=>list.append(new Option(x,x)))}}
-      function filterCards(){const query=normalize($('filterSearch').value),brand=normalize($('filterBrand').value),team=normalize($('filterTeam').value),tag=normalize($('filterTag').value),sport=normalize($('filterSport').value),onlyNumbered=$('filterNumbered').checked;let matches=cards.filter(c=>{if(c.status!==currentView)return false;if(brand&&normalize(c.brand)!==brand)return false;if(team&&normalize(c.team)!==team)return false;if(tag&&!(c.tags||[]).some(x=>normalize(x)===tag))return false;if(sport&&normalize(c.sport)!==sport)return false;if(onlyNumbered&&!c.numbered)return false;if(query&&!normalize([c.player,c.brand,c.sport,c.team,c.reference,...(c.tags||[]),c.numbered?`${c.serial}/${c.printRun}`:''].join(' ')).includes(query))return false;return true});const sort=$('sortSelect').value;matches.sort((a,b)=>sort==='name'?collator.compare(a.player,b.player):sort==='brand'?collator.compare(a.brand,b.brand):sort==='team'?collator.compare(a.team,b.team):(b.createdAt||0)-(a.createdAt||0));return matches}
-      function cardMarkup(c){const photo=imgSafe(c.photo)?`<img src="${c.photo}" alt="Carte de ${safeText(c.player)}" loading="lazy">`:`<div class="placeholder"><span class="mini-logo">RAPLI / SPORTS</span><div class="place-center">${ico('layers')}</div><span class="place-foot">COLLECTOR'S CARD</span></div>`;const tags=(c.tags||[]).slice(0,4).map(t=>`<span class="tag">${safeText(t)}</span>`).join('')+((c.tags||[]).length>4?`<span class="tag more">+${c.tags.length-4}</span>`:'');return `<article class="card-item" data-id="${safeText(c.id)}"><div class="photo-side"><div class="card-photo">${photo}${c.demo?'<span class="photo-flag">DÉMO</span>':''}</div></div><div class="card-info"><div class="card-top"><div class="brand-lockup">${brandBadge('brand',c.brand)}<span>${safeText(c.brand||'Sans marque')}</span></div><div class="card-controls"><button type="button" class="icon-btn" data-action="edit" data-id="${safeText(c.id)}" aria-label="Modifier cette carte" title="Modifier">${ico('edit')}</button><button type="button" class="icon-btn delete" data-action="delete" data-id="${safeText(c.id)}" aria-label="Supprimer cette carte" title="Supprimer">${ico('trash')}</button></div></div><h3 class="player">${safeText(c.player)}</h3><div class="team-row">${c.team?brandBadge('team',c.team):''}<span>${safeText(c.team||'Équipe non renseignée')}</span>${c.sport?`<span class="sport-chip">${safeText(c.sport)}</span>`:''}</div><div class="reference"><small>RÉFÉRENCE</small>${safeText(c.reference||'Non renseignée')}</div><div class="tags">${tags||'<span class="blank-tag">Aucune variation</span>'}</div><div class="card-bottom">${collectorBadgeMarkup(c)}<button type="button" class="move-card" data-action="move" data-id="${safeText(c.id)}">${c.status==='own'?'→ WISHLIST':'→ OWN'}</button></div></div></article>`}
+      function filterCards(){const query=normalize($('filterSearch').value),brand=normalize($('filterBrand').value),team=normalize($('filterTeam').value),tag=normalize($('filterTag').value),sport=normalize($('filterSport').value),onlyNumbered=$('filterNumbered').checked;let matches=cards.filter(c=>{if(c.status!==currentView)return false;if(brand&&normalize(c.brand)!==brand)return false;if(team&&normalize(c.team)!==team)return false;if(tag&&!(c.tags||[]).some(x=>normalize(x)===tag))return false;if(sport&&normalize(c.sport)!==sport)return false;if(onlyNumbered&&!c.numbered)return false;if(query&&!normalize([c.player,...cardPlayers(c).flatMap(p=>[p.name,p.auto?("Auto "+AUTO_TYPES[p.auto]):"",p.patch?("Patch "+PATCH_TYPES[p.patch]):""]),c.brand,c.sport,c.team,c.reference,...(c.tags||[]),c.numbered?`${c.serial}/${c.printRun}`:''].join(' ')).includes(query))return false;return true});const sort=$('sortSelect').value;matches.sort((a,b)=>sort==='name'?collator.compare(a.player,b.player):sort==='brand'?collator.compare(a.brand,b.brand):sort==='team'?collator.compare(a.team,b.team):(b.createdAt||0)-(a.createdAt||0));return matches}
+      function cardMarkup(c){const photo=imgSafe(c.photo)?`<img src="${c.photo}" alt="Carte de ${safeText(c.player)}" loading="lazy">`:`<div class="placeholder"><span class="mini-logo">RAPLI / SPORTS</span><div class="place-center">${ico('layers')}</div><span class="place-foot">COLLECTOR'S CARD</span></div>`;const tags=(c.tags||[]).slice(0,4).map(t=>`<span class="tag">${safeText(t)}</span>`).join('')+((c.tags||[]).length>4?`<span class="tag more">+${c.tags.length-4}</span>`:'');return `<article class="card-item" data-id="${safeText(c.id)}"><div class="photo-side"><div class="card-photo">${photo}${c.demo?'<span class="photo-flag">DÉMO</span>':''}</div></div><div class="card-info"><div class="card-top"><div class="brand-lockup">${brandBadge('brand',c.brand)}<span>${safeText(c.brand||'Sans marque')}</span></div><div class="card-controls"><button type="button" class="icon-btn" data-action="edit" data-id="${safeText(c.id)}" aria-label="Modifier cette carte" title="Modifier">${ico('edit')}</button><button type="button" class="icon-btn delete" data-action="delete" data-id="${safeText(c.id)}" aria-label="Supprimer cette carte" title="Supprimer">${ico('trash')}</button></div></div>${playerCardSummary(c)}<div class="team-row">${c.team?brandBadge('team',c.team):''}<span>${safeText(c.team||'Équipe non renseignée')}</span>${c.sport?`<span class="sport-chip">${safeText(c.sport)}</span>`:''}</div><div class="reference"><small>RÉFÉRENCE</small>${safeText(c.reference||'Non renseignée')}</div><div class="tags">${tags||'<span class="blank-tag">Aucune variation</span>'}</div><div class="card-bottom">${collectorBadgeMarkup(c)}<button type="button" class="move-card" data-action="move" data-id="${safeText(c.id)}">${c.status==='own'?'→ WISHLIST':'→ OWN'}</button></div></div></article>`}
       function renderAll(){refreshFilterOptions();$('statTotal').textContent=cards.length.toLocaleString('fr-FR');$('statOwn').textContent=cards.filter(x=>x.status==='own').length.toLocaleString('fr-FR');$('statWish').textContent=cards.filter(x=>x.status==='wishlist').length.toLocaleString('fr-FR');$('statNumber').textContent=cards.filter(x=>x.numbered).length.toLocaleString('fr-FR');$('tabOwnCount').textContent=cards.filter(x=>x.status==='own').length;$('tabWishCount').textContent=cards.filter(x=>x.status==='wishlist').length;document.querySelectorAll('.tab').forEach(t=>{const active=t.dataset.view===currentView;t.classList.toggle('active',active);t.setAttribute('aria-selected',String(active))});const match=filterCards();$('resultsLabel').innerHTML=`<strong>${match.length}</strong> carte${match.length>1?'s':''} ${currentView==='own'?'possédée':'recherchée'}${match.length>1?'s':''}`;$('cardGrid').innerHTML=match.map(cardMarkup).join('');const hasAny=cards.some(x=>x.status===currentView);$('emptyState').classList.toggle('hidden',match.length!==0);$('emptyTitle').textContent=hasAny?'Aucune carte ne correspond aux filtres':currentView==='own'?'Ta collection OWN est vide':'Ta WISHLIST est vide';$('emptyCopy').textContent=hasAny?'Essaie une recherche plus large ou réinitialise les filtres.':'Ajoute ta première carte pour constituer ta collection.';$('demoBanner').classList.toggle('hidden',!cards.some(c=>c.demo));}
       function openModal(id){$(id).showModal();document.body.style.overflow='hidden'}
       function closeModal(id){$(id).close();if(!document.querySelector('dialog[open]'))document.body.style.overflow=''}
-      function resetForm(){editingId=null;currentTags=[];currentPhoto='';$('cardForm').reset();$('cardRookie').checked=false;$('statusOwn').checked=currentView==='own';$('statusWish').checked=currentView==='wishlist';$('cardDialogTitle').textContent='Ajouter une carte';$('cardSubmitBtn').textContent='Enregistrer la carte';renderTags();updateSerialUI();renderPhoto()}
-      function openCard(card){resetForm();if(card){editingId=card.id;currentTags=[...(card.tags||[])];currentPhoto=imgSafe(card.photo)?card.photo:'';$('cardDialogTitle').textContent='Modifier la carte';$('cardSubmitBtn').textContent='Enregistrer les modifications';$('statusOwn').checked=card.status==='own';$('statusWish').checked=card.status==='wishlist';$('cardBrand').value=card.brand||'';$('cardSport').value=card.sport||'';$('cardPlayer').value=card.player||'';$('cardTeam').value=card.team||'';$('cardReference').value=card.reference||'';$('cardNumbered').checked=Boolean(card.numbered);$('cardRookie').checked=card.rookie===true;$('cardSerial').value=card.serial||'';$('cardPrintRun').value=card.printRun||'';renderTags();renderPhoto();updateSerialUI()}openModal('cardDialog');setTimeout(()=>$('cardBrand').focus(),70)}
+      function resetForm(){editingId=null;currentTags=[];currentPhoto='';$('cardForm').reset();resetPlayersForm();$('cardRookie').checked=false;$('statusOwn').checked=currentView==='own';$('statusWish').checked=currentView==='wishlist';$('cardDialogTitle').textContent='Ajouter une carte';$('cardSubmitBtn').textContent='Enregistrer la carte';renderTags();updateSerialUI();renderPhoto()}
+      function openCard(card){resetForm();if(card){editingId=card.id;currentTags=[...(card.tags||[])];currentPhoto=imgSafe(card.photo)?card.photo:'';$('cardDialogTitle').textContent='Modifier la carte';$('cardSubmitBtn').textContent='Enregistrer les modifications';$('statusOwn').checked=card.status==='own';$('statusWish').checked=card.status==='wishlist';$('cardBrand').value=card.brand||'';$('cardSport').value=card.sport||'';resetPlayersForm(card);$('cardTeam').value=card.team||'';$('cardReference').value=card.reference||'';$('cardNumbered').checked=Boolean(card.numbered);$('cardRookie').checked=card.rookie===true;$('cardSerial').value=card.serial||'';$('cardPrintRun').value=card.printRun||'';renderTags();renderPhoto();updateSerialUI()}openModal('cardDialog');setTimeout(()=>$('cardBrand').focus(),70)}
       function renderPhoto(){const valid=imgSafe(currentPhoto);$('photoPreview').classList.toggle('hidden',!valid);$('photoPrompt').classList.toggle('hidden',valid);$('removePhotoBtn').classList.toggle('hidden',!valid);if(valid)$('photoPreview').src=currentPhoto;else $('photoPreview').removeAttribute('src')}
       function updateSerialUI(){const yes=$('cardNumbered').checked;$('serialFields').classList.toggle('hidden',!yes);$('cardSerial').required=yes;$('cardPrintRun').required=yes}
       function addTag(value){const newValue=String(value||'').trim().replace(/^#+/,'');if(!newValue)return;if(!currentTags.some(t=>normalize(t)===normalize(newValue))){if(currentTags.length>=30)return showToast('Maximum de 30 tags par carte.');currentTags.push(newValue.slice(0,60));renderTags()}}
@@ -742,7 +880,33 @@ body::before{display:none!important}
       function processTagInput(){let raw=$('tagField').value.trim();if(raw){raw.split(/[,;]+/).forEach(addTag);$('tagField').value=''}}
       async function readPhoto(file,max=1200,quality=.83,kind='card'){if(!file||!['image/png','image/jpeg','image/webp'].includes(file.type))throw new Error('Utilise une image JPG, PNG ou WEBP.');if(file.size>32*1024*1024)throw new Error('Image trop volumineuse (maximum 32 Mo).');const bitmap=await createImageBitmap(file);const scale=Math.min(1,max/Math.max(bitmap.width,bitmap.height));const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(bitmap.width*scale));canvas.height=Math.max(1,Math.round(bitmap.height*scale));const ctx=canvas.getContext('2d',{alpha:kind==='logo'});ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);bitmap.close?.();return canvas.toDataURL(kind==='logo'?'image/png':'image/jpeg',quality)}
       async function handleCardPhoto(file){try{currentPhoto=await readPhoto(file,1500,.86,'card');renderPhoto();showToast('Photo ajoutée à la carte')}catch(err){showToast(err.message||'Impossible de lire cette image')}}
-      async function submitCard(e){e.preventDefault();processTagInput();const brand=$('cardBrand').value.trim(),player=$('cardPlayer').value.trim();if(!brand||!player){showToast('Renseigne la marque et le joueur.');(!brand?$('cardBrand'):$('cardPlayer')).focus();return}const numbered=$('cardNumbered').checked;const serial=$('cardSerial').value.trim(),printRun=$('cardPrintRun').value.trim();if(numbered&&(!/^\d+$/.test(serial)||!/^\d+$/.test(printRun)||Number(printRun)<1||Number(serial)<1||Number(serial)>Number(printRun))){showToast('Vérifie la numérotation, par exemple 12 / 99.');$('cardSerial').focus();return}const prev=editingId?cards.find(x=>x.id===editingId):null;const now=Date.now();let card={id:prev?.id||uid(),status:document.querySelector('input[name="cardStatus"]:checked').value,brand,player,sport:$('cardSport').value,team:$('cardTeam').value.trim(),reference:$('cardReference').value.trim(),tags:[...currentTags],numbered,rookie:$('cardRookie').checked,serial:numbered?serial:'',printRun:numbered?printRun:'',photo:currentPhoto,createdAt:prev?.createdAt||now,updatedAt:now};try{await saveCard(card);closeModal('cardDialog');renderAll();showToast(prev?'Carte mise à jour':'Carte ajoutée à la collection')}catch(err){console.error(err);showToast('Enregistrement impossible. Essaie un export puis une image plus légère.')}}
+      async function submitCard(e){
+        e.preventDefault();processTagInput();
+        const brand=$('cardBrand').value.trim(),players=collectCardPlayers();
+        if(!players)return;
+        if(!brand){showToast('Renseigne la marque.');$('cardBrand').focus();return;}
+        const numbered=$('cardNumbered').checked;
+        const serial=$('cardSerial').value.trim(),printRun=$('cardPrintRun').value.trim();
+        if(numbered&&(!/^\d+$/.test(serial)||!/^\d+$/.test(printRun)||Number(printRun)<1||Number(serial)<1||Number(serial)>Number(printRun))){
+          showToast('Vérifie la numérotation, par exemple 12 / 99.');$('cardSerial').focus();return;
+        }
+        const prev=editingId?cards.find(x=>x.id===editingId):null,now=Date.now();
+        const card={
+          id:prev?.id||uid(),
+          status:document.querySelector('input[name="cardStatus"]:checked').value,
+          brand,
+          player:players[0].name, // Preserve single-player compatibility.
+          players, // Independent Auto and Patch assignments for each player.
+          sport:$('cardSport').value,
+          team:$('cardTeam').value.trim(),
+          reference:$('cardReference').value.trim(),
+          tags:[...currentTags],numbered,rookie:$('cardRookie').checked,
+          serial:numbered?serial:'',printRun:numbered?printRun:'',
+          photo:currentPhoto,createdAt:prev?.createdAt||now,updatedAt:now
+        };
+        try{await saveCard(card);closeModal('cardDialog');renderAll();showToast(prev?'Carte mise à jour':'Carte ajoutée à la collection');}
+        catch(err){console.error(err);showToast('Enregistrement impossible. Essaie un export puis une image plus légère.');}
+      }
       async function cardAction(e){const btn=e.target.closest('[data-action]');if(!btn)return;const card=cards.find(x=>x.id===btn.dataset.id);if(!card)return;if(btn.dataset.action==='edit')openCard(card);else if(btn.dataset.action==='delete'){if(confirm(`Supprimer la carte de ${card.player} ?`)){try{await removeCard(card.id);renderAll();showToast('Carte supprimée')}catch(err){showToast('Suppression impossible')}}}else if(btn.dataset.action==='move'){try{await saveCard({...card,status:card.status==='own'?'wishlist':'own',updatedAt:Date.now(),demo:false});renderAll();showToast('Carte transférée vers '+(card.status==='own'?'WISHLIST':'OWN'))}catch(e){showToast('Transfert impossible')}}}
       function clearFilters(){$('filterSearch').value='';['filterBrand','filterTeam','filterTag','filterSport'].forEach(id=>$(id).value='');$('filterNumbered').checked=false;renderAll()}
       function setLogoType(type){
@@ -766,7 +930,24 @@ body::before{display:none!important}
         [...new Set(names.filter(Boolean))].sort(collator.compare).forEach(x=>list.append(new Option(x,x)))}
       async function saveNewLogo(){const name=$('logoName').value.trim();if(!name)return showToast(logoType==='rookie'?'Sélectionne un sport.':'Renseigne un nom de marque ou d’équipe.');if(logoType==='collector')return;if(!pendingLogoPhoto)return showToast('Sélectionne une image de logo.');const id=`${logoType}:${normalize(name)}`;try{await saveLogo({id,type:logoType,name,image:pendingLogoPhoto});setLogoType(logoType);renderAll();showToast('Logo enregistré et associé automatiquement')}catch(e){showToast('Impossible d’enregistrer le logo')}}
       async function exportData(){const data={app:'Rapli Sports',version:1,exportedAt:new Date().toISOString(),cards,logos};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`Rapli_Sports_${new Date().toISOString().slice(0,10)}.json`;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),3000);showToast('Sauvegarde JSON exportée')}
-      function importCard(x){const now=Date.now();const card={id:typeof x.id==='string'&&x.id.length<140?x.id:uid(),status:x.status==='wishlist'?'wishlist':'own',brand:String(x.brand||'').slice(0,90),player:String(x.player||'').slice(0,120),sport:String(x.sport||'').slice(0,70),team:String(x.team||'').slice(0,100),reference:String(x.reference||'').slice(0,180),tags:Array.isArray(x.tags)?x.tags.filter(t=>typeof t==='string').slice(0,30).map(t=>t.slice(0,60)):[],numbered:Boolean(x.numbered),rookie:x.rookie===true,serial:String(x.serial||'').slice(0,8),printRun:String(x.printRun||'').slice(0,8),photo:imgSafe(x.photo)?x.photo:'',createdAt:Number(x.createdAt)||now,updatedAt:now,demo:false};return card}
+      function importCard(x){
+        const now=Date.now(),players=cardPlayers(x).filter(p=>p.name);
+        return {
+          id:typeof x.id==='string'&&x.id.length<140?x.id:uid(),
+          status:x.status==='wishlist'?'wishlist':'own',
+          brand:String(x.brand||'').slice(0,90),
+          player:players[0]?.name||String(x.player||'').slice(0,120),
+          players,
+          sport:String(x.sport||'').slice(0,70),
+          team:String(x.team||'').slice(0,100),
+          reference:String(x.reference||'').slice(0,180),
+          tags:Array.isArray(x.tags)?x.tags.filter(t=>typeof t==='string').slice(0,30).map(t=>t.slice(0,60)):[],
+          numbered:Boolean(x.numbered),rookie:x.rookie===true,
+          serial:String(x.serial||'').slice(0,8),printRun:String(x.printRun||'').slice(0,8),
+          photo:imgSafe(x.photo)?x.photo:'',
+          createdAt:Number(x.createdAt)||now,updatedAt:now,demo:false
+        };
+      }
       async function importData(file){try{if(file.size>170*1024*1024)throw new Error('Fichier trop volumineux.');const contents=await file.text();const data=JSON.parse(contents);if(!data||!Array.isArray(data.cards)||!Array.isArray(data.logos))throw new Error('Format de sauvegarde non reconnu.');if(!confirm(`Importer ${data.cards.length} carte(s) et ${data.logos.length} logo(s) ?\n\nLes entrées existantes ayant le même identifiant seront mises à jour. Les autres seront conservées.`))return;let count=0;for(const x of data.cards){if(x&&typeof x==='object'){await saveCard(importCard(x));count++}}for(const x of data.logos){
           if(x&&typeof x==='object'&&['brand','team','rookie'].includes(x.type)&&typeof x.name==='string'&&imgSafe(x.image)){
             await saveLogo({id:`${x.type}:${normalize(x.name)}`,type:x.type,name:x.name.slice(0,100),image:x.image});
@@ -787,6 +968,28 @@ body::before{display:none!important}
       document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{currentView=t.dataset.view;renderAll()}));
       ['filterSearch','filterBrand','filterTeam','filterTag','filterSport','filterNumbered','sortSelect'].forEach(id=>$(id).addEventListener(['filterSearch'].includes(id)?'input':'change',renderAll));
       $('clearFiltersBtn').addEventListener('click',clearFilters);$('addCardBtn').addEventListener('click',()=>openCard());$('emptyAddBtn').addEventListener('click',()=>openCard());$('cardForm').addEventListener('submit',submitCard);$('cardGrid').addEventListener('click',cardAction);
+      $('addPlayerBtn').addEventListener('click',()=>{
+        const row=addPlayerRow();
+        row?.querySelector('.player-name-input').focus();
+      });
+      $('playerEntries').addEventListener('click',e=>{
+        const button=e.target.closest('[data-remove-player]');
+        if(!button)return;
+        button.closest('[data-player-entry]').remove();
+        recountPlayers();
+      });
+      $('playerEntries').addEventListener('change',e=>{
+        const input=e.target,entry=input.closest('[data-player-entry]');
+        if(!entry)return;
+        if(input.matches('[data-player-toggle]')){
+          const detail=entry.querySelector('[data-player-choices="'+input.dataset.playerToggle+'"]');
+          detail.hidden=!input.checked;
+          if(!input.checked)detail.querySelectorAll('input').forEach(option=>option.checked=false);
+        }else if(input.matches('[data-player-type]')&&input.checked){
+          const detail=input.closest('[data-player-choices]');
+          detail.querySelectorAll('input').forEach(option=>{if(option!==input)option.checked=false;});
+        }
+      });
       $('cardNumbered').addEventListener('change',updateSerialUI);
       $('tagField').addEventListener('keydown',e=>{if(['Enter',',',';'].includes(e.key)){e.preventDefault();processTagInput()}else if(e.key==='Backspace'&&!$('tagField').value&&currentTags.length){currentTags.pop();renderTags()}});
       $('tagField').addEventListener('blur',processTagInput);

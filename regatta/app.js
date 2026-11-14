@@ -184,8 +184,9 @@ function normalizeRanking(r){
    else {r[key]='';r[totalKey]='';}
  }
 }
-function normal(x={}){const r={id:typeof x.id==='string'&&x.id.length<130?x.id:uid(),createdAt:x.createdAt||now(),updatedAt:x.updatedAt||now(),live:!!x.live&&!x.dnf,upcoming:!!x.upcoming&&!x.live&&!x.dnf,dnf:!!x.dnf,kind:x.kind==='event'?'event':'race',eventId:clean(x.eventId,130),eventClosed:!!x.eventClosed,joker:!!x.joker,equipment:validEquipment(x.equipment),edition:clean(x.edition,100)};for(const [k,n] of Object.entries(props))r[k]=clean(x[k],n);
+function normal(x={}){const r={id:typeof x.id==='string'&&x.id.length<130?x.id:uid(),createdAt:x.createdAt||now(),updatedAt:x.updatedAt||now(),live:!!x.live&&!x.dnf,upcoming:!!x.upcoming&&!x.live&&!x.dnf,dnf:!!x.dnf,kind:['race','event','record'].includes(x.kind)?x.kind:'race',eventId:clean(x.eventId,130),eventClosed:!!x.eventClosed,joker:!!x.joker,equipment:validEquipment(x.equipment),edition:clean(x.edition,100)};for(const [k,n] of Object.entries(props))r[k]=clean(x[k],n);
  r.classColor=colorSafe(x.classColor);r.notes=clean(x.notes,2500);r.vsr=VSR[r.vsr]?r.vsr:'';
+ r.attempts=window.RapliRegattaRecordAttempts.normalize(x.attempts);
  r.scoreSnapshot=x.scoreSnapshot&&typeof x.scoreSnapshot==='object'&&x.scoreSnapshot.available&&Number.isFinite(x.scoreSnapshot.value)&&x.scoreSnapshot.value>=0&&x.scoreSnapshot.value<=100?clone(x.scoreSnapshot):null;
  for(const key of ['gainPoints','gainCredits'])r[key]=moneyNumber(r[key]);
  normalizeRanking(r);
@@ -208,42 +209,50 @@ async function load(){return db?(await req(db.transaction('races').objectStore('
 async function saveRow(row){if(!db){localStorage.setItem('rapli-regatta-v1',JSON.stringify([...rows.filter(x=>x.id!==row.id),row]));return;}const tx=db.transaction('races','readwrite');tx.objectStore('races').put(row);await done(tx);}
 async function deleteRow(id){if(!db){localStorage.setItem('rapli-regatta-v1',JSON.stringify(rows.filter(x=>x.id!==id)));return;}const tx=db.transaction('races','readwrite');tx.objectStore('races').delete(id);await done(tx);}
 async function replaceRows(next){if(!db){localStorage.setItem('rapli-regatta-v1',JSON.stringify(next));}else{const tx=db.transaction('races','readwrite'),store=tx.objectStore('races');store.clear();next.forEach(x=>store.put(x));await done(tx);}rows=next.map(normal);render();}
-const raceStatus=r=>{if(r.dnf)return 'dnf';if(r.kind==='event')return r.eventClosed?'finished':r.live?'live':'planned';if(r.upcoming)return 'planned';if(r.live)return 'live';if(rankPairs.some(([key])=>r[key]))return 'finished';if(!r.end)return 'planned';if(!r.endTime)return 'finished';const current=new Date();const local=[current.getFullYear(),String(current.getMonth()+1).padStart(2,'0'),String(current.getDate()).padStart(2,'0')].join('-')+'T'+String(current.getHours()).padStart(2,'0')+':'+String(current.getMinutes()).padStart(2,'0');return (r.end+'T'+r.endTime)<=local?'finished':'planned';},statusTitle={live:'COURSE EN COURS',finished:'TERMINÉE',planned:'À VENIR',dnf:'DNF · ABANDON'};
+const raceStatus=r=>{if(r.kind==='record')return 'record';if(r.dnf)return 'dnf';if(r.kind==='event')return r.eventClosed?'finished':r.live?'live':'planned';if(r.upcoming)return 'planned';if(r.live)return 'live';if(rankPairs.some(([key])=>r[key]))return 'finished';if(!r.end)return 'planned';if(!r.endTime)return 'finished';const current=new Date();const local=[current.getFullYear(),String(current.getMonth()+1).padStart(2,'0'),String(current.getDate()).padStart(2,'0')].join('-')+'T'+String(current.getHours()).padStart(2,'0')+':'+String(current.getMinutes()).padStart(2,'0');return (r.end+'T'+r.endTime)<=local?'finished':'planned';},statusTitle={live:'COURSE EN COURS',finished:'TERMINÉE',planned:'À VENIR',dnf:'DNF · ABANDON',record:'COURSE RECORD'};
 const dateFR=v=>/^\d{4}-\d{2}-\d{2}$/.test(v)?v.slice(8)+'/'+v.slice(5,7)+'/'+v.slice(0,4):'';
 const scoreEngine=window.RapliRegattaScore;
+const recordEngine=window.RapliRegattaRecordAttempts;
 const scoreNow=r=>scoreEngine.scoreFor(r,rows,raceStatus);
 function scoreView(r){
+ if(r.kind==='record')return {available:false,reason:'Course record : notation VSR non applicable'};
  if(raceStatus(r)==='dnf')return {available:false,reason:'DNF — sans note'};
  const saved=r.scoreSnapshot;
  if(saved?.available&&raceStatus(r)==='finished')return saved.kind!==r.kind?{available:false,reason:'Type de fiche modifié — recalcul nécessaire.'}:{...saved,stored:true,stale:saved.signature!==scoreEngine.signature(r)};
  return {...scoreNow(r),stored:false,stale:false};
 }
 const imageTag=(src,alt)=>validImage(src)?'<img loading="lazy" draggable="false" alt="'+safe(alt)+'" src="'+safe(src)+'">':'<span class="shot-empty">PAS DE CAPTURE</span>';
+function recordCardContent(r){
+ const attempts=recordEngine.normalize(r.attempts),stats=recordEngine.summary(attempts);
+ const line=attempts.map((item,i)=>'<div class="record-attempt-chip'+(item.aborted?' is-aborted':item.id===stats.bestId?' is-best':'')+'"><span>TENTATIVE '+(i+1)+'</span><strong>'+safe(item.aborted?'AVORTÉE':item.seconds!==null?recordEngine.format(item.seconds):'EN ATTENTE')+'</strong></div>').join('');
+ return '<section class="record-card" aria-label="Tentatives de record"><div class="record-card-summary"><span>'+stats.total+' TENTATIVE'+(stats.total>1?'S':'')+' · '+stats.aborted+' AVORTÉE'+(stats.aborted>1?'S':'')+'</span><strong>'+safe(stats.bestSeconds!==null?'MEILLEUR TEMPS · '+recordEngine.format(stats.bestSeconds):'AUCUN TEMPS VALIDÉ')+'</strong></div><div class="record-attempt-chips">'+line+'</div></section>';
+}
 function card(r){
  const status=raceStatus(r),tag=getClassTagColor(r.boatClass),vsrTag=getVSRTagColor(r.vsr),mode=VSR[r.vsr]||'';
  const score=scoreView(r);
  // La note n'a ni cartouche ni mention, elle est placée à droite du classement général.
  const scoreRing=score.available?
   '<button type="button" class="score-orb'+(score.value>=95?' score-epic':'')+(score.value===0?' score-zero':'')+'" style="--score-sweep:'+(Math.min(100,Math.max(0,score.value))*3.6)+'deg;--score-glow:'+(score.value/100)+'" data-action="score" aria-label="Voir le détail de la note Rapli : '+safe(score.value)+' sur 100"><span>'+safe(score.value)+'</span></button>':'';
- const generalRank=status==='dnf'?'':rankHtml('🏆','CLASSEMENT GÉNÉRAL',r.rank,r.rankTotal,'rank-main',podiumMedalFor(r,'rank','rankTotal'));
- const rankBlocks=(status==='dnf'?'':(generalRank?'<div class="rank-main-row">'+generalRank+scoreRing+'</div>':'')+
+ const generalRank=(status==='dnf'||r.kind==='record')?'':rankHtml('🏆','CLASSEMENT GÉNÉRAL',r.rank,r.rankTotal,'rank-main',podiumMedalFor(r,'rank','rankTotal'));
+ const rankBlocks=(status==='dnf'||r.kind==='record'?'':(generalRank?'<div class="rank-main-row">'+generalRank+scoreRing+'</div>':'')+
    rankHtml('🇫🇷','NATIONAL',r.rankNational,r.rankNationalTotal,'rank-national',podiumMedalFor(r,'rankNational','rankNationalTotal'))+
    rankHtml('🇨🇶','DÉPARTEMENTAL',r.rankDepartment,r.rankDepartmentTotal,'rank-department',podiumMedalFor(r,'rankDepartment','rankDepartmentTotal'))+
    rankHtml('🏙️','VILLE',r.rankCity,r.rankCityTotal,'rank-city',podiumMedalFor(r,'rankCity','rankCityTotal'))+
    rankHtml('🏴‍☠️','TEAM',r.rankTeam,r.rankTeamTotal,'rank-team',podiumMedalFor(r,'rankTeam','rankTeamTotal')));
- return '<article class="card'+(status==='live'?' live':'')+(status==='planned'&&r.upcoming?' upcoming':'')+(status==='dnf'?' dnf':'')+(r.kind==='event'?' event':'')+'" data-id="'+safe(r.id)+'" style="--class-tag:'+tag+';--class-ink:'+classTextColor(tag)+';--vsr-color:'+vsrTag+';--vsr-ink:'+classTextColor(vsrTag)+'">'+
+ return '<article class="card'+(status==='live'?' live':'')+(status==='planned'&&r.upcoming?' upcoming':'')+(status==='dnf'?' dnf':'')+(r.kind==='event'?' event':'')+(r.kind==='record'?' record':'')+'" data-id="'+safe(r.id)+'" style="--class-tag:'+tag+';--class-ink:'+classTextColor(tag)+';--vsr-color:'+vsrTag+';--vsr-ink:'+classTextColor(vsrTag)+'">'+
  '<div class="card-top"><div class="race-icon card-photo">'+(validImage(r.icon)?imageTag(r.icon,'Affiche '+r.name):'<div class="icon-placeholder">⛵</div>')+'</div><span class="badge-status">'+statusTitle[status]+'</span></div>'+
  '<div class="card-content"><div class="card-title-row"><h2 title="'+safe(r.name)+'">'+safe(r.name)+'</h2>'+
  '<div class="card-tag-row"><span class="class-tag" title="'+safe(r.boatClass||'VIRTUAL REGATTA')+'">'+safe(r.boatClass||'VIRTUAL REGATTA')+'</span>'+
  (mode?'<span class="vsr-badge vsr-'+r.vsr+(r.vsr==='hc'?' hc':'')+'" title="Importance VSR : '+(VSR_PRIORITY(r.vsr)+1)+' sur 4">'+safe(mode)+'</span>':'')+'</div></div>'+
- '<div class="card-boat">'+safe(r.boat)+(r.kind==='event'?' · COMPÉTITION':r.eventId?' · ÉTAPE'+(r.joker?' JOKER':''):'')+'</div>'+
+ '<div class="card-boat">'+safe(r.boat)+(r.kind==='record'?' · COURSE RECORD':r.kind==='event'?' · COMPÉTITION':r.eventId?' · ÉTAPE'+(r.joker?' JOKER':''):'')+'</div>'+
  '<div class="card-stats">'+(r.start?'<span class="stat-chip">DÉPART '+safe(dateTimeFR(r.start,r.startTime))+'</span>':'')+
- (status!=='dnf'&&r.end?'<span class="stat-chip arrival-chip">ARRIVÉE '+safe(dateTimeFR(r.end,r.endTime))+'</span>':'')+
- (r.duration?'<span class="stat-chip duration-chip">⏱ '+safe(r.duration)+'</span>':'')+
- (validEquipment(r.equipment)?'<span class="stat-chip equipment">ÉQUIPEMENT · '+safe(equipmentModes[r.equipment])+'</span>':'')+
- (moneyNumber(r.gainPoints)?'<span class="stat-chip reward-points">⭐ +'+safe(Number(r.gainPoints).toLocaleString('fr-FR'))+' POINTS VSR</span>':'')+
- (moneyNumber(r.gainCredits)?'<span class="stat-chip reward-credits">🪙 +'+safe(Number(r.gainCredits).toLocaleString('fr-FR'))+' CRÉDITS VR</span>':'')+'</div>'+
- (!score.available&&(status==='dnf'||status==='finished')?'<p class="score-pending">'+safe(score.reason||'Note en attente')+'</p>':'')+
+ (r.kind!=='record'&&status!=='dnf'&&r.end?'<span class="stat-chip arrival-chip">ARRIVÉE '+safe(dateTimeFR(r.end,r.endTime))+'</span>':'')+
+ (r.kind!=='record'&&r.duration?'<span class="stat-chip duration-chip">⏱ '+safe(r.duration)+'</span>':'')+
+ (r.kind!=='record'&&validEquipment(r.equipment)?'<span class="stat-chip equipment">ÉQUIPEMENT · '+safe(equipmentModes[r.equipment])+'</span>':'')+
+ (r.kind!=='record'&&moneyNumber(r.gainPoints)?'<span class="stat-chip reward-points">⭐ +'+safe(Number(r.gainPoints).toLocaleString('fr-FR'))+' POINTS VSR</span>':'')+
+ (r.kind!=='record'&&moneyNumber(r.gainCredits)?'<span class="stat-chip reward-credits">🪙 +'+safe(Number(r.gainCredits).toLocaleString('fr-FR'))+' CRÉDITS VR</span>':'')+'</div>'+
+ (r.kind==='record'?recordCardContent(r):'')+
+ (!score.available&&r.kind!=='record'&&(status==='dnf'||status==='finished')?'<p class="score-pending">'+safe(score.reason||'Note en attente')+'</p>':'')+
  (rankBlocks?'<div class="rank-grid">'+rankBlocks+'</div>':'')+
  '<div class="shots"><div class="shot"><label>CLASSEMENT FINAL</label><div class="shot-box image-preview">'+imageTag(r.result,'Classement '+r.name)+'</div></div>'+
  '<div class="shot"><label>TRACÉ</label><div class="shot-box image-preview">'+imageTag(r.route,'Tracé '+r.name)+'</div></div></div>'+
@@ -289,10 +298,11 @@ function render(){
   sort==='recent'?b.updatedAt.localeCompare(a.updatedAt):
   sort==='vsr'?VSR_PRIORITY(a.vsr)-VSR_PRIORITY(b.vsr)||chronological(b).localeCompare(chronological(a)):
   chronological(b).localeCompare(chronological(a))||b.createdAt.localeCompare(a.createdAt));
- const raceRows=rows.filter(r=>r.kind!=='event');
+ const raceRows=rows.filter(r=>r.kind==='race');
  $('count-total').textContent=raceRows.length;$('count-live').textContent=raceRows.filter(r=>raceStatus(r)==='live').length;
  $('count-finished').textContent=raceRows.filter(r=>raceStatus(r)==='finished').length;
  $('count-dnf').textContent=raceRows.filter(r=>raceStatus(r)==='dnf').length;
+ $('count-record').textContent=rows.filter(r=>r.kind==='record').length;
  $('result-count').textContent=out.length+' / '+rows.length;
  $('cards').innerHTML=out.map(card).join('')||(rows.length?'<p>Aucune course ne correspond aux filtres.</p>':'');
  scheduleRankingFit();
@@ -419,7 +429,7 @@ function computeRaceStatistics(items){
  };
 }
 function renderStatistics(){
- const raceRows=rows.filter(r=>r.kind!=='event');
+ const raceRows=rows.filter(r=>r.kind==='race');
  const stats=computeRaceStatistics(raceRows);
  const statValue=(value)=>value===null?'—':statInt(value);
  const percent=value=>value===null?'—':statDecimal(value,2)+' %';
@@ -648,7 +658,7 @@ function pdfMatches(r,v){
   (!v.status||raceStatus(r)===v.status);
 }
 function updatePdfCount(){
- const v=pdfValues(),count=rows.filter(r=>r.kind!=='event'&&pdfMatches(r,v)).length;
+ const v=pdfValues(),count=rows.filter(r=>r.kind==='race'&&pdfMatches(r,v)).length;
  $('pdf-match-count').textContent=count;
  $('pdf-generate').disabled=count===0;
 }
@@ -660,7 +670,7 @@ function setPdfSelect(id,values,label){
 }
 function openPdfDialog(){
  const unique=values=>[...new Set(values.filter(Boolean))].sort((a,b)=>a.localeCompare(b,'fr'));
- const raceRows=rows.filter(r=>r.kind!=='event');
+ const raceRows=rows.filter(r=>r.kind==='race');
  setPdfSelect('pdf-year',unique(raceRows.map(r=>r.start?.slice(0,4))).sort((a,b)=>b.localeCompare(a)),'Toutes les années');
  setPdfSelect('pdf-class',unique(raceRows.map(r=>r.boatClass)),'Toutes les classes');
  setPdfSelect('pdf-boat',unique(raceRows.map(r=>r.boat)),'Tous les bateaux');
@@ -675,7 +685,7 @@ async function exportGeneralPdf(event){
  button.disabled=true;button.textContent='CRÉATION DU PDF…';
  try{
   const report=await import('./report.js');
-  const selection=rows.filter(r=>r.kind!=='event').map(reportRace);
+  const selection=rows.filter(r=>r.kind==='race').map(reportRace);
   const result=await report.generateGeneralPDF({races:selection,filters:pdfValues(),settings:classSettings});
   closePdfDialog();toast('Rapport PDF téléchargé : '+result.count+' courses, '+result.pages+' pages ✓');
  }catch(error){console.error(error);toast('Export PDF impossible : '+(error?.message||error),true);}

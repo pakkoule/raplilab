@@ -753,6 +753,7 @@ body::before{display:none!important}
   </dialog>
   <input type="file" hidden id="importFile" accept="application/json,.json">
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="collection-stats.js"></script>
   <script>
     (() => {
       'use strict';
@@ -789,6 +790,22 @@ body::before{display:none!important}
         const list=Array.isArray(card?.players)?card.players.slice(0,MAX_CARD_PLAYERS).map(normalizedPlayer).filter(p=>p.name):[];
         return list.length?list:[normalizedPlayer({name:card?.player||''})];
       }
+      function savedValues(values){
+        const seen=new Map();
+        for(const item of values){
+          const s=String(item??'').trim(),k=normalize(s);
+          if(k&&!seen.has(k))seen.set(k,s);
+        }
+        return [...seen.values()].sort(collator.compare);
+      }
+      function savedPlayers(){return savedValues(cards.flatMap(c=>cardPlayers(c).map(p=>p.name)))}
+      function savedTeams(){return savedValues(cards.map(c=>c.team).concat(logos.filter(x=>x.type==='team').map(x=>x.name)))}
+      function savedTags(){return savedValues(cards.flatMap(c=>Array.isArray(c.tags)?c.tags:[]))}
+      function playerPickerMarkup(){
+        return '<select class="select saved-value-picker player-picker" data-player-picker aria-label="Choisir un athlète déjà enregistré">'+
+          '<option value="">Choisir un athlète enregistré…</option>'+
+          savedPlayers().map(v=>'<option value="'+safeText(v)+'">'+safeText(v)+'</option>').join('')+'</select>';
+      }
       function playerRowHTML(raw,index){
         const p=normalizedPlayer(raw);
         const autoOn=raw?.autoEnabled===true||!!p.auto;
@@ -799,6 +816,7 @@ body::before{display:none!important}
         return '<div class="player-entry" data-player-entry>'+
           '<div class="player-entry-header"><label for="'+id+'" class="player-entry-label">JOUEUR '+(index+1)+'</label>'+
           (index?'<button type="button" class="player-entry-remove" data-remove-player aria-label="Retirer ce joueur" title="Retirer ce joueur">×</button>':'')+'</div>'+
+          playerPickerMarkup()+
           '<input id="'+id+'" class="input player-name-input" name="playerName[]" type="text" maxlength="120" autocomplete="off" placeholder="Nom du joueur"'+(index===0?' required':'')+' value="'+safeText(p.name)+'">'+
           '<div class="player-feature-groups">'+
             '<div class="player-feature-group"><label class="player-feature-master"><input type="checkbox" data-player-toggle="auto"'+(autoOn?' checked':'')+'> AUTO</label>'+
@@ -953,7 +971,29 @@ body::before{display:none!important}
         }catch(e){console.error(e);showToast('Impossible d’enregistrer les styles');}
       }
       function optionList(id,values,all){const select=$(id),old=select.value;select.replaceChildren(new Option(all,''));[...new Set(values.map(x=>String(x||'').trim()).filter(Boolean))].sort(collator.compare).forEach(x=>select.add(new Option(x,x)));select.value=[...select.options].some(o=>o.value===old)?old:''}
-      function refreshFilterOptions(){optionList('filterBrand',cards.map(x=>x.brand),'Toutes les marques');optionList('filterTeam',cards.map(x=>x.team),'Toutes les équipes');optionList('filterTag',cards.flatMap(x=>Array.isArray(x.tags)?x.tags:[]),'Toutes les variations');optionList('filterSport',cards.map(x=>x.sport),'Tous les sports');for(const [id,items] of [['brandsList',cards.map(x=>x.brand).concat(logos.filter(x=>x.type==='brand').map(x=>x.name))],['teamsList',cards.map(x=>x.team).concat(logos.filter(x=>x.type==='team').map(x=>x.name))]]){const list=$(id);list.replaceChildren();[...new Set(items.filter(Boolean))].sort(collator.compare).forEach(x=>list.append(new Option(x,x)))}}
+      function fillSavedPicker(select,values,placeholder){
+        const value=select.value;
+        select.replaceChildren(new Option(placeholder,''));
+        for(const item of savedValues(values))select.add(new Option(item,item));
+        select.value=[...select.options].some(o=>o.value===value)?value:'';
+      }
+      function refreshSavedPickers(){
+        fillSavedPicker($('cardTeamPicker'),savedTeams(),'Choisir une équipe enregistrée…');
+        fillSavedPicker($('tagPicker'),savedTags(),'Ajouter un tag existant…');
+        document.querySelectorAll('[data-player-picker]').forEach(el=>
+          fillSavedPicker(el,savedPlayers(),'Choisir un athlète enregistré…'));
+      }
+      function refreshFilterOptions(){
+        optionList('filterBrand',cards.map(x=>x.brand),'Toutes les marques');
+        optionList('filterTeam',cards.map(x=>x.team),'Toutes les équipes');
+        optionList('filterTag',cards.flatMap(x=>Array.isArray(x.tags)?x.tags:[]),'Toutes les variations');
+        optionList('filterSport',cards.map(x=>x.sport),'Tous les sports');
+        for(const [id,items] of [['brandsList',cards.map(x=>x.brand).concat(logos.filter(x=>x.type==='brand').map(x=>x.name))],['teamsList',savedTeams()]]){
+          const list=$(id);list.replaceChildren();
+          for(const value of savedValues(items))list.append(new Option(value,value));
+        }
+        refreshSavedPickers();
+      }
       function matchesPlayerFeature(card,kind,criterion){
         if(!criterion)return true;
         const assignments=cardPlayers(card).map(p=>p[kind]);

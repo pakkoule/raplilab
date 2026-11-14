@@ -1033,11 +1033,70 @@ body::before{display:none!important}
           (b.createdAt||0)-(a.createdAt||0));
         return matches;
       }
-      function cardMarkup(c){const photo=imgSafe(c.photo)?`<img src="${c.photo}" alt="Carte de ${safeText(c.player)}" loading="lazy">`:`<div class="placeholder"><span class="mini-logo">RAPLI / SPORTS</span><div class="place-center">${ico('layers')}</div><span class="place-foot">COLLECTOR'S CARD</span></div>`;const tags=(c.tags||[]).slice(0,4).map(t=>`<span class="tag">${safeText(t)}</span>`).join('')+((c.tags||[]).length>4?`<span class="tag more">+${c.tags.length-4}</span>`:'');return `<article class="card-item" data-id="${safeText(c.id)}"><div class="photo-side"><div class="card-photo">${photo}${c.demo?'<span class="photo-flag">DÉMO</span>':''}</div></div><div class="card-info"><div class="card-top"><div class="brand-lockup">${brandBadge('brand',c.brand)}<span>${safeText(c.brand||'Sans marque')}</span></div><div class="card-controls"><button type="button" class="icon-btn" data-action="edit" data-id="${safeText(c.id)}" aria-label="Modifier cette carte" title="Modifier">${ico('edit')}</button><button type="button" class="icon-btn delete" data-action="delete" data-id="${safeText(c.id)}" aria-label="Supprimer cette carte" title="Supprimer">${ico('trash')}</button></div></div>${playerCardSummary(c)}<div class="team-row">${c.team?brandBadge('team',c.team):''}<span>${safeText(c.team||'Équipe non renseignée')}</span>${c.sport?`<span class="sport-chip">${safeText(c.sport)}</span>`:''}</div><div class="reference"><small>RÉFÉRENCE</small>${safeText(c.reference||'Non renseignée')}</div><div class="tags">${tags||'<span class="blank-tag">Aucune variation</span>'}</div><div class="card-bottom">${collectorBadgeMarkup(c)}<button type="button" class="move-card" data-action="move" data-id="${safeText(c.id)}">${c.status==='own'?'→ WISHLIST':'→ OWN'}</button></div></div></article>`}
-      function renderAll(){refreshFilterOptions();$('statTotal').textContent=cards.length.toLocaleString('fr-FR');$('statOwn').textContent=cards.filter(x=>x.status==='own').length.toLocaleString('fr-FR');$('statWish').textContent=cards.filter(x=>x.status==='wishlist').length.toLocaleString('fr-FR');$('statNumber').textContent=cards.filter(x=>x.numbered).length.toLocaleString('fr-FR');$('tabOwnCount').textContent=cards.filter(x=>x.status==='own').length;$('tabWishCount').textContent=cards.filter(x=>x.status==='wishlist').length;document.querySelectorAll('.tab').forEach(t=>{const active=t.dataset.view===currentView;t.classList.toggle('active',active);t.setAttribute('aria-selected',String(active))});const match=filterCards();$('resultsLabel').innerHTML=`<strong>${match.length}</strong> carte${match.length>1?'s':''} ${currentView==='own'?'possédée':'recherchée'}${match.length>1?'s':''}`;$('cardGrid').innerHTML=match.map(cardMarkup).join('');const hasAny=cards.some(x=>x.status===currentView);$('emptyState').classList.toggle('hidden',match.length!==0);$('emptyTitle').textContent=hasAny?'Aucune carte ne correspond aux filtres':currentView==='own'?'Ta collection OWN est vide':'Ta WISHLIST est vide';$('emptyCopy').textContent=hasAny?'Essaie une recherche plus large ou réinitialise les filtres.':'Ajoute ta première carte pour constituer ta collection.';$('demoBanner').classList.toggle('hidden',!cards.some(c=>c.demo));}
+      function cardMarkup(c){const photo=imgSafe(c.photo)?`<img src="${c.photo}" alt="Carte de ${safeText(c.player)}" loading="lazy">`:`<div class="placeholder"><span class="mini-logo">RAPLI / SPORTS</span><div class="place-center">${ico('layers')}</div><span class="place-foot">COLLECTOR'S CARD</span></div>`;const tags=(c.tags||[]).slice(0,4).map(t=>`<span class="tag">${safeText(t)}</span>`).join('')+((c.tags||[]).length>4?`<span class="tag more">+${c.tags.length-4}</span>`:'');return `<article class="card-item" data-id="${safeText(c.id)}"><div class="photo-side"><div class="card-photo">${photo}${c.demo?'<span class="photo-flag">DÉMO</span>':''}</div></div><div class="card-info"><div class="card-top"><div class="brand-lockup">${brandBadge('brand',c.brand)}${logoFor('brand',c.brand)?'':'<span>'+safeText(c.brand||'Sans marque')+'</span>'}</div><div class="card-controls"><button type="button" class="icon-btn" data-action="edit" data-id="${safeText(c.id)}" aria-label="Modifier cette carte" title="Modifier">${ico('edit')}</button><button type="button" class="icon-btn delete" data-action="delete" data-id="${safeText(c.id)}" aria-label="Supprimer cette carte" title="Supprimer">${ico('trash')}</button></div></div>${playerCardSummary(c)}<div class="team-row">${c.team?brandBadge('team',c.team):''}${logoFor('team',c.team)?'':'<span>'+safeText(c.team||'Équipe non renseignée')+'</span>'}${c.sport?`<span class="sport-chip">${safeText(c.sport)}</span>`:''}</div><div class="reference"><small>RÉFÉRENCE</small>${safeText(c.reference||'Non renseignée')}</div><div class="tags">${tags||'<span class="blank-tag">Aucune variation</span>'}</div><div class="card-bottom">${collectorBadgeMarkup(c)}<button type="button" class="move-card" data-action="move" data-id="${safeText(c.id)}">${c.status==='own'?'→ WISHLIST':'→ OWN'}</button></div></div></article>`}
+      const statsEngine=window.RapliSportsStats;
+      function renderOwnedStatistics(){
+        const data=statsEngine.calculate(cards);
+        const whole=data.total;
+        if(!whole){
+          $('statsPanel').innerHTML='<div class="stats-panel-head"><div><h3>STATISTIQUES DE COLLECTION</h3><p>Uniquement les cartes OWN réelles · sans wishlist et sans démos.</p></div></div>'+
+            '<div class="stats-empty">Aucune carte OWN enregistrée. Ajoute une carte possédée pour découvrir les statistiques de ta collection.</div>';
+          return;
+        }
+        const num=n=>Number(n).toLocaleString('fr-FR');
+        const kpi=metric=>'<div class="stats-kpi"><span class="stats-kpi-label">'+safeText(metric.label)+'</span>'+
+          '<strong class="stats-kpi-value">'+num(metric.value)+'</strong>'+
+          (metric.sub?'<small class="stats-kpi-sub">'+safeText(metric.sub)+'</small>':'')+'</div>';
+        const panel=entry=>{
+          if(!entry.data.length)return '<section class="stats-breakdown"><h4>'+safeText(entry.title)+'</h4><p class="blank-tag">Aucune donnée renseignée.</p></section>';
+          const peak=Math.max(1,entry.data[0].count);
+          const rows=entry.data.slice(0,8).map(item=>{
+            const pct=Math.max(0,Math.min(100,Math.round(item.count/peak*100)));
+            const part=Math.round(item.count/whole*100);
+            return '<div class="stats-rank-row"><div class="stats-rank-top"><span>'+safeText(item.label)+'</span>'+
+              '<strong>'+num(item.count)+' · '+part+' %</strong></div>'+
+              '<div class="stats-track" aria-hidden="true"><span style="width:'+pct+'%"></span></div></div>';
+          }).join('');
+          return '<section class="stats-breakdown"><h4>'+safeText(entry.title)+'</h4>'+rows+
+            (entry.data.length>8?'<p class="stats-kpi-sub">+'+num(entry.data.length-8)+' autres entrées</p>':'')+'</section>';
+        };
+        $('statsPanel').innerHTML='<div class="stats-panel-head"><div><h3>STATISTIQUES DE COLLECTION</h3>'+
+          '<p>Cartes réellement possédées (OWN) uniquement · wishlist et cartes de démonstration exclues. '+
+          'Une carte multi-athlètes peut compter dans plusieurs catégories.</p></div>'+
+          '<strong class="stats-own-count">'+num(whole)+' CARTES OWN</strong></div>'+
+          '<div class="stats-kpis">'+data.kpis.map(kpi).join('')+'</div>'+
+          '<div class="stats-breakdowns">'+data.breakdowns.map(panel).join('')+'</div>';
+      }
+      function renderAll(){
+        refreshFilterOptions();
+        $('statTotal').textContent=cards.length.toLocaleString('fr-FR');
+        $('statOwn').textContent=cards.filter(x=>x.status==='own').length.toLocaleString('fr-FR');
+        $('statWish').textContent=cards.filter(x=>x.status==='wishlist').length.toLocaleString('fr-FR');
+        $('statNumber').textContent=cards.filter(x=>x.numbered).length.toLocaleString('fr-FR');
+        $('tabOwnCount').textContent=cards.filter(x=>x.status==='own').length;
+        $('tabWishCount').textContent=cards.filter(x=>x.status==='wishlist').length;
+        document.querySelectorAll('.tab').forEach(t=>{
+          const active=t.dataset.view===currentView;
+          t.classList.toggle('active',active);
+          t.setAttribute('aria-selected',String(active));
+        });
+        const showStats=currentView==='stats';
+        $('collectionPanel').hidden=showStats;
+        $('statsPanel').hidden=!showStats;
+        if(showStats){renderOwnedStatistics();return;}
+        const match=filterCards();
+        $('resultsLabel').innerHTML='<strong>'+match.length+'</strong> carte'+(match.length>1?'s':'')+
+          (currentView==='own'?' possédée':' recherchée')+(match.length>1?'s':'');
+        $('cardGrid').innerHTML=match.map(cardMarkup).join('');
+        const hasAny=cards.some(x=>x.status===currentView);
+        $('emptyState').classList.toggle('hidden',match.length!==0);
+        $('emptyTitle').textContent=hasAny?'Aucune carte ne correspond aux filtres':currentView==='own'?'Ta collection OWN est vide':'Ta WISHLIST est vide';
+        $('emptyCopy').textContent=hasAny?'Essaie une recherche plus large ou réinitialise les filtres.':'Ajoute ta première carte pour constituer ta collection.';
+        $('demoBanner').classList.toggle('hidden',!cards.some(c=>c.demo));
+      }
       function openModal(id){$(id).showModal();document.body.style.overflow='hidden'}
       function closeModal(id){$(id).close();if(!document.querySelector('dialog[open]'))document.body.style.overflow=''}
-      function resetForm(){editingId=null;currentTags=[];currentPhoto='';$('cardForm').reset();resetPlayersForm();$('cardRookie').checked=false;$('statusOwn').checked=currentView==='own';$('statusWish').checked=currentView==='wishlist';$('cardDialogTitle').textContent='Ajouter une carte';$('cardSubmitBtn').textContent='Enregistrer la carte';renderTags();updateSerialUI();renderPhoto()}
+      function resetForm(){editingId=null;currentTags=[];currentPhoto='';$('cardForm').reset();resetPlayersForm();$('cardRookie').checked=false;$('statusOwn').checked=currentView!=='wishlist';$('statusWish').checked=currentView==='wishlist';$('cardDialogTitle').textContent='Ajouter une carte';$('cardSubmitBtn').textContent='Enregistrer la carte';renderTags();updateSerialUI();renderPhoto()}
       function openCard(card){resetForm();if(card){editingId=card.id;currentTags=[...(card.tags||[])];currentPhoto=imgSafe(card.photo)?card.photo:'';$('cardDialogTitle').textContent='Modifier la carte';$('cardSubmitBtn').textContent='Enregistrer les modifications';$('statusOwn').checked=card.status==='own';$('statusWish').checked=card.status==='wishlist';$('cardBrand').value=card.brand||'';$('cardSport').value=card.sport||'';resetPlayersForm(card);$('cardTeam').value=card.team||'';$('cardReference').value=card.reference||'';$('cardNumbered').checked=Boolean(card.numbered);$('cardRookie').checked=card.rookie===true;$('cardSerial').value=card.serial||'';$('cardPrintRun').value=card.printRun||'';renderTags();renderPhoto();updateSerialUI()}openModal('cardDialog');setTimeout(()=>$('cardBrand').focus(),70)}
       function renderPhoto(){const valid=imgSafe(currentPhoto);$('photoPreview').classList.toggle('hidden',!valid);$('photoPrompt').classList.toggle('hidden',valid);$('removePhotoBtn').classList.toggle('hidden',!valid);if(valid)$('photoPreview').src=currentPhoto;else $('photoPreview').removeAttribute('src')}
       function updateSerialUI(){const yes=$('cardNumbered').checked;$('serialFields').classList.toggle('hidden',!yes);$('cardSerial').required=yes;$('cardPrintRun').required=yes}

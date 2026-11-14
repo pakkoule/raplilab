@@ -952,7 +952,7 @@ async function exportPNG(r){
   const datesTop=infoLead+(r.boat?44:24);
   const rankTop=datesTop+81;
   // The ranking section is directly below the data, with a small fixed gutter.
-  const INFO=r.kind==='record'?rankTop+Math.max(180,125+recordEntries.length*33):rankTop+256;
+  const INFO=r.kind==='record'?rankTop+Math.max(180,125+recordEntries.length*45):rankTop+256;
   const height=STRIP+PHOTO+INFO+SHOT_H;
   c.height=height;
   ctx.fillStyle='#fff';ctx.fillRect(0,0,W,height);
@@ -985,8 +985,9 @@ async function exportPNG(r){
    wrap(ctx,r.boat,right-left,1).forEach(t=>ctx.fillText(t,left,y+boatY));
   }
   ctx.fillStyle='#245c6c';ctx.font='800 17px Poppins,sans-serif';
-  if(r.start)ctx.fillText('DÉPART · '+dateTimeFR(r.start,r.startTime),left,y+datesTop,right-left);
-  if(!r.dnf&&r.end)ctx.fillText('ARRIVÉE · '+dateTimeFR(r.end,r.endTime),left,y+datesTop+28,530);
+  if(r.kind==='record')ctx.fillText('DÉPARTS ET HORAIRES PAR TENTATIVE',left,y+datesTop,right-left);
+  else if(r.start)ctx.fillText('DÉPART · '+dateTimeFR(r.start,r.startTime),left,y+datesTop,right-left);
+  if(r.kind!=='record'&&!r.dnf&&r.end)ctx.fillText('ARRIVÉE · '+dateTimeFR(r.end,r.endTime),left,y+datesTop+28,530);
   if(r.duration){
    ctx.font='700 21px "Courier Prime","American Typewriter",monospace';ctx.fillStyle='#1a5368';
    ctx.fillText('DURÉE · '+r.duration,618,y+datesTop+28,515);
@@ -1006,13 +1007,16 @@ async function exportPNG(r){
    ctx.fillStyle='#fff';ctx.font='900 27px "Courier Prime",monospace';
    ctx.fillText(stats.bestSeconds!==null?'MEILLEUR TEMPS · '+recordEngine.format(stats.bestSeconds):'AUCUN TEMPS VALIDÉ',left+20,top+63,right-left-40);
    recordEntries.forEach((attempt,i)=>{
-    const topRow=top+100+i*33;
+    const topRow=top+100+i*45;
     ctx.fillStyle=attempt.aborted?'#fff1ee':attempt.id===stats.bestId?'#e9f8f0':'#f1f6fa';
-    ctx.fillRect(left,topRow,right-left,29);
+    ctx.fillRect(left,topRow,right-left,41);
     ctx.fillStyle='#315971';ctx.font='800 15px Poppins,sans-serif';
-    ctx.fillText('TENTATIVE '+(i+1),left+12,topRow+20,250);
+    ctx.fillText('TENTATIVE '+(i+1),left+12,topRow+18,250);
+    ctx.font='700 12px Poppins,sans-serif';ctx.fillStyle='#6b889b';
+    ctx.fillText(attempt.startDate?'DÉPART · '+dateTimeFR(attempt.startDate,attempt.startTime):'DÉPART NON RENSEIGNÉ',left+12,topRow+35,625);
     ctx.textAlign='right';ctx.fillStyle=attempt.aborted?'#a64b3b':'#1d5d7f';
-    ctx.fillText(attempt.aborted?'AVORTÉE':attempt.seconds!==null?recordEngine.format(attempt.seconds):'EN ATTENTE',right-12,topRow+20,760);
+    ctx.font='800 17px "Courier Prime",monospace';
+    ctx.fillText(attempt.aborted?'AVORTÉE':attempt.seconds!==null?recordEngine.format(attempt.seconds):'EN ATTENTE',right-12,topRow+27,620);
     ctx.textAlign='left';
    });
   }else{

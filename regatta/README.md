@@ -66,3 +66,15 @@ Module intégré à la PR #1 de RapliLab, non fusionnée.
 - Cas de durée vérifiés : `12 j 08 h 35 min`, `8h35`, `1 j 2 h 3 min 4 s`, `00 h 00 min 31 s`, `01:02:03`.
 - À tester **dans la vraie Deploy Preview** avant fusion : glisser-déposer d’images, photos et rendu Canvas/PNG, iPhone Safari, ouverture du fichier ICS dans Apple Calendrier, accès Supabase PC ↔ iPhone et conflit de révision, affichage éventuel du drapeau de Sark.
 - **PR en draft, non fusionnée : aucun déploiement en production.**
+
+
+## Courses record — départs multiples et statut en cours (PR #1)
+
+- Le type **Course record** possède une liste indépendante de tentatives (jusqu’à 100).
+- **Chaque tentative** a sa propre date de départ et son heure facultative, ainsi que sa durée détaillée en jours, heures, minutes et secondes, et la case **Tentative avortée**.
+- Les deux anciens champs de départ au niveau global sont masqués pour les records : ils ne doivent jamais écraser les dates différentes des tentatives.
+- La case **Course en cours** reste utilisable au niveau de la course record. Une course record active reçoit le badge **RECORD EN COURS** et le halo de course active ; elle apparaît aussi dans le filtre **En cours** tout en restant dans le filtre **Courses record**.
+- La fiche affiche le départ de **chaque tentative**, son temps (ou « Avortée » / « En attente »), et le meilleur temps validé. Le PNG reproduit ces dates indépendantes et le statut actif.
+- La synchronisation IndexedDB / Supabase et les exports JSON conservent `attempts[].startDate`, `attempts[].startTime`, `attempts[].seconds`, `attempts[].aborted`.
+- Pour les anciennes fiches record qui ne connaissaient qu’un seul départ `start/startTime`, la date et l’heure historiques sont reportées sur **la première tentative uniquement**. Le champ de départ parent devient ensuite dérivé du départ le plus ancien pour compatibilité. Les dates de toutes les autres tentatives restent indépendantes.
+- Aucune note VSR /100 ni résultat de classement normal n’est généré pour une course record.

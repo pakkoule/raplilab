@@ -1240,8 +1240,8 @@ body::before{display:none!important}
         const value=String(sport||'').trim();
         if(!value)return '';
         const key='sport:'+normalize(value);
-        const def=sportsLabelDefs().sports.find(item=>item.key===key)||sportsDefaultLabel(key);
-        const cfg=labelConfig(def);
+        const [bg,ink,border]=SPORT_LABEL_COLORS[normalize(value)]||['#f4f7fd','#2457c6','#d7e3f7'];
+        const cfg=labelConfig({key,type:'sport',title:value,text:value,bg,ink,border});
         return '<span class="sport-chip" style="'+labelInlineStyle(cfg)+'" title="'+safeText(value)+'">'+safeText(cfg.text)+'</span>';
       }
       function sportsFeatureBadge(kind,value,prefix=''){

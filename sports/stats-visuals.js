@@ -158,7 +158,7 @@
       if(type==='chips'){
         const chipWidth=Math.min(w-92,Math.max(190,ctx.measureText(String(item.label)).width+110));
         round(ctx,inner,cy-17,chipWidth,27,11,'#f1f5f9');
-        round(ctx,inner,7,27,3,p[j%p.length]);
+        round(ctx,inner+5,cy-12,4,17,2,p[j%p.length]);
         txt(ctx,item.label,inner+14,cy+2,'700 16px Poppins, sans-serif','#405873',chipWidth-85);
         ctx.textAlign='right';txt(ctx,format(value),inner+chipWidth-12,cy+2,'900 17px Poppins, sans-serif',p[0],55);ctx.textAlign='left';
       }else{

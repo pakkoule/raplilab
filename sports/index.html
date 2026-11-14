@@ -1966,37 +1966,6 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
         if(logoType==='tag')fillSavedPicker($('logoTagPicker'),names,'Choisir un tag enregistré…');
       }
       async function saveNewLogo(){const name=$('logoName').value.trim();if(!name)return showToast(logoType==='rookie'?'Sélectionne un sport.':logoType==='athlete'?'Renseigne le nom de l’athlète.':logoType==='tag'?'Renseigne le nom du tag.':'Renseigne un nom de marque ou d’équipe.');if(['collector','labels'].includes(logoType))return;if(!pendingLogoPhoto)return showToast(logoType==='athlete'?'Sélectionne un portrait.':'Sélectionne une image de logo.');const id=`${logoType}:${normalize(name)}`;try{await saveLogo({id,type:logoType,name,image:pendingLogoPhoto});setLogoType(logoType);renderAll();showToast('Logo enregistré et associé automatiquement')}catch(e){showToast('Impossible d’enregistrer le logo')}}
-      async function exportData(){const data={app:'Rapli Sports',version:1,exportedAt:new Date().toISOString(),cards,logos};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`Rapli_Sports_${new Date().toISOString().slice(0,10)}.json`;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),3000);showToast('Sauvegarde JSON exportée')}
-      function importCard(x){
-        const now=Date.now(),players=cardPlayers(x).filter(p=>p.name);
-        return {
-          id:typeof x.id==='string'&&x.id.length<140?x.id:uid(),
-          status:x.status==='wishlist'?'wishlist':'own',dream:x.status==='wishlist'&&x.dream===true,
-          brand:String(x.brand||'').slice(0,90),
-          player:players[0]?.name||String(x.player||'').slice(0,120),
-          players,
-          sport:String(x.sport||'').slice(0,70),
-          team:String(x.team||'').slice(0,100),
-          reference:String(x.reference||'').slice(0,180),
-          tags:Array.isArray(x.tags)?x.tags.filter(t=>typeof t==='string').slice(0,30).map(t=>t.slice(0,60)):[],
-          numbered:Boolean(x.numbered),rookie:x.rookie===true,
-          serial:String(x.serial||'').slice(0,8),printRun:String(x.printRun||'').slice(0,8),
-          photo:imgSafe(x.photo)?x.photo:'',
-          createdAt:Number(x.createdAt)||now,updatedAt:now,demo:false
-        };
-      }
-      async function importData(file){try{if(file.size>170*1024*1024)throw new Error('Fichier trop volumineux.');const contents=await file.text();const data=JSON.parse(contents);if(!data||!Array.isArray(data.cards)||!Array.isArray(data.logos))throw new Error('Format de sauvegarde non reconnu.');if(!confirm(`Importer ${data.cards.length} carte(s) et ${data.logos.length} logo(s) ?\n\nLes entrées existantes ayant le même identifiant seront mises à jour. Les autres seront conservées.`))return;let count=0;for(const x of data.cards){if(x&&typeof x==='object'){await saveCard(importCard(x));count++}}for(const x of data.logos){
-          if(x&&typeof x==='object'&&['brand','team','rookie','athlete','tag'].includes(x.type)&&typeof x.name==='string'&&imgSafe(x.image)){
-            await saveLogo({id:`${x.type}:${normalize(x.name)}`,type:x.type,name:x.name.slice(0,100),image:x.image});
-          }else if(x?.id===LABEL_STYLE_ID&&x?.type==='labels'&&x.settings&&typeof x.settings==='object'){
-            await saveLogo({id:LABEL_STYLE_ID,type:'labels',name:'Étiquettes Sports',settings:normalizeLabelSettings(x.settings)});
-          }else if(x?.id===COLLECTOR_STYLE_ID&&x?.type==='collector'&&x.settings&&typeof x.settings==='object'){
-            const p=x.settings;
-            await saveLogo({id:COLLECTOR_STYLE_ID,type:'collector',name:'Style des badges',
-              settings:normalizedCollectorStyle(p)
-            });
-          }
-        }renderAll();showToast(`${count} carte(s) importée(s) avec succès`)}catch(err){console.error(err);showToast(err.message||'Fichier JSON invalide')}finally{$('importFile').value=''}}
       document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>closeModal(b.dataset.close)));
       document.querySelectorAll('dialog').forEach(d=>{d.addEventListener('close',()=>{if(!document.querySelector('dialog[open]'))document.body.style.overflow=''})});
       document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{

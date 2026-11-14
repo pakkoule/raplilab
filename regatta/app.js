@@ -529,7 +529,7 @@ function computeRaceStatistics(items){
 function renderStatistics(){
  const raceRows=rows.filter(r=>r.kind==='race');
  const stats=computeRaceStatistics(raceRows);
- const statValue=(value)=>value===null?'—':statInt(value);
+
  const percent=value=>value===null?'—':statDecimal(value,2)+' %';
  const blocks=[
    {title:'TABLEAU DE BORD',items:[

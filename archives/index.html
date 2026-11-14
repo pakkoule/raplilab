@@ -1602,6 +1602,52 @@ main#main-content {
   .group-grid .edition-tile .group-main strong{font-size:11px}
 }
 </style>
+
+<style id="rapli-archives-pr1-density">
+.archive-tabs-host .archives-view-tabs button{text-transform:uppercase}
+.archive-theme-strip{margin-bottom:2px}
+.archive-tabs-host{margin-bottom:5px}
+.archive-catalogue-controls,.archive-catalogue-controls.has-actions{margin-bottom:8px}
+main#main-content:has(.dragon-heading){padding-top:11px!important}
+main#main-content:has(.dragon-heading) .archive-module-heading.dragon-heading{margin-top:0;margin-bottom:9px}
+.archive-catalogue-row{gap:7px}
+.archive-filter-trigger{min-height:37px;padding:7px 11px;font-size:10px}
+.archive-filter-trigger .archive-filter-caret{font-size:19px}
+.archive-catalogue-actions .catalogue-stats{gap:7px}
+.archive-catalogue-actions .catalogue-stat .catalogue-stat-vortex.filter-counter{width:37px;height:37px;min-width:37px;min-height:37px}
+.archive-catalogue-actions .catalogue-quick-action{width:37px;height:37px;min-height:37px}
+.archive-catalogue-actions .catalogue-quick-actions{gap:5px}
+.archive-catalogue-actions .rapli-personalize-action{
+ background:#173d61!important;border:1px solid #426b92!important;color:#fff!important;
+ border-radius:10px!important;box-shadow:0 3px 9px #08203e21!important
+}
+.archive-catalogue-actions .rapli-personalize-gear{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.8}
+.archive-filter-expanded{margin-top:6px}
+#archiveFilterBody{padding:9px 10px}
+#archiveFilterBody .site-navigation{gap:6px!important}
+#archiveFilterBody .header-edition-field{gap:3px;min-width:155px}
+#archiveFilterBody .header-edition-field>span{font-size:9px}
+#archiveFilterBody #edition-filter,#archiveFilterBody #artwork-filter-trigger,#archiveFilterBody .header-owned{height:35px;min-height:35px}
+#archiveFilterBody .header-artwork-filter{min-width:155px}
+#archiveFilterDynamic .toolbar{gap:6px!important}
+#archiveFilterDynamic .filter-select{min-height:35px;height:35px;flex-basis:105px;min-width:105px}
+#archiveFilterDynamic .search-field{min-height:35px;flex-basis:185px}
+#archiveFilterDynamic .search-field input{min-height:33px;height:33px}
+@media(max-width:700px){
+ .archive-catalogue-actions .catalogue-stat .catalogue-stat-vortex.filter-counter{width:33px;height:33px;min-width:33px;min-height:33px}
+ .archive-catalogue-actions .catalogue-quick-action{width:33px;height:33px;min-height:33px}
+ .archive-catalogue-row{gap:5px}
+ .archive-filter-trigger{min-height:34px;padding:6px 8px;font-size:9px}
+ #archiveFilterDynamic .filter-select{min-width:0;height:36px;min-height:36px;font-size:16px}
+ #archiveFilterDynamic .search-field input,#archiveFilterBody #edition-filter{font-size:16px}
+ main#main-content:has(.dragon-heading){padding-top:9px!important}
+}
+@media(max-width:390px){
+ .archive-catalogue-actions .catalogue-quick-action{width:29px;height:32px;min-height:32px}
+ .archive-catalogue-actions .catalogue-stat .catalogue-stat-vortex.filter-counter{width:30px;height:30px;min-width:30px;min-height:30px}
+ .archive-filter-trigger{font-size:8.5px}
+}
+</style>
 </head>
 <body>
 <div class="app-shell">
@@ -2022,8 +2068,8 @@ function dashboardView(){
  <div class="catalogue-stats" role="group" aria-label="Compteurs du catalogue Dragon Blanc">
    ${catalogueStatCounter('OWN',owned)}
    <div class="catalogue-quick-actions" role="group" aria-label="Gestion du catalogue">
-    <button type="button" class="catalogue-quick-action" data-action="module-settings" aria-label="Gérer les logos et catégories" title="Gérer les éditions, les artworks et les logos">
-     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.7 3.5 10.1 2h3.8l.4 1.5 1.5.9 1.5-.5 2.7 2.7-.5 1.5 1.5 1.5.4v3.8l-1.5.4-.9 1.5.5 1.5-2.7 2.7-1.5-.5-1.5.9-.4 1.5h-3.8l-.4-1.5-1.5-.9-1.5.5-2.7-2.7.5-1.5-.9-1.5-1.5-.4V10l1.5-.4.9-1.5-.5-1.5 2.7-2.7 1.5.5z"/><circle cx="12" cy="12" r="3.2"/></svg>
+    <button type="button" class="catalogue-quick-action rapli-personalize-action" data-action="module-settings" aria-label="Gérer les logos et catégories" title="Gérer les éditions, les artworks et les logos">
+     <svg class="rapli-personalize-gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M10.3 2.4h3.4l.5 1.9 1.7.7 1.7-1 2.4 2.4-1 1.7.7 1.7 1.9.5v3.4l-1.9.5-.7 1.7 1 1.7-2.4 2.4-1.7-1-1.7.7-.5 1.9h-3.4l-.5-1.9-1.7-.7-1.7 1-2.4-2.4 1-1.7-.7-1.7-1.9-.5v-3.4l1.9-.5.7-1.7-1-1.7 2.4-2.4 1.7 1 1.7-.7z"/></svg>
     </button>
     <button type="button" class="catalogue-quick-action add" data-action="pick-add" aria-label="Ajouter une nouvelle référence" title="Ajouter une nouvelle carte">
      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4.5v15M4.5 12h15"/></svg>
@@ -2039,7 +2085,7 @@ function dashboardView(){
 }
 
 function archiveViewTabs(){
- const tabs=[['dashboard','Catalogue'],['dragons','Éditions'],['stats','Statistiques']];
+ const tabs=[['dashboard','CATALOGUE'],['dragons','ÉDITIONS'],['stats','STATISTIQUES']];
  return '<nav class="archives-view-tabs" role="tablist" aria-label="Navigation Rapli Archives">'+tabs.map(([view,label])=>
   '<button type="button" role="tab" aria-selected="'+(currentView===view)+'" data-action="navigate" data-view="'+view+'"'+(currentView===view?' aria-current="page" class="active"':'')+'>'+label+'</button>'
  ).join('')+'</nav>';

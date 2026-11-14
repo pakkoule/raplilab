@@ -28,8 +28,7 @@
     <div class="cloud-actions regatta-inline-actions" role="group" aria-label="Actions sur les courses">
       <button type="button" class="btn subtle tiny regatta-icon-action" id="recalculate-scores" aria-label="Recalculer les notes" title="Recalculer les notes">↻</button>
       <button type="button" class="btn primary tiny regatta-icon-action" id="new-race" aria-label="Ajouter une course" title="Ajouter une course">＋</button>
-      <button type="button" class="btn subtle tiny regatta-icon-action regatta-pdf-action" id="export-general-pdf" aria-label="PDF global" title="Exporter le PDF global">PDF</button>
-      <button type="button" class="btn subtle tiny regatta-icon-action" id="manage-class-colors" aria-label="Gérer les couleurs des classes" title="Gérer les couleurs des classes"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3v6M21 12h-6M12 21v-6M3 12h6"/><circle cx="12" cy="12" r="2.2"/></svg></button>
+      <button type="button" class="btn subtle tiny regatta-icon-action rapli-personalize-action" id="manage-class-colors" aria-label="Gérer les couleurs des classes" title="Gérer les couleurs des classes"><svg class="rapli-personalize-gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M10.3 2.4h3.4l.5 1.9 1.7.7 1.7-1 2.4 2.4-1 1.7.7 1.7 1.9.5v3.4l-1.9.5-.7 1.7 1 1.7-2.4 2.4-1.7-1-1.7.7-.5 1.9h-3.4l-.5-1.9-1.7-.7-1.7 1-2.4-2.4 1-1.7-.7-1.7-1.9-.5v-3.4l1.9-.5.7-1.7-1-1.7 2.4-2.4 1.7 1 1.7-.7z"/></svg></button>
     </div>
   <details class="regatta-filter-disclosure" id="regattaFilterDisclosure"><summary>☷ FILTRES ET TRI <span>Afficher les options de recherche</span></summary>
   <section class="filters" aria-label="Filtres de la collection">
@@ -77,25 +76,7 @@
   <p id="notice" class="notice" role="status" aria-live="polite"></p>
 </main>
 
-<dialog id="pdf-dialog" aria-labelledby="pdf-dialog-title">
-  <form id="pdf-form">
-    <header class="dialog-head"><h2 id="pdf-dialog-title">EXPORT PDF GLOBAL</h2><button type="button" class="close" data-pdf-close aria-label="Fermer">×</button></header>
-    <div class="dialog-scroll">
-      <p class="pdf-intro">Filtre les courses à inclure dans ton rapport. Les filtres se cumulent, les statistiques seront calculées uniquement sur la sélection.</p>
-      <div class="fields pdf-fields">
-        <label>ANNÉE<select id="pdf-year"><option value="">Toutes les années</option></select></label>
-        <label>CATÉGORIE VSR<select id="pdf-vsr"><option value="">Toutes les catégories</option><option value="hc">Hors Catégorie</option><option value="vsr1">VSR 1</option><option value="vsr2">VSR 2</option><option value="vsr3">VSR 3</option></select></label>
-        <label>CLASSE DE BATEAU<select id="pdf-class"><option value="">Toutes les classes</option></select></label>
-        <label>NOM DU BATEAU<select id="pdf-boat"><option value="">Tous les bateaux</option></select></label>
-        <label>STATUT<select id="pdf-status"><option value="">Tous les statuts</option><option value="finished">Terminées</option><option value="live">En cours</option><option value="planned">À venir</option><option value="dnf">DNF · Abandon</option><option value="record">Courses record</option></select></label>
-        <label>ORDRE DU RAPPORT<select id="pdf-order"><option value="vsr">Importance VSR puis date</option><option value="date">Date récente puis ancienne</option></select></label>
-      </div>
-      <div class="pdf-preview-count"><strong id="pdf-match-count">0</strong><span>COURSES DANS LE RAPPORT</span></div>
-      <p class="pdf-hint">Rapport A4 paysage : statistiques, podiums par classement, durées, gains VSR/VR, répartition par importance VSR et catalogue paginé.</p>
-    </div>
-    <footer class="dialog-footer"><button type="button" class="btn subtle" data-pdf-close>ANNULER</button><button id="pdf-generate" class="btn primary" type="submit">↓ TÉLÉCHARGER PDF</button></footer>
-  </form>
-</dialog>
+
 
 <dialog id="race-dialog" aria-labelledby="dialog-title">
   <form id="race-form">

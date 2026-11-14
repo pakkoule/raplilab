@@ -1485,6 +1485,120 @@ main#main-content {
  .archive-catalogue-controls .archive-filter-panel>summary{font-size:8px;padding:6px;white-space:normal}
 }
 </style>
+
+<style id="rapli-archives-tabs-filter-editions-pr1">
+/* Blue-Eyes / Dragon Blanc identity line, under the shared RapliLab header. */
+.archive-theme-strip{
+  display:block;width:100%;height:5px;min-height:5px;margin:0 0 7px;
+  background:linear-gradient(90deg,#0c224a 0%,#1456ac 23%,#51b9fa 46%,#f4f9ff 66%,#eac55c 85%,#ba3850 100%);
+  box-shadow:0 2px 7px #234b8740;
+}
+.archive-tabs-host{
+  width:calc(100% - 28px);margin:0 auto 10px;
+}
+.archive-tabs-host[hidden]{display:none!important}
+.archive-tabs-host .archives-view-tabs{
+  margin:0;border-bottom:1px solid #d6e3f0;
+  width:100%;display:flex;align-items:stretch;justify-content:flex-start;
+}
+.archive-catalogue-controls,.archive-catalogue-controls.has-actions{
+  width:calc(100% - 28px);max-width:none;display:flex!important;
+  flex-direction:column;align-items:stretch;gap:0;
+  margin:0 auto 14px;
+}
+.archive-catalogue-row{
+  display:flex;width:100%;align-items:center;gap:9px;min-width:0;
+}
+.archive-catalogue-actions{flex:0 0 auto;min-width:0}
+.archive-catalogue-row .archive-filter-panel{
+  flex:1 1 0;min-width:0;margin:0;width:auto;max-width:none;
+  border:1px solid #b9d3eb;border-radius:12px;background:#f8fbff;
+  overflow:visible;
+}
+.archive-catalogue-row .archive-filter-panel[hidden]{display:none!important}
+.archive-filter-trigger{
+  display:flex;align-items:center;justify-content:space-between;gap:9px;
+  width:100%;min-width:0;min-height:43px;padding:9px 14px;
+  cursor:pointer;background:transparent;border:0;border-radius:11px;
+  font:900 11px/1.25 Poppins,system-ui,sans-serif;color:#244d72;text-align:left;
+}
+.archive-filter-trigger:hover{background:#eff7ff}
+.archive-filter-trigger:focus-visible{outline:2px solid #3584ce;outline-offset:2px}
+.archive-filter-trigger .archive-filter-caret{
+  margin-left:auto;flex:0 0 auto;font-size:23px;line-height:1;
+  transition:transform .16s ease;
+}
+.archive-filter-trigger[aria-expanded=true] .archive-filter-caret{transform:rotate(180deg)}
+.archive-filter-expanded{
+  min-width:0;width:100%;margin:9px 0 0;
+  border:1px solid #b9d3eb;border-radius:12px;background:#f8fbff;
+  box-shadow:0 7px 19px #173e6714;
+}
+.archive-filter-expanded[hidden]{display:none!important}
+#archiveFilterBody{box-sizing:border-box;padding:12px 14px;overflow:visible;border-top:0}
+#archiveFilterDynamic{min-width:0}
+#archiveFilterDynamic .toolbar{width:100%;max-width:none;margin:0}
+.archive-filter-panel .archive-filter-trigger[aria-expanded=true]{background:#e9f3ff}
+.group-grid .edition-tile{
+  position:relative;min-width:0;min-height:189px;display:flex;
+  align-items:stretch;justify-content:center;overflow:hidden;
+}
+.group-grid .edition-tile .group-open{
+  display:flex!important;flex-direction:column;align-items:center;justify-content:center;
+  width:100%;min-width:0;min-height:189px;
+  gap:8px;padding:15px 34px 14px!important;text-align:center;
+}
+.group-grid .edition-tile .group-icon{
+  display:flex;align-items:center;justify-content:center;flex:0 0 auto;
+  width:min(100%,166px);height:72px;min-height:72px;max-width:100%;
+  border-radius:9px;background:#edf5fc;color:#2770b6;font-size:32px;
+}
+.group-grid .edition-tile .group-icon.has-edition-logo{
+  width:min(100%,180px);height:76px;min-height:76px;
+  border:0!important;background:transparent!important;box-shadow:none!important;
+}
+.group-grid .edition-tile .group-icon.has-edition-logo img{
+  display:block;width:auto!important;height:auto!important;max-width:100%!important;
+  max-height:76px!important;object-fit:contain;object-position:center;
+}
+.group-grid .edition-tile .group-main{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  width:100%;min-width:0;max-width:100%;gap:4px;text-align:center;
+}
+.group-grid .edition-tile .group-main strong{
+  display:-webkit-box;width:100%;max-width:100%;min-width:0;
+  overflow:hidden;text-overflow:ellipsis;white-space:normal;
+  -webkit-line-clamp:2;-webkit-box-orient:vertical;
+  font:900 13px/1.34 Poppins,system-ui,sans-serif;color:#147cc8;
+  overflow-wrap:anywhere;
+}
+.group-grid .edition-tile .group-main small{
+  display:block;white-space:normal;color:#81909e;
+  font:700 10px/1.35 Poppins,system-ui,sans-serif;
+}
+.group-grid .edition-tile .group-edit{
+  position:absolute;top:8px;right:9px;z-index:2;
+}
+.group-grid .edition-tile .group-chevron{display:none}
+@media(max-width:700px){
+  .archive-tabs-host,.archive-catalogue-controls,.archive-catalogue-controls.has-actions{width:calc(100% - 12px)}
+  .archive-catalogue-row{gap:6px}
+  .archive-filter-trigger{min-height:38px;padding:7px 9px;font-size:10px}
+  #archiveFilterBody{padding:10px}
+  .archive-tabs-host .archives-view-tabs button{flex:1 1 0;font-size:11px;letter-spacing:0;padding:12px 8px}
+  .group-grid .edition-tile,.group-grid .edition-tile .group-open{min-height:177px}
+  .group-grid .edition-tile .group-open{padding:13px 16px 13px!important;gap:6px}
+  .group-grid .edition-tile .group-icon.has-edition-logo{height:67px;min-height:67px}
+  .group-grid .edition-tile .group-icon.has-edition-logo img{max-height:67px!important}
+  .group-grid .edition-tile .group-main strong{font-size:12px}
+  .group-grid .edition-tile .group-main small{font-size:9px}
+}
+@media(max-width:390px){
+  .archive-catalogue-row{gap:4px}
+  .archive-filter-trigger{font-size:9px;padding:6px;white-space:normal}
+  .group-grid .edition-tile .group-main strong{font-size:11px}
+}
+</style>
 </head>
 <body>
 <div class="app-shell">
@@ -1508,11 +1622,21 @@ main#main-content {
     </div>
   </header>
   <div class="main-column">
-    <div class="archive-catalogue-controls"><div id="archiveCatalogueActions" class="archive-catalogue-actions" aria-label="Compteurs et actions du catalogue"></div>
-    <details id="archiveFilterPanel" class="archive-filter-panel">
-      <summary>☷ FILTRES DU CATALOGUE <span>Tous les filtres au même endroit</span></summary>
-      <div id="archiveFilterBody"><div id="archiveFilterDynamic"></div></div>
-    </details></div>
+    <div class="archive-theme-strip" aria-hidden="true"></div>
+    <div id="archiveTopTabs" class="archive-tabs-host"></div>
+    <div class="archive-catalogue-controls">
+      <div class="archive-catalogue-row">
+        <div id="archiveCatalogueActions" class="archive-catalogue-actions" aria-label="Compteur OWN et actions du catalogue"></div>
+        <div id="archiveFilterPanel" class="archive-filter-panel">
+          <button type="button" id="archiveFilterToggle" class="archive-filter-trigger" aria-expanded="false" aria-controls="archiveFilterBody">
+            <span>☷ FILTRES DU CATALOGUE</span><span class="archive-filter-caret" aria-hidden="true">⌄</span>
+          </button>
+        </div>
+      </div>
+      <div id="archiveFilterBody" class="archive-filter-expanded" hidden>
+        <div id="archiveFilterDynamic"></div>
+      </div>
+    </div>
     <div class="topbar" aria-label="Contexte de navigation">
       <div class="topbar-left"><span class="crumb-root">ARCHIVES PERSONNELLES</span><span class="crumb-divider">/</span><span id="breadcrumb">CATALOGUE</span></div>
       <div class="topbar-right">
@@ -1581,7 +1705,7 @@ function groupCard(g){
  const logo=String(info?.logo||'');
  const hasLogo=/^data:image\/(?:png|jpe?g|webp);base64,/i.test(logo);
  const badge=hasLogo?'<img src="'+attr(logo)+'" alt="" decoding="async" />':info?.icon?h(info.icon):iconFor(g.category);
- return `<article class="group-card"><button class="group-open" data-action="open-group" data-id="${attr(g.id)}" aria-label="Ouvrir ${attr(g.name)}"><span class="group-icon ${hasLogo?'has-edition-logo':''}">${badge}</span><span class="group-main"><strong>${h(g.name)}</strong><small>${count} références · ${own} possédées</small></span><span class="group-chevron">→</span></button><button class="group-edit" data-action="edit-group" data-id="${attr(g.id)}" title="Modifier le groupe" aria-label="Modifier ${attr(g.name)}">⋯</button></article>`;
+ return `<article class="group-card edition-tile"><button class="group-open" data-action="open-group" data-id="${attr(g.id)}" aria-label="Ouvrir ${attr(g.name)}"><span class="group-icon ${hasLogo?'has-edition-logo':''}">${badge}</span><span class="group-main"><strong title="${attr(g.name)}">${h(g.name)}</strong><small>${count} références · ${own} possédées</small></span></button><button class="group-edit" data-action="edit-group" data-id="${attr(g.id)}" title="Modifier le groupe" aria-label="Modifier ${attr(g.name)}">⋯</button></article>`;
 }
 function referenceCard(v){const own=ownedCount(v.id),wish=wishFor(v.id);const state=own?`<span class="tile-indicator owned" title="Possédée" aria-label="Possédée">✓</span>`:wish?`<span class="tile-indicator wish" title="Wishlist" aria-label="Wishlist">♡</span>`:'';
 const cat=catForGroup(v.groupId);const secondary=(cat==='cards'?[v.player,v.parallel,v.serial]:[v.color,v.strapColor]).filter(Boolean).join(' · ');
@@ -1653,6 +1777,12 @@ async function importJson(file){if(!file)return;try{const data=validateImported(
 function deleteGroup(id){const group=getGroup(id);if(!group)return;const refs=groupVariants(id);if(!confirm(`Supprimer « ${group.name} » et ses ${refs.length} références, avec tous leurs exemplaires et souhaits ? Cette opération est irréversible sans sauvegarde.`))return;const refIds=new Set(refs.map(v=>v.id));archive.groups=archive.groups.filter(g=>g.id!==id);archive.variants=archive.variants.filter(v=>!refIds.has(v.id));archive.copies=archive.copies.filter(c=>!refIds.has(c.variantId));archive.wishlist=archive.wishlist.filter(w=>!refIds.has(w.variantId));save();navigate(group.category);toast('Groupe supprimé.');}
 function deleteVariant(id){const v=getVariant(id);if(!v)return;if(!confirm(`Supprimer la référence « ${titleFor(v)} », ses exemplaires possédés et sa wishlist ?`))return;archive.variants=archive.variants.filter(v=>v.id!==id);archive.copies=archive.copies.filter(c=>c.variantId!==id);archive.wishlist=archive.wishlist.filter(w=>w.variantId!==id);save();navigate(catForGroup(v.groupId),v.groupId);toast('Référence supprimée.');}
 function legacyHandleAction(action,el){const id=el.dataset.id;switch(action){case 'navigate':navigate(el.dataset.view);break;case 'new-group':groupModal('','dragons');break;case 'new-variant':variantModal('',el.dataset.group||'');break;case 'open-group':navigate(catForGroup(id),id);break;case 'open-variant':{const v=getVariant(id);if(v)openQuickView(v);break;}case 'peek-own':peekOwn(id);break;case 'peek-wish':peekWish(id);break;case 'back-category':navigate(currentView);break;case 'back-group':navigate(currentView,currentGroup);break;case 'edit-group':groupModal(id);break;case 'delete-group':deleteGroup(id);break;case 'edit-variant':variantModal(id);break;case 'duplicate-variant':variantModal(id,'',true);break;case 'delete-variant':deleteVariant(id);break;case 'new-copy':copyModal();break;case 'quick-own':copyModal('',id);break;case 'edit-copy':copyModal(id);break;case 'delete-copy':{const c=archive.copies.find(x=>x.id===id);if(c&&confirm('Retirer cet exemplaire ?')){archive.copies=archive.copies.filter(x=>x.id!==id);save();render();const v=getVariant(c.variantId);if(v&&$('#modal-root .quick-preview'))openQuickView(v);toast('Exemplaire retiré.')}break;}case 'toggle-wish':{const existing=wishFor(id);if(existing){archive.wishlist=archive.wishlist.filter(w=>w.id!==existing.id);save();render();toast('Référence retirée de la wishlist.')}else wishlistModal(id);break;}case 'edit-wish':{const w=archive.wishlist.find(w=>w.id===id);if(w)wishlistModal(w.variantId,id);break;}case 'remove-image':modalImage='removed';$('#remove-image-value').value='yes';$('#f-image').value='';$('#image-preview').innerHTML='<span class="file-note">Photo retirée à l’enregistrement.</span>';break;case 'close-modal':closeModal();break;case 'export-json':exportJson();break;case 'export-csv':exportCsv();break;case 'reset-all':if(confirm('ATTENTION : effacer toutes tes archives locales ? Annule si tu n’as pas de sauvegarde.')&&confirm('Dernière confirmation : suppression de toutes les données RAPLI ARCHIVES sur cet appareil.')){archive=emptyState();save();navigate('dashboard');toast('Archive locale réinitialisée.')}break;}}
+document.getElementById('archiveFilterToggle')?.addEventListener('click',event=>{
+ const toggle=event.currentTarget,body=document.getElementById('archiveFilterBody');
+ const expanded=toggle.getAttribute('aria-expanded')!=='true';
+ toggle.setAttribute('aria-expanded',String(expanded));
+ if(body)body.hidden=!expanded;
+});
 document.addEventListener('click',e=>{const el=e.target.closest('[data-action]');if(el){e.preventDefault();handleAction(el.dataset.action,el);return;}if(e.target.classList.contains('modal-screen'))closeModal();});
 document.addEventListener('submit',e=>{if(e.target.id==='edit-form')onSaveForm(e);});
 let rapliSearchTimer=0;
@@ -1965,6 +2095,14 @@ function render(){const main=$('#main-content');if(!main)return;let breadcrumb='
  else if(currentView==='stats'){breadcrumb='STATISTIQUES';html=statsArchiveView();}
  else if(currentView==='tools'){breadcrumb='SAUVEGARDES';html=toolsView();}
  main.innerHTML=(currentView==='tools'?'':archiveViewTabs())+html;
+  // Navigation stays above the filters (same order as Sports and Regatta).
+  const tabsHost=document.getElementById('archiveTopTabs');
+  if(tabsHost){
+    const tabs=main.querySelector('.archives-view-tabs');
+    tabsHost.replaceChildren();
+    if(tabs)tabsHost.appendChild(tabs);
+    tabsHost.hidden=currentView==='tools';
+  }
   // Move the existing live counters + original management and add actions into the filter row.
   // Re-rendering rebuilds the dashboard; no data or click handlers are duplicated.
   const actionHost=document.getElementById('archiveCatalogueActions');
@@ -1982,6 +2120,12 @@ function render(){const main=$('#main-content');if(!main)return;let breadcrumb='
     dynamic.replaceChildren();
     if(toolbar){toolbar.classList.add('archive-filter-toolbar');dynamic.appendChild(toolbar);}
     panel.hidden=currentView==='tools'||currentView==='stats';
+    const toggle=document.getElementById('archiveFilterToggle');
+    const body=document.getElementById('archiveFilterBody');
+    if(toggle&&body){
+      const expanded=toggle.getAttribute('aria-expanded')==='true';
+      body.hidden=panel.hidden||!expanded;
+    }
   }
   // Déplacer le vrai compteur illustré du corps du catalogue vers la barre de filtres.
   const counterHost=document.getElementById('header-counter-host');

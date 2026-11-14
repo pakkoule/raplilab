@@ -665,22 +665,7 @@ body::before{display:none!important}
 </head>
 <body>
   <div class="app-shell">
-    <div class="topline"></div>
-    <div class="rapli-utility-strip" aria-label="Gestion des sauvegardes">
-    <div class="rapli-cloud-module-group" aria-label="Synchronisation avec Supabase">
-      <button type="button" class="rapli-cloud-module-btn" id="rapli-module-cloud-save" aria-label="Enregistrer dans le cloud" title="Enregistrer dans Supabase">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18h10a4 4 0 0 0 .65-7.95A6.2 6.2 0 0 0 6 8.6 4.7 4.7 0 0 0 7 18Z"/><path d="M12 10v8m-3-3 3 3 3-3"/></svg>
-      </button>
-      <button type="button" class="rapli-cloud-module-btn" id="rapli-module-cloud-refresh" aria-label="Actualiser depuis le cloud" title="Récupérer les modifications de l’autre appareil">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14.25-5L3 8.5"/><path d="M3 3.5v5h5"/><path d="M4 13a8 8 0 0 0 14.25 5L21 15.5"/><path d="M21 20.5v-5h-5"/></svg>
-      </button>
-      <span id="rapli-module-cloud-status" role="status" aria-live="polite">Connexion cloud…</span>
-    </div>
-    <div class="header-tools">
-                <button id="importBtn" class="button button-ghost" type="button" title="Importer une sauvegarde JSON"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V3m-5 5 5-5 5 5M4 16v4h16v-4"/></svg> Importer</button>
-        <button id="exportBtn" class="button button-ghost" type="button" title="Exporter une sauvegarde JSON"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13m-5-5 5 5 5-5M4 17v4h16v-4"/></svg> Exporter</button>
-      </div></div>
-  <main>
+    <div class="topline"></div><main>
 
       <section aria-label="Gestion des cartes">
         <div class="section-nav">
@@ -736,7 +721,7 @@ body::before{display:none!important}
         </div>
       </section>
     </main>
-    <footer class="footer"><span>© RAPLI SPORTS · PERSONAL COLLECTION</span><span>SAUVEGARDE LOCALE · EXPORT JSON DISPONIBLE</span></footer>
+    <footer class="footer"><span>© RAPLI SPORTS · PERSONAL COLLECTION</span><span>SYNCHRONISATION GLOBALE RAPLILAB</span></footer>
   </div>
   <dialog id="cardDialog" class="modal" aria-labelledby="cardDialogTitle">
     <form id="cardForm" novalidate>
@@ -788,7 +773,6 @@ body::before{display:none!important}
       </div>
     </div>
   </dialog>
-  <input type="file" hidden id="importFile" accept="application/json,.json">
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <script src="collection-stats.js"></script>
   <script>
@@ -1279,7 +1263,7 @@ body::before{display:none!important}
         .forEach(id=>$(id).addEventListener('change',updateCollectorPreview));
       $('saveCollectorStyleBtn').addEventListener('click',saveCollectorSettings);
       $('logoList').addEventListener('click',async e=>{const btn=e.target.closest('[data-remove-logo]');if(!btn)return;const logo=logos.find(x=>x.id===btn.dataset.removeLogo);if(!logo)return;if(confirm(`Supprimer le logo « ${logo.name} » ? Les cartes seront conservées.`)){try{await removeLogo(logo.id);renderLogos();renderAll();showToast('Logo supprimé')}catch(err){showToast('Suppression impossible')}}});
-      $('exportBtn').addEventListener('click',exportData);$('importBtn').addEventListener('click',()=>$('importFile').click());$('importFile').addEventListener('change',e=>{if(e.target.files[0])importData(e.target.files[0])});
+      
       $('clearDemoBtn').addEventListener('click',async()=>{if(!confirm('Supprimer toutes les cartes de démonstration ?'))return;try{for(const c of cards.filter(c=>c.demo))await removeCard(c.id);renderAll();showToast('Exemples supprimés')}catch(e){showToast('Impossible de supprimer les exemples')}});
       document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();if(!document.querySelector('dialog[open]')){$('filterSearch').focus();$('filterSearch').select()}}});
 

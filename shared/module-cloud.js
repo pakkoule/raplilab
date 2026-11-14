@@ -1,4 +1,4 @@
-/* RapliLab Cloud Bridge for the six maintained workspaces.
+/* RapliLab Cloud Bridge for the maintained workspaces.
  * No service role key. Uses the anonymous Supabase session and existing Archives device pairing.
  * Local IndexedDB is authoritative until a safe, revision-checked synchronization completes. */
 (() => {
@@ -10,7 +10,7 @@
   const REF_PREFIX = 'rapli-private://';
   const MAX_IMAGE = 10 * 1024 * 1024;
   const bridge = window.RapliModuleBridge;
-  if (!bridge || !['sports','stickers','tools','lp','regatta'].includes(bridge.module)) return;
+  if (!bridge || !['sports','regatta'].includes(bridge.module)) return;
   const MODULE = bridge.module;
   const manualOnly = false;
   const el = id => document.getElementById(id);

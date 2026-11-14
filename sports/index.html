@@ -545,7 +545,7 @@ body::before{display:none!important}
 </style><style id="rapli-sports-collector-badges">
 /* Sports-card serial numbering: serif, subtle foil treatment, compact collector plates. */
 .collector-row{display:flex;align-items:center;gap:7px;flex-wrap:wrap;min-width:0;flex:1}
-.collector-badge{--collector-bg:#192d4e;--collector-ink:#edcf87;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;min-width:67px;max-width:100%;min-height:49px;padding:5px 9px 4px;background:var(--collector-bg);color:var(--collector-ink);border:1px solid var(--collector-ink);border-radius:8px;text-align:center;overflow:hidden;line-height:1.05}
+.collector-badge{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;min-width:67px;max-width:100%;min-height:49px;padding:5px 9px 4px;background:var(--collector-bg,#192d4e);color:var(--collector-ink,#edcf87);border:1px solid var(--collector-ink,#edcf87);border-radius:8px;text-align:center;overflow:hidden;line-height:1.05}
 .collector-row.is-premium .collector-badge{background:linear-gradient(135deg,color-mix(in srgb,var(--collector-bg) 78%,white),var(--collector-bg) 43%,color-mix(in srgb,var(--collector-bg) 85%,black));box-shadow:0 3px 10px #102b492b,inset 0 1px 0 #ffffff48,inset 0 0 0 1px #ffffff16;text-shadow:0 1px 1px #ffffff26}
 .collector-badge-main{display:flex;align-items:center;justify-content:center;white-space:nowrap;max-width:100%;min-height:27px;font-family:'Cormorant Garamond',Georgia,serif;font-size:26px;font-weight:700;line-height:.92;font-variant-numeric:lining-nums tabular-nums;letter-spacing:.015em}
 .collector-badge.font-baskerville .collector-badge-main{font-family:Baskerville,Georgia,serif;font-size:20px;letter-spacing:-.04em}
@@ -579,6 +579,26 @@ body::before{display:none!important}
 .logo-tabs{flex-wrap:wrap}
 @media(max-width:750px){.collector-badge{min-width:58px;min-height:44px;padding:4px 6px}.collector-badge-main{font-size:23px;min-height:24px}.collector-badge-logo{max-height:24px;max-width:67px}.collector-badge-caption{font-size:6px}.collector-row{gap:5px}}
 @media(max-width:420px){.collector-badge{min-width:55px}.collector-badge-main{font-size:21px}.collector-settings-grid{grid-template-columns:1fr}}
+
+/* Distinct collector serial palettes; preview uses the same badge renderer as tiles. */
+.collector-tier-intro{color:#597493;font:700 10px/1.5 Poppins,system-ui,sans-serif;margin:8px 0 11px}
+.collector-tier-toggle{margin:14px 0;padding:12px;background:#e9f1ff;border:1px solid #c6daf4;border-radius:10px}
+.collector-tier-toggle input{width:17px;height:17px;accent-color:#2056d6}
+.collector-tier-settings{border:1px solid #cfdff1;background:#fff;border-radius:12px;padding:12px;margin:11px 0 14px}
+.collector-tier-settings[hidden]{display:none!important}
+.collector-tier-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.collector-tier-entry{min-width:0;display:grid;grid-template-columns:minmax(0,1fr) 56px 56px;gap:7px;align-items:center;
+ border:1px solid #dae4f1;background:#f7faff;border-radius:9px;padding:9px}
+.collector-tier-entry>strong{font:900 11px Poppins,sans-serif;color:#214c80;min-width:0}
+.collector-tier-entry label{display:grid;gap:2px;color:#66819f;font:800 8px Poppins,sans-serif;text-align:center;min-width:0}
+.collector-tier-entry input[type=color]{width:100%;height:35px;cursor:pointer;border:1px solid #b9cce2;background:#fff;border-radius:7px;padding:3px}
+.collector-tier-preview{display:flex;gap:11px;flex-wrap:wrap;align-items:start}
+.collector-preview-title{margin:13px 0 5px;font:900 9px Poppins,sans-serif;letter-spacing:.08em;color:#53749a}
+.collector-preview-sample{display:grid;gap:4px;justify-items:center}
+.collector-preview-sample>small{color:#496887;font:800 9px Poppins,sans-serif}
+#collectorBadgePreview{min-height:0;display:block}
+#collectorBadgePreview .collector-row{flex:none;justify-content:center}
+@media(max-width:650px){.collector-tier-grid{grid-template-columns:1fr}.collector-tier-entry{grid-template-columns:minmax(0,1fr) 58px 58px}}
 </style>
 <style id="rapli-sports-own-stats-and-pickers">
 /* Imported sports logos have no own badge, backing, outline or repeated text. */
@@ -768,10 +788,17 @@ body::before{display:none!important}
         <div class="collector-settings-grid">
           <div class="input-group"><label for="collectorNumberFont">Police numérotation</label><select class="select" id="collectorNumberFont"><option value="cormorant">Cormorant Garamond · collector</option><option value="baskerville">Baskerville · classique</option><optgroup label="Machine à écrire / Typewriter"><option value="special-elite">Special Elite · vintage</option><option value="courier-prime">Courier Prime · machine classique</option><option value="ibm-plex-mono">IBM Plex Mono · mécanique nette</option><option value="american-typewriter">American Typewriter · rétro</option></optgroup></select></div>
           <div class="input-group"><label for="collectorRookieFont">Police Rookie</label><select class="select" id="collectorRookieFont"><option value="cormorant">Cormorant Garamond · collector</option><option value="baskerville">Baskerville · classique</option><optgroup label="Machine à écrire / Typewriter"><option value="special-elite">Special Elite · vintage</option><option value="courier-prime">Courier Prime · machine classique</option><option value="ibm-plex-mono">IBM Plex Mono · mécanique nette</option><option value="american-typewriter">American Typewriter · rétro</option></optgroup></select></div>
-          <div class="input-group"><label for="collectorBackground">Fond du badge</label><input id="collectorBackground" type="color" value="#192d4e"></div>
-          <div class="input-group"><label for="collectorForeground">Lettres / contour</label><input id="collectorForeground" type="color" value="#edcf87"></div>
+          <div class="input-group"><label for="collectorBackground">Fond uniforme / Rookie RC</label><input id="collectorBackground" type="color" value="#192d4e"></div>
+          <div class="input-group"><label for="collectorForeground">Texte / contour uniforme et RC</label><input id="collectorForeground" type="color" value="#edcf87"></div>
+        </div>
+        <p class="collector-tier-intro">Ces deux couleurs s'appliquent au badge RC sans logo et, en mode uniforme, à toutes les numérotations.</p>
+        <label class="collector-settings-check collector-tier-toggle"><input id="collectorByPrintRun" type="checkbox"> Couleurs différentes selon le tirage (1/1, /10, /99…)</label>
+        <div id="collectorTierSettings" class="collector-tier-settings" hidden>
+          <p class="collector-tier-intro">Le tirage total après « / » détermine automatiquement la couleur. Tu peux personnaliser chaque tranche.</p>
+          <div id="collectorTierGrid" class="collector-tier-grid"></div>
         </div>
         <label class="collector-settings-check"><input id="collectorPremium" type="checkbox" checked> Effet foil / relief premium</label>
+        <div class="collector-preview-title">APERÇU DES DIFFÉRENTES NUMÉROTATIONS</div>
         <div id="collectorBadgePreview" aria-label="Aperçu numérotation et Rookie"></div>
         <button type="button" class="button button-primary" id="saveCollectorStyleBtn">Enregistrer le style</button>
       </div>
@@ -936,20 +963,50 @@ body::before{display:none!important}
       function logoFor(type,name){if(!name)return '';let o=logos.find(l=>l.type===type&&normalize(l.name)===normalize(name));return o&&imgSafe(o.image)?o.image:''}
       function brandBadge(type,name){const src=logoFor(type,name);const initials=String(name||'?').split(/\s+/).filter(Boolean).slice(0,2).map(x=>x[0]).join('').toUpperCase().slice(0,2);return src?`<img class="logo-tiny has-image" src="${src}" alt="Logo ${safeText(name)}">`:`<span class="logo-tiny" aria-hidden="true">${safeText(initials)}</span>`}
 
+
       const COLLECTOR_STYLE_ID='collector:style';
-      const COLLECTOR_DEFAULTS=Object.freeze({numberFont:'cormorant',rookieFont:'cormorant',background:'#192d4e',foreground:'#edcf87',premium:true});
+      const COLLECTOR_DEFAULTS=Object.freeze({numberFont:'cormorant',rookieFont:'cormorant',background:'#192d4e',foreground:'#edcf87',premium:true,byPrintRun:false});
+      const COLLECTOR_TIERS=Object.freeze([
+        {key:'one',label:'1/1',run:1,min:1,max:1,background:'#d4aa42',foreground:'#182941'},
+        {key:'ten',label:'/2 à /10',run:10,min:2,max:10,background:'#922f53',foreground:'#ffffff'},
+        {key:'twentyfive',label:'/11 à /25',run:25,min:11,max:25,background:'#b85b2c',foreground:'#ffffff'},
+        {key:'fifty',label:'/26 à /50',run:50,min:26,max:50,background:'#6f4ba7',foreground:'#ffffff'},
+        {key:'ninetyNine',label:'/51 à /99',run:99,min:51,max:99,background:'#235eaa',foreground:'#ffffff'},
+        {key:'oneNinetyNine',label:'/100 à /199',run:199,min:100,max:199,background:'#166d85',foreground:'#ffffff'},
+        {key:'fourNinetyNine',label:'/200 à /499',run:499,min:200,max:499,background:'#25714e',foreground:'#ffffff'},
+        {key:'high',label:'/500 et +',run:999,min:500,max:Infinity,background:'#425770',foreground:'#ffffff'}
+      ]);
       const COLLECTOR_FONTS=new Set(['cormorant','baskerville','special-elite','courier-prime','ibm-plex-mono','american-typewriter']);
+      const validCollectorColor=(v,fallback)=>typeof v==='string'&&/^#[0-9a-f]{6}$/i.test(v)?v:fallback;
       function collectorFont(value){return COLLECTOR_FONTS.has(value)?value:'cormorant'}
-      function collectorStyle(){
-        const saved=logos.find(x=>x.id===COLLECTOR_STYLE_ID)?.settings||{};
-        const validColor=(value,fallback)=>typeof value==='string'&&/^#[0-9a-f]{6}$/i.test(value)?value:fallback;
+      function collectorTier(printRun){
+        if(!/^\d+$/.test(String(printRun??'')))return null;
+        const total=Number(printRun);
+        return Number.isSafeInteger(total)&&total>0?(COLLECTOR_TIERS.find(tier=>total>=tier.min&&total<=tier.max)||null):null;
+      }
+      function collectorColors(value={}){
+        const stored=value&&typeof value==='object'&&!Array.isArray(value)?value:{};
+        return Object.fromEntries(COLLECTOR_TIERS.map(tier=>{
+          const pair=stored[tier.key]||{};
+          return [tier.key,{
+            background:validCollectorColor(pair.background,tier.background),
+            foreground:validCollectorColor(pair.foreground,tier.foreground)
+          }];
+        }));
+      }
+      function normalizedCollectorStyle(saved={}){
         return {
           numberFont:collectorFont(saved.numberFont),
           rookieFont:collectorFont(saved.rookieFont),
-          background:validColor(saved.background,COLLECTOR_DEFAULTS.background),
-          foreground:validColor(saved.foreground,COLLECTOR_DEFAULTS.foreground),
-          premium:saved.premium!==false
+          background:validCollectorColor(saved.background,COLLECTOR_DEFAULTS.background),
+          foreground:validCollectorColor(saved.foreground,COLLECTOR_DEFAULTS.foreground),
+          premium:saved.premium!==false,
+          byPrintRun:saved.byPrintRun===true,
+          tierColors:collectorColors(saved.tierColors)
         };
+      }
+      function collectorStyle(){
+        return normalizedCollectorStyle(logos.find(x=>x.id===COLLECTOR_STYLE_ID)?.settings||{});
       }
       function collectorBadgeMarkup(card,style=collectorStyle()){
         const numbered=!!card.numbered&&/^\d+$/.test(String(card.serial||''))&&/^\d+$/.test(String(card.printRun||''));
@@ -957,7 +1014,11 @@ body::before{display:none!important}
         if(!numbered&&!rookie)return '<span class="collector-no-number">Non numérotée</span>';
         let badges='';
         if(numbered){
-          badges+=`<span class="collector-badge collector-badge--number ${'font-'+collectorFont(style.numberFont)}" aria-label="Carte numérotée ${safeText(card.serial)} sur ${safeText(card.printRun)}"><span class="collector-badge-main"><span>${safeText(card.serial)}</span><span class="collector-slash">/</span><span>${safeText(card.printRun)}</span></span><span class="collector-badge-caption">SERIAL NUMBER</span></span>`;
+          const tier=collectorTier(card.printRun);
+          const configured=style.byPrintRun&&tier?style.tierColors?.[tier.key]:null;
+          const background=validCollectorColor(configured?.background,style.background);
+          const foreground=validCollectorColor(configured?.foreground,style.foreground);
+          badges+=`<span class="collector-badge collector-badge--number ${'font-'+collectorFont(style.numberFont)}" style="--collector-bg:${background};--collector-ink:${foreground}" aria-label="Carte numérotée ${safeText(card.serial)} sur ${safeText(card.printRun)}"><span class="collector-badge-main"><span>${safeText(card.serial)}</span><span class="collector-slash">/</span><span>${safeText(card.printRun)}</span></span><span class="collector-badge-caption">SERIAL NUMBER</span></span>`;
         }
         if(rookie){
           const logo=logoFor('rookie',card.sport);
@@ -967,13 +1028,31 @@ body::before{display:none!important}
         }
         return `<div class="collector-row ${style.premium?'is-premium':''}" style="--collector-bg:${style.background};--collector-ink:${style.foreground}">${badges}</div>`;
       }
-      function updateCollectorPreview(){
-        const style={
+      function collectorStyleFromForm(){
+        const stored=collectorStyle().tierColors;
+        const tierColors={};
+        for(const tier of COLLECTOR_TIERS){
+          tierColors[tier.key]={
+            background:$('collectorTierBg-'+tier.key)?.value||stored[tier.key].background,
+            foreground:$('collectorTierInk-'+tier.key)?.value||stored[tier.key].foreground
+          };
+        }
+        return normalizedCollectorStyle({
           numberFont:$('collectorNumberFont').value,rookieFont:$('collectorRookieFont').value,
           background:$('collectorBackground').value,foreground:$('collectorForeground').value,
-          premium:$('collectorPremium').checked
-        };
-        $('collectorBadgePreview').innerHTML=collectorBadgeMarkup({numbered:true,serial:'1',printRun:'1',rookie:true,sport:'__preview__'},style);
+          premium:$('collectorPremium').checked,byPrintRun:$('collectorByPrintRun').checked,tierColors
+        });
+      }
+      function updateCollectorPreview(){
+        const style=collectorStyleFromForm();
+        $('collectorTierSettings').hidden=!style.byPrintRun;
+        const samples=COLLECTOR_TIERS.map(tier=>{
+          const preview={numbered:true,serial:'1',printRun:String(tier.run),rookie:false,sport:'__preview__'};
+          return '<div class="collector-preview-sample"><small>'+tier.label+'</small>'+collectorBadgeMarkup(preview,style)+'</div>';
+        });
+        samples.push('<div class="collector-preview-sample"><small>ROOKIE RC</small>'+
+          collectorBadgeMarkup({numbered:false,rookie:true,sport:'__preview__'},style)+'</div>');
+        $('collectorBadgePreview').innerHTML='<div class="collector-tier-preview">'+samples.join('')+'</div>';
       }
       function openCollectorSettings(){
         const style=collectorStyle();
@@ -982,20 +1061,26 @@ body::before{display:none!important}
         $('collectorBackground').value=style.background;
         $('collectorForeground').value=style.foreground;
         $('collectorPremium').checked=style.premium;
+        $('collectorByPrintRun').checked=style.byPrintRun;
+        $('collectorTierGrid').innerHTML=COLLECTOR_TIERS.map(tier=>{
+          const colors=style.tierColors[tier.key];
+          return '<div class="collector-tier-entry"><strong>'+tier.label+'</strong>'+
+            '<label>FOND<input type="color" id="collectorTierBg-'+tier.key+'" data-collector-color value="'+colors.background+'" aria-label="Fond '+tier.label+'"></label>'+
+            '<label>TEXTE<input type="color" id="collectorTierInk-'+tier.key+'" data-collector-color value="'+colors.foreground+'" aria-label="Texte et contour '+tier.label+'"></label></div>';
+        }).join('');
         updateCollectorPreview();
       }
       async function saveCollectorSettings(){
-        const settings={
-          numberFont:collectorFont($('collectorNumberFont').value),
-          rookieFont:collectorFont($('collectorRookieFont').value),
-          background:$('collectorBackground').value,foreground:$('collectorForeground').value,
-          premium:$('collectorPremium').checked
-        };
+        const settings=collectorStyleFromForm();
+        const button=$('saveCollectorStyleBtn');
+        button.disabled=true;
         try{
           await saveLogo({id:COLLECTOR_STYLE_ID,type:'collector',name:'Style des badges',settings});
-          renderAll();showToast('Style collector enregistré ✓');
+          renderAll();showToast('Couleurs et styles appliqués à toutes les cartes ✓');
         }catch(e){console.error(e);showToast('Impossible d’enregistrer les styles');}
+        finally{button.disabled=false;}
       }
+
       function optionList(id,values,all){const select=$(id),old=select.value;select.replaceChildren(new Option(all,''));[...new Set(values.map(x=>String(x||'').trim()).filter(Boolean))].sort(collator.compare).forEach(x=>select.add(new Option(x,x)));select.value=[...select.options].some(o=>o.value===old)?old:''}
       function fillSavedPicker(select,values,placeholder){
         const value=select.value;
@@ -1217,13 +1302,8 @@ body::before{display:none!important}
             await saveLogo({id:`${x.type}:${normalize(x.name)}`,type:x.type,name:x.name.slice(0,100),image:x.image});
           }else if(x?.id===COLLECTOR_STYLE_ID&&x?.type==='collector'&&x.settings&&typeof x.settings==='object'){
             const p=x.settings;
-            const color=(value,fallback)=>typeof value==='string'&&/^#[0-9a-f]{6}$/i.test(value)?value:fallback;
             await saveLogo({id:COLLECTOR_STYLE_ID,type:'collector',name:'Style des badges',
-              settings:{numberFont:collectorFont(p.numberFont),
-                rookieFont:collectorFont(p.rookieFont),
-                background:color(p.background,COLLECTOR_DEFAULTS.background),
-                foreground:color(p.foreground,COLLECTOR_DEFAULTS.foreground),
-                premium:p.premium!==false}
+              settings:normalizedCollectorStyle(p)
             });
           }
         }renderAll();showToast(`${count} carte(s) importée(s) avec succès`)}catch(err){console.error(err);showToast(err.message||'Fichier JSON invalide')}finally{$('importFile').value=''}}
@@ -1277,8 +1357,15 @@ body::before{display:none!important}
       $('logosBtn').addEventListener('click',()=>{setLogoType('brand');openModal('logoDialog')});document.querySelectorAll('.logo-tab').forEach(b=>b.addEventListener('click',()=>setLogoType(b.dataset.logoType)));
       $('logoFileInput').addEventListener('change',async e=>{const file=e.target.files[0];if(!file)return;try{pendingLogoPhoto=await readPhoto(file,450,.93,'logo');$('logoFileText').textContent='Prêt ✓';showToast('Logo prêt à enregistrer')}catch(err){showToast(err.message||'Image invalide')}});
       $('saveLogoBtn').addEventListener('click',saveNewLogo);
-      ['collectorNumberFont','collectorRookieFont','collectorBackground','collectorForeground','collectorPremium']
+      ['collectorNumberFont','collectorRookieFont','collectorBackground','collectorForeground','collectorPremium','collectorByPrintRun']
         .forEach(id=>$(id).addEventListener('change',updateCollectorPreview));
+      ['collectorBackground','collectorForeground'].forEach(id=>$(id).addEventListener('input',updateCollectorPreview));
+      $('collectorTierGrid').addEventListener('input',event=>{
+        if(event.target.matches('[data-collector-color]'))updateCollectorPreview();
+      });
+      $('collectorTierGrid').addEventListener('change',event=>{
+        if(event.target.matches('[data-collector-color]'))updateCollectorPreview();
+      });
       $('saveCollectorStyleBtn').addEventListener('click',saveCollectorSettings);
       $('logoList').addEventListener('click',async e=>{const btn=e.target.closest('[data-remove-logo]');if(!btn)return;const logo=logos.find(x=>x.id===btn.dataset.removeLogo);if(!logo)return;if(confirm(`Supprimer le logo « ${logo.name} » ? Les cartes seront conservées.`)){try{await removeLogo(logo.id);renderLogos();renderAll();showToast('Logo supprimé')}catch(err){showToast('Suppression impossible')}}});
       

@@ -757,6 +757,13 @@ body::before{display:none!important}
   <link rel="stylesheet" href="stats-visuals.css">
   <link rel="stylesheet" href="../shared/ios-input-focus.css">
   <script defer src="../shared/ios-input-focus.js"></script>
+<style id="rapli-sports-tag-branding">
+.card-item .tags{display:flex;flex-wrap:wrap;gap:7px;align-items:center}
+.card-tag-logo{display:block;width:auto;height:25px;max-width:62px;object-fit:contain;flex:none;border:none!important;
+  background:transparent!important;padding:0!important;box-shadow:none!important}
+.logo-entry[data-logo-type="tag"] .logo-tiny.has-image{height:30px;max-width:55px;object-fit:contain;border:0;background:transparent}
+@media(max-width:520px){.card-tag-logo{height:22px;max-width:52px}}
+</style>
 </head>
 <body>
   <div class="app-shell">
@@ -865,8 +872,8 @@ body::before{display:none!important}
   <dialog id="logoDialog" class="modal small" aria-labelledby="logoDialogTitle">
     <div class="modal-header"><div><span class="modal-kicker">RAPLI SPORTS / IDENTITÉS VISUELLES</span><h2 id="logoDialogTitle" class="modal-title">Bibliothèque de logos</h2></div><button type="button" class="close-modal" data-close="logoDialog" aria-label="Fermer">×</button></div>
     <div class="modal-body">
-      <div class="logo-tabs"><button type="button" class="logo-tab active" data-logo-type="brand">Marques</button><button type="button" class="logo-tab" data-logo-type="team">Équipes</button><button type="button" class="logo-tab" data-logo-type="rookie">Rookie / RC</button><button type="button" class="logo-tab" data-logo-type="athlete">Portraits athlètes</button><button type="button" class="logo-tab" data-logo-type="collector">Style des badges</button></div>
-      <div class="logo-create" id="logoCreatePanel"><p class="logo-help" id="logoCreateHelp">Associe une image à une marque ou une équipe : son logo s'affichera automatiquement sur toutes les cartes correspondantes.</p><div class="logo-create-row"><div class="input-group"><label id="logoNameLabel" for="logoName">Nom de la marque</label><select id="logoAthletePicker" class="select saved-value-picker" aria-label="Choisir un athlète déjà présent dans la collection" hidden><option value="">Choisir un athlète enregistré…</option></select><input class="input" id="logoName" list="logoNamesList" maxlength="100" placeholder="Topps"><datalist id="logoNamesList"></datalist></div><div class="input-group"><label>Image du logo</label><label class="logo-file" id="logoFileLabel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 16V4m-5 5 5-5 5 5M4 17v4h16v-4"/></svg><span id="logoFileText">Choisir</span><input type="file" id="logoFileInput" accept="image/png,image/jpeg,image/webp"></label></div><button id="saveLogoBtn" type="button" class="button button-primary">Ajouter</button></div></div>
+      <div class="logo-tabs"><button type="button" class="logo-tab active" data-logo-type="brand">Marques</button><button type="button" class="logo-tab" data-logo-type="team">Équipes</button><button type="button" class="logo-tab" data-logo-type="rookie">Rookie / RC</button><button type="button" class="logo-tab" data-logo-type="athlete">Portraits athlètes</button><button type="button" class="logo-tab" data-logo-type="tag">Tags / variations</button><button type="button" class="logo-tab" data-logo-type="collector">Style des badges</button></div>
+      <div class="logo-create" id="logoCreatePanel"><p class="logo-help" id="logoCreateHelp">Associe une image à une marque ou une équipe : son logo s'affichera automatiquement sur toutes les cartes correspondantes.</p><div class="logo-create-row"><div class="input-group"><label id="logoNameLabel" for="logoName">Nom de la marque</label><select id="logoAthletePicker" class="select saved-value-picker" aria-label="Choisir un athlète déjà présent dans la collection" hidden><option value="">Choisir un athlète enregistré…</option></select><select id="logoTeamPicker" class="select saved-value-picker" aria-label="Choisir une équipe enregistrée" hidden><option value="">Choisir une équipe…</option></select><select id="logoTagPicker" class="select saved-value-picker" aria-label="Choisir un tag enregistré" hidden><option value="">Choisir un tag…</option></select><input class="input" id="logoName" list="logoNamesList" maxlength="100" placeholder="Topps"><datalist id="logoNamesList"></datalist></div><div class="input-group"><label>Image du logo</label><label class="logo-file" id="logoFileLabel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 16V4m-5 5 5-5 5 5M4 17v4h16v-4"/></svg><span id="logoFileText">Choisir</span><input type="file" id="logoFileInput" accept="image/png,image/jpeg,image/webp"></label></div><button id="saveLogoBtn" type="button" class="button button-primary">Ajouter</button></div></div>
       <div id="logoList" class="logo-list"></div>
       <div id="collectorSettingsPanel" hidden>
         <p class="logo-help">Style des badges de numérotation et Rookie, avec aperçu avant enregistrement.</p>
@@ -941,7 +948,7 @@ body::before{display:none!important}
       function savedPlayers(){return savedValues(cards.flatMap(c=>cardPlayers(c).map(p=>p.name)))}
       function savedBrands(){return savedValues(cards.map(c=>c.brand).concat(logos.filter(l=>l.type==='brand').map(l=>l.name)))}
       function savedTeams(){return savedValues(cards.map(c=>c.team).concat(logos.filter(x=>x.type==='team').map(x=>x.name)))}
-      function savedTags(){return savedValues(cards.flatMap(c=>Array.isArray(c.tags)?c.tags:[]))}
+      function savedTags(){return savedValues(cards.flatMap(c=>Array.isArray(c.tags)?c.tags:[]).concat(logos.filter(l=>l.type==='tag').map(l=>l.name)))}
       function playerPickerMarkup(){
         return '<select class="select saved-value-picker player-picker" data-player-picker aria-label="Choisir un athlète déjà enregistré">'+
           '<option value="">Choisir un athlète enregistré…</option>'+
@@ -1323,7 +1330,12 @@ body::before{display:none!important}
         return sportsGalleryPageMarkup(groups,g=>sportsGalleryGroupCard(g,sportsGalleryLayout));
       }
 
-      function cardMarkup(c){const photo=imgSafe(c.photo)?`<img src="${c.photo}" alt="Carte de ${safeText(c.player)}" loading="lazy">`:`<div class="placeholder"><span class="mini-logo">RAPLI / SPORTS</span><div class="place-center">${ico('layers')}</div><span class="place-foot">COLLECTOR'S CARD</span></div>`;const tags=(c.tags||[]).slice(0,4).map(t=>`<span class="tag">${safeText(t)}</span>`).join('')+((c.tags||[]).length>4?`<span class="tag more">+${c.tags.length-4}</span>`:'');return `<article class="card-item" data-id="${safeText(c.id)}"><div class="photo-side"><div class="card-photo">${photo}${c.demo?'<span class="photo-flag">DÉMO</span>':''}</div></div><div class="card-info"><div class="card-top"><div class="card-athlete">${playerCardSummary(c)}</div><div class="card-controls"><button type="button" class="icon-btn" data-action="edit" data-id="${safeText(c.id)}" aria-label="Modifier cette carte" title="Modifier">${ico('edit')}</button><button type="button" class="icon-btn delete" data-action="delete" data-id="${safeText(c.id)}" aria-label="Supprimer cette carte" title="Supprimer">${ico('trash')}</button></div></div><div class="identity-row"><div class="identity-logos"><div class="brand-lockup">${brandBadge('brand',c.brand)}${logoFor('brand',c.brand)?'':'<span>'+safeText(c.brand||'Sans marque')+'</span>'}</div><div class="team-identity">${c.team?brandBadge('team',c.team):''}${logoFor('team',c.team)?'':'<span>'+safeText(c.team||'Équipe non renseignée')+'</span>'}</div></div>${c.sport?`<span class="sport-chip">${safeText(c.sport)}</span>`:''}</div><div class="reference"><small>RÉFÉRENCE</small>${safeText(c.reference||'Non renseignée')}</div><div class="tags">${tags||'<span class="blank-tag">Aucune variation</span>'}</div><div class="card-bottom">${collectorBadgeMarkup(c)}<button type="button" class="move-card" data-action="move" data-id="${safeText(c.id)}">${c.status==='own'?'→ WISHLIST':'→ OWN'}</button></div></div></article>`}
+      function cardTagMarkup(t){
+        const logo=logoFor('tag',t);
+        return logo?'<img class="card-tag-logo" src="'+logo+'" alt="'+safeText(t)+'" title="'+safeText(t)+'" loading="lazy">':
+          '<span class="tag">'+safeText(t)+'</span>';
+      }
+      function cardMarkup(c){const photo=imgSafe(c.photo)?`<img src="${c.photo}" alt="Carte de ${safeText(c.player)}" loading="lazy">`:`<div class="placeholder"><span class="mini-logo">RAPLI / SPORTS</span><div class="place-center">${ico('layers')}</div><span class="place-foot">COLLECTOR'S CARD</span></div>`;const tags=(c.tags||[]).slice(0,8).map(cardTagMarkup).join('')+((c.tags||[]).length>8?`<span class="tag more">+${c.tags.length-8}</span>`:'');return `<article class="card-item" data-id="${safeText(c.id)}"><div class="photo-side"><div class="card-photo">${photo}${c.demo?'<span class="photo-flag">DÉMO</span>':''}</div></div><div class="card-info"><div class="card-top"><div class="card-athlete">${playerCardSummary(c)}</div><div class="card-controls"><button type="button" class="icon-btn" data-action="edit" data-id="${safeText(c.id)}" aria-label="Modifier cette carte" title="Modifier">${ico('edit')}</button><button type="button" class="icon-btn delete" data-action="delete" data-id="${safeText(c.id)}" aria-label="Supprimer cette carte" title="Supprimer">${ico('trash')}</button></div></div><div class="identity-row"><div class="identity-logos"><div class="brand-lockup">${brandBadge('brand',c.brand)}${logoFor('brand',c.brand)?'':'<span>'+safeText(c.brand||'Sans marque')+'</span>'}</div><div class="team-identity">${c.team?brandBadge('team',c.team):''}${logoFor('team',c.team)?'':'<span>'+safeText(c.team||'Équipe non renseignée')+'</span>'}</div></div>${c.sport?`<span class="sport-chip">${safeText(c.sport)}</span>`:''}</div><div class="reference"><small>RÉFÉRENCE</small>${safeText(c.reference||'Non renseignée')}</div><div class="tags">${tags||'<span class="blank-tag">Aucune variation</span>'}</div><div class="card-bottom">${collectorBadgeMarkup(c)}<button type="button" class="move-card" data-action="move" data-id="${safeText(c.id)}">${c.status==='own'?'→ WISHLIST':'→ OWN'}</button></div></div></article>`}
       const statsEngine=window.RapliSportsStats;
       const statsVisuals=window.RapliSportsStatsVisuals;
       function renderOwnedStatistics(data=statsEngine.calculate(cards)){
@@ -1450,18 +1462,21 @@ body::before{display:none!important}
       async function cardAction(e){const btn=e.target.closest('[data-action]');if(!btn)return;const card=cards.find(x=>x.id===btn.dataset.id);if(!card)return;if(btn.dataset.action==='edit')openCard(card);else if(btn.dataset.action==='delete'){if(confirm(`Supprimer la carte de ${card.player} ?`)){try{await removeCard(card.id);renderAll();showToast('Carte supprimée')}catch(err){showToast('Suppression impossible')}}}else if(btn.dataset.action==='move'){try{await saveCard({...card,status:card.status==='own'?'wishlist':'own',updatedAt:Date.now(),demo:false});renderAll();showToast('Carte transférée vers '+(card.status==='own'?'WISHLIST':'OWN'))}catch(e){showToast('Transfert impossible')}}}
       function clearFilters(){$('filterSearch').value='';['filterBrand','filterTeam','filterTag','filterSport','filterAuto','filterPatch'].forEach(id=>$(id).value='');$('filterNumbered').checked=false;sportsGalleryPage=1;sportsGallerySelected=null;renderAll()}
       function setLogoType(type){
-        if(!['brand','team','rookie','athlete','collector'].includes(type))type='brand';
+        if(!['brand','team','rookie','athlete','tag','collector'].includes(type))type='brand';
         logoType=type;pendingLogoPhoto='';$('logoName').value='';$('logoFileInput').value='';$('logoFileText').textContent='Choisir';
         $('logoAthletePicker').hidden=type!=='athlete';$('logoAthletePicker').value='';
+        $('logoTeamPicker').hidden=type!=='team';$('logoTeamPicker').value='';
+        $('logoTagPicker').hidden=type!=='tag';$('logoTagPicker').value='';
         const styleTab=type==='collector';
         $('logoCreatePanel').hidden=styleTab;$('logoList').hidden=styleTab;$('collectorSettingsPanel').hidden=!styleTab;
-        $('logoNameLabel').textContent=type==='rookie'?'Sport concerné':type==='team'?'Nom de l’équipe':type==='athlete'?'Nom de l’athlète':'Nom de la marque';
-        $('logoName').placeholder=type==='rookie'?'Basketball':type==='team'?'Philadelphia 76ers':type==='athlete'?'Tyrese Maxey':'Topps';
+        $('logoNameLabel').textContent=type==='rookie'?'Sport concerné':type==='team'?'Nom de l’équipe':type==='athlete'?'Nom de l’athlète':type==='tag'?'Nom du tag':'Nom de la marque';
+        $('logoName').placeholder=type==='rookie'?'Basketball':type==='team'?'Philadelphia 76ers':type==='athlete'?'Tyrese Maxey':type==='tag'?'Gold Refractor':'Topps';
         $('logoCreateHelp').textContent=type==='rookie'
           ? 'Importe un logo RC pour un sport. Il remplacera les lettres RC sur toutes ses Rookie Cards.'
           : type==='athlete'?'Ajoute un portrait par athlète : il s’affiche automatiquement dans la galerie Par athlète. Les joueurs présents sur plusieurs cartes partagent le même portrait.'
+          : type==='tag'?'Associe un logo à un tag : il apparaîtra seul, sans texte ni cadre, sur les tuiles. Les tags sans logo gardent leur présentation.'
           : 'Associe un logo à une marque ou une équipe pour l’afficher sur les cartes correspondantes.';
-        $('saveLogoBtn').textContent=type==='rookie'?'Enregistrer le logo RC':type==='athlete'?'Enregistrer le portrait':'Ajouter';
+        $('saveLogoBtn').textContent=type==='rookie'?'Enregistrer le logo RC':type==='athlete'?'Enregistrer le portrait':type==='tag'?'Enregistrer le tag':'Ajouter';
         document.querySelectorAll('.logo-tab').forEach(b=>b.classList.toggle('active',b.dataset.logoType===type));
         if(styleTab)openCollectorSettings();else renderLogos();
       }
@@ -1469,11 +1484,13 @@ body::before{display:none!important}
         const names=logoType==='rookie'
           ? [...document.querySelectorAll('#cardSport option')].map(o=>o.value).concat(cards.map(c=>c.sport))
           : logoType==='athlete'?savedPlayers().concat(logos.filter(x=>x.type==='athlete').map(x=>x.name))
-          : cards.map(c=>logoType==='brand'?c.brand:c.team);
+          : logoType==='tag'?savedTags():logoType==='team'?savedTeams():cards.map(c=>c.brand);
         [...new Set(names.filter(Boolean))].sort(collator.compare).forEach(x=>list.append(new Option(x,x)));
         if(logoType==='athlete')fillSavedPicker($('logoAthletePicker'),names,'Choisir un athlète enregistré…');
+        if(logoType==='team')fillSavedPicker($('logoTeamPicker'),names,'Choisir une équipe enregistrée…');
+        if(logoType==='tag')fillSavedPicker($('logoTagPicker'),names,'Choisir un tag enregistré…');
       }
-      async function saveNewLogo(){const name=$('logoName').value.trim();if(!name)return showToast(logoType==='rookie'?'Sélectionne un sport.':logoType==='athlete'?'Renseigne le nom de l’athlète.':'Renseigne un nom de marque ou d’équipe.');if(logoType==='collector')return;if(!pendingLogoPhoto)return showToast(logoType==='athlete'?'Sélectionne un portrait.':'Sélectionne une image de logo.');const id=`${logoType}:${normalize(name)}`;try{await saveLogo({id,type:logoType,name,image:pendingLogoPhoto});setLogoType(logoType);renderAll();showToast('Logo enregistré et associé automatiquement')}catch(e){showToast('Impossible d’enregistrer le logo')}}
+      async function saveNewLogo(){const name=$('logoName').value.trim();if(!name)return showToast(logoType==='rookie'?'Sélectionne un sport.':logoType==='athlete'?'Renseigne le nom de l’athlète.':logoType==='tag'?'Renseigne le nom du tag.':'Renseigne un nom de marque ou d’équipe.');if(logoType==='collector')return;if(!pendingLogoPhoto)return showToast(logoType==='athlete'?'Sélectionne un portrait.':'Sélectionne une image de logo.');const id=`${logoType}:${normalize(name)}`;try{await saveLogo({id,type:logoType,name,image:pendingLogoPhoto});setLogoType(logoType);renderAll();showToast('Logo enregistré et associé automatiquement')}catch(e){showToast('Impossible d’enregistrer le logo')}}
       async function exportData(){const data={app:'Rapli Sports',version:1,exportedAt:new Date().toISOString(),cards,logos};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`Rapli_Sports_${new Date().toISOString().slice(0,10)}.json`;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),3000);showToast('Sauvegarde JSON exportée')}
       function importCard(x){
         const now=Date.now(),players=cardPlayers(x).filter(p=>p.name);
@@ -1494,7 +1511,7 @@ body::before{display:none!important}
         };
       }
       async function importData(file){try{if(file.size>170*1024*1024)throw new Error('Fichier trop volumineux.');const contents=await file.text();const data=JSON.parse(contents);if(!data||!Array.isArray(data.cards)||!Array.isArray(data.logos))throw new Error('Format de sauvegarde non reconnu.');if(!confirm(`Importer ${data.cards.length} carte(s) et ${data.logos.length} logo(s) ?\n\nLes entrées existantes ayant le même identifiant seront mises à jour. Les autres seront conservées.`))return;let count=0;for(const x of data.cards){if(x&&typeof x==='object'){await saveCard(importCard(x));count++}}for(const x of data.logos){
-          if(x&&typeof x==='object'&&['brand','team','rookie','athlete'].includes(x.type)&&typeof x.name==='string'&&imgSafe(x.image)){
+          if(x&&typeof x==='object'&&['brand','team','rookie','athlete','tag'].includes(x.type)&&typeof x.name==='string'&&imgSafe(x.image)){
             await saveLogo({id:`${x.type}:${normalize(x.name)}`,type:x.type,name:x.name.slice(0,100),image:x.image});
           }else if(x?.id===COLLECTOR_STYLE_ID&&x?.type==='collector'&&x.settings&&typeof x.settings==='object'){
             const p=x.settings;
@@ -1590,6 +1607,10 @@ body::before{display:none!important}
       $('photoDrop').addEventListener('dragover',e=>{e.preventDefault();$('photoDrop').classList.add('dragging')});$('photoDrop').addEventListener('dragleave',()=>$('photoDrop').classList.remove('dragging'));$('photoDrop').addEventListener('drop',e=>{e.preventDefault();$('photoDrop').classList.remove('dragging');if(e.dataTransfer.files[0])handleCardPhoto(e.dataTransfer.files[0])});
       $('logosBtn').addEventListener('click',()=>{setLogoType('brand');openModal('logoDialog')});document.querySelectorAll('.logo-tab').forEach(b=>b.addEventListener('click',()=>setLogoType(b.dataset.logoType)));
       $('logoAthletePicker').addEventListener('change',event=>{
+        if(event.target.value)$('logoName').value=event.target.value;
+        event.target.value='';
+      });
+      for(const id of ['logoTeamPicker','logoTagPicker'])$(id).addEventListener('change',event=>{
         if(event.target.value)$('logoName').value=event.target.value;
         event.target.value='';
       });

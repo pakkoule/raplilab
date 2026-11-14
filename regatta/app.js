@@ -222,7 +222,11 @@ const imageTag=(src,alt)=>validImage(src)?'<img loading="lazy" draggable="false"
 function card(r){
  const status=raceStatus(r),tag=getClassTagColor(r.boatClass),vsrTag=getVSRTagColor(r.vsr),mode=VSR[r.vsr]||'';
  const score=scoreView(r);
- const rankBlocks=(status==='dnf'?'':rankHtml('🏆','CLASSEMENT GÉNÉRAL',r.rank,r.rankTotal,'rank-main',podiumMedalFor(r,'rank','rankTotal'))+
+ // La note n'a ni cartouche ni mention, elle est placée à droite du classement général.
+ const scoreRing=score.available?
+  '<button type="button" class="score-orb'+(score.value>=95?' score-epic':'')+'" style="--score-sweep:'+(Math.min(100,Math.max(0,score.value))*3.6)+'deg;--score-glow:'+(score.value/100)+'" data-action="score" aria-label="Voir le détail de la note Rapli : '+safe(score.value)+' sur 100"><span>'+safe(score.value)+'</span></button>':'';
+ const generalRank=status==='dnf'?'':rankHtml('🏆','CLASSEMENT GÉNÉRAL',r.rank,r.rankTotal,'rank-main',podiumMedalFor(r,'rank','rankTotal'));
+ const rankBlocks=(status==='dnf'?'':(generalRank?'<div class="rank-main-row">'+generalRank+scoreRing+'</div>':'')+
    rankHtml('🇫🇷','NATIONAL',r.rankNational,r.rankNationalTotal,'rank-national',podiumMedalFor(r,'rankNational','rankNationalTotal'))+
    rankHtml('🇨🇶','DÉPARTEMENTAL',r.rankDepartment,r.rankDepartmentTotal,'rank-department',podiumMedalFor(r,'rankDepartment','rankDepartmentTotal'))+
    rankHtml('🏙️','VILLE',r.rankCity,r.rankCityTotal,'rank-city',podiumMedalFor(r,'rankCity','rankCityTotal'))+
@@ -239,8 +243,7 @@ function card(r){
  (validEquipment(r.equipment)?'<span class="stat-chip equipment">ÉQUIPEMENT · '+safe(equipmentModes[r.equipment])+'</span>':'')+
  (moneyNumber(r.gainPoints)?'<span class="stat-chip reward-points">⭐ +'+safe(Number(r.gainPoints).toLocaleString('fr-FR'))+' POINTS VSR</span>':'')+
  (moneyNumber(r.gainCredits)?'<span class="stat-chip reward-credits">🪙 +'+safe(Number(r.gainCredits).toLocaleString('fr-FR'))+' CRÉDITS VR</span>':'')+'</div>'+
- (score.available?'<div class="score-surface"><button type="button" class="score-orb'+(score.value>=95?' score-epic':'')+'" style="--score-glow:'+Math.max(.1,score.value/100)+'" data-action="score" aria-label="Détail de la note Rapli '+safe(score.value)+' sur 100"><span>'+safe(score.value)+'</span></button><span class="score-descriptor"><strong>'+safe(score.mention)+'</strong><small>'+safe(score.stored?'Note figée':'Aperçu · non figé')+(score.stale?' · données modifiées':'')+'</small></span></div>':
- (status==='dnf'||status==='finished'?'<p class="score-pending">'+safe(score.reason||'Note en attente')+'</p>':''))+
+ (!score.available&&(status==='dnf'||status==='finished')?'<p class="score-pending">'+safe(score.reason||'Note en attente')+'</p>':'')+
  (rankBlocks?'<div class="rank-grid">'+rankBlocks+'</div>':'')+
  '<div class="shots"><div class="shot"><label>CLASSEMENT FINAL</label><div class="shot-box image-preview">'+imageTag(r.result,'Classement '+r.name)+'</div></div>'+
  '<div class="shot"><label>TRACÉ</label><div class="shot-box image-preview">'+imageTag(r.route,'Tracé '+r.name)+'</div></div></div>'+
@@ -845,6 +848,8 @@ async function exportPNG(r){
   c.width=W;
   const ctx=c.getContext('2d');if(!ctx)throw Error('Canvas indisponible');
   const left=46,right=1154;
+  // Exporter la même note que sur la tuile (snapshot figé si disponible).
+  const pngScore=scoreView(r),pngHasScore=pngScore.available&&!!r.rank;
   const tag=getClassTagColor(r.boatClass);
   const boatLabel=(r.boatClass||'VIRTUAL REGATTA').toUpperCase().slice(0,28);
   ctx.font='800 18px Poppins,sans-serif';
@@ -943,7 +948,27 @@ async function exportPNG(r){
     ctx.fillText(medal,x+width-40,top+h-14);
    }
   };
-  drawRank(0,left,y+rankTop,right-left,80);
+  // Le classement général se réduit pour accueillir le cercle de notation à droite.
+  drawRank(0,left,y+rankTop,right-left-(pngHasScore?112:0),80);
+  if(pngHasScore){
+   const cx=right-43,cy=y+rankTop+40,outerRadius=39,ratio=Math.max(0,Math.min(1,pngScore.value/100));
+   ctx.save();
+   ctx.beginPath();ctx.arc(cx,cy,outerRadius,0,Math.PI*2);
+   ctx.fillStyle='#142a50';ctx.fill();
+   // Note 0 : aucun arc. Note 100 : cercle complet.
+   if(ratio>0){
+    const gradient=ctx.createLinearGradient(cx-outerRadius,cy-outerRadius,cx+outerRadius,cy+outerRadius);
+    gradient.addColorStop(0,'#268fe4');gradient.addColorStop(1,'#d73e9a');
+    ctx.beginPath();ctx.arc(cx,cy,outerRadius-4,-Math.PI/2,-Math.PI/2+2*Math.PI*ratio,false);
+    ctx.lineWidth=8;ctx.lineCap=ratio===1?'butt':'round';
+    ctx.strokeStyle=gradient;ctx.shadowColor=ratio>=.95?'#cc3c96':'#4d80d1';
+    ctx.shadowBlur=ratio>=.95?18:Math.round(3+10*ratio);ctx.stroke();
+   }
+   ctx.shadowBlur=0;ctx.fillStyle='#fff';
+   ctx.font='900 30px Poppins,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+   ctx.fillText(String(pngScore.value),cx,cy+1);
+   ctx.restore();
+  }
   for(let i=1;i<5;i++){
    const x=left+(i%2===0?565:0),row=Math.floor((i-1)/2);
    drawRank(i,x,y+rankTop+90+row*80,543,70);

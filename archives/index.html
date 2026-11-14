@@ -1397,6 +1397,44 @@ main#main-content {
  .archive-filter-panel>summary span{font-size:9px}
 }
 </style>
+<style id="rapli-archives-statistics">
+.archives-view-tabs{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:0 0 16px;padding-bottom:11px;border-bottom:1px solid #d9e6ed}
+.archives-view-tabs button{border:1px solid #d0dfec;background:#f5f9fd;color:#31618b;border-radius:9px;
+ padding:10px 13px;cursor:pointer;font:850 11px Poppins,sans-serif}
+.archives-view-tabs button[aria-current=page]{background:#164c7c;border-color:#164c7c;color:#fff;box-shadow:0 2px 8px #164c7c33}
+.archive-stats-header{display:flex;align-items:baseline;justify-content:space-between;gap:14px;flex-wrap:wrap;margin:6px 0 19px}
+.archive-stats-header h2{color:#20476d;font:900 24px Poppins,sans-serif;margin:0}
+.archive-stats-header small{font:700 10px Poppins,sans-serif;color:#738ba1}
+.archive-stats-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:0 0 17px}
+.archive-stats-metric{background:linear-gradient(145deg,#fff,#f4faff);border:1px solid #dce7f2;border-top:4px solid var(--stats-color,#2679aa);
+ border-radius:12px;min-width:0;padding:13px;display:grid;gap:8px}
+.archive-stats-metric strong{font:900 28px/1 Poppins,sans-serif;color:var(--stats-color,#23658e);font-variant-numeric:tabular-nums}
+.archive-stats-metric span{font:800 10px/1.4 Poppins,sans-serif;color:#647d98}
+.archive-stats-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.archive-stats-card{min-width:0;background:linear-gradient(150deg,#fff,#f8fbff);border:1px solid #d7e5f1;border-radius:13px;padding:17px}
+.archive-stats-card h3{font:900 12px Poppins,sans-serif;color:#244f77;margin:0 0 13px}
+.archive-stats-card p{font:700 10px/1.5 Poppins,sans-serif;color:#71899c;margin:5px 0}
+.archive-stats-card.is-full{grid-column:1/-1}
+.archive-stats-coverage{display:flex;align-items:center;gap:23px;justify-content:center}
+.archive-stats-ring{width:128px;height:128px;border-radius:50%;display:grid;place-items:center;flex:none;background:conic-gradient(#1c9e84 0 var(--fill),#dcebf1 var(--fill))}
+.archive-stats-ring-inner{width:89px;height:89px;border-radius:50%;display:grid;place-items:center;background:#fff;
+ font:900 26px Poppins,sans-serif;color:#126c65}
+.archive-stats-coverage-copy{display:grid;gap:5px;max-width:205px}
+.archive-stats-coverage-copy strong{font:900 17px Poppins,sans-serif;color:#285b75}
+.archive-stats-bar-list{display:grid;gap:12px}
+.archive-stats-bar-head{display:flex;gap:8px;align-items:center;justify-content:space-between;margin-bottom:5px}
+.archive-stats-bar-head span{font:700 10px Poppins,sans-serif;color:#536f86;overflow-wrap:anywhere}
+.archive-stats-bar-head strong{font:900 11px Poppins,sans-serif;color:#244b72;white-space:nowrap}
+.archive-stats-bar-track{height:8px;background:#e7eef5;border-radius:9px;overflow:hidden}
+.archive-stats-bar-track span{display:block;height:100%;border-radius:9px;background:var(--stat-bar,#2888bb)}
+.archive-stats-summary{display:flex;flex-wrap:wrap;gap:9px;margin-top:14px}
+.archive-stats-pill{display:flex;gap:7px;align-items:center;padding:9px 12px;border:1px solid #cfe1ea;border-radius:9px;background:#edf7fa;
+ color:#305e75;font:800 10px Poppins,sans-serif}
+.archive-stats-pill strong{font-size:14px;color:#147d8e}
+@media(max-width:700px){.archive-stats-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.archive-stats-grid{grid-template-columns:1fr}
+ .archive-stats-card.is-full{grid-column:auto}.archive-stats-coverage{gap:15px}.archive-stats-ring{width:107px;height:107px}
+ .archive-stats-ring-inner{width:75px;height:75px;font-size:22px}}
+</style>
 </head>
 <body>
 <div class="app-shell">
@@ -1807,12 +1845,67 @@ function dashboardView(){
  ${selected?'<button type="button" class="archive-gallery-back" data-action="archive-artwork-back">← Tous les artworks</button><div class="archive-module-heading"><h2>'+h(archiveArtworkSelection)+'</h2><span>'+visible.length+' références</span></div>':''}
  ${gallery}`;
 }
+
+function archiveViewTabs(){
+ const tabs=[['dashboard','Catalogue'],['dragons','Éditions'],['stats','Statistiques']];
+ return '<nav class="archives-view-tabs" aria-label="Navigation Rapli Archives">'+tabs.map(([view,label])=>
+  '<button type="button" data-action="navigate" data-view="'+view+'"'+(currentView===view?' aria-current="page"':'')+'>'+label+'</button>'
+ ).join('')+'</nav>';
+}
+function statsArchiveView(){
+ const variants=dragonVariants(),ids=new Set(variants.map(v=>v.id));
+ const copies=archive.copies.filter(c=>ids.has(c.variantId));
+ const wish=archive.wishlist.filter(w=>ids.has(w.variantId));
+ const owned=new Set(copies.map(c=>c.variantId));
+ const own=owned.size,total=variants.length,percent=total?Math.round(100*own/total):0;
+ const missed=variants.filter(v=>!v.image).length;
+ const unique=(field)=>new Set(variants.map(v=>String(field(v)||'').trim()).filter(Boolean)).size;
+ const breakdown=(field)=>{
+  const groups=new Map();
+  for(const v of variants){
+    const label=String(field(v)||'Non renseigné').trim()||'Non renseigné';
+    if(!groups.has(label))groups.set(label,{label,total:0,owned:0});
+    const row=groups.get(label);row.total++;if(owned.has(v.id))row.owned++;
+  }
+  return [...groups.values()].sort((a,b)=>b.total-a.total||a.label.localeCompare(b.label,'fr',{numeric:true}));
+ };
+ const colors=['#198caa','#af6fbd','#228969','#ad8537'];
+ const chart=(title,rows,color,limit=8)=>{
+   const shown=rows.slice(0,limit),peak=Math.max(1,...shown.map(x=>x.total));
+   return '<section class="archive-stats-card"><h3>'+h(title)+'</h3>'+
+    (shown.length?'<div class="archive-stats-bar-list">'+shown.map(x=>
+      '<div><div class="archive-stats-bar-head"><span>'+h(x.label)+'</span><strong>'+x.owned+' / '+x.total+'</strong></div>'+
+      '<div class="archive-stats-bar-track" style="--stat-bar:'+color+'"><span style="width:'+(x.total/peak*100).toFixed(1)+'%"></span></div></div>'
+    ).join('')+'</div>':'<p>Aucune donnée renseignée.</p>')+
+    (rows.length>limit?'<p>+'+(rows.length-limit)+' autres catégories</p>':'')+'</section>';
+ };
+ const metric=(value,label,color)=>'<div class="archive-stats-metric" style="--stats-color:'+color+'"><strong>'+
+   value.toLocaleString('fr-FR')+'</strong><span>'+h(label)+'</span></div>';
+ return '<section class="archive-stats-header"><h2>Statistiques du Dragon Blanc</h2><small>Références du catalogue · collection OWN</small></section>'+
+ '<div class="archive-stats-metrics">'+
+ metric(total,'RÉFÉRENCES',colors[0])+metric(own,'RÉFÉRENCES OWN',colors[2])+
+ metric(copies.length,'EXEMPLAIRES POSSÉDÉS',colors[1])+metric(wish.length,'WISHLIST',colors[3])+'</div>'+
+ '<div class="archive-stats-grid"><section class="archive-stats-card is-full"><h3>PROGRESSION DE LA COLLECTION</h3>'+
+   '<div class="archive-stats-coverage"><div class="archive-stats-ring" style="--fill:'+percent+'%"><div class="archive-stats-ring-inner">'+percent+'%</div></div>'+
+   '<div class="archive-stats-coverage-copy"><strong>'+own+' / '+total+' références</strong>'+
+   '<p>Une référence est comptabilisée dans OWN dès qu’au moins un exemplaire est possédé.</p></div></div></section>'+
+ chart('Par artwork',breakdown(v=>v.artwork),colors[0],10)+
+ chart('Par rareté',breakdown(v=>v.rarity),colors[1],10)+
+ chart('Par langue',breakdown(v=>v.language),colors[2],10)+
+ chart('Par édition',breakdown(v=>v.edition||getGroup(v.groupId)?.name),colors[3],10)+'</div>'+
+ '<div class="archive-stats-summary"><div class="archive-stats-pill">ARTWORKS <strong>'+unique(v=>v.artwork)+'</strong></div>'+
+ '<div class="archive-stats-pill">ÉDITIONS <strong>'+unique(v=>v.edition||getGroup(v.groupId)?.name)+'</strong></div>'+
+ '<div class="archive-stats-pill">LANGUES <strong>'+unique(v=>v.language)+'</strong></div>'+
+ '<div class="archive-stats-pill">PHOTOS MANQUANTES <strong>'+missed+'</strong></div></div>';
+}
+
 function render(){const main=$('#main-content');if(!main)return;let breadcrumb='DRAGON BLANC',html='';
- if(!['dashboard','dragons','tools'].includes(currentView))currentView='dashboard';
+ if(!['dashboard','dragons','stats','tools'].includes(currentView))currentView='dashboard';
  if(currentView==='dashboard')html=dashboardView();
  else if(currentView==='dragons'){breadcrumb='ÉDITIONS';if(currentGroup&&getGroup(currentGroup)?.category==='dragons'){const g=getGroup(currentGroup);html=groupView(g);breadcrumb+=' / '+g.name.toUpperCase();}else{currentGroup=null;html=categoryView('dragons');}}
+ else if(currentView==='stats'){breadcrumb='STATISTIQUES';html=statsArchiveView();}
  else if(currentView==='tools'){breadcrumb='SAUVEGARDES';html=toolsView();}
- main.innerHTML=html;
+ main.innerHTML=(currentView==='tools'?'':archiveViewTabs())+html;
   const panel=document.getElementById('archiveFilterPanel');
   const dynamic=document.getElementById('archiveFilterDynamic');
   if(panel&&dynamic){

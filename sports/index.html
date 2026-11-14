@@ -912,6 +912,57 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
 @media(max-width:720px){.sports-label-controls{grid-template-columns:repeat(3,minmax(0,1fr))}.sports-label-controls label:first-child{grid-column:1/-1}}
 @media(max-width:530px){.sports-catalogue-controls{gap:7px;grid-template-columns:82px minmax(0,1fr)}.sports-icon-action{width:37px;height:40px;min-height:40px}.sports-catalogue-controls>.nav-actions{gap:7px}.sports-catalogue-controls .rapli-collapsible-filters>summary{min-height:40px;padding:10px 9px;font-size:10px}.sports-catalogue-controls .rapli-collapsible-filters>summary span{display:none}}
 </style>
+
+<style id="rapli-sports-pr1-compact-filters-pagination">
+/* Settings action uses identical gear mark and dark button treatment across all 3 modules. */
+.sports-catalogue-controls .rapli-personalize-action{
+ background:#173d61!important;border:1px solid #426b92!important;
+ color:#fff!important;border-radius:10px!important;
+ box-shadow:0 3px 9px #08203e21!important;
+}
+.sports-catalogue-controls .rapli-personalize-gear{width:19px;height:19px;stroke:currentColor;fill:none}
+.sports-catalogue-controls{gap:7px;margin-bottom:8px}
+.sports-catalogue-controls>.nav-actions{gap:5px}
+.sports-catalogue-controls .sports-icon-action{width:37px;height:37px;min-height:37px;padding:0!important}
+.sports-catalogue-controls .rapli-collapsible-filters>summary{min-height:37px;padding:7px 11px;font-size:10px}
+.sports-catalogue-controls .rapli-collapsible-filters>summary::after{font-size:17px}
+.sports-catalogue-controls .rapli-collapsible-filters .filters{
+ gap:6px;padding:9px 10px;grid-template-columns:minmax(170px,1.25fr) repeat(4,minmax(94px,.7fr)) minmax(118px,.67fr)
+}
+.sports-catalogue-controls .rapli-collapsible-filters .field{gap:3px}
+.sports-catalogue-controls .rapli-collapsible-filters .field-label{font-size:8px}
+.sports-catalogue-controls .rapli-collapsible-filters .input,
+.sports-catalogue-controls .rapli-collapsible-filters .select,
+.sports-catalogue-controls .rapli-collapsible-filters .sorter{min-height:35px;height:35px;padding-top:7px;padding-bottom:7px}
+.sports-catalogue-controls .rapli-collapsible-filters .toolbar-foot{padding:6px 10px 8px}
+.sports-gallery-switch{margin:0 0 4px;gap:5px}
+.sports-gallery-title{margin-right:3px}
+.sports-gallery-option{min-height:31px;padding:6px 9px}
+#sportsPaginationTop .sports-gallery-pagination{margin:3px auto 7px}
+#sportsPaginationBottom .sports-gallery-pagination{margin:8px auto 2px}
+.sports-gallery-pagination{gap:5px}
+.sports-gallery-pagination button{min-width:31px;min-height:31px;padding:5px 8px}
+@media(max-width:750px){
+ .sports-catalogue-controls .rapli-collapsible-filters .filters{
+  grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;padding:8px
+ }
+ .sports-catalogue-controls .rapli-collapsible-filters .search-field{grid-column:1/-1}
+ .sports-catalogue-controls .rapli-collapsible-filters .filter-number{grid-column:1/-1}
+ .sports-catalogue-controls .rapli-collapsible-filters input,
+ .sports-catalogue-controls .rapli-collapsible-filters select{font-size:16px}
+ .sports-gallery-switch{margin-bottom:3px}
+ #sportsPaginationTop .sports-gallery-pagination{margin:2px auto 6px}
+ #sportsPaginationBottom .sports-gallery-pagination{margin:7px auto 2px}
+}
+@media(max-width:530px){
+ .sports-catalogue-controls{grid-template-columns:74px minmax(0,1fr);gap:5px}
+ .sports-catalogue-controls>.nav-actions{gap:4px}
+ .sports-catalogue-controls .sports-icon-action{width:35px;height:35px;min-height:35px}
+ .sports-catalogue-controls .rapli-collapsible-filters>summary{min-height:35px;padding:6px 8px;font-size:9px}
+ .sports-catalogue-controls .rapli-collapsible-filters .filters{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .sports-catalogue-controls .rapli-collapsible-filters .filter-sport{grid-column:span 1}
+}
+</style>
 </head>
 <body>
   <div class="app-shell">
@@ -928,7 +979,7 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
         <div id="collectionPanel">
         <div class="sports-catalogue-controls">
           <div class="nav-actions" role="group" aria-label="Actions sur les cartes">
-            <button id="logosBtn" type="button" class="button button-soft sports-icon-action" aria-label="Gérer les logos" title="Gérer les logos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="m9.4 2.7.4 1.7-2.1 1.2-1.6-.8-2.5 2.5.8 1.6-1.2 2.1-1.7.4v3.4l1.7.4 1.2 2.1-.8 1.6 2.5 2.5 1.6-.8 2.1 1.2.4 1.7h3.4l.4-1.7 2.1-1.2 1.6.8 2.5-2.5-.8-1.6 1.2-2.1 1.7-.4v-3.4l-1.7-.4-1.2-2.1.8-1.6-2.5-2.5-1.6.8-2.1-1.2-.4-1.7z"/></svg></button>
+            <button id="logosBtn" type="button" class="button button-soft sports-icon-action rapli-personalize-action" aria-label="Gérer les logos" title="Gérer les logos"><svg class="rapli-personalize-gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M10.3 2.4h3.4l.5 1.9 1.7.7 1.7-1 2.4 2.4-1 1.7.7 1.7 1.9.5v3.4l-1.9.5-.7 1.7 1 1.7-2.4 2.4-1.7-1-1.7.7-.5 1.9h-3.4l-.5-1.9-1.7-.7-1.7 1-2.4-2.4 1-1.7-.7-1.7-1.9-.5v-3.4l1.9-.5.7-1.7-1-1.7 2.4-2.4 1.7 1 1.7-.7z"/></svg></button>
             <button id="addCardBtn" type="button" class="button button-primary sports-icon-action" aria-label="Ajouter une carte" title="Ajouter une carte"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
           </div>
         <details class="rapli-collapsible-filters" id="sportsCollapsibleFilters"><summary>☷ FILTRES ET TRI <span>Ouvrir / masquer les filtres</span></summary>
@@ -966,7 +1017,7 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
           <button type="button" class="sports-gallery-option" data-sports-layout="brand" aria-pressed="false">Par marque</button>
           <button type="button" class="sports-gallery-option" data-sports-layout="team" aria-pressed="false">Par équipe</button>
           <button type="button" class="sports-gallery-option" data-sports-layout="athlete" aria-pressed="false">Par athlète</button>
-          <span class="sports-gallery-meta" id="sportsGalleryMeta"></span>
+          
         </div>
         <div id="demoBanner" class="demo-strip hidden"><span><strong>APERÇU DE DÉMONSTRATION</strong> — Ces cartes sont des exemples modifiables.</span><button class="link-btn" id="clearDemoBtn" type="button">Supprimer les exemples</button></div>
         <div id="sportsPaginationTop" class="sports-pagination-host" aria-label="Pagination supérieure"></div>
@@ -1832,8 +1883,6 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
         document.querySelectorAll('[data-sports-layout]').forEach(button=>{
           button.setAttribute('aria-pressed',String(button.dataset.sportsLayout===sportsGalleryLayout));
         });
-        $('sportsGalleryMeta').textContent=match.length+' carte'+(match.length!==1?'s':'')+
-          ' · '+(currentView==='own'?'OWN':'WISHLIST');
         $('cardGrid').classList.toggle('is-gallery-layout',sportsGalleryLayout!=='details');
         $('cardGrid').innerHTML=renderSportsGallery(match);
         const nav=sportsGalleryPagination(sportsGalleryCount(match));

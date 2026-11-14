@@ -1,20 +1,10 @@
-/* RapliLab — iPhone Safari: prevent automatic page magnification on form focus.
- *
- * Safari zooms the visual viewport when a focused input/select/textarea has
- * a computed font-size smaller than 16px. Increase only the editable control's
- * text size instead of disabling user zoom or changing the viewport meta tag.
- *
- * Loaded LAST in every active workspace (including the portal), so the
- * solution also works inside each workspace iframe, in portrait and landscape.
+/* Safari iPhone/iPad: editable text protection, even after browser page zoom.
+ * No viewport width breakpoint: zooming can change the layout width.
+ * Preserves intentional pinch zoom and accessibility zoom.
  */
 @supports (-webkit-touch-callout: none) {
-  @media screen and (max-width: 1024px) {
-    input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]):not([type="hidden"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="image"]),
-    textarea,
-    select,
-    [contenteditable="true"],
-    [contenteditable="plaintext-only"] {
-      font-size: 16px !important;
-    }
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]):not([type="hidden"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="image"]),
+  textarea, select, [contenteditable="true"], [contenteditable="plaintext-only"] {
+    font-size: max(20px, 1em) !important;
   }
 }

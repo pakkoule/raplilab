@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#0d2039">
-  <meta name="description" content="Rapli Archives, Rapli Stickers Lab et Rapli Tools, réunis dans un même espace personnel.">
-  <title>RAPLI TRIO V3.0 — Archives, Stickers Lab & Tools</title>
+  <meta name="description" content="Rapli Archives, Sports, Stickers Lab, Tools, LP et Regatta réunis dans un même espace personnel.">
+  <title>RAPLI LAB — 11 espaces personnels</title>
   <link rel="icon" type="image/webp" href="assets/archives-logo.webp">
   <style>
 
@@ -70,14 +70,233 @@ body[data-active="tools"] .portal-header{background:linear-gradient(120deg,#2f37
 .product-tab:focus-visible{outline:2px solid #fff;outline-offset:4px}
 @media(max-width:800px){.product-tab[aria-selected="true"]::after{bottom:-7px}}
 @media(max-width:420px){.product-tab[aria-selected="true"]::after{left:9px;right:9px;bottom:-7px}.product-tab[aria-selected="true"]::before{top:5px;right:5px;width:6px;height:6px}}
+
+/* RAPLI LAB — identité des espaces conservés. */
+body[data-active="sports"]{--accent:#277de7;--frame-bg:#e9f1fc;--frame-border:#b3cde9}
+body[data-active="sports"] .portal-header{background:linear-gradient(115deg,#0b2344,#123d73 52%,#0b2344)}
+.product-tabs{grid-template-columns:repeat(6,minmax(0,1fr));width:min(100%,1110px);gap:8px}
+.product-tab{min-width:0;padding:4px 7px;height:56px}
+.product-tab img,.product-tab[data-product="archives"] img,.product-tab[data-product="stickers"] img,.product-tab[data-product="tools"] img{
+  width:100%;max-width:100%!important;max-height:47px!important;object-fit:contain
+}
+@media(max-width:800px){
+ .portal-header{min-height:119px;padding:7px 8px 10px}
+ .product-tabs{grid-template-columns:repeat(3,minmax(0,1fr));width:min(100%,640px);gap:7px}
+ .product-tab{height:46px}
+ .product-tab img,.product-tab[data-product="archives"] img,.product-tab[data-product="stickers"] img,.product-tab[data-product="tools"] img{
+   max-height:39px!important
+ }
+ .app-frame{height:calc(100dvh - 119px);min-height:0}
+}
+@media(max-width:420px){
+ .portal-header{min-height:111px;padding:5px 6px 9px}
+ .product-tabs{gap:5px}
+ .product-tab{height:43px;padding:3px 4px}
+ .product-tab img,.product-tab[data-product="archives"] img,.product-tab[data-product="stickers"] img,.product-tab[data-product="tools"] img{
+   max-height:35px!important
+ }
+ .app-frame{height:calc(100dvh - 111px);min-height:0}
+}
+
+
+/* RAPLI LAB — one site-wide Cloud Save / Refresh pair for every workspace */
+.portal-header{gap:12px}
+.product-tabs{flex:1 1 auto;min-width:0;max-width:1110px}
+.global-cloud-controls{
+  display:flex;flex:0 0 auto;align-items:center;justify-content:center;
+  gap:6px;position:relative;z-index:2;
+}
+.global-cloud-controls button{
+  display:grid;place-items:center;width:42px;height:42px;
+  border-radius:11px;border:1px solid #7894b4;
+  background:rgba(250,253,255,.12);color:#e7f2ff;
+  cursor:pointer;transition:background .16s,border-color .16s,transform .16s;
+}
+.global-cloud-controls button:hover:not(:disabled){background:rgba(222,240,255,.25);border-color:#c3dcf8;transform:translateY(-1px)}
+.global-cloud-controls button:focus-visible{outline:2px solid #fff;outline-offset:3px}
+.global-cloud-controls button:disabled{cursor:wait;opacity:.6}
+.global-cloud-controls button svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.global-cloud-controls button.is-busy svg{animation:rapli-global-spin 1s linear infinite}
+@keyframes rapli-global-spin{to{transform:rotate(360deg)}}
+.global-cloud-controls .cloud-controls-caption{font:700 9px/1.3 Inter,system-ui,sans-serif;color:#d0e3f5;max-width:93px;overflow-wrap:anywhere}
+#global-cloud-feedback{
+  background:#eaf4ff;border-bottom:1px solid #b8d4f1;
+  color:#173b5c;font:700 12px/1.5 Inter,system-ui,sans-serif;
+  padding:8px 18px;text-align:center;position:relative;z-index:2;
+}
+#global-cloud-feedback[hidden]{display:none}
+#global-cloud-feedback[data-status="error"]{background:#fff0f1;color:#963440;border-color:#e8b6bc}
+#global-cloud-feedback details{margin:4px auto 0;max-width:720px;text-align:left;font-weight:500}
+#global-cloud-feedback details summary{cursor:pointer;font-weight:700}
+#global-cloud-feedback ul{margin:5px 0 4px;padding-left:20px}
+#global-cloud-feedback:has(.global-cloud-dismiss){padding-left:50px;padding-right:50px}
+#global-cloud-feedback .global-cloud-dismiss{
+ position:absolute;top:50%;right:12px;transform:translateY(-50%);
+ display:grid;place-items:center;width:30px;height:30px;border:1px solid #a9c6e4;
+ border-radius:8px;background:rgba(255,255,255,.75);color:inherit;
+ font:700 19px/1 Inter,system-ui,sans-serif;cursor:pointer;
+}
+#global-cloud-feedback .global-cloud-dismiss:hover{background:#fff;border-color:#729fcb}
+#global-cloud-feedback .global-cloud-dismiss:focus-visible{outline:2px solid currentColor;outline-offset:2px}
+@media(max-width:420px){
+ #global-cloud-feedback:has(.global-cloud-dismiss){padding-left:38px;padding-right:38px}
+ #global-cloud-feedback .global-cloud-dismiss{right:5px;width:28px;height:28px}
+}
+@media(max-width:1120px){
+ .portal-header{flex-wrap:wrap;gap:7px}
+ .product-tabs{flex:1 1 100%;max-width:100%}
+ .global-cloud-controls{flex:1 1 100%;justify-content:center}
+ .global-cloud-controls button{width:36px;height:36px}
+ .global-cloud-controls button svg{width:21px;height:21px}
+ .global-cloud-controls .cloud-controls-caption{max-width:none}
+ .app-frame{height:calc(100dvh - 163px);min-height:0}
+}
+@media(max-width:800px){
+ .portal-header{padding:6px 8px 9px}
+ .app-frame{height:calc(100dvh - 166px)}
+}
+@media(max-width:420px){
+ .portal-header{padding:5px 6px 8px;gap:6px}
+ .global-cloud-controls button{width:34px;height:34px;border-radius:9px}
+ .global-cloud-controls .cloud-controls-caption{font-size:8px}
+ .app-frame{height:calc(100dvh - 161px)}
+ #global-cloud-feedback{font-size:11px;padding:7px 10px}
+}
+@media(prefers-reduced-motion:reduce){.global-cloud-controls button.is-busy svg{animation:none}}
+
+
+/* RapliLab workspaces — espaces actifs. */
+body[data-active="lp"]{--accent:#c5c6ca;--frame-bg:#e6e6e8;--frame-border:#b5b5ba}
+body[data-active="regatta"]{--accent:#03bac8;--frame-bg:#ebf7f6;--frame-border:#bedede}
+body[data-active="regatta"] .portal-header{background:linear-gradient(120deg,#102c3f,#006174 53%,#112a40)}
+.product-tab[data-product="regatta"][aria-selected="true"]{background-color:rgba(0,200,212,.16)!important}
+body[data-active="lp"] .portal-header{background:linear-gradient(115deg,#101114,#32333a 52%,#111215)}
+.product-tab[data-product="lp"][aria-selected="true"]{background-color:rgba(215,216,220,.2)!important}
+@media(min-width:801px){.product-tabs{grid-template-columns:repeat(6,minmax(0,1fr));width:min(100%,1018px)}}
+/* Mobile: eleven tabs stay on a single swipeable rail without shrinking. */
+@media(max-width:800px){
+  .portal-header{min-height:0}
+  .product-tabs{
+    display:flex;flex-wrap:nowrap;justify-content:flex-start;align-items:center;
+    flex:1 1 100%;width:100%;max-width:100%;min-width:0;
+    overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;
+    -webkit-overflow-scrolling:touch;touch-action:pan-x;
+    scroll-snap-type:x proximity;scrollbar-width:thin;
+    scrollbar-color:rgba(230,235,241,.48) transparent;
+    gap:7px;padding:0 2px 7px;
+  }
+  .product-tab{flex:0 0 clamp(86px,21vw,112px);width:auto;scroll-snap-align:start}
+  .product-tab[aria-selected="true"]::after{bottom:1px}
+  .app-frame{height:calc(100dvh - 118px)}
+}
+@media(max-width:420px){
+  .product-tabs{gap:6px;padding-bottom:6px}
+  .product-tab{flex-basis:92px}
+  .app-frame{height:calc(100dvh - 111px)}
+}
+
+/* RAPLI LAB — PREMIUM LATERAL BRAND ATMOSPHERE (option C)
+   Draw behind the existing portal, without changing its size or iframe behavior. */
+@media (min-width:1100px) {
+  body { --side-theme:#1a416c; --side-logo:url("assets/archives-logo.webp"); background:#050708; isolation:isolate; }
+  body[data-active="archives"] {--side-theme:#1a416c;--side-logo:url("assets/archives-logo.webp")}
+  body[data-active="sports"] {--side-theme:#15519b;--side-logo:url("sports/assets/logo.png")}
+  body[data-active="stickers"] {--side-theme:#19715b;--side-logo:url("assets/stickers-logo.webp")}
+  body[data-active="tools"] {--side-theme:#a86521;--side-logo:url("assets/tools-logo.webp")}
+  body[data-active="lp"] {--side-theme:#40414d;--side-logo:url("assets/lp-mosaic-hd.webp")}
+  body[data-active="regatta"] {--side-theme:#006d7a;--side-logo:url("regatta/assets/logo.webp")}
+  body::before,body::after {
+    content:"";display:block;position:fixed;inset:0;z-index:0;pointer-events:none;
+  }
+  /* Brand-tinted upper edges, atmospheric middle and near-black bottom. */
+  body::before {
+    background:
+      radial-gradient(ellipse 45% 45% at 0% 5%,color-mix(in srgb,var(--side-theme) 58%,#a6a7a2) 0%,transparent 75%),
+      radial-gradient(ellipse 45% 55% at 100% 12%,color-mix(in srgb,var(--side-theme) 65%,#899598) 0%,transparent 76%),
+      linear-gradient(180deg,color-mix(in srgb,var(--side-theme) 88%,#0a1012) 0%,color-mix(in srgb,var(--side-theme) 55%,#080b10) 34%,#101417 66%,#040506 100%);
+  }
+  /* Monochrome photo texture: retain light/dark image detail and original alpha.
+     Avoid upscaling lightweight navigation logos beyond their useful resolution. */
+  body::after {
+    background-image:var(--side-logo);background-repeat:repeat;
+    background-position:center 36px;background-size:clamp(350px,29vw,500px) auto;
+    filter:grayscale(1);opacity:.05;
+    -webkit-mask-image:linear-gradient(180deg,#000 0%,rgba(0,0,0,.95) 24%,rgba(0,0,0,.65) 67%,rgba(0,0,0,.22) 100%);
+    mask-image:linear-gradient(180deg,#000 0%,rgba(0,0,0,.95) 24%,rgba(0,0,0,.65) 67%,rgba(0,0,0,.22) 100%);
+  }
+  .portal {position:relative;z-index:1}
+}
+/* Mobile and small tablets preserve the original lightweight background. */
+
+/* Rapli Regatta: isolate the logo texture to the side gutters on desktop.
+   The main 1360px portal and the mobile single-row scrolling rail are untouched. */
+@media(min-width:1100px){
+  body[data-active="regatta"]::after{
+    background-image:var(--side-logo);
+    background-repeat:repeat;
+    background-size:clamp(235px,20vw,350px) auto;
+    background-position:center 65px;
+    filter:grayscale(1);
+    opacity:.09;
+  }
+}
+
+/* RAPLI LAB — Global cloud actions directly after the last tab.
+   One continuous, horizontally swipeable strip on narrow screens. */
+.portal-header{display:flex;flex-wrap:nowrap;justify-content:center;min-height:72px;padding:7px 12px 9px;gap:0}
+.portal-nav-strip{position:relative;display:flex;align-items:center;justify-content:center;gap:12px;width:100%;max-width:1160px;min-width:0}
+.portal-nav-strip .product-tabs{
+  display:grid;grid-template-columns:repeat(11,minmax(0,1fr));
+  flex:1 1 auto;width:100%;max-width:1018px;min-width:0;gap:7px;
+}
+.portal-nav-strip .global-cloud-controls{
+  display:flex;flex:0 0 auto;align-items:center;justify-content:flex-end;gap:6px;
+}
+@media(max-width:1120px){
+  .portal-header{min-height:0;padding:7px 8px 8px;flex-wrap:nowrap;gap:0}
+  .portal-nav-strip{
+    justify-content:flex-start;overflow-x:auto;overflow-y:hidden;
+    overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;
+    touch-action:pan-x;scroll-snap-type:x proximity;scrollbar-width:thin;
+    scrollbar-color:rgba(230,235,241,.48) transparent;
+  }
+  .portal-nav-strip .product-tabs{
+    display:flex;flex:0 0 auto;align-items:center;justify-content:flex-start;
+    width:max-content;max-width:none;min-width:0;gap:7px;
+    padding:0 2px 7px;overflow:visible;
+  }
+  .portal-nav-strip .product-tab{
+    flex:0 0 100px;width:100px;height:46px;scroll-snap-align:start;
+  }
+  .portal-nav-strip .product-tab[aria-selected="true"]::after{bottom:1px}
+  .portal-nav-strip .global-cloud-controls{
+    flex:0 0 auto;justify-content:flex-start;align-self:center;
+    padding:0 5px 7px 0;scroll-snap-align:end;
+  }
+  .portal-nav-strip .global-cloud-controls button{width:36px;height:36px}
+  .app-frame{height:calc(100dvh - 71px);min-height:0}
+}
+@media(max-width:420px){
+  .portal-header{padding:5px 6px 7px;gap:0}
+  .portal-nav-strip .product-tabs{gap:6px;padding-bottom:6px}
+  .portal-nav-strip .product-tab{flex-basis:92px;width:92px;height:43px}
+  .portal-nav-strip .global-cloud-controls{padding-bottom:6px}
+  .portal-nav-strip .global-cloud-controls button{width:34px;height:34px}
+  .app-frame{height:calc(100dvh - 64px)}
+}
+
 </style>
 </head>
 <body data-active="tools">
   <div class="portal">
     <header class="portal-header">
+      <div class="portal-nav-strip">
       <nav class="product-tabs" role="tablist" aria-label="Choisir le projet Rapli">
         <button type="button" id="tab-archives" class="product-tab" data-product="archives" role="tab" aria-selected="false" aria-controls="panel-archives" tabindex="-1" title="Rapli Archives">
           <img src="assets/archives-logo.webp" alt="Rapli Archives" width="100" height="57" draggable="false">
+        </button>
+        <button type="button" id="tab-sports" class="product-tab" data-product="sports" role="tab" aria-selected="false" aria-controls="panel-sports" tabindex="-1" title="Rapli Sports — collection de cartes">
+          <img src="sports/assets/logo.png" alt="Rapli Sports" draggable="false">
         </button>
         <button type="button" id="tab-stickers" class="product-tab" data-product="stickers" role="tab" aria-selected="false" aria-controls="panel-stickers" tabindex="-1" title="Rapli Stickers Lab">
           <img src="assets/stickers-logo.webp" alt="Rapli Stickers Lab" width="218" height="58" draggable="false">
@@ -85,14 +304,40 @@ body[data-active="tools"] .portal-header{background:linear-gradient(120deg,#2f37
         <button type="button" id="tab-tools" class="product-tab" data-product="tools" role="tab" aria-selected="true" aria-controls="panel-tools" tabindex="0" title="Rapli Tools">
           <img src="assets/tools-logo.webp" alt="Rapli Tools" width="172" height="80" draggable="false">
         </button>
+        <button type="button" id="tab-lp" class="product-tab" data-product="lp" role="tab" aria-selected="false" aria-controls="panel-lp" tabindex="-1" title="Rapli LP — collection de CD">
+          <img src="lp/assets/logo.webp" alt="Rapli LP" draggable="false">
+        </button>
+        <button type="button" id="tab-regatta" class="product-tab" data-product="regatta" role="tab" aria-selected="false" aria-controls="panel-regatta" tabindex="-1" title="Rapli Regatta — journal de courses">
+          <img src="regatta/assets/logo.webp" alt="Rapli Regatta" draggable="false">
+        </button>
       </nav>
+
+      <div class="global-cloud-controls" role="group" aria-label="Synchronisation globale RapliLab">
+        <button id="global-cloud-save" type="button" title="Enregistrer les six espaces dans Supabase" aria-label="Enregistrer tous les espaces RapliLab dans le cloud">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18h10a4 4 0 0 0 .65-7.95A6.2 6.2 0 0 0 6 8.6 4.7 4.7 0 0 0 7 18Z"/><path d="M12 10v8m-3-3 3 3 3-3"/></svg>
+        </button>
+        <button id="global-cloud-refresh" type="button" title="Actualiser les six espaces depuis Supabase" aria-label="Récupérer les modifications de tous les espaces RapliLab depuis le cloud">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14.25-5L3 8.5"/><path d="M3 3.5v5h5"/><path d="M4 13a8 8 0 0 0 14.25 5L21 15.5"/><path d="M21 20.5v-5h-5"/></svg>
+        </button>
+      </div>
+      </div>
     </header>
+    <div id="global-cloud-feedback" role="status" aria-live="polite" hidden></div>
     <div class="frame-wrap">
       <section id="panel-archives" role="tabpanel" aria-labelledby="tab-archives" hidden>
         <iframe id="frame-archives" class="app-frame" data-src="archives/index.html" title="Rapli Archives — catalogue Dragon Blanc aux Yeux Bleus" allow="clipboard-read; clipboard-write" loading="eager"></iframe>
       </section>
+      <section id="panel-sports" role="tabpanel" aria-labelledby="tab-sports" hidden>
+        <iframe id="frame-sports" class="app-frame" data-src="sports/index.html" title="Rapli Sports — cartes de sport" loading="lazy"></iframe>
+      </section>
       <section id="panel-stickers" role="tabpanel" aria-labelledby="tab-stickers" hidden>
         <iframe id="frame-stickers" class="app-frame" data-src="stickers/index.html" title="Rapli Stickers Lab — éditeur de stickers" allow="clipboard-read; clipboard-write" loading="lazy"></iframe>
+      </section>
+      <section id="panel-lp" role="tabpanel" aria-labelledby="tab-lp" hidden>
+        <iframe id="frame-lp" class="app-frame" data-src="lp/index.html" title="Rapli LP — collection de CD de musique" loading="lazy"></iframe>
+      </section>
+      <section id="panel-regatta" role="tabpanel" aria-labelledby="tab-regatta" hidden>
+        <iframe id="frame-regatta" class="app-frame" data-src="regatta/index.html" title="Rapli Regatta — journal de courses" allow="clipboard-read; clipboard-write" loading="lazy"></iframe>
       </section>
       <section id="panel-tools" role="tabpanel" aria-labelledby="tab-tools">
         <iframe id="frame-tools" class="app-frame" data-src="tools/index.html" title="Rapli Tools — PDF, détourage, upscale et retouche photo" allow="clipboard-read; clipboard-write" loading="lazy"></iframe>
@@ -102,7 +347,7 @@ body[data-active="tools"] .portal-header{background:linear-gradient(120deg,#2f37
   <script>
   (() => {
     'use strict';
-    const projects=['archives','stickers','tools'];
+    const projects=['archives','sports','stickers','tools','lp','regatta'];
     const tabs=Object.fromEntries(projects.map(name=>[name,document.getElementById('tab-'+name)]));
     const panels=Object.fromEntries(projects.map(name=>[name,document.getElementById('panel-'+name)]));
     const frames=Object.fromEntries(projects.map(name=>[name,document.getElementById('frame-'+name)]));
@@ -125,8 +370,15 @@ body[data-active="tools"] .portal-header{background:linear-gradient(120deg,#2f37
         frames[project].hidden=!active;
         sendActivity(project,active);
       }
-      document.title=({archives:'RAPLI — Archives · Dragon Blanc aux Yeux Bleus',stickers:'RAPLI — Stickers Lab',tools:'RAPLI — Tools'})[name];
+      document.title=({archives:'RAPLI — Archives · Dragon Blanc aux Yeux Bleus',sports:'RAPLI — Sports',stickers:'RAPLI — Stickers Lab',tools:'RAPLI — Tools',lp:'RAPLI — LP',regatta:'RAPLI — Regatta'})[name];
       if(updateHash && location.hash !=='#'+name)history.pushState({project:name},'', '#'+name);
+      // Keep the active tab visible in the one-row mobile scroll rail.
+      if(window.matchMedia('(max-width: 800px)').matches){
+        const rail=document.querySelector('.portal-nav-strip');
+        const selected=tabs[name];
+        const left=Math.max(0,selected.offsetLeft-(rail.clientWidth-selected.offsetWidth)/2);
+        rail.scrollTo({left,behavior:updateHash?'smooth':'auto'});
+      }
       if(focus)tabs[name].focus();
     }
     for(const name of projects){
@@ -145,7 +397,114 @@ body[data-active="tools"] .portal-header{background:linear-gradient(120deg,#2f37
     // Re-send state once iframes have finished their first load.
     for(const name of projects)frames[name].addEventListener('load',()=>sendActivity(name,name===current));
     select(fromHash());
+
+    // One global action, executed separately for each isolated private collection.
+    // Lazy iframes are loaded on demand, including the inactive modules.
+    const cloudNames={archives:'Archives',sports:'Sports',stickers:'Stickers Lab',tools:'Tools',lp:'LP',regatta:'Regatta'};
+    const cloudSave=document.getElementById('global-cloud-save');
+    const cloudRefresh=document.getElementById('global-cloud-refresh');
+    const cloudFeedback=document.getElementById('global-cloud-feedback');
+    let globalCloudBusy=false,requestSequence=0;
+    const cloudPause=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+    async function ensureCloudFrame(name) {
+      const frame=frames[name];
+      if(!frame)throw Error('Onglet introuvable.');
+      if(!frame.src&&frame.dataset.src){
+        frame.loading='eager';
+        frame.src=frame.dataset.src;
+        delete frame.dataset.src;
+      }
+      const started=Date.now();
+      while(Date.now()-started<45000) {
+        try{
+          const app=frame.contentWindow;
+          const initialized=name==='archives'
+            ? app?.RapliCloud?.isInitialized?.()
+            : app?.RapliModuleBridge?.ready && !!app?.RapliModuleCloud;
+          if(initialized)return frame;
+        }catch(e){ /* Same-origin check, retry while iframe initializes. */ }
+        await cloudPause(200);
+      }
+      throw Error('Application non initialisée. Ouvre cet onglet et réessaie.');
+    }
+    async function syncCloudModule(name,operation) {
+      const frame=await ensureCloudFrame(name);
+      const id='global-'+Date.now().toString(36)+'-'+(++requestSequence)+'-'+name;
+      return new Promise((resolve,reject)=>{
+        let timeout;
+        function cleanup(){clearTimeout(timeout);window.removeEventListener('message',receive);}
+        function receive(event){
+          const data=event.data;
+          if(event.origin!==location.origin||event.source!==frame.contentWindow||
+             data?.type!=='RAPLI_GLOBAL_SYNC_RESULT'||data.id!==id||
+             data.module!==name||data.operation!==operation)return;
+          cleanup();
+          resolve({success:!!data.success,message:String(data.message||''),conflict:!!data.conflict});
+        }
+        window.addEventListener('message',receive);
+        timeout=setTimeout(()=>{cleanup();reject(Error('Délai de synchronisation dépassé'));},120000);
+        try{
+          frame.contentWindow.postMessage({type:'RAPLI_GLOBAL_SYNC_REQUEST',id,module:name,operation},location.origin);
+        }catch(e){cleanup();reject(e);}
+      });
+    }
+    const escapeCloud=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+    function reportGlobalCloud(operation,completed,results) {
+      const errors=results.filter(r=>!r.success);
+      const successes=results.length-errors.length;
+      const title=operation==='save'?'Sauvegarde':'Actualisation';
+      const progress=completed<projects.length;
+      cloudFeedback.hidden=false;
+      cloudFeedback.dataset.status=errors.length?'error':'ok';
+      if(progress){
+        cloudFeedback.textContent=title+' globale : '+completed+'/'+projects.length+' espaces vérifiés…';
+      }else{
+        const summary=title+' globale · '+successes+'/'+projects.length+
+          ' espaces '+(successes===projects.length?'synchronisés ✓':'réussis');
+        const detail=errors.length
+          ? '<details open><summary>'+errors.length+' espace(s) à vérifier</summary><ul>'+
+              errors.map(e=>'<li><strong>'+escapeCloud(cloudNames[e.name])+'</strong> : '+escapeCloud(e.message)+'</li>').join('')+
+            '</ul></details>'
+          : '<details><summary>Afficher le détail des six espaces</summary><ul>'+
+              results.map(e=>'<li>'+escapeCloud(cloudNames[e.name])+' : '+escapeCloud(e.message)+'</li>').join('')+
+            '</ul></details>';
+        cloudFeedback.innerHTML='<strong>'+escapeCloud(summary)+'</strong>'+detail+
+          '<button type="button" class="global-cloud-dismiss" aria-label="Masquer le résultat de la synchronisation" title="Fermer ce message">×</button>';
+      }
+    }
+    async function runGlobalCloud(operation) {
+      if(globalCloudBusy)return;
+      globalCloudBusy=true;
+      cloudSave.disabled=cloudRefresh.disabled=true;
+      const active=operation==='save'?cloudSave:cloudRefresh;
+      active.classList.add('is-busy');
+      active.setAttribute('aria-busy','true');
+      const results=[];
+      try{
+        reportGlobalCloud(operation,0,results);
+        for(const name of projects){
+          let response;
+          try{response=await syncCloudModule(name,operation);}
+          catch(e){response={success:false,message:e?.message||'Synchronisation indisponible'};}
+          results.push({name,...response});
+          reportGlobalCloud(operation,results.length,results);
+        }
+      }finally{
+        globalCloudBusy=false;
+        cloudSave.disabled=cloudRefresh.disabled=false;
+        active.classList.remove('is-busy');
+        active.removeAttribute('aria-busy');
+      }
+    }
+    cloudFeedback.addEventListener('click',event=>{
+      if(event.target.closest('.global-cloud-dismiss') && !globalCloudBusy){
+        cloudFeedback.hidden=true;
+      }
+    });
+    cloudSave.addEventListener('click',()=>void runGlobalCloud('save'));
+    cloudRefresh.addEventListener('click',()=>void runGlobalCloud('refresh'));
   })();
   </script>
+  <script defer src="shared/retired-cleanup.js"></script>
 </body>
 </html>

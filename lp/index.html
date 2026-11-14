@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#101113">
+<meta name="description" content="Rapli LP — ma collection personnelle de CD et d'albums.">
+<title>Rapli LP — Collection de CD</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="../shared/photo-zoom.css">
+</head>
+<body>
+<main class="app-shell">
+  <div class="topline" aria-hidden="true"></div>
+  <div class="utility-strip">
+    <span class="utility-name">RAPLI LP <span class="utility-label">/ COLLECTION DE CD</span></span>
+    <div class="utility-actions">
+      <span id="rapli-module-cloud-status" role="status" aria-live="polite">Connexion cloud…</span>
+      <button type="button" id="rapli-module-cloud-save" class="icon-btn" title="Enregistrer dans Supabase" aria-label="Enregistrer dans le cloud">☁</button>
+      <button type="button" id="rapli-module-cloud-refresh" class="icon-btn" title="Actualiser depuis Supabase" aria-label="Actualiser depuis le cloud">↻</button>
+      <button type="button" id="export-json" class="icon-btn" title="Exporter la collection JSON">↧ EXPORT</button>
+      <label class="icon-btn import-btn" title="Importer une sauvegarde JSON">↥ IMPORT<input id="import-json" type="file" accept=".json,application/json" hidden></label>
+    </div>
+  </div>
+  <section class="summary">
+    <div class="counters" aria-label="Statistiques de la collection">
+      <div class="count"><strong id="count-total">0</strong><span>ALBUMS</span></div>
+      <div class="count"><strong id="count-own">0</strong><span>POSSEDÉS</span></div>
+      <div class="count"><strong id="count-wish">0</strong><span>ENVIES</span></div>
+    </div>
+    <button type="button" class="btn primary" id="add-album">＋ AJOUTER UN CD</button>
+  </section>
+  <div class="collection-nav">
+    <div class="collection-tabs" role="tablist" aria-label="Statut de la collection">
+      <button type="button" class="collection-tab active" role="tab" id="tab-own" data-view="own" aria-controls="cards" aria-selected="true" tabindex="0">OWN <b id="tab-own-count">0</b></button>
+      <button type="button" class="collection-tab" role="tab" id="tab-wishlist" data-view="wish" aria-controls="cards" aria-selected="false" tabindex="-1">WISHLIST <b id="tab-wish-count">0</b></button>
+    </div>
+  </div>
+  <section class="filters" aria-label="Filtrer la collection">
+    <label class="filter search">RECHERCHER <input id="search" type="search" placeholder="Artiste, album, édition, tag…" autocomplete="off"></label>
+    <label class="filter">ARTISTE <select id="filter-artist"><option value="">Tous les artistes</option></select></label>
+    <label class="filter">TRI <select id="sort"><option value="recent">Ajouts récents</option><option value="artist">Artiste A → Z</option><option value="album">Album A → Z</option><option value="old">Ajouts anciens</option></select></label>
+    <button type="button" id="clear-filters" class="btn subtle">EFFACER</button>
+  </section>
+  <div class="collection-heading"><strong id="collection-heading">MES ALBUMS · OWN</strong><span id="result-count"></span></div>
+  <section id="cards" class="cards" aria-live="polite"></section>
+  <p id="empty" class="empty" hidden>Aucun album ici pour le moment. Ajoute ton premier CD !</p>
+  <div class="bottom-actions"><button type="button" id="add-bottom" class="btn secondary">＋ AJOUTER UN CD</button></div>
+  <p id="notice" role="status" aria-live="polite"></p>
+</main>
+<dialog id="album-dialog" aria-labelledby="dialog-title">
+  <form id="album-form" novalidate>
+    <div class="dialog-head">
+      <h2 id="dialog-title">AJOUTER UN CD</h2>
+      <button type="button" data-dismiss class="x" aria-label="Fermer">×</button>
+    </div>
+    <div class="dialog-body">
+      <div class="upload-row">
+        <label class="upload" for="photo-file" tabindex="0" id="photo-drop">
+          <img id="photo-preview" alt="Aperçu de la pochette" hidden>
+          <span id="photo-hint">＋<small>AJOUTER LA POCHETTE</small><small>PNG, JPG, WEBP ou GIF</small></span>
+          <input id="photo-file" type="file" accept=".png,.jpg,.jpeg,.webp,.gif,image/png,image/jpeg,image/webp,image/gif" hidden>
+        </label>
+        <div class="upload-copy">POCHETTE D'ALBUM
+          <p>Le cadre reste toujours carré, sans déformer la photo. Appuie sur la pochette dans la collection pour l'agrandir.</p>
+          <button type="button" id="remove-photo" class="text-btn">RETIRER LA PHOTO</button>
+        </div>
+      </div>
+      <div class="fields">
+        <label>ARTISTE <span aria-hidden="true">*</span><input id="artist" type="text" maxlength="160" placeholder="Massive Attack" required></label>
+        <label>ALBUM <span aria-hidden="true">*</span><input id="album" type="text" maxlength="200" placeholder="Mezzanine" required></label>
+        <label>STATUT <select id="status"><option value="own">JE POSSÈDE</option><option value="wish">ENVIES</option></select></label>
+        <label class="wide">NOTE SUR L'ÉDITION <textarea id="edition-note" maxlength="1500" rows="2" placeholder="Édition japonaise, remaster 2018, digipack…"></textarea></label>
+        <div class="wide tag-area">
+          <label for="tag-field">TAGS D'ÉDITION</label>
+          <div class="chip-editor"><div id="chips" class="chips"></div><input id="tag-field" maxlength="64" placeholder="Ajouter un tag (Entrée ou virgule)"></div>
+          <small>Comme dans Rapli Sports : plusieurs tags, ajout avec Entrée ou virgule, suppression par ×.</small>
+        </div>
+      </div>
+    </div>
+    <div class="dialog-footer">
+      <button class="btn subtle" type="button" data-dismiss>ANNULER</button>
+      <button class="btn danger" type="button" id="delete-album" hidden>SUPPRIMER</button>
+      <button class="btn primary" type="submit" id="submit-album">ENREGISTRER LE CD</button>
+    </div>
+  </form>
+</dialog>
+<script defer src="app.js"></script>
+<script defer src="../shared/photo-zoom.js"></script>
+<script defer src="../shared/module-cloud.js"></script>
+</body>
+</html>

@@ -1408,7 +1408,30 @@ function photoApplyColorToPixel(r,g,b,ctxInfo){
   return [r,g,b];
 }
 function photoPresetData(){return photoUserPresets.map((p,i)=>({...p,index:i,key:'custom-'+i}))}
-function photoSaveUserPresets(){try{localStorage.setItem(photoUserStoreKey,JSON.stringify(photoUserPresets));return true}catch(e){status('#photo-status','Stockage saturé ou indisponible : preset conservé seulement pour cette session.','error');return false}}
+function photoSaveUserPresets(){try{localStorage.setItem(photoUserStoreKey,JSON.stringify(photoUserPresets));window.RapliModuleCloud?.changed?.();return true}catch(e){status('#photo-status','Stockage saturé ou indisponible : preset conservé seulement pour cette session.','error');return false}}
+
+/* RapliLab shared cloud: persistent Tools photo presets (working files remain temporary). */
+const rapliToolsCloudBridge=window.RapliModuleBridge={
+  module:'tools',
+  ready:false,
+  getState:()=>({records:photoUserPresets.length?[{id:'tools-photo-presets',presets:photoUserPresets}]:[],logos:[]}),
+  notify:message=>{const e=document.querySelector('#photo-status');if(e)e.textContent=message;},
+  replaceState:async next=>{
+    if(!next||!Array.isArray(next.records)||next.records.length>1||
+       !Array.isArray(next.logos)||next.logos.length||
+       (next.records.length&&next.records[0]?.id!=='tools-photo-presets')||
+       (next.records.length&&!Array.isArray(next.records[0].presets))||
+       next.records[0]?.presets?.length>24)throw Error('Sauvegarde des presets Tools invalide.');
+    const presets=next.records.length?next.records[0].presets:[];
+    localStorage.setItem(photoUserStoreKey,JSON.stringify(presets));
+    photoUserPresets=presets;
+    photoRenderUserPresets();
+  }
+};
+window.addEventListener('load',()=>{
+  rapliToolsCloudBridge.ready=true;
+  window.dispatchEvent(new Event('rapli-module-ready'));
+},{once:true});
 function photoRenderUserPresets(){const el=$('#photo-custom-presets');el.replaceChildren();if(!photoUserPresets.length){const p=document.createElement('span');p.className='pro-empty';p.textContent='Aucun preset personnel enregistré';el.append(p);return}photoUserPresets.forEach((pr,i)=>{const wrap=document.createElement('div');wrap.className='pro-saved-item';const use=document.createElement('button');use.type='button';use.textContent=pr.name;use.dataset.customLoad=String(i);use.title='Appliquer ce preset';const del=document.createElement('button');del.type='button';del.textContent='×';del.className='pro-remove';del.dataset.customDelete=String(i);del.title='Supprimer ce preset';wrap.append(use,del);el.append(wrap)})}
 function photoSyncPro(){
  $('#photo-preset-strength').value=photoPresetStrength;$('#photo-preset-strength-value').textContent=photoPresetStrength+' %';$('#photo-preset-strength').disabled=photoPreset==='personnalise'||!photoFilters[photoPreset];
@@ -2005,5 +2028,6 @@ $('#photo-auto-white').addEventListener('click',()=>{
 });
 </script>
 <script defer src="exif-tool.js"></script>
+<script src="../shared/module-cloud.js" defer></script>
 </body>
 </html>

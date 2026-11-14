@@ -1,0 +1,481 @@
+:root{font-family:Poppins,system-ui,-apple-system,sans-serif;color:#163045;--teal:#008aa1;--pink:#f60077;--navy:#142d40;--stroke:#d5e6e9;--pale:#eef7f7}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}body{margin:0;min-width:320px;min-height:100vh;background:radial-gradient(circle at 95% -4%,#c9f4f0 0,transparent 32%),radial-gradient(circle at -12% 36%,#f9e0ed 0,transparent 28%),#f2f7f8;color:#193449;font-size:13px}
+button,input,select,textarea{font:inherit}button{cursor:pointer}button:disabled{opacity:.5;cursor:wait}input,select,textarea{min-width:0}a{color:inherit}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #00a8b8;outline-offset:2px}
+.shell{position:relative;width:min(1120px,calc(100% - 48px));margin:26px auto 44px;border:1px solid #d2e6e8;border-radius:20px;overflow:hidden;background:#fff;box-shadow:0 24px 70px #264b571a}
+.topline{height:5px;background:linear-gradient(90deg,var(--pink),var(--pink) 21%,var(--teal) 21%,#16ccd1 80%,#142d40 80%)}
+.utility{padding:14px 26px;display:flex;justify-content:space-between;gap:14px;align-items:center;border-bottom:1px solid var(--stroke);background:#fafdfe}
+.utility-title{white-space:nowrap;font-size:13px;font-weight:900;letter-spacing:.04em;color:#174457}.utility-title small{font-size:10px;letter-spacing:.09em;color:#8ca5ae;font-weight:700}
+.cloud-actions{display:flex;align-items:center;flex-wrap:wrap;gap:7px;justify-content:flex-end}
+#rapli-module-cloud-status{font-size:10px;font-weight:700;max-width:205px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#708993}
+.btn{border:1px solid #b9d2d8;background:#fff;color:#255467;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:39px;padding:9px 13px;font-size:11px;font-weight:800;letter-spacing:.015em;white-space:nowrap;transition:border-color .15s,background .15s,transform .15s}
+.btn:hover:not(:disabled){border-color:#50a9b5;background:#f3fafa;transform:translateY(-1px)}
+.btn.primary{border-color:#078ea5;color:#fff;background:linear-gradient(125deg,#0082a4,#00a9ab);box-shadow:0 5px 18px #0097a32a}
+.btn.primary:hover:not(:disabled){background:linear-gradient(130deg,#007f98,#009997);color:#fff}
+.btn.secondary{background:#eef9f9;color:#087d93;border-color:#91c9d0}.btn.subtle{background:#f7fafb;color:#637c88}
+.btn.icon{height:35px;width:35px;min-height:35px;padding:0;font-size:20px}.btn.tiny{font-size:10px;padding:6px 10px;min-height:33px}
+.btn.danger{color:#aa3954;border-color:#f0c9d4;background:#fff4f6}
+.summary{display:flex;gap:20px;align-items:center;justify-content:space-between;padding:23px 26px 19px}
+.counters{display:flex;gap:12px;flex-wrap:wrap}
+.counter{min-width:100px;display:flex;gap:9px;align-items:baseline;padding:0 15px 0 0;border-right:1px solid var(--stroke)}
+.counter:last-child{border:0}.counter strong{font-size:27px;line-height:1;font-weight:900;color:#008a9b;font-variant-numeric:tabular-nums}.counter:nth-child(2) strong{color:#e70079}.counter span{font-size:9px;letter-spacing:.08em;font-weight:800;color:#839fa7}
+.filters{display:grid;grid-template-columns:1.35fr repeat(3,minmax(0,1fr));gap:9px;padding:15px 26px;background:#f4f9f9;border-top:1px solid #e1edef;border-bottom:1px solid #e1edef}
+.filters label,.fields label,.notes{display:flex;flex-direction:column;gap:6px;font-size:9px;font-weight:800;letter-spacing:.08em;color:#698792}
+.filters input,.filters select,.fields input,.fields select,.notes textarea{border:1px solid #c5dadd;background:white;color:#1e3949;border-radius:9px;width:100%;padding:10px 11px;min-height:42px;font-size:13px;font-weight:600;letter-spacing:0;outline:0}
+.filters input:focus,.filters select:focus,.fields input:focus,.fields select:focus,.notes textarea:focus{border-color:#02a9b3;box-shadow:0 0 0 3px #00b0b41c}
+.collection-head{padding:20px 26px 15px;display:flex;justify-content:space-between;gap:8px;align-items:center}
+.collection-head strong{font-size:12px;font-weight:900;letter-spacing:.07em}.mini-accent{font-size:10px;color:#bd9eaa}.collection-head>span{color:#6e8991;font-size:11px;font-weight:800}
+.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;padding:0 26px 29px}
+.card{min-width:0;overflow:hidden;position:relative;border-radius:15px;background:white;border:1px solid #d4e5e8;box-shadow:0 7px 23px #1a47510f;transition:box-shadow .2s,border-color .2s}
+.card.live{border-color:#03b8b5;box-shadow:0 0 0 2px #00c5c533,0 0 21px #00c6c33d,0 8px 22px #18404a1a}
+.card.live::after{content:"";position:absolute;inset:0;border:2px solid #00e0db75;border-radius:inherit;box-shadow:inset 0 0 22px #00d8d71f;pointer-events:none}
+.card-top{position:relative;background:#e1eded}
+.race-icon{width:100%;aspect-ratio:16/9;position:relative;display:grid;place-items:center;background:linear-gradient(140deg,#d7f4f2,#b8dbe1 53%,#e5f2f2);overflow:hidden}
+.race-icon img{width:100%;height:100%;display:block;object-fit:contain;object-position:center;cursor:zoom-in}
+.icon-placeholder{width:100%;height:100%;display:grid;place-items:center;font-weight:900;font-size:42px;color:#0089a386;letter-spacing:.1em}
+.badge-status{position:absolute;left:12px;top:12px;padding:6px 10px;border-radius:7px;background:#0f3245de;color:#fff;font-size:9px;letter-spacing:.04em;font-weight:900;z-index:1}
+.live .badge-status{background:#e9007c;color:white;box-shadow:0 0 13px #f5008b55}
+.card-content{padding:17px 18px 15px}.card-eyebrow{display:flex;justify-content:space-between;gap:8px;margin-bottom:6px;color:#0a839b;font-size:9px;letter-spacing:.09em;font-weight:900}
+.card-eyebrow .year{color:#849ba6}.card h2{font-weight:900;margin:0 0 6px;font-size:19px;line-height:1.25;letter-spacing:-.03em;overflow-wrap:anywhere}
+.card-boat{color:#8296a1;font-size:11px;font-weight:600;min-height:17px}
+.card-stats{display:flex;flex-wrap:wrap;gap:7px;margin-top:13px}.stat-chip{border:1px solid #d9e6e9;background:#f5fafa;border-radius:7px;padding:6px 9px;font-size:10px;font-weight:700;color:#59727c}
+.shots{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:14px}
+.shot{min-width:0}.shot label{display:block;font-size:8px;font-weight:900;color:#7d959d;letter-spacing:.06em;margin-bottom:5px}
+.shot-box{background:#eef4f5;border-radius:7px;aspect-ratio:16/10;display:grid;place-items:center;overflow:hidden;border:1px solid #e1e9eb}
+.shot-box img{width:100%;height:100%;object-fit:contain;cursor:zoom-in}.shot-empty{font-size:10px;color:#b4c3c9}
+.card-note{color:#7b8b92;font-size:11px;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere;margin-top:11px}
+.card-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:15px}.card-actions .btn{flex:1 1 auto}
+.empty{margin:0 26px 30px;padding:52px 16px;text-align:center;background:#f2fafa;border:1px dashed #aac9ce;border-radius:13px}.empty-icon{font-size:44px}.empty h2{font-size:18px}.empty p{color:#7b8f9a;line-height:1.6;max-width:370px;margin:9px auto 20px}
+.notice{margin:0 26px 25px;color:#168294;font-weight:700;min-height:1em}.notice[data-error="true"]{color:#c5425e}
+dialog{border:0;padding:0;background:transparent;max-width:700px;width:min(700px,calc(100% - 20px));max-height:calc(100dvh - 26px);overflow:visible;color:#173443;border-radius:18px}
+dialog::backdrop{background:#0b1b2cbb;backdrop-filter:blur(5px)}
+dialog form{border-radius:18px;background:#fff;display:flex;flex-direction:column;max-height:calc(100dvh - 26px);overflow:hidden;box-shadow:0 24px 80px #0005}
+.dialog-head{background:#132f40;color:white;display:flex;align-items:center;justify-content:space-between;gap:9px;padding:16px 23px}.dialog-head h2{font-size:15px;letter-spacing:.04em;font-weight:900;margin:0}.close{background:transparent;color:white;border:0;font-size:26px;line-height:1}
+.dialog-scroll{overflow-y:auto;padding:22px 23px;overscroll-behavior:contain}
+.fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.fields .wide{grid-column:1/-1}.required{color:#ee167d}
+.fields .check-live{display:flex;flex-direction:row;align-items:center;background:#f2faf9;border:1px solid #cde6e6;border-radius:10px;padding:13px 15px;gap:10px;cursor:pointer;letter-spacing:0}
+.check-live input{width:20px;min-height:20px;accent-color:#00aab3;flex:none}
+.live-indicator{background:#00d7c6;width:14px;height:14px;border-radius:50%;box-shadow:0 0 0 5px #00d7c622,0 0 14px #00cfbe55;flex:none}
+.check-live span:last-child{display:flex;flex-direction:column;gap:3px}.check-live strong{font-size:12px;color:#1b5862}.check-live small{font-size:10px;font-weight:500;color:#7c9da6}
+.image-section{margin-top:25px;border-top:1px solid #e1ecee;padding-top:16px}.image-section h3{font-size:12px;font-weight:900;margin:0 0 12px;display:flex;justify-content:space-between;gap:6px}.image-section h3 small{font-size:10px;font-weight:600;color:#96a7af}
+.uploads{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:10px}.upload{padding:10px;border:1px solid #d7e5e8;border-radius:11px;min-width:0;background:#f9fcfc}
+.upload-header{font-size:9px;font-weight:900;line-height:1.4;color:#507988;min-height:28px;display:flex;justify-content:space-between;gap:3px}.upload-header span{color:#dd0082}
+.upload-preview{width:100%;aspect-ratio:16/9;display:grid;place-items:center;background:#e7f1f2;overflow:hidden;border-radius:8px;position:relative;border:1px solid #d1e2e5}.upload-preview img{width:100%;height:100%;object-fit:contain;display:block}
+.upload-placeholder{display:grid;place-items:center;text-align:center;font-size:25px;color:#23a4ab}.upload-placeholder small{display:block;font-size:8px;color:#8aa6ae}
+.upload-actions{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px}.upload-actions .btn{flex:1 1 auto;font-size:9px;white-space:normal;text-align:center}
+.hint{font-size:10px;color:#8299a3;line-height:1.6;margin:8px 0}.notes{margin-top:14px}.notes textarea{resize:vertical;min-height:85px;font-size:12px}
+.dialog-footer{display:flex;align-items:center;gap:9px;padding:14px 23px;border-top:1px solid #dce9eb;background:#f7fbfb}.dialog-footer .fill{flex:1}
+@media(max-width:780px){.shell{width:100%;margin:0;border-radius:0;border:none;box-shadow:none;min-height:100dvh}.utility{padding:11px 14px;flex-wrap:wrap}.utility-title{font-size:12px}.cloud-actions{width:100%;justify-content:flex-start}.summary{padding:19px 14px;align-items:stretch;flex-wrap:wrap}.counters{flex:1}.summary>.btn{min-width:150px}.filters{grid-template-columns:repeat(2,minmax(0,1fr));padding:14px}.filters .search{grid-column:1/-1}.cards{padding:0 14px 28px;gap:11px}.collection-head{padding:19px 14px 12px}.empty{margin:0 14px 28px}}
+@media(max-width:580px){.cards{grid-template-columns:1fr}.counter{min-width:0;gap:5px;padding-right:10px}.counter strong{font-size:24px}.counter span{font-size:8px}.summary>.btn{width:100%}.card h2{font-size:18px}.fields{grid-template-columns:1fr}.uploads{grid-template-columns:1fr 1fr}.upload:first-child{grid-column:1/-1}.dialog-scroll{padding:14px}.dialog-head,.dialog-footer{padding:13px 15px}.dialog-footer .btn{padding:8px 10px;font-size:10px}.utility-title small{display:none}.filters input,.filters select,.fields input,.fields select,.notes textarea{font-size:16px}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* Explicit hidden controls: Safari must not show unloaded photos or dialogs. */
+[hidden]{display:none!important}
+/* 16px fields prevent Safari iOS from zooming when typing. */
+@media(max-width:800px){.filters input,.filters select,.fields input,.fields select,.notes textarea{font-size:16px}}
+
+/* Rangs à trois niveaux : repérage discret sans alourdir la carte. */
+.stat-chip.regional{background:#eaf8f6;border-color:#a4dcd8;color:#136c75}
+.stat-chip.national{background:#fdf0f7;border-color:#f4c6e0;color:#a22a70}
+
+/* Mode d'équipement : cases exclusives (PDD / 1/2 FP / Full Pack) mais facultatives. */
+.equipment-choice{margin:0;padding:13px 15px;border:1px solid #cce3e6;border-radius:11px;background:#f6fbfb;min-width:0}
+.equipment-choice legend{padding:0 7px;font-size:10px;font-weight:900;letter-spacing:.06em;color:#537684}
+.equipment-help{font-size:9px;font-weight:600;letter-spacing:0;color:#819ca5;margin-left:8px}
+.equipment-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-top:4px}
+.fields .equipment-option{display:flex;flex-direction:row;align-items:center;justify-content:center;gap:9px;min-width:0;min-height:45px;padding:10px;border:1px solid #c9dde1;border-radius:9px;background:#fff;color:#305f71;cursor:pointer;font-size:12px;font-weight:900;letter-spacing:.02em;transition:background .15s,border-color .15s}
+.fields .equipment-option input[type=checkbox]{width:19px;height:19px;min-height:19px;min-width:19px;margin:0;padding:0;flex:none;accent-color:#008fa8;cursor:pointer}
+.equipment-option:has(input:checked){background:#e5f8f7;border-color:#00a6b6;color:#005e76;box-shadow:inset 0 0 0 1px #04a3b3}
+.equipment-option:hover{border-color:#61b5bd}
+.stat-chip.equipment{background:#e8f8f8;border-color:#a7dbdb;color:#007990;font-weight:900}
+@media(max-width:420px){.equipment-options{gap:6px}.equipment-choice{padding:11px 9px}.equipment-help{display:block;margin:3px 0 0}.fields .equipment-option{padding:8px 5px;gap:6px;font-size:11px}}
+
+/* Arrival is derived from the departure date/time + elapsed race duration.
+   Keep read-only fields visibly distinct without hiding their values on iOS. */
+.fields label.arrival-field{position:relative;color:#266e7e}
+.arrival-field input[readonly]{background:#e8f8f7;border-color:#9bd3d8;color:#114b61;font-weight:800;opacity:1;-webkit-text-fill-color:#114b61;cursor:default}
+.computed-label{position:absolute;top:0;right:0;padding:1px 6px;border:1px solid #c1e7e6;background:#e8f8f7;color:#068e9c;border-radius:5px;font-size:8px;letter-spacing:.075em;font-weight:900}
+.field-help{font-size:10px;color:#869eaa;letter-spacing:0;font-weight:500}
+.arrival-feedback{grid-column:1/-1;font-size:11px;font-weight:600;letter-spacing:0;line-height:1.55;border:1px solid #d5e7e9;background:#f5fafb;border-radius:9px;margin:-4px 0 2px;padding:9px 11px;color:#688691}
+.arrival-feedback[data-state="ok"]{background:#e7f8f4;border-color:#a5dcda;color:#06747f}
+.arrival-feedback[data-state="error"]{background:#fff1f4;border-color:#f2c4d1;color:#a73854}
+.stat-chip.arrival-chip{background:#ecf9f6;border-color:#b2e0d6;color:#26786c}
+
+/* Rapli Regatta — compact collector rankings, exact timer, VSR and statistics. */
+.filters{grid-template-columns:minmax(180px,1.3fr) repeat(4,minmax(116px,.82fr))}
+.class-edit{display:grid;grid-template-columns:minmax(0,1fr) 68px;gap:8px;align-items:end;min-width:0}
+.class-edit label{min-width:0}
+.class-edit .class-color input[type=color]{height:42px;min-height:42px;width:100%;padding:3px;border:1px solid #c5dadd;border-radius:9px;background:#fff;cursor:pointer}
+.class-tag{color:var(--class-ink,#fff);font-weight:900;font-size:10px;line-height:1.2;letter-spacing:.045em;text-transform:uppercase;border:1px solid color-mix(in srgb,var(--class-tag,#008fa1) 75%,#000);background:var(--class-tag,#008fa1);border-radius:6px;padding:6px 9px;max-width:100%;overflow-wrap:anywhere}
+.card-eyebrow{align-items:center;flex-wrap:wrap;gap:7px;margin-bottom:9px}
+.card-tag-row{display:flex;flex:1 1 auto;align-items:center;min-width:0;gap:7px;flex-wrap:nowrap}
+.card-tag-row .class-tag{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.card-tag-row .vsr-badge{flex:0 0 auto;white-space:nowrap}
+.card-eyebrow .year{margin-left:auto;flex:0 0 auto;align-self:center}
+.vsr-badge{font-size:9px;letter-spacing:.07em;font-weight:900;border-radius:6px;padding:5px 9px;background:#e8f2fa;color:#386480;border:1px solid #c9dbe7}
+.vsr-badge.hc{background:linear-gradient(135deg,#fff1b6,#f6d886 53%,#f3edce);border-color:#d6a642;color:#9f7116;font-weight:900;box-shadow:0 1px 5px #caa13b33}
+.card.upcoming{border-color:#3785e2;box-shadow:0 0 0 2px #3a83f432,0 0 22px #267fff50,0 8px 22px #18404a1a}
+.card.upcoming::after{content:"";position:absolute;inset:0;border:2px solid #3d85fa9c;border-radius:inherit;box-shadow:inset 0 0 20px #2074ff14;pointer-events:none}
+.card.upcoming .badge-status{background:#1668cb;color:#fff;box-shadow:0 0 13px #3284ff66}
+.stat-chip.duration-chip{font-family:'Courier Prime','American Typewriter','Courier New',monospace;font-size:12px;letter-spacing:.005em;font-weight:700;background:#f2f7f8;color:#244f62}
+.rank-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:15px}
+.rank-plate{min-width:0;display:flex;align-items:center;gap:8px;padding:9px 10px;border:1px solid #d8e4e8;background:#f7fafb;border-radius:9px}
+.rank-plate .rank-icon{font-size:22px;line-height:1.2;flex:none}
+.rank-value{display:flex;flex-direction:column;min-width:0;gap:2px}
+.rank-type{font:900 8px/1.3 Poppins,sans-serif;letter-spacing:.06em;color:#728993}
+.rank-plate strong{display:block;max-width:100%;font:800 23px/1.05 'Barlow Condensed','Arial Narrow',sans-serif;letter-spacing:.035em;color:#1f3d52;overflow-wrap:anywhere;font-variant-numeric:lining-nums tabular-nums}
+.rank-plate.rank-main{grid-column:1/-1;background:linear-gradient(110deg,#103e54,#146f83);border-color:#087d9a;box-shadow:0 3px 12px #086e9f25;padding:11px 14px}
+.rank-main .rank-icon{font-size:30px;filter:drop-shadow(0 1px 3px #06182466)}
+.rank-main .rank-type{color:#b6e5ee;font-size:10px}
+.rank-main strong{font-size:36px;color:#fff;letter-spacing:.04em}
+.rank-plate.rank-national{background:#f3f8fc;border-color:#cbdfef}
+.rank-plate.rank-department{background:#eef8f4;border-color:#cde2d6}
+.rank-plate.rank-city{background:#f7f4fa;border-color:#e1d9e7}
+.rank-plate.rank-team{background:#f8f5f0;border-color:#e9ded0}
+.calendar-btn{background:#e9f2ff;color:#175fae;border-color:#b4d2f9;font-weight:900}
+.calendar-btn:hover{background:#d9eaff;color:#084c9a;border-color:#619aea}
+.fields .check-upcoming{display:flex;flex-direction:row;align-items:center;background:#f0f6ff;border:1px solid #bcd4fb;border-radius:10px;padding:13px 15px;gap:10px;cursor:pointer;letter-spacing:0}
+.check-upcoming input[type=checkbox]{width:20px;min-height:20px;min-width:20px;padding:0;accent-color:#2674ec;flex:none}
+.upcoming-indicator{background:#3c8afd;width:14px;height:14px;border-radius:50%;box-shadow:0 0 0 5px #337aff20,0 0 14px #1975ed55;flex:none}
+.check-upcoming span:last-child{display:flex;flex-direction:column;gap:3px}.check-upcoming strong{font-size:12px;color:#2058ad}.check-upcoming small{font-size:10px;font-weight:500;color:#7797c5}
+.duration-field,.rankings-editor{min-width:0;margin:0;padding:14px;border:1px solid #cbdfe4;border-radius:11px;background:#f8fbfb}
+.duration-field legend,.rankings-editor legend{font-size:10px;color:#52798a;font-weight:900;letter-spacing:.07em;padding:0 7px}
+.duration-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
+.duration-grid label{min-width:0;display:flex;flex-direction:column;gap:5px;font-weight:900;color:#6e8792;font-size:9px}
+.duration-grid input[type=number]{width:100%;min-width:0;min-height:44px;font-family:'Courier Prime','American Typewriter','Courier New',monospace;font-weight:700;font-size:19px;text-align:center;padding:8px 4px;font-variant-numeric:tabular-nums}
+.duration-field .field-help{margin:8px 0 0}
+.rankings-editor{padding:14px;background:#f8fafc}
+.rankings-help{font-size:9px;color:#8c9aa3;font-weight:500;letter-spacing:0}
+.ranking-inputs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.ranking-input{min-width:0;padding:9px;border:1px solid #dce7ea;border-radius:9px;background:#fff}
+.ranking-input-main{grid-column:1/-1;background:#f1f7fa;border-color:#9bcbd9;padding:12px}
+.ranking-label{display:block;font-size:10px;letter-spacing:.045em;font-weight:900;color:#507383;margin-bottom:8px}
+.ranking-input-main .ranking-label{color:#0a7389;font-size:12px}
+.ranking-pair{display:grid;grid-template-columns:minmax(0,1fr) 18px minmax(0,1fr);gap:5px;align-items:center}
+.ranking-pair span{text-align:center;font:800 24px 'Barlow Condensed','Arial Narrow',sans-serif;color:#8da2aa}
+.ranking-pair input{min-width:0!important;width:100%!important;min-height:42px!important;padding:8px 5px!important;text-align:center;font:800 22px 'Barlow Condensed','Arial Narrow',sans-serif!important;letter-spacing:.02em;color:#25485c}
+.ranking-input-main .ranking-pair input{font-size:27px!important;color:#134a66}
+.workspace-tabs{display:flex;gap:0;margin:0 26px 0;border-bottom:1px solid #d6e6e9}
+.workspace-tab{padding:15px 20px;border:0;background:transparent;color:#7f9da7;position:relative;font:900 12px Poppins,sans-serif;letter-spacing:.055em;cursor:pointer}
+.workspace-tab.active{color:#007e97}.workspace-tab.active::after{content:"";position:absolute;left:12px;right:12px;bottom:-1px;height:3px;background:#04a9b9;border-radius:3px}
+.stats-panel{padding:22px 26px 36px}
+.stats-intro{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:20px}
+.stats-intro strong{font-size:13px;color:#244d60}.stats-intro span{font-size:11px;color:#8aa0a9}
+.stats-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px}
+.stats-metric{padding:20px 17px;border:1px solid #d8e9ec;background:#f6fbfb;border-radius:11px;display:flex;flex-direction:column;gap:8px}
+.stats-metric span{font-size:9px;color:#698a96;font-weight:900;letter-spacing:.055em}
+.stats-metric strong{font-size:27px;line-height:1.1;color:#0b7f95;font-weight:900;overflow-wrap:anywhere}
+.stats-breakdowns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;margin-top:20px}
+.stats-breakdown{border:1px solid #d6e6e9;border-radius:11px;padding:17px;background:#fff;min-width:0}
+.stats-breakdown h3{font-size:11px;letter-spacing:.055em;margin:0 0 15px;color:#376376}
+.stat-breakdown-row{display:grid;grid-template-columns:minmax(75px,1fr) 1.3fr auto;align-items:center;gap:10px;margin:9px 0;font-size:10px;color:#506c79;font-weight:700}
+.stat-breakdown-row>span{overflow-wrap:anywhere}.stat-breakdown-row>strong{min-width:23px;text-align:right}
+.stat-bar-track{height:8px;background:#ebf2f4;border-radius:8px;overflow:hidden}.stat-bar-fill{height:100%;border-radius:inherit;background:linear-gradient(90deg,#00a2b4,#39bbaf)}
+.stats-empty{font-size:11px;color:#97a7ae;padding:10px}
+@media(max-width:780px){.filters{grid-template-columns:repeat(2,minmax(0,1fr))}.workspace-tabs{margin:0 14px}.stats-panel{padding:18px 14px 25px}.stats-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.stats-breakdowns{grid-template-columns:1fr}}
+@media(max-width:580px){.ranking-inputs{gap:7px}.ranking-input{padding:8px 7px}.rank-plate strong{font-size:21px}.rank-main strong{font-size:32px}.duration-grid{gap:5px}.duration-field,.rankings-editor{padding:10px}.duration-grid input[type=number]{font-size:17px}.ranking-pair{gap:2px}.ranking-pair input{font-size:21px!important}.ranking-input-main .ranking-pair input{font-size:25px!important}.rankings-help{display:block;margin-top:3px}.stats-metric strong{font-size:23px}.workspace-tab{padding:13px 14px;font-size:11px}}
+
+/* Compact widths: boat class and VSR always share one line; year can wrap independently. */
+/* The race title is the leading element, with boat class and VSR aligned alongside. */
+.card-title-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;min-width:0;margin:0 0 10px}
+.card-title-row h2{flex:1 1 auto;min-width:0;margin:0;font-size:clamp(16px,1.55vw,20px);line-height:1.27;overflow-wrap:anywhere}
+.card-title-row .card-tag-row{display:flex;flex:0 1 auto;max-width:56%;min-width:0;align-items:center;justify-content:flex-end;flex-wrap:nowrap;gap:6px;margin-top:1px}
+.card-title-row .class-tag{flex:0 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card-title-row .vsr-badge{flex:0 0 auto;white-space:nowrap}
+@media(max-width:580px){
+  .card-title-row{gap:8px}
+  .card-title-row h2{font-size:16px}
+  .card-title-row .card-tag-row{gap:5px;max-width:55%}
+  .card-title-row .class-tag{font-size:9px;padding:5px 7px}
+  .card-title-row .vsr-badge{font-size:8px;padding:5px 6px}
+}
+@media(max-width:360px){
+  .card-title-row{gap:5px}
+  .card-title-row h2{font-size:15px}
+  .card-title-row .card-tag-row{max-width:58%}
+  .card-title-row .class-tag{font-size:8px;padding:5px}
+}
+
+/* Statistiques enrichies : tableaux de bord lisibles et graphiques CSS sans dépendance. */
+.stats-metric-section{margin:0 0 28px;min-width:0}
+.stats-metric-section>h3{font-size:12px;line-height:1.5;font-weight:900;letter-spacing:.085em;color:#28566c;margin:0 0 12px;padding:0 0 10px;border-bottom:1px solid #deedef}
+.stats-metric-section:first-child .stats-metric{background:#eff9f9}
+.stats-metric-section:nth-child(2) .stats-metric{background:#f8fafc}
+.stats-metric-section:nth-child(3) .stats-metric{background:#f6f8fb}
+.stats-metric strong{font-family:'Barlow Condensed',Poppins,sans-serif;font-size:32px;font-weight:800;letter-spacing:.025em;line-height:1.08;font-variant-numeric:tabular-nums}
+.stats-metric small{color:#8b9ca6;font-size:9px;line-height:1.4;font-weight:600;overflow-wrap:anywhere}
+.stats-caption{margin:0 0 17px;font-size:11px;line-height:1.65;color:#77909c}
+.stats-years{display:grid;gap:11px;border:1px solid #d7e8eb;background:#f9fcfc;padding:18px;border-radius:12px}
+.stats-year-row{display:grid;grid-template-columns:76px minmax(0,1fr) minmax(130px,auto);align-items:center;gap:12px;font-size:11px;color:#446879}
+.stats-year-row>strong{font-size:13px;font-weight:900;color:#245568}
+.stats-year-row>span{text-align:right;white-space:nowrap;font-weight:800}
+.stats-year-row>span small{font-weight:500;color:#91a5ad}
+.stats-year-track{height:13px;border-radius:7px;background:#e7f1f3;overflow:hidden}
+.stats-year-total{min-height:13px;border-radius:inherit;background:#bce3e4;min-width:2px}
+.stats-year-finished{height:13px;background:linear-gradient(90deg,#007d9c,#29b7b2);border-radius:7px}
+.stats-performance{min-width:0}
+.performance-table{display:grid;gap:0;min-width:0}
+.performance-head,.performance-row{display:grid;grid-template-columns:minmax(72px,1.45fr) repeat(3,minmax(44px,.65fr));gap:7px;align-items:center}
+.performance-head{border-bottom:1px solid #d8e6e9;padding:0 0 10px;font-weight:900;font-size:8px;letter-spacing:.025em;color:#819ba5}
+.performance-row{padding:10px 0;border-bottom:1px solid #e7f0f2;color:#4d6c7b;font-size:11px;font-weight:700;font-variant-numeric:tabular-nums}
+.performance-row:last-child{border-bottom:none}
+.performance-row>strong{font-size:10px;overflow-wrap:anywhere;min-width:0;color:#275468}
+.performance-head>:not(:first-child),.performance-row>:not(:first-child){text-align:right}
+.stats-breakdown:has(.performance-table){padding:16px 13px}
+@media(max-width:780px){
+ .stats-year-row{grid-template-columns:57px minmax(0,1fr);gap:7px}
+ .stats-year-row>span{grid-column:2;text-align:left;font-size:10px;white-space:normal}
+ .stats-metrics{gap:8px}
+ .stats-metric{padding:15px 12px}
+ .stats-metric strong{font-size:29px}
+}
+@media(max-width:420px){
+ .stats-metric{padding:13px 10px}
+ .stats-metric span{font-size:8px;letter-spacing:0}
+ .stats-metric strong{font-size:26px}
+ .stats-years{padding:12px}
+ .performance-head,.performance-row{grid-template-columns:minmax(70px,1.3fr) repeat(3,minmax(39px,.6fr));gap:4px}
+ .performance-head{font-size:7px}
+ .performance-row{font-size:10px}
+}
+
+/* Rapli Regatta: mini graphiques des podiums par niveau de classement. */
+.podium-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:15px 0 20px}
+.podium-card{min-width:0;border:1px solid #d4e5e9;background:linear-gradient(155deg,#fff,#f3fafb);border-radius:13px;padding:14px 14px 11px;box-shadow:0 5px 16px #23495a0d}
+.podium-card-head{display:flex;align-items:center;gap:9px;min-width:0}
+.podium-card-icon{font-size:23px;line-height:1.2;flex:none}
+.podium-card-head>strong{font-size:10px;font-weight:900;color:#335c6b;letter-spacing:.065em;overflow-wrap:anywhere}
+.podium-card-summary{display:flex;align-items:center;justify-content:space-between;gap:9px;margin:11px 0 4px}
+.podium-card-summary>div:first-child{display:flex;flex-direction:column;gap:0}
+.podium-card-total{font-family:'Barlow Condensed',Poppins,sans-serif;font-size:46px;line-height:1;font-weight:900;font-variant-numeric:tabular-nums;color:#0f728c}
+.podium-card-summary small{color:#7a97a1;font-size:9px;font-weight:900;letter-spacing:.07em}
+.podium-ring{width:60px;height:60px;flex:none;border-radius:50%;background:conic-gradient(#06aaba var(--podium-share,0%),#d9ecef 0);display:grid;place-items:center;position:relative}
+.podium-ring:before{content:"";position:absolute;inset:7px;border-radius:50%;background:#fafdfe}
+.podium-ring span{position:relative;z-index:1;font-family:'Barlow Condensed',Poppins,sans-serif;font-size:16px;font-weight:900;color:#0d728a;font-variant-numeric:tabular-nums;white-space:nowrap}
+.podium-columns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:end;gap:7px;height:94px;padding:8px 3px 2px;margin-top:4px;border-bottom:1px solid #d8e8e9}
+.podium-column{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;min-width:0;gap:5px}
+.podium-column-count{font-family:'Barlow Condensed',Poppins,sans-serif;font-size:16px;color:#355b6b;font-weight:800}
+.podium-column-bar{width:min(100%,29px);min-height:3px;border-radius:4px 4px 0 0}
+.podium-column-bar.gold{background:linear-gradient(#f9df78,#d49b28)}
+.podium-column-bar.silver{background:linear-gradient(#d9e5ed,#819db0)}
+.podium-column-bar.bronze{background:linear-gradient(#e4aa83,#ad6e45)}
+.podium-column-label{font-size:9px;color:#5f7b87;font-weight:800;white-space:nowrap}
+.podium-card footer{font-size:9px;color:#7d97a0;font-weight:700;margin-top:10px}
+.podium-year-panel{border:1px solid #d7e7e9;background:#f9fcfc;border-radius:11px;padding:16px 18px;margin:0 0 8px}
+.podium-year-panel h4{margin:0 0 16px;font-size:10px;font-weight:900;letter-spacing:.065em;color:#3b6d80}
+.podium-year-bars{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;align-items:end;max-width:700px}
+.podium-year-item{display:flex;min-width:0;flex-direction:column;align-items:center;gap:6px;color:#507486;font-weight:800}
+.podium-year-item>strong{font-family:'Barlow Condensed',Poppins,sans-serif;font-size:16px}
+.podium-year-item>span{font-size:10px}
+.podium-year-column{height:80px;width:min(100%,40px);background:#e6f1f3;border-radius:5px 5px 0 0;display:flex;align-items:end;overflow:hidden}
+.podium-year-column>div{background:linear-gradient(#08bbba,#007895);width:100%;border-radius:4px 4px 0 0;min-height:2px}
+@media(max-width:900px){.podium-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:480px){
+ .podium-grid{gap:9px}
+ .podium-card{padding:11px 9px 9px}
+ .podium-card-head{gap:6px}
+ .podium-card-icon{font-size:21px}
+ .podium-card-head>strong{font-size:9px;letter-spacing:.02em}
+ .podium-card-total{font-size:39px}
+ .podium-ring{height:51px;width:51px}
+ .podium-ring:before{inset:6px}
+ .podium-ring span{font-size:13px}
+ .podium-columns{gap:4px}
+ .podium-column-label{font-size:8px}
+ .podium-year-panel{padding:12px}
+ .podium-year-bars{gap:4px}
+ .podium-year-item>span{font-size:9px}
+}
+@media(max-width:360px){.podium-grid{grid-template-columns:1fr}}
+
+/* Réglages globaux des classes : à part des fiches de course. */
+.workspace-tabs{overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.workspace-tabs::-webkit-scrollbar{display:none}
+.workspace-tab{flex:0 0 auto;white-space:nowrap}
+.colors-panel{padding:22px 26px 32px}
+.colors-heading{margin-bottom:18px}
+.colors-heading strong,.colors-list-head strong{font-size:12px;font-weight:900;color:#275971;letter-spacing:.065em}
+.colors-heading p,.colors-help{font-size:11px;line-height:1.65;color:#809aa6;margin:8px 0 0}
+.color-global{display:grid;grid-template-columns:minmax(200px,.75fr) minmax(0,1.25fr);align-items:center;gap:17px;border:1px solid #afd9de;background:#eaf7f8;padding:17px;border-radius:12px}
+.color-global label{display:flex;align-items:center;justify-content:space-between;gap:14px;font-size:11px;font-weight:900;color:#186c80}
+.color-global input[type=color]{flex:0 0 75px;width:75px;height:41px;background:#fff;border:1px solid #aad6dd;border-radius:9px;padding:4px;cursor:pointer}
+.color-global p{font-size:10px;line-height:1.6;color:#537b89;margin:0}
+.colors-list-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:24px 0 10px}
+.colors-list-head span{color:#85a0aa;font-size:11px;font-weight:700}
+.class-colors-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.class-color-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:11px;padding:12px;border-radius:11px;border:1px solid #dae9ec;background:#f9fcfc;min-width:0}
+.class-color-preview{display:inline-flex;min-width:0;width:fit-content;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:8px 10px;border-radius:7px;font:900 10px Poppins,sans-serif;letter-spacing:.035em;background:var(--class-tag);color:var(--class-ink)}
+.class-color-count{font-size:10px;color:#8ba3ad;font-weight:700;white-space:nowrap}
+.class-color-control{display:flex;flex-direction:column;gap:5px;align-items:center}
+.color-control-label{font:900 8px Poppins,sans-serif;color:#76929d;letter-spacing:.01em}
+.class-color-control input[type=color]{width:54px;height:34px;border:1px solid #c3dbe1;border-radius:7px;padding:2px;background:#fff;cursor:pointer}
+.rank-line{display:flex;align-items:center;min-width:0;flex-wrap:wrap;gap:6px}
+.rank-line strong{flex:0 1 auto;min-width:0}
+.rank-medal{display:inline-flex;flex:0 0 auto;font-size:23px;line-height:1.1;filter:drop-shadow(0 1px 1px #18394920)}
+.rank-main .rank-medal{font-size:29px;filter:drop-shadow(0 1px 2px #051c2c55)}
+@media(max-width:800px){
+ .colors-panel{padding:18px 14px 26px}
+ .class-colors-list{grid-template-columns:1fr}
+}
+@media(max-width:580px){
+ .color-global{grid-template-columns:1fr;gap:10px;padding:13px}
+ .class-color-row{grid-template-columns:minmax(0,1fr) auto auto;padding:11px;gap:7px}
+ .class-color-preview{font-size:9px;padding:7px}
+ .class-color-count{font-size:9px}
+ .workspace-tab{padding:13px 12px;font-size:11px}
+ .rank-medal{font-size:21px}
+ .rank-main .rank-medal{font-size:26px}
+}
+
+/* Large ranking numbers: never wrap across two lines, even with 100 000+ players. */
+.rank-value{flex:1 1 auto;min-width:0;container-type:inline-size}
+.rank-line{flex-wrap:nowrap;min-width:0;max-width:100%;gap:3px}
+.rank-line strong{white-space:nowrap!important;overflow:visible!important;word-break:normal!important;overflow-wrap:normal!important;flex:0 1 auto;min-width:0;font-size:clamp(12px,11.5cqi,23px)!important;letter-spacing:0!important;font-variant-numeric:tabular-nums}
+.rank-main .rank-line strong{font-size:clamp(23px,10.2cqi,36px)!important;letter-spacing:.025em!important}
+.rank-line .rank-medal{flex:0 0 auto}
+.vsr-badge,.vsr-badge.hc,.card-tag-row .vsr-badge{
+ background:var(--vsr-color,#e7f1f4)!important;color:var(--vsr-ink,#213c4d)!important;
+ border-color:color-mix(in srgb,var(--vsr-color,#d4a339) 80%,#344352)!important;
+ font-weight:900!important;
+}
+.vsr-badge.hc{box-shadow:0 2px 7px #d4a33945}
+.vsr-color-row .vsr-badge{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vsr-colors-head{margin-top:26px}
+.vsr-colors-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.stat-chip.reward-points{background:#fff8e5;border-color:#ebce75;color:#8c6718;font-weight:800}
+.stat-chip.reward-credits{background:#ebf7ed;border-color:#b6ddb5;color:#3c754d;font-weight:800}
+.rewards-field{margin:0;padding:13px 14px;border:1px solid #cde2e3;border-radius:11px;background:#f8fbfa;min-width:0}
+.rewards-field legend{padding:0 7px;font-size:10px;font-weight:900;color:#4b7482;letter-spacing:.06em}
+.rewards-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.rewards-grid label{min-width:0}
+.rewards-grid input{font-family:'Barlow Condensed',Poppins,sans-serif;font-size:20px!important;font-weight:800}
+.reward-chart{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.reward-chart-row{border-radius:12px;border:1px solid #d7e7e8;background:#f8fcfc;padding:12px}
+.reward-chart-row>strong{display:block;color:#1d556e;font-size:11px;margin-bottom:10px}
+.reward-chart-bars{display:grid;gap:8px}
+.reward-bar-line{display:grid;grid-template-columns:46px minmax(0,1fr) 44px;gap:7px;align-items:center}
+.reward-bar-line span{font-size:8px;color:#738e98;font-weight:900}
+.reward-bar-line b{text-align:right;font-size:11px;color:#1c586b;font-variant-numeric:tabular-nums}
+.reward-track{height:9px;background:#e9f2f2;border-radius:7px;overflow:hidden}
+.reward-fill{height:100%;border-radius:7px}
+.reward-fill.points{background:linear-gradient(90deg,#b8953a,#f0c45a)}
+.reward-fill.credits{background:linear-gradient(90deg,#208a5c,#51c096)}
+/* PDF filter modal shares the same dialog dimensions as the race editor. */
+#pdf-dialog{width:min(720px,calc(100vw - 22px));max-width:720px;max-height:95dvh}
+#pdf-dialog .dialog-scroll{padding:20px 22px}
+.pdf-intro,.pdf-hint{font-size:11px;color:#65818e;line-height:1.7;margin:0 0 16px}
+.pdf-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.pdf-preview-count{display:flex;align-items:center;gap:11px;background:#e9f7f7;border:1px solid #bae3e3;border-radius:10px;margin:18px 0 10px;padding:12px 15px}
+.pdf-preview-count strong{font:900 33px/1 'Barlow Condensed',Poppins,sans-serif;color:#008fa1}
+.pdf-preview-count span{font-size:10px;color:#547788;font-weight:900}
+.pdf-hint{margin-bottom:0}
+@media(max-width:780px){.vsr-colors-list,.reward-chart{grid-template-columns:1fr}}
+@media(max-width:580px){.rewards-grid{gap:7px}.rewards-field{padding:11px}.rewards-grid input{font-size:18px!important}#pdf-dialog .dialog-scroll{padding:14px}.pdf-fields{grid-template-columns:1fr}.rank-main .rank-line strong{font-size:clamp(20px,10cqi,32px)!important}}
+
+/* Note Rapli : le classement général et son unique anneau de progression.
+   L'arc couvre exactement (score/100)*360 degrés. Le centre n'affiche que la note. */
+.rank-main-row{grid-column:1/-1;display:flex;align-items:center;gap:10px;min-width:0}
+.rank-main-row .rank-plate.rank-main{grid-column:auto;flex:1 1 0;width:0;min-width:0;padding:11px 12px}
+.rank-main-row .rank-main .rank-icon{font-size:24px}
+.rank-main-row .rank-main .rank-type{font-size:9px}
+.score-orb{--score-sweep:0deg;--score-glow:0;position:relative;isolation:isolate;display:grid;place-items:center;flex:0 0 72px;width:72px;height:72px;padding:0;border:0;border-radius:50%;background:#142a50;color:#fff;font:900 27px/1 Poppins,sans-serif;cursor:pointer;box-shadow:0 0 calc(3px + 14px * var(--score-glow)) rgba(218,52,143,calc(.08 + .34 * var(--score-glow)));transition:transform .15s,box-shadow .15s;touch-action:manipulation}
+.score-orb::before{content:"";position:absolute;inset:0;border-radius:inherit;background:conic-gradient(from -90deg,#268fe4 0deg,#d73e9a var(--score-sweep),transparent var(--score-sweep) 360deg);z-index:0}
+.score-orb.score-zero::before{display:none}
+.score-orb::after{content:"";position:absolute;inset:6px;border-radius:50%;background:#142a50;z-index:0}
+.score-orb span{position:relative;z-index:1;pointer-events:none}
+.score-orb:hover,.score-orb:focus-visible{transform:scale(1.06);outline:2px solid #229ddd;outline-offset:3px}
+.score-orb.score-epic{box-shadow:0 0 23px #d73e9a70,0 0 12px #268fe470}
+@media(max-width:580px){
+ .rank-main-row{gap:8px}
+ .rank-main-row .rank-plate.rank-main{padding:9px 8px;gap:5px}
+ .rank-main-row .rank-main .rank-icon{font-size:20px}
+ .rank-main-row .rank-main .rank-type{font-size:8px}
+ .rank-main-row .score-orb{flex-basis:64px;width:64px;height:64px;font-size:24px}
+}
+.score-pending{font-size:10px;color:#718a99;margin-top:13px;padding:9px 12px;border-radius:9px;background:#f1f6f8}
+#score-dialog,#score-recalc-dialog{width:min(560px,calc(100vw - 20px));max-height:92dvh;overflow:hidden;padding:0;border:1px solid #d1e1ea;border-radius:16px;background:#fff;color:#17354c;box-shadow:0 20px 65px #142d4355}
+.score-dialog-body{padding:19px;overflow:auto;max-height:70dvh;font-size:12px;line-height:1.6}
+.score-dialog-total{font:900 34px/1.2 Poppins,sans-serif;color:#163d72}
+.score-dialog-mention{font-size:12px;font-weight:900;color:#b92e83;margin:3px 0 15px}
+.score-rows{display:grid;gap:4px;margin:12px 0}
+.score-row{display:flex;justify-content:space-between;gap:15px;padding:8px 0;border-bottom:1px solid #e4ecf1}
+.score-row strong{white-space:nowrap;color:#215981}
+.score-note{margin:7px 0;font-size:10px;color:#587e90}
+.score-flag{background:#fff6e9;border:1px solid #f1dec3;padding:7px 10px;border-radius:7px;font-size:10px;margin:5px 0}
+.score-recalc-line{display:flex;justify-content:space-between;gap:15px;padding:11px 0;border-bottom:1px solid #e3edf0}
+.score-recalc-line span{font-weight:900}
+.score-recalc-line small{display:block;font-weight:500;color:#778e99}
+#race-event-controls,#race-joker-control{display:flex;flex-direction:row;align-items:center;gap:10px;padding:9px 12px;border-radius:9px;background:#f1f6fc;border:1px solid #d6e3ee}
+#race-event-controls input,#race-joker-control input{width:18px;height:18px;min-height:18px;flex:none;accent-color:#1475c5}
+.fields .check-dnf{display:flex;flex-direction:row;align-items:center;gap:10px;background:#fff4f1;border:1px solid #ecc8bf;border-radius:10px;padding:13px 15px;cursor:pointer}
+.check-dnf input{width:20px;min-height:20px;min-width:20px;flex:none;accent-color:#a94738}
+.dnf-indicator{width:14px;height:14px;border-radius:50%;background:#b84336;flex:none}
+.check-dnf span:last-child{display:flex;flex-direction:column;gap:3px}
+.check-dnf strong{font-size:12px;color:#a04334}
+.check-dnf small{font-size:10px;font-weight:500;color:#a37f76}
+.card.dnf{border-color:#c98c80}
+.card.dnf .badge-status{background:#ac4737}
+.card.event{border-color:#6c82bc}
+.card.event .badge-status{background:#3956a1}
+@media(max-width:580px){.score-dialog-body{padding:13px}}
+
+.fields label[hidden],.fields #race-event-controls[hidden],.fields #race-joker-control[hidden]{display:none!important}
+
+/* Courses record : tentatives distinctes, temps et abandons, sans mélange avec les résultats VSR. */
+.record-attempts{border:1px solid #c8d9e7;border-radius:12px;background:#f6f9fd;padding:13px;min-width:0}
+.record-attempts legend{padding:0 6px;color:#305b84;font-size:11px;font-weight:900;letter-spacing:.04em}
+.record-attempts>.field-help{font-size:10px;line-height:1.5;color:#6a8397;margin:3px 0 12px}
+#record-attempts-list{display:grid;gap:10px}
+.record-attempt-row{background:#fff;border:1px solid #d5e3ec;border-radius:11px;padding:12px;min-width:0}
+.record-attempt-row.is-aborted{background:#fff8f7;border-color:#e9cfc9}
+.record-attempt-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+.record-attempt-head strong{font-size:11px;font-weight:900;color:#284d71}
+.record-attempt-head .btn{flex:none}
+.record-time-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+.fields .record-time-grid label{font-size:9px;gap:3px;min-width:0}
+.fields .record-time-grid input{padding:7px 2px;text-align:center;min-height:40px;font-size:16px;font-family:'Courier Prime','Courier New',monospace}
+.fields .record-abort-label{display:flex;flex-direction:row;align-items:center;gap:8px;margin-top:10px;font-size:11px;color:#a34535;font-weight:900;cursor:pointer}
+.fields .record-abort-label input{height:18px;width:18px;min-height:18px;flex:none;margin:0;accent-color:#af473a}
+.record-add-btn{margin-top:12px;width:100%}
+.card.record{border-color:#b9d0e3}
+.card.record .badge-status{background:#245e91}
+.card.record.live .badge-status{background:#e9007c;color:#fff;box-shadow:0 0 13px #f5008b55}
+.record-card{margin-top:13px}
+.record-card-summary{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px 10px;align-items:center;padding:11px;border-radius:9px;background:#eaf3fa;border:1px solid #d5e5f0}
+.record-card-summary>span{font-size:9px;font-weight:800;color:#62829d}
+.record-card-summary>strong{font-family:'Courier Prime','Courier New',monospace;font-size:13px;color:#1c5e86}
+.record-attempt-chips{display:grid;gap:6px;margin-top:8px}
+.record-attempt-chip{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 10px;background:#f5f9fc;border:1px solid #e2ebf3;border-radius:7px;font-size:10px}
+.record-attempt-chip>span{font-weight:800;color:#5f8093}
+.record-attempt-chip>strong{font-weight:900;color:#204f70;text-align:right;font-variant-numeric:tabular-nums}
+.record-attempt-chip.is-aborted{background:#fff4f2;border-color:#ebd5d0}
+.record-attempt-chip.is-aborted>strong{color:#ad4b3c}
+.record-attempt-chip.is-best{border-color:#85b7aa;background:#eef8f4}
+.record-attempt-chip.is-best>strong{color:#287b62}
+.fields #race-record-attempts[hidden],.fields .duration-field[hidden],.fields .rankings-editor[hidden],
+.fields .rewards-field[hidden],.fields .equipment-choice[hidden],.fields .arrival-field[hidden],
+.fields .arrival-feedback[hidden],.fields #race-participant-help[hidden]{display:none!important}
+@media(max-width:580px){.record-attempt-row{padding:9px}.record-time-grid{gap:4px}.fields .record-time-grid input{font-size:15px;padding:6px 1px}.record-card-summary>strong{font-size:11px}}
+
+/* Each record attempt owns an independent departure date and clock time. */
+.fields .race-global-start[hidden]{display:none!important}
+.record-start-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:11px}
+.fields .record-start-grid label{font-size:9px;min-width:0;gap:4px}
+.fields .record-start-grid input{min-width:0;width:100%;min-height:40px;padding:7px 8px;font-size:13px;font-variant-numeric:tabular-nums}
+.record-attempt-chip>span{min-width:0}
+.record-attempt-chip>span small{display:block;margin-top:4px;font-size:9px;line-height:1.35;color:#7790a3;font-weight:600}
+@media(max-width:410px){
+ .record-start-grid{grid-template-columns:minmax(0,1fr);gap:5px}
+ .record-attempt-chip{align-items:flex-start;flex-direction:column}
+ .record-attempt-chip>strong{align-self:flex-end}
+}
+
+/* Explicit record closure: never infer from finished attempts. */
+.card.record.record-closed{border-color:#b69d61}
+.card.record.record-closed .badge-status{background:#315b61;color:#fff;box-shadow:none}
+.record-close-btn{background:#136c68;color:#fff;border-color:#0d7774;font-weight:900}
+.record-close-btn:hover{background:#0b5b57;color:#fff}
+.record-closed-help{background:#ecf7f3;border:1px solid #b6dcd2;border-radius:9px;padding:10px 12px;font-size:11px;line-height:1.6;color:#285b55}
+.record-closed-help strong{font-weight:900}
+.fields #record-closed-help[hidden],.record-add-btn[hidden],.record-attempt-head [data-record-remove][hidden]{display:none!important}

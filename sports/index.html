@@ -1,0 +1,1290 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f3f4f6">
+  <meta name="description" content="Rapli Sports — Collection personnelle de cartes de sport.">
+  <title>Rapli Sports — Collection</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Courier+Prime:wght@400;700&family=IBM+Plex+Mono:wght@600;700&family=Poppins:wght@700;800;900&family=Special+Elite&display=swap');
+    :root { color-scheme: dark; --bg:#080e1c; --panel:#101b30; --panel-2:#13213a; --panel-3:#172846; --stroke:#2a3e60; --ink:#f6f8ff; --muted:#8799b9; --blue:#2d84ff; --blue-2:#0970f7; --cyan:#52d4ff; --red:#f12e47; --radius:20px; --shadow:0 18px 48px rgba(0,0,0,.25); }
+    * {box-sizing:border-box}
+    html {scroll-behavior:smooth}
+    body {margin:0;background:var(--bg);color:var(--ink);font-family:'Poppins','DM Sans',system-ui,-apple-system,sans-serif;font-size:14px;line-height:1.5;min-height:100vh;}
+    body::before {content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;background:radial-gradient(ellipse 780px 440px at 85% -7%,rgba(35,110,255,.17),transparent 75%),radial-gradient(ellipse 580px 480px at -20% 36%,rgba(17,104,202,.12),transparent 80%),linear-gradient(180deg,#0c1427 0%,#080e1c 68%)}
+    button,input,select {font:inherit}
+    button {cursor:pointer}
+    button:disabled {opacity:.4;cursor:not-allowed}
+    a {color:inherit}
+    button:focus-visible,input:focus-visible,select:focus-visible,.drop-zone:focus-visible {outline:2px solid var(--cyan);outline-offset:3px}
+    /* Compact centered workspace, consistent with Rapli Archives / Rapli Tools. */
+    .app-shell {width:min(1120px,calc(100% - 48px));max-width:1120px;margin:27px auto 42px;padding:0 27px 40px;position:relative;background:linear-gradient(180deg,#101b31 0%,#0b1426 36%,#0a1221 100%);border:1px solid #2b4265;border-radius:21px;box-shadow:0 28px 85px rgba(0,0,0,.42),0 0 0 1px rgba(91,139,205,.055)}
+    .topline {height:5px;margin:0 -27px;background:linear-gradient(90deg,var(--blue) 0 33%,#e9f7ff 33% 48%,var(--red) 48% 71%,#073665 71% 100%);border-radius:20px 20px 0 0;box-shadow:0 0 25px rgba(45,132,255,.18)}
+    .header {display:flex;justify-content:space-between;align-items:center;gap:24px;padding:24px 0 23px;border-bottom:1px solid rgba(121,154,206,.17)}
+    .header-logo {display:flex;align-items:center;gap:0;min-width:0}
+    .logo-art {display:block;width:208px;height:109px;object-fit:contain;object-position:center;filter:drop-shadow(0 5px 10px rgba(0,0,0,.2))}
+    .brand-sep {display:none}
+    .brand-sub {display:none}
+    .brand-sub strong {display:block}
+    .header-tools {display:flex;align-items:center;gap:9px;flex-wrap:wrap;justify-content:flex-end}
+    .subtle-dot {width:7px;height:7px;border-radius:50%;background:var(--cyan);box-shadow:0 0 12px rgba(82,212,255,.65);display:inline-block;margin-right:7px}
+    .personal-label {font-size:10px;letter-spacing:.13em;color:#a5b6d4;font-weight:700;margin-right:12px;white-space:nowrap}
+    .button {border:1px solid #344e74;background:#14243d;color:#e1eaff;display:inline-flex;align-items:center;justify-content:center;gap:9px;padding:12px 15px;border-radius:12px;font-weight:700;font-size:11px;letter-spacing:.01em;transition:.18s ease;white-space:nowrap}
+    .button svg {width:16px;height:16px;flex:none}
+    .button:hover {border-color:#5b8cc8;background:#1d3556;transform:translateY(-1px)}
+    .button-primary {border-color:#3c9aff;background:linear-gradient(135deg,#1c7cff 0%,#1262ec 100%);color:white;box-shadow:0 5px 19px rgba(18,98,236,.3)}
+    .button-primary:hover {border-color:#90c9ff;background:linear-gradient(135deg,#348bff,#2675fb);box-shadow:0 8px 26px rgba(26,116,255,.34)}
+    .button-ghost {background:transparent;border-color:#2d4061}
+    .button-danger {background:#471a2a;border-color:#9f3851;color:#ffc4ce}
+    .button-soft {background:#14243f;border-color:#335c8b;color:#94caff}
+    .button-slim {padding:9px 12px}
+    .intro {display:flex;justify-content:space-between;align-items:end;gap:20px;padding:36px 0 28px}
+    .kicker {display:flex;align-items:center;gap:10px;color:#6ebcff;font-size:10px;font-weight:800;letter-spacing:.22em;text-transform:uppercase;margin-bottom:10px}
+    .kicker::before {content:"";width:19px;height:3px;border-radius:5px;background:var(--red)}
+    h1 {font-size:clamp(28px,3vw,44px);line-height:1.17;letter-spacing:-.045em;margin:0;font-weight:800}
+    h1 em {font-style:normal;color:#7fb8ff}
+    .intro-desc {color:#9ab0ce;font-size:12px;line-height:1.8;margin:8px 0 0}
+    .edition {font-weight:700;letter-spacing:.17em;font-size:9px;color:#7189aa;display:flex;align-items:center;gap:9px;white-space:nowrap;margin-bottom:7px}
+    .edition::after {content:"";width:45px;height:1px;background:#425980}
+    .stats {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin:6px 0 18px}
+    .stat {padding:10px 12px;position:relative;overflow:hidden;border:1px solid #253959;border-radius:12px;background:linear-gradient(140deg,rgba(24,42,72,.9),rgba(14,26,48,.95));display:flex;align-items:center;gap:10px;min-height:58px}
+    .stat::after {content:"";position:absolute;width:90px;height:90px;right:-37px;top:-54px;background:var(--accent,var(--blue));filter:blur(55px);opacity:.22;pointer-events:none}
+    .stat:nth-child(2) {--accent:#4fb5ff}.stat:nth-child(3) {--accent:#f12e47}.stat:nth-child(4) {--accent:#57d8f2}
+    .stat-top {display:flex;align-items:center;gap:9px;min-width:0;flex:1;color:#a3b4d0;font-size:8px;text-transform:uppercase;letter-spacing:.09em;font-weight:800}
+    .stat-icon {width:28px;height:28px;display:grid;place-items:center;border:1px solid #35537c;background:rgba(25,69,132,.26);border-radius:8px;color:#84bcff;flex:none}
+    .stat-icon svg {height:14px;width:14px}
+    .stat:nth-child(3) .stat-icon {color:#ff8798;border-color:#713a55;background:#5b233c33}
+    .stat strong {font-size:20px;font-weight:900;line-height:1;letter-spacing:-.03em;display:block;flex:none;min-width:2ch;text-align:right}
+    .section-nav {display:flex;align-items:center;justify-content:space-between;gap:15px;border-bottom:1px solid #31445f;margin-bottom:18px}
+    .tabs {display:flex;gap:9px;align-items:stretch}
+    .tab {border:0;background:transparent;color:#8196ba;display:flex;gap:11px;align-items:center;padding:18px 24px 18px;font-size:14px;letter-spacing:.12em;font-weight:800;position:relative;transition:.18s}
+    .tab:hover {color:#dfeeff}
+    .tab.active {color:white}
+    .tab.active::after {content:"";position:absolute;left:14px;right:14px;bottom:-1px;height:3px;border-radius:3px;background:linear-gradient(90deg,var(--blue),var(--cyan));box-shadow:0 0 15px #237fff99}
+    .tab b {font-size:11px;font-weight:800;background:#203758;color:#91baff;padding:3px 8px;border-radius:7px;letter-spacing:0}
+    .tab.active b {background:#1c5098;color:white}
+    .nav-actions {display:flex;align-items:center;gap:9px;padding-bottom:10px}
+    .filters {padding:12px 13px;background:linear-gradient(180deg,#14213a,#111d33);border-radius:15px;border:1px solid #2d4162;box-shadow:0 12px 25px #00000012;display:grid;grid-template-columns:minmax(220px,1.35fr) repeat(4,minmax(110px,.8fr)) minmax(138px,.72fr);gap:8px;align-items:end}
+    .field {display:flex;flex-direction:column;gap:4px;min-width:0}
+    .field-label {font-size:8px;letter-spacing:.11em;font-weight:800;text-transform:uppercase;color:#91a9cb}
+    .input-wrap {position:relative}
+    .input-wrap svg {position:absolute;left:13px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:#6194d2;pointer-events:none}
+    .input,.select {width:100%;height:39px;background:#0c1629;border:1px solid #344c70;border-radius:10px;color:#ecf4ff;outline:none;padding:0 11px;font-size:11px;font-weight:700;min-width:0;transition:.17s ease}
+    .input::placeholder {color:#647b9b}
+    .input:hover,.select:hover {border-color:#4a76ae}
+    .input:focus,.select:focus {border-color:#499eff;box-shadow:0 0 0 3px rgba(35,119,255,.16),0 0 22px rgba(35,119,255,.08)}
+    .input.with-icon {padding-left:35px}
+    .select {appearance:none;padding-right:33px;cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%237dabed' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-position:right 11px center;background-repeat:no-repeat}
+    .select option {color:#eaf2ff;background:#142440}
+    .check-filter {height:39px;display:flex;align-items:center;gap:8px;background:#0c1629;border:1px solid #344c70;padding:0 10px;border-radius:10px;white-space:nowrap;cursor:pointer;font-size:9px;font-weight:800;color:#b1c1db;transition:.18s}
+    .check-filter:hover {border-color:#5995ec}
+    .check-filter:has(input:checked) {background:#102d53;border-color:#328cfa;box-shadow:inset 0 0 0 1px #3389e833,0 0 15px #176cf426;color:#d9efff}
+    input[type=checkbox].custom {position:absolute;opacity:0;width:1px;height:1px}
+    .box-check {width:18px;height:18px;display:inline-grid;place-items:center;border:1.5px solid #59749a;border-radius:6px;flex:none;background:#111f37;transition:.18s;box-shadow:inset 0 1px 2px #0004}
+    .box-check svg {width:14px;height:14px;opacity:0;transform:scale(.6);transition:.18s}
+    input.custom:checked + .box-check {background:linear-gradient(135deg,#1d95ff,#2461f5);border-color:#68bfff;box-shadow:0 0 16px #3286fa7a}
+    input.custom:checked + .box-check svg {opacity:1;transform:scale(1)}
+    .toolbar-foot {display:flex;justify-content:space-between;align-items:center;gap:14px;padding:21px 2px 15px}
+    .results-label {font-size:11px;color:#9aaccc;font-weight:600}
+    .results-label strong {color:#f4f8ff}
+    .results-right {display:flex;align-items:center;gap:12px}
+    .link-btn {padding:2px 0;border:0;background:none;color:#7fbcff;font-weight:700;font-size:10px;letter-spacing:.03em;cursor:pointer}
+    .link-btn:hover {color:white}
+    .sorter {color:#9bacca;background:transparent;border:0;font-size:11px;font-weight:700;padding:5px 18px 5px 5px;max-width:165px;outline:0;cursor:pointer}
+    .sorter option {color:#eaf3ff;background:#112038}
+    .demo-strip {display:flex;align-items:center;justify-content:space-between;gap:10px;background:#121c32;border:1px dashed #44638d;border-radius:12px;padding:12px 16px;margin-bottom:16px;font-size:11px;color:#b0c1db}
+    .demo-strip strong {color:#dcecff}
+    .cards-grid {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+    .card-item {display:grid;grid-template-columns:198px minmax(0,1fr);gap:0;min-height:296px;border:1px solid #2a3f61;border-radius:17px;background:linear-gradient(135deg,#17243d,#111d32 64%);overflow:hidden;box-shadow:0 8px 22px rgba(0,0,0,.12);transition:border-color .2s,transform .2s,box-shadow .2s;position:relative}
+    .card-item:hover {border-color:#4074b6;transform:translateY(-2px);box-shadow:0 15px 28px #0003}
+    .photo-side {padding:13px 0 13px 13px;min-width:0;position:relative}
+    .card-photo {position:relative;height:100%;min-height:276px;border:1px solid #36537a;border-radius:12px;overflow:hidden;background:#eef3ff;isolation:isolate;display:flex;align-items:center;justify-content:center;padding:10px}
+    .card-photo::after {content:"";position:absolute;inset:0;pointer-events:none;border:1px solid #cde7ff18;border-radius:inherit}
+    .card-photo img {width:100%;height:100%;object-fit:contain;object-position:center;display:block}
+    .placeholder {height:100%;width:100%;display:flex;flex-direction:column;justify-content:space-between;align-items:center;padding:22px 14px;position:relative;overflow:hidden}
+    .placeholder::before {content:"";position:absolute;inset:-40px -70px;background:repeating-linear-gradient(125deg,transparent 0 28px,#ffffff06 29px 31px,transparent 32px 68px);transform:rotate(7deg)}
+    .placeholder::after {content:"";position:absolute;left:-50%;right:-50%;height:90px;bottom:50px;transform:rotate(-31deg);border-top:2px solid #6ac9ff55;border-bottom:2px solid #e8244355;background:linear-gradient(90deg,transparent,#2b8afd16,transparent)}
+    .mini-logo {color:#b9d8ff;font-weight:900;font-size:11px;letter-spacing:.22em;z-index:1;align-self:flex-start}
+    .place-center {z-index:1;width:86px;height:103px;display:grid;place-items:center;clip-path:polygon(50% 0%,98% 25%,98% 75%,50% 100%,2% 75%,2% 25%);background:linear-gradient(150deg,#0d4596bb,#2f79cc55);border:0}
+    .place-center svg {height:42px;width:42px;color:#a5d2ff}
+    .place-foot {font-weight:800;letter-spacing:.16em;font-size:9px;color:#a6bedb;z-index:1;align-self:flex-start}
+    .photo-flag {position:absolute;right:8px;top:8px;z-index:3;padding:5px 7px;background:#0a1729db;border:1px solid #43608a;border-radius:5px;font-size:8px;letter-spacing:.07em;font-weight:800;color:#b2d5ff}
+    .card-info {padding:18px 17px 13px 17px;display:flex;flex-direction:column;min-width:0}
+    .card-top {display:flex;align-items:center;justify-content:space-between;gap:7px;min-height:27px}
+    .brand-lockup {display:flex;align-items:center;gap:10px;min-width:0;font-size:11px;font-weight:800;letter-spacing:.08em;color:#aabedd;text-transform:uppercase}
+    .logo-tiny {height:32px;width:32px;border-radius:8px;border:1px solid #42628b;background:linear-gradient(130deg,#1c4075,#182945);flex:none;display:grid;place-items:center;font-weight:900;font-size:11px;color:#d1e5ff;object-fit:contain;padding:3px}
+    .logo-tiny.has-image {background:#ffffff;padding:3px}
+    .card-controls {display:flex;gap:3px}
+    .icon-btn {background:transparent;border:1px solid transparent;border-radius:8px;width:29px;height:29px;display:grid;place-items:center;color:#7f96b8;transition:.18s}
+    .icon-btn svg {height:14px;width:14px}
+    .icon-btn:hover {color:#eef5ff;border-color:#41648f;background:#294063}
+    .icon-btn.delete:hover {color:#ffaab7;border-color:#96364f;background:#4b2135}
+    .player {font-size:clamp(16px,1.4vw,21px);line-height:1.24;letter-spacing:-.025em;font-weight:800;margin:9px 0 7px;overflow-wrap:anywhere}
+    .team-row {display:flex;gap:8px;align-items:center;min-width:0;font-size:11px;font-weight:700;color:#afc3de}
+    .team-row .logo-tiny {height:26px;width:26px;font-size:9px;border-radius:7px}
+    .team-row span {overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .sport-chip {border:1px solid #385477;border-radius:5px;color:#91bcf4;padding:3px 6px;font-size:9px;line-height:1.1;white-space:nowrap;margin-left:auto}
+    .reference {margin-top:10px;padding:7px 10px;background:#0c172a;border:1px solid #283e5d;border-radius:9px;color:#d4e1f5;font-size:10px;font-weight:700;overflow-wrap:anywhere}
+    .reference small {display:block;color:#6889b7;font-size:7px;letter-spacing:.14em;font-weight:800;margin-bottom:2px}
+    .tags {display:flex;gap:5px;align-items:center;flex-wrap:wrap;margin:11px 0 10px;min-height:20px}
+    .tag {background:#173e67;border:1px solid #2966a1;color:#88c9ff;font-size:9px;font-weight:700;padding:4px 7px;border-radius:6px;max-width:100%;overflow-wrap:anywhere}
+    .tag:nth-child(even) {background:#2a213e;border-color:#654272;color:#e6aaf0}
+    .tag.more {background:transparent;border-color:#415674;color:#a5b4cd}
+    .blank-tag {color:#647c9f;font-size:10px;font-style:italic}
+    .card-bottom {margin-top:auto;border-top:1px solid #30425f;padding-top:10px;display:flex;align-items:center;justify-content:space-between;gap:5px}
+    .num-pill {display:inline-flex;align-items:center;gap:5px;font-size:10px;color:#96afcf;font-weight:700}
+    .num-pill svg {width:14px;height:14px;color:#709bd5}
+    .num-pill.is-numbered {color:#c5efff}
+    .num-pill.is-numbered svg {color:#53c9f9}
+    .move-card {font-size:9px;color:#90c6ff;background:#152f4f;border:1px solid #325783;padding:7px 9px;border-radius:7px;white-space:nowrap;font-weight:800;letter-spacing:.02em}
+    .move-card:hover {color:white;background:#184f89;border-color:#367ccc}
+    .empty {padding:64px 18px;border:1px dashed #344d6e;border-radius:17px;background:#101c30;text-align:center;margin-top:0}
+    .empty-mark {width:74px;height:74px;border-radius:20px;border:1px solid #385b88;display:grid;place-items:center;margin:0 auto 18px;background:linear-gradient(135deg,#214e81,#101e33);color:#8ecaff}
+    .empty-mark svg {height:32px;width:32px}
+    .empty h3 {margin:0 0 8px;font-size:18px;letter-spacing:-.02em}
+    .empty p {margin:0 auto 19px;color:#91a6c5;max-width:420px;font-size:12px}
+    .footer {display:flex;justify-content:space-between;gap:15px;align-items:center;border-top:1px solid #243653;margin-top:46px;padding:20px 0;color:#647c9f;font-size:10px;letter-spacing:.07em}
+    .footer span:last-child {color:#718eae}
+    .hidden {display:none !important}
+    .modal {position:fixed;margin:auto;border:1px solid #41618f;border-radius:21px;background:linear-gradient(160deg,#172741,#0d182b 75%);color:#eff6ff;box-shadow:0 40px 110px rgba(0,0,0,.7),0 0 0 1px #7bbaff18;max-height:min(91dvh,940px);overflow:auto;padding:0;width:min(930px,calc(100% - 24px))}
+    .modal::backdrop {background:#030917c4;backdrop-filter:blur(7px)}
+    .modal.small {width:min(690px,calc(100% - 24px))}
+    .modal-header {position:sticky;top:0;z-index:4;background:linear-gradient(135deg,#193359,#122039);border-bottom:1px solid #30476a;padding:19px 24px;display:flex;align-items:center;justify-content:space-between;gap:14px}
+    .modal-title {font-size:20px;letter-spacing:-.025em;font-weight:800;margin:0}
+    .modal-kicker {display:block;font-size:9px;color:#80bbff;letter-spacing:.17em;font-weight:800;margin-bottom:3px}
+    .close-modal {height:34px;width:34px;border:1px solid #47648d;background:#1b3558;color:#e4efff;border-radius:9px;display:grid;place-items:center;font-size:21px;line-height:1}
+    .close-modal:hover {background:#264b7c}
+    .modal-body {padding:23px 24px 24px}
+    .modal-grid {display:grid;grid-template-columns:250px minmax(0,1fr);gap:23px}
+    .form-row {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+    .form-fields {display:flex;flex-direction:column;gap:14px}
+    .input-group {display:flex;flex-direction:column;gap:7px;min-width:0}
+    .input-group label,.section-label {font-size:10px;font-weight:800;letter-spacing:.08em;color:#b0c6e2;text-transform:uppercase}
+    .input-group .input,.input-group .select {height:43px}
+    .required {color:#fc6681}
+    .photo-upload {position:relative;border:1px dashed #5582b8;border-radius:13px;min-height:345px;display:flex;justify-content:center;align-items:center;background:linear-gradient(130deg,#15335a66,#0a152a);overflow:hidden;text-align:center;cursor:pointer;outline:none}
+    .photo-upload:hover,.photo-upload:focus-visible {border-color:#62afff;background:#15345a}
+    .photo-upload.dragging {border-color:var(--cyan);background:#144a79}
+    .photo-upload img {width:100%;height:100%;position:absolute;inset:0;object-fit:contain;background:#091427}
+    .upload-prompt {padding:30px 12px;display:flex;flex-direction:column;align-items:center;gap:10px;color:#9dbbe0}
+    .upload-prompt svg {width:39px;height:39px;color:#7dbfff}
+    .upload-prompt strong {font-size:12px;color:#e6f1ff}
+    .upload-prompt span {font-size:10px}
+    .photo-remove {margin-top:10px;width:100%;justify-content:center}
+    .state-picker {display:grid;grid-template-columns:1fr 1fr;gap:7px;background:#0a172b;padding:5px;border:1px solid #344c70;border-radius:11px}
+    .state-picker input {position:absolute;opacity:0;pointer-events:none}
+    .state-picker label {text-align:center;cursor:pointer;font-size:11px;font-weight:800;padding:10px 8px;border-radius:7px;color:#899fbd;transition:.18s}
+    .state-picker input:checked + label {background:#1d5da5;box-shadow:0 0 14px #277bde55;color:white}
+    .number-control {border:1px solid #344a6d;border-radius:12px;padding:12px 13px;background:#0d1a30}
+    .number-head {display:flex;justify-content:space-between;align-items:center;gap:10px}
+    .number-head label {display:flex;align-items:center;gap:9px;font-weight:700;font-size:11px;cursor:pointer}
+    .number-row {display:grid;grid-template-columns:minmax(0,1fr) 15px minmax(0,1fr);gap:8px;align-items:center;margin-top:13px}
+    .number-row .slash {text-align:center;color:#8dbffd;font-weight:900;font-size:20px}
+    .number-row .input {text-align:center}
+    .field-hint {color:#6e8fb9;font-size:9px;letter-spacing:.02em}
+    .chip-editor {min-height:46px;border:1px solid #344c70;background:#0b172b;border-radius:10px;display:flex;flex-wrap:wrap;gap:6px;padding:7px;align-items:center}
+    .chip-editor:focus-within {border-color:#499eff;box-shadow:0 0 0 3px #2c85ff23}
+    .edit-chip {display:flex;align-items:center;gap:7px;background:#154b7f;color:#d8efff;border:1px solid #3475ad;padding:5px 5px 5px 9px;border-radius:6px;font-size:10px;font-weight:700}
+    .edit-chip button {border:0;background:#0b3154;color:#bce3ff;width:18px;height:18px;border-radius:5px;font-size:13px;line-height:1}
+    .tag-input {border:0;outline:0;color:#eff6ff;background:transparent;min-width:110px;flex:1;padding:6px 5px;font-size:11px}
+    .tag-input::placeholder {color:#6d86a9}
+    .modal-footer {display:flex;justify-content:flex-end;gap:10px;padding-top:16px;margin-top:18px;border-top:1px solid #2b4363}
+    .logo-tabs {display:flex;gap:8px;margin-bottom:17px}
+    .logo-tab {border:1px solid #3b567f;background:#132643;color:#a6bad9;padding:10px 15px;border-radius:9px;font-weight:800;font-size:11px}
+    .logo-tab.active {border-color:#5fa8ff;color:white;background:#225da4;box-shadow:0 0 17px #1c77e03d}
+    .logo-create {padding:15px;border:1px solid #344e75;border-radius:12px;background:#0b182b;margin-bottom:16px}
+    .logo-create-row {display:grid;grid-template-columns:minmax(120px,1fr) 112px auto;gap:9px;align-items:end}
+    .logo-file {position:relative;overflow:hidden;border:1px dashed #5076a6;border-radius:9px;height:43px;display:flex;align-items:center;justify-content:center;gap:8px;background:#142844;cursor:pointer;color:#acd5ff;font-size:10px;font-weight:800}
+    .logo-file:hover {background:#214069}
+    .logo-file svg {width:15px;height:15px}
+    .logo-file input {position:absolute;inset:0;opacity:0;cursor:pointer;width:100%}
+    .logo-list {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;max-height:330px;overflow:auto}
+    .logo-entry {border:1px solid #32496c;background:#12223b;border-radius:10px;display:flex;align-items:center;gap:10px;padding:9px;min-width:0}
+    .logo-entry .logo-tiny {width:38px;height:38px;border-radius:9px;font-size:12px}
+    .logo-entry-name {overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;color:#e5eefd;font-weight:700;font-size:11px}
+    .logo-help {font-size:11px;color:#8fa5c5;margin:0 0 12px}
+    .toast {position:fixed;bottom:26px;left:50%;transform:translate(-50%,20px);opacity:0;pointer-events:none;z-index:15;color:white;background:#1a3f6f;border:1px solid #64abff;box-shadow:0 15px 35px #0008;padding:11px 19px;border-radius:10px;font-size:12px;font-weight:700;max-width:calc(100% - 32px);text-align:center;transition:.23s}
+    .toast.visible {opacity:1;transform:translate(-50%,0)}
+    @media(max-width:1260px) { .filters {grid-template-columns:minmax(220px,1.2fr) repeat(4,minmax(0,1fr)) minmax(130px,.9fr)}.search-field {grid-column:auto}.cards-grid {gap:12px}.card-item {grid-template-columns:172px minmax(0,1fr)}.card-info {padding:14px 12px 11px}.photo-side {padding:10px 0 10px 10px}.card-photo {min-height:248px}.header-tools .personal-label {display:none} }
+    @media(max-width:1040px) { .cards-grid {grid-template-columns:1fr}.card-item {grid-template-columns:185px minmax(0,1fr);min-height:285px}.card-photo {min-height:258px}.card-info {padding:18px}.player {font-size:21px}.filters {grid-template-columns:repeat(3,minmax(0,1fr))}.search-field {grid-column:span 3}.filter-number {grid-column:span 3}.check-filter {width:100%}.header-logo .logo-art {width:178px;height:96px}.header {align-items:center} }
+    @media(max-width:750px) { .app-shell {width:100%;max-width:none;margin:0;padding:0 17px 25px;border:0;border-radius:0;box-shadow:none;min-height:100vh}.topline {margin:0 -17px;border-radius:0}.header {padding:15px 0;align-items:center}.brand-sub,.brand-sep,.personal-label {display:none}.logo-art {width:154px !important;height:86px !important}.header-tools {gap:6px}.header-tools .button {padding:10px;min-width:38px;font-size:0;gap:0}.header-tools .button svg {height:17px;width:17px}.stats {grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:14px}.stat {padding:10px 11px;min-height:52px}.stat-top {font-size:7px}.stat strong {font-size:17px}.stat-icon {height:24px;width:24px}.section-nav {flex-direction:column;align-items:stretch;gap:0}.tabs {width:100%;justify-content:space-around}.tab {flex:1;justify-content:center;padding:12px 6px;font-size:12px}.nav-actions {padding:10px 0 12px;justify-content:space-between}.nav-actions .button {flex:1}.filters {grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:10px}.search-field {grid-column:span 3}.filter-sport {grid-column:span 1;display:flex}.check-filter {height:39px}.filter-number {grid-column:span 3}.card-item {grid-template-columns:148px minmax(0,1fr);min-height:258px}.photo-side {padding:10px 0 10px 10px}.card-photo {min-height:236px;padding:8px}.card-info {padding:13px 11px 10px}.player {font-size:16px}.reference {margin-top:8px;font-size:9px;padding:6px 8px}.reference small {font-size:6px}.team-row {font-size:9px}.team-row .logo-tiny {width:22px;height:22px}.brand-lockup {font-size:10px}.logo-tiny {width:28px;height:28px}.tags {margin:8px 0}.card-bottom {padding-top:8px}.move-card {font-size:8px;padding:6px}.sorter {max-width:135px;font-size:10px}.modal-grid {grid-template-columns:1fr}.photo-upload {min-height:220px;max-height:270px}.modal-body {padding:15px}.modal-header {padding:14px 16px}.modal-title {font-size:17px}.photo-remove {width:auto}.logo-create-row {grid-template-columns:1fr 1fr}.logo-create-row .input-group:first-child {grid-column:span 2}.logo-list {grid-template-columns:1fr}.footer {font-size:9px}.kicker {font-size:9px} }
+    @media(max-width:410px) { .app-shell {padding-left:11px;padding-right:11px}.topline {margin-left:-11px;margin-right:-11px}.logo-art {width:136px !important;height:78px !important}.header-tools .button {padding:8px}.cards-grid {gap:10px}.card-item {grid-template-columns:126px minmax(0,1fr);min-height:238px}.photo-side {padding:8px 0 8px 8px}.card-photo {min-height:218px;padding:7px}.card-info {padding:11px 9px 9px}.brand-lockup {font-size:9px;gap:6px}.logo-tiny {width:24px;height:24px}.team-row .logo-tiny {width:20px;height:20px}.icon-btn {width:25px;height:25px}.player {font-size:14px;margin-top:6px}.reference {font-size:8px;padding:6px 7px}.reference small {font-size:6px}.tags .tag {font-size:8px}.num-pill {font-size:9px}.sport-chip {display:none}.filters {grid-template-columns:1fr 1fr;gap:8px}.search-field,.filter-number {grid-column:span 2}.filter-sport {display:none}.form-row {gap:8px}.modal-footer {flex-wrap:wrap}.modal-footer .button {flex:1} }
+    @media(prefers-reduced-motion:reduce) {*,*::before,*::after {animation:none !important;transition:none !important;scroll-behavior:auto !important}}
+
+    /* ===========================================================
+       RAPLI SPORTS / ÉDITION CLAIRE — Bleu roi uni · Poppins gras
+       =========================================================== */
+    :root {
+      color-scheme: light;
+      --bg:#f3f4f6;
+      --panel:#ffffff;
+      --panel-2:#f7f8fb;
+      --panel-3:#edf2fc;
+      --stroke:#d9e0ed;
+      --ink:#18263d;
+      --muted:#66758d;
+      --blue:#2056d6;
+      --blue-2:#2056d6;
+      --cyan:#2056d6;
+      --red:#dc253d;
+      --shadow:0 12px 36px rgba(30,52,96,.07);
+    }
+    body {background:#f3f4f6;color:var(--ink);font-family:'Poppins',sans-serif;font-weight:700}
+    body::before {display:none;background:none}
+    button,input,select,textarea,dialog {font-family:'Poppins',sans-serif;font-weight:700}
+    .app-shell {background:#ffffff;border-color:#dee3eb;box-shadow:0 17px 48px rgba(31,51,86,.08),0 1px 3px rgba(31,51,86,.05)}
+    .stats {gap:8px;margin:4px 0 16px}
+    .stat {background:#f8faff;border-color:#e1e6ef;box-shadow:none;min-height:54px;padding:9px 11px}
+    .stat::after {display:none}
+    .stat-top {color:#70809a}
+    .stat strong {color:#163870;font-size:18px}
+    .topline {background:var(--blue);box-shadow:none}
+    .header {border-bottom-color:#e7ebf2}
+    .logo-art {filter:drop-shadow(0 3px 5px rgba(14,39,81,.08))}
+    .brand-sep {background:#cbd5e6}
+    .brand-sub,.personal-label {color:#63728b}
+    .brand-sub strong {color:#172b50}
+    .subtle-dot {background:var(--blue);box-shadow:0 0 0 3px rgba(32,86,214,.10)}
+    .button {background:#fff;border-color:#d7dfed;color:#274062;box-shadow:none;font-weight:800}
+    .button:hover {background:#f2f5fd;border-color:#9eb5e5;color:#1946ae}
+    .button-primary {background:#2056d6;border-color:#2056d6;color:white;box-shadow:0 4px 12px rgba(32,86,214,.15)}
+    .button-primary:hover {background:#1848bd;border-color:#1848bd;color:white;box-shadow:0 6px 17px rgba(32,86,214,.20)}
+    .button-ghost {background:#fff;border-color:#dbe3ef;color:#475771}
+    .button-soft {background:#edf3ff;border-color:#d6e3fd;color:#2056d6}
+    .button-soft:hover {background:#e2ebfd;color:#1647bd}
+    .button-danger {background:#fff0f2;border-color:#f4c7cd;color:#bb2035}
+    .button-danger:hover {background:#ffe6eb;border-color:#e99ca8;color:#a81931}
+    .kicker {color:#2056d6}
+    .kicker::before {background:var(--red)}
+    h1 {color:#162a4a;font-weight:900}
+    h1 em {color:#2056d6}
+    .intro-desc {color:#66758d;font-weight:700}
+    .edition {color:#8591a3}
+    .edition::after {background:#d4dce9}
+    .stat {border-color:#e0e6f0;background:#f9fafc;box-shadow:none}
+    .stat::after {display:none}
+    .stat-top {color:#62738e}
+    .stat-icon {color:#2056d6;background:#e8efff;border-color:#d6e2fb}
+    .stat:nth-child(3) .stat-icon {color:#cf2940;background:#fff0f2;border-color:#f8d8de}
+    .stat strong {color:#193966;font-weight:900}
+    .section-nav {border-bottom-color:#dde4ef}
+    .tab {color:#697b96}
+    .tab:hover {color:#2056d6}
+    .tab.active {color:#2056d6}
+    .tab.active::after {background:#2056d6;box-shadow:none}
+    .tab b {background:#eef1f6;color:#687990}
+    .tab.active b {background:#2056d6;color:#fff}
+    .filters {background:#f8f9fc;border-color:#e1e6ee;box-shadow:none}
+    .field-label,.input-group label,.section-label {color:#536681}
+    .input-wrap svg {color:#2056d6}
+    .input,.select {background-color:#fff;border-color:#d3dceb;color:#1d3353;font-weight:700}
+    .input::placeholder {color:#9aa5b5}
+    .input:hover,.select:hover {border-color:#8dacdf}
+    .input:focus,.select:focus {border-color:#2056d6;box-shadow:0 0 0 3px rgba(32,86,214,.11)}
+    .select {background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%232056d6' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")}
+    .select option,.sorter option {background:#fff;color:#213657}
+    .check-filter {background:#fff;border-color:#d3dceb;color:#536781}
+    .check-filter:hover {border-color:#8ba9e4}
+    .check-filter:has(input:checked) {background:#edf3ff;border-color:#2056d6;box-shadow:0 0 0 2px rgba(32,86,214,.07);color:#1d4cb7}
+    .box-check {background:#fff;border-color:#a7b7cc;box-shadow:none}
+    input.custom:checked + .box-check {background:#2056d6;border-color:#2056d6;box-shadow:0 0 0 3px rgba(32,86,214,.13)}
+    .results-label {color:#697a91;font-weight:700}
+    .results-label strong {color:#1d3150}
+    .link-btn {color:#2056d6}
+    .link-btn:hover {color:#143b9f}
+    .sorter {color:#536782}
+    .demo-strip {background:#f4f7fd;border-color:#c9d8f6;color:#617391}
+    .demo-strip strong {color:#1e407b}
+    .card-item {background:#fff;border-color:#dce3ed;box-shadow:0 4px 12px rgba(28,47,83,.045)}
+    .card-item:hover {border-color:#85a8ec;box-shadow:0 9px 22px rgba(31,63,133,.11)}
+    .card-photo {background:#f4f7ff;border-color:#d5e2fb}
+    .card-photo::after {border-color:rgba(32,86,214,.08)}
+    .placeholder {background:#2056d6}
+    .placeholder::before,.placeholder::after {display:none}
+    .mini-logo,.place-foot {color:#fff}
+    .place-center {background:#1745b4}
+    .place-center svg {color:#fff}
+    .photo-flag {background:#fff;color:#1d4ebf;border-color:#ccdcf5}
+    .brand-lockup {color:#5c6f89}
+    .logo-tiny {border-color:#d8e2f3;background:#eaf0fc;color:#2056d6}
+    .logo-tiny.has-image {background:#fff}
+    .icon-btn {color:#6b7e97}
+    .icon-btn:hover {color:#2056d6;border-color:#d3e0fa;background:#edf3ff}
+    .icon-btn.delete:hover {color:#c22640;border-color:#f0b6c0;background:#fff0f3}
+    .player {color:#142c51;font-weight:900}
+    .team-row {color:#687a93;font-weight:700}
+    .sport-chip {border-color:#d7e3f7;color:#2457c6;background:#f4f7fd}
+    .reference {background:#f5f7fa;border-color:#e1e6ef;color:#344867;font-weight:700}
+    .reference small {color:#72829d}
+    .tag {background:#eaf0fd;border-color:#d3dff6;color:#2056d6}
+    .tag:nth-child(even) {background:#fff0f2;border-color:#f4d5da;color:#c12c46}
+    .tag.more {background:#f8f9fb;border-color:#e2e7ef;color:#697d97}
+    .blank-tag {color:#9ba8b9}
+    .card-bottom {border-top-color:#e6ebf2}
+    .num-pill {color:#7b8aa1}
+    .num-pill svg {color:#6e87af}
+    .num-pill.is-numbered,.num-pill.is-numbered svg {color:#2056d6}
+    .move-card {color:#2056d6;background:#eff4ff;border-color:#d1dffc}
+    .move-card:hover {color:#fff;background:#2056d6;border-color:#2056d6}
+    .empty {background:#fafbfd;border-color:#d6e0ec}
+    .empty-mark {background:#eaf1ff;color:#2056d6;border-color:#ccdafa}
+    .empty h3 {color:#1e3152}
+    .empty p {color:#72819b}
+    .footer {border-top-color:#e5e9f1;color:#8a98aa}
+    .footer span:last-child {color:#75869e}
+    .modal {background:#fff;color:#1b2d48;border-color:#d7e0ee;box-shadow:0 30px 90px rgba(13,29,56,.22)}
+    .modal::backdrop {background:rgba(15,29,57,.50);backdrop-filter:blur(5px)}
+    .modal-header {background:#f8faff;border-bottom-color:#e0e6f1}
+    .modal-title {color:#173153}
+    .modal-kicker {color:#2056d6}
+    .close-modal {border-color:#d4dfee;background:#fff;color:#57708f}
+    .close-modal:hover {background:#e9f0fe;color:#2056d6}
+    .required {color:#d62943}
+    .photo-upload {background:#f2f5fa;border-color:#b9cbe9}
+    .photo-upload:hover,.photo-upload:focus-visible {background:#eaf1ff;border-color:#2056d6}
+    .photo-upload.dragging {background:#e1ebff;border-color:#2056d6}
+    .photo-upload img {background:#f4f6f9}
+    .upload-prompt {color:#7183a0}
+    .upload-prompt svg {color:#2056d6}
+    .upload-prompt strong {color:#244777}
+    .state-picker {background:#f2f5fa;border-color:#d5deea}
+    .state-picker label {color:#6c7d93}
+    .state-picker input:checked + label {background:#2056d6;box-shadow:none;color:#fff}
+    .number-control {background:#f9fafc;border-color:#d9e1ec}
+    .number-head label {color:#263b5a}
+    .number-row .slash {color:#2056d6}
+    .field-hint {color:#7d8da4}
+    .chip-editor {background:#fff;border-color:#d3dceb}
+    .chip-editor:focus-within {border-color:#2056d6;box-shadow:0 0 0 3px rgba(32,86,214,.12)}
+    .edit-chip {background:#eaf0fd;color:#2056d6;border-color:#d1ddf6}
+    .edit-chip button {background:#d7e4fe;color:#1648bc}
+    .tag-input {color:#223858}
+    .tag-input::placeholder {color:#9aa8b9}
+    .modal-footer {border-top-color:#e3e9f2}
+    .logo-tab {background:#f5f7fb;border-color:#d8e1ed;color:#697e98}
+    .logo-tab.active {background:#2056d6;border-color:#2056d6;color:#fff;box-shadow:none}
+    .logo-create {background:#f8faff;border-color:#dce5f2}
+    .logo-file {background:#eef3fd;border-color:#aac0e9;color:#2056d6}
+    .logo-file:hover {background:#e2ebfc}
+    .logo-entry {background:#fff;border-color:#dce4f0}
+    .logo-entry-name {color:#264061}
+    .logo-help {color:#718099}
+    .toast {background:#2056d6;border-color:#2056d6;color:#fff;box-shadow:0 14px 40px rgba(32,86,214,.22)}
+    /* Poppins bold even on metadata and form values. */
+    .edition,.results-label,.team-row,.reference,.input,.select,.intro-desc,.num-pill,.field-hint,
+    .blank-tag,.footer,.logo-help,.upload-prompt,.brand-sub,.brand-lockup,.check-filter,
+    .sorter,.modal-body,.field-label,.tag-input {font-weight:700}
+    @media (max-width:750px) {
+      .app-shell {background:#fff;box-shadow:none;border:0}
+      .topline {background:#2056d6}
+    }
+  
+/* RapliLab V3 — full-bleed module; one shared brand header lives in the portal. */
+:root{
+  --rapli-gradient-top:#e1ecff;
+  --rapli-gradient-middle:#eff4ff;
+  --rapli-gradient-bottom:#c9dbfa;
+  --rapli-glow-left:rgba(31,94,221,.30);
+  --rapli-glow-right:rgba(234,50,87,.20);
+  --rapli-panel-soft:#f0f6ff;
+  --rapli-panel-mid:#dbe7ff;
+  --rapli-panel-edge:#bfd2f5;
+  --rapli-card-plain:#ffffff;
+  --rapli-card-tint:#eaf1ff;
+  --rapli-new-accent:#2056d6;
+}
+html,body{width:100%;max-width:100%;min-height:100%;overflow-x:hidden}
+body{
+  padding:0!important;
+  background:linear-gradient(135deg,var(--rapli-gradient-top),var(--rapli-gradient-middle) 55%,var(--rapli-gradient-bottom))!important;
+}
+body::before{display:none!important}
+.app-shell{
+  box-sizing:border-box!important;width:100%!important;max-width:none!important;
+  margin:0!important;padding:0 clamp(12px,2.7vw,36px) 34px!important;
+  min-height:100dvh;border:0!important;border-radius:0!important;box-shadow:none!important;
+  background:
+    radial-gradient(ellipse 57% 36% at 0% 2%,var(--rapli-glow-left),transparent 79%),
+    radial-gradient(ellipse 55% 45% at 100% 13%,var(--rapli-glow-right),transparent 80%),
+    linear-gradient(137deg,var(--rapli-gradient-top) 0%,var(--rapli-gradient-middle) 50%,var(--rapli-gradient-bottom) 100%)!important;
+}
+.app-shell>.topline{
+  box-sizing:content-box;height:5px;max-width:none;
+  margin:0 calc(-1 * clamp(12px,2.7vw,36px))!important;
+  background:linear-gradient(90deg,#1d4ec3 0%,#3478ea 47%,#f5f8ff 54%,#e52f52 100%)!important;
+  border-radius:0!important;box-shadow:none!important;
+}
+/* Header logo removed; preserve the working import/export actions in a slim utility row. */
+.rapli-utility-strip{
+  display:flex;align-items:center;justify-content:flex-end;
+  min-height:52px;margin:0 0 6px;padding:8px 0 5px;
+  border-bottom:1px solid color-mix(in srgb,var(--rapli-new-accent) 20%,transparent);
+}
+.rapli-utility-strip .header-tools{
+  display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:8px;
+}
+.rapli-utility-strip .header-tools .button{
+  background:linear-gradient(160deg,#fff, var(--rapli-panel-soft));
+  border:1px solid var(--rapli-panel-edge);color:var(--rapli-new-accent);
+  box-shadow:0 2px 8px rgba(16,39,44,.04);
+}
+.rapli-utility-strip .header-tools .button:hover{
+  background:linear-gradient(160deg,#fff,var(--rapli-panel-mid));
+  border-color:var(--rapli-new-accent);
+}
+.app-shell main{width:100%;max-width:none;min-width:0;margin:0 auto}
+.app-shell .stats{
+  padding:clamp(8px,1.15vw,15px);border:1px solid var(--rapli-panel-edge);
+  border-radius:16px;
+  background:linear-gradient(122deg,var(--rapli-panel-mid) 0%,var(--rapli-panel-soft) 46%,#fff 75%,var(--rapli-panel-mid) 100%);
+  box-shadow:0 7px 19px rgba(30,51,62,.07);
+}
+.app-shell .stat{
+  background:linear-gradient(140deg,#fff 0%,var(--rapli-panel-soft) 60%,var(--rapli-panel-mid) 100%)!important;
+  border-color:var(--rapli-panel-edge)!important;
+}
+.app-shell .filters{
+  background:linear-gradient(118deg,var(--rapli-panel-mid) 0%,var(--rapli-panel-soft) 50%,#fff 82%,var(--rapli-panel-mid) 100%)!important;
+  border-color:var(--rapli-panel-edge)!important;
+  box-shadow:0 8px 21px rgba(23,48,56,.09)!important;
+}
+.app-shell .card-item{
+  background:linear-gradient(139deg,var(--rapli-card-plain) 0%,var(--rapli-card-plain) 55%,var(--rapli-card-tint) 100%)!important;
+  border-color:var(--rapli-panel-edge)!important;
+  box-shadow:0 7px 22px rgba(22,47,56,.075)!important;
+}
+.app-shell .card-item:hover{
+  border-color:var(--rapli-new-accent)!important;
+  box-shadow:0 12px 27px rgba(22,47,56,.12)!important;
+}
+@media(max-width:750px){
+  .app-shell{padding:0 14px 26px!important}
+  .app-shell>.topline{margin:0 -14px!important}
+  .rapli-utility-strip{min-height:46px;margin-bottom:3px;padding:6px 0 5px}
+  .app-shell .stats{padding:8px;border-radius:13px}
+}
+@media(max-width:400px){
+  .app-shell{padding:0 10px 20px!important}
+  .app-shell>.topline{margin:0 -10px!important}
+  .rapli-utility-strip{min-height:43px}
+  .app-shell .stats{padding:6px}
+}
+
+</style>
+<style id="rapli-cloud-module-controls">
+.rapli-utility-strip .rapli-cloud-module-group{display:flex;align-items:center;gap:6px;margin-right:auto;min-width:0}
+.rapli-cloud-module-group .rapli-cloud-module-btn{display:grid;place-items:center;min-width:38px;width:38px;height:38px;border:1px solid #b9c9d0;border-radius:10px;background:#fff;color:#537283;cursor:pointer;transition:background .15s,box-shadow .15s}
+.rapli-cloud-module-btn svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.85;stroke-linecap:round;stroke-linejoin:round}
+.rapli-cloud-module-btn:hover:not(:disabled){background:#e7f5fb;box-shadow:0 1px 7px #19324b18}
+.rapli-cloud-module-btn:focus-visible{outline:2px solid #558fdd;outline-offset:2px}
+.rapli-cloud-module-btn:disabled{opacity:.64;cursor:wait}
+.rapli-cloud-module-btn[data-cloud-state="synced"]{color:#25855b;border-color:#9fcdb5}
+.rapli-cloud-module-btn[data-cloud-state="pending"]{color:#bd8826;border-color:#e0c28d}
+.rapli-cloud-module-btn[data-cloud-state="busy"]{color:#307fb8}
+.rapli-cloud-module-btn[data-cloud-state="conflict"],.rapli-cloud-module-btn[data-cloud-state="error"]{color:#c0414f;border-color:#e1a5ab}
+.rapli-cloud-module-btn.is-refreshing svg{animation:rapli-cloud-module-rotate 1s linear infinite}
+@keyframes rapli-cloud-module-rotate{to{transform:rotate(360deg)}}
+#rapli-module-cloud-status{font:700 10px/1.25 Poppins,system-ui,sans-serif;color:#587488;display:block;max-width:290px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#rapli-module-cloud-status[data-cloud-state="error"],#rapli-module-cloud-status[data-cloud-state="conflict"]{color:#b04250}
+@media(max-width:780px){#rapli-module-cloud-status{max-width:135px;font-size:9px}}
+@media(max-width:580px){#rapli-module-cloud-status{display:none}.rapli-utility-strip{gap:6px}.rapli-cloud-module-group .rapli-cloud-module-btn{min-width:36px;width:36px;height:36px;border-radius:9px}}
+@media(prefers-reduced-motion:reduce){.rapli-cloud-module-btn.is-refreshing svg{animation:none}}
+</style><style id="rapli-sports-feature-filters">
+/* Rapli Sports — compact filters for autograph and patch attributes. */
+.feature-filter-row{
+  grid-column:1 / -1;
+  display:flex;align-items:end;flex-wrap:wrap;gap:9px;
+  padding-top:9px;margin-top:2px;border-top:1px solid #dbe4f0;
+}
+.feature-filter-row .field{flex:0 1 220px;min-width:165px}
+.feature-filter-row .select{height:39px}
+@media(max-width:750px){
+ .feature-filter-row{gap:8px;padding-top:10px}
+ .feature-filter-row .field{flex:1 1 calc(50% - 4px);min-width:0}
+}
+
+</style><style id="rapli-sports-player-autos-patches">
+/* RAPLI SPORTS — per-player autographs & patches (maximum five). */
+.players-editor{min-width:0}
+.players-editor-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.players-editor-head label{font-size:10px;font-weight:800;letter-spacing:.08em;color:#415b83}
+.player-add-btn{font-size:10px!important;padding:8px 11px!important;min-height:34px}
+.player-entries{display:flex;flex-direction:column;gap:9px}
+.player-entry{min-width:0;background:#f7faff;border:1px solid #d9e4f3;border-radius:12px;padding:11px;display:flex;flex-direction:column;gap:10px}
+.player-entry-header{display:flex;align-items:center;justify-content:space-between;min-height:18px;gap:8px}
+.player-entry-header label{font-size:10px;font-weight:900;letter-spacing:.045em;color:#305da1}
+.player-entry-remove{border:1px solid #e7cad3;background:#fff5f7;color:#b73e57;border-radius:7px;padding:2px 8px;font-size:12px;line-height:1.4;font-weight:900}
+.player-entry-remove:hover{background:#ffe5ec}
+.player-entry .player-name-input{width:100%;min-width:0;height:42px;font-size:16px}
+.player-feature-groups{display:flex;flex-wrap:wrap;gap:9px}
+.player-feature-group{flex:1 1 190px;border:1px solid #dce5f2;border-radius:10px;padding:9px;background:#fff;min-width:0}
+.player-feature-group:has([data-player-toggle]:checked){border-color:#91b6ee;background:#f3f7ff}
+.player-feature-master,.player-feature-choice label{display:inline-flex!important;align-items:center;gap:7px;cursor:pointer;font-weight:800;line-height:1.25}
+.player-feature-master{font-size:11px!important;color:#244b8d!important}
+.player-feature-master input,.player-feature-choice input{width:16px;height:16px;flex:none;accent-color:#2056d6}
+.player-feature-choice{display:flex;flex-wrap:wrap;gap:7px 12px;margin:10px 0 0 2px;padding:9px 2px 0;border-top:1px solid #dce6f3}
+.player-feature-choice[hidden]{display:none!important}
+.player-feature-choice label{font-size:10px!important;letter-spacing:0!important;text-transform:none!important;color:#405774!important}
+#playerCount{font-size:10px;color:#7386a0}
+.player-extra-names{display:flex;flex-direction:column;gap:3px;margin:-2px 0 8px;font-size:11px;color:#637794;font-weight:800;overflow-wrap:anywhere}
+.player-extra-names span::before{content:"＋";color:#2056d6;margin-right:6px}
+.player-traits{display:flex;flex-wrap:wrap;gap:5px;margin:5px 0 8px;min-width:0}
+.player-trait{display:inline-flex;flex-wrap:wrap;align-items:center;gap:4px;border:1px solid #d4e4fa;border-radius:6px;background:#ebf3ff;padding:4px 6px;font-size:9px;font-weight:800;line-height:1.35;color:#1d54a8;overflow-wrap:anywhere}
+.player-trait--patch{color:#9a4d26;background:#fff5e7;border-color:#f3dcba}
+.player-trait strong{font-size:9px;color:#203b61;font-weight:900}
+@media(max-width:550px){
+ .player-feature-groups{flex-direction:column;gap:7px}
+ .player-feature-group{flex:1 1 auto}
+ .player-add-btn{padding:8px 9px!important}
+ .player-entry{padding:9px}
+ .player-traits{gap:4px}
+ .player-trait{font-size:8px;padding:3px 5px}
+}
+
+</style><style id="rapli-sports-collector-badges">
+/* Sports-card serial numbering: serif, subtle foil treatment, compact collector plates. */
+.collector-row{display:flex;align-items:center;gap:7px;flex-wrap:wrap;min-width:0;flex:1}
+.collector-badge{--collector-bg:#192d4e;--collector-ink:#edcf87;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;min-width:67px;max-width:100%;min-height:49px;padding:5px 9px 4px;background:var(--collector-bg);color:var(--collector-ink);border:1px solid var(--collector-ink);border-radius:8px;text-align:center;overflow:hidden;line-height:1.05}
+.collector-row.is-premium .collector-badge{background:linear-gradient(135deg,color-mix(in srgb,var(--collector-bg) 78%,white),var(--collector-bg) 43%,color-mix(in srgb,var(--collector-bg) 85%,black));box-shadow:0 3px 10px #102b492b,inset 0 1px 0 #ffffff48,inset 0 0 0 1px #ffffff16;text-shadow:0 1px 1px #ffffff26}
+.collector-badge-main{display:flex;align-items:center;justify-content:center;white-space:nowrap;max-width:100%;min-height:27px;font-family:'Cormorant Garamond',Georgia,serif;font-size:26px;font-weight:700;line-height:.92;font-variant-numeric:lining-nums tabular-nums;letter-spacing:.015em}
+.collector-badge.font-baskerville .collector-badge-main{font-family:Baskerville,Georgia,serif;font-size:20px;letter-spacing:-.04em}
+.collector-badge.font-special-elite .collector-badge-main{font-family:'Special Elite','Courier New',monospace;font-size:19px;font-weight:400;letter-spacing:-.045em;line-height:1.15}
+.collector-badge.font-courier-prime .collector-badge-main{font-family:'Courier Prime','Courier New',monospace;font-size:20px;font-weight:700;letter-spacing:-.065em}
+.collector-badge.font-ibm-plex-mono .collector-badge-main{font-family:'IBM Plex Mono','Courier New',monospace;font-size:18px;font-weight:700;letter-spacing:-.055em}
+.collector-badge.font-american-typewriter .collector-badge-main{font-family:'American Typewriter','Courier Prime',Courier,monospace;font-size:19px;font-weight:700;letter-spacing:-.045em}
+.collector-badge.font-special-elite .collector-badge-caption{letter-spacing:.04em}
+@media(max-width:750px){.collector-badge.font-special-elite .collector-badge-main,.collector-badge.font-courier-prime .collector-badge-main,.collector-badge.font-american-typewriter .collector-badge-main{font-size:18px}.collector-badge.font-ibm-plex-mono .collector-badge-main{font-size:17px}}
+.collector-badge .collector-slash{padding:0 2px;font-size:.8em;opacity:.83}
+.collector-badge-caption{font:800 7px/1.2 Poppins,sans-serif;letter-spacing:.09em;opacity:.91;text-transform:uppercase;margin-top:3px}
+.collector-badge.has-logo{min-width:65px;padding:4px 7px}
+.collector-badge-logo{display:block;max-width:78px;max-height:27px;object-fit:contain;width:auto;height:auto;filter:none}
+/* Logo RC importé : visuel seul, sans fond, contour ou légende du badge collector. */
+.collector-rookie-logo{display:block;flex:0 1 auto;width:auto;height:auto;max-width:84px;max-height:60px;object-fit:contain;border:0;border-radius:0;padding:0;margin:0;background:none;box-shadow:none;filter:none}
+@media(max-width:410px){.collector-rookie-logo{max-width:68px;max-height:49px}}
+.collector-no-number{font:700 9px Poppins,sans-serif;color:#8696ac}
+.card-bottom{align-items:end;flex-wrap:wrap;gap:8px}
+.card-bottom .move-card{margin-left:auto}
+.rookie-control{display:flex;align-items:center;flex-wrap:wrap;gap:10px;padding:10px 13px;margin-top:9px;border:1px solid #d8e3f5;border-radius:11px;background:linear-gradient(115deg,#f5f9ff,#e6f0fd)}
+.rookie-control label{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:900;color:#1e4f99;cursor:pointer}
+.rookie-control .field-hint{margin-left:auto}
+#collectorSettingsPanel{background:#f7faff;border:1px solid #d9e4f2;padding:14px;border-radius:12px}
+.collector-settings-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:12px 0}
+.collector-settings-grid .input-group{min-width:0}
+.collector-settings-grid input[type=color]{width:100%;height:38px;background:#fff;border:1px solid #bccde5;border-radius:8px;padding:3px}
+.collector-settings-check{display:flex;align-items:center;gap:8px;cursor:pointer;color:#244b8a;font-weight:800;font-size:11px}
+#collectorBadgePreview{margin:14px 0;min-height:55px;display:flex;align-items:center}
+#collectorBadgePreview .collector-row{flex:0 1 auto}
+#logoCreatePanel[hidden],#collectorSettingsPanel[hidden],#logoList[hidden]{display:none!important}
+.logo-tabs{flex-wrap:wrap}
+@media(max-width:750px){.collector-badge{min-width:58px;min-height:44px;padding:4px 6px}.collector-badge-main{font-size:23px;min-height:24px}.collector-badge-logo{max-height:24px;max-width:67px}.collector-badge-caption{font-size:6px}.collector-row{gap:5px}}
+@media(max-width:420px){.collector-badge{min-width:55px}.collector-badge-main{font-size:21px}.collector-settings-grid{grid-template-columns:1fr}}
+</style>
+<style id="rapli-sports-own-stats-and-pickers">
+/* Imported sports logos have no own badge, backing, outline or repeated text. */
+.brand-lockup img.logo-tiny.has-image,.team-row img.logo-tiny.has-image,.logo-entry img.logo-tiny.has-image{
+  display:block;flex:0 1 auto;object-fit:contain;background:transparent!important;border:0!important;
+  border-radius:0!important;box-shadow:none!important;padding:0!important;filter:none!important;
+  width:auto;height:auto;max-width:99px;max-height:43px;min-width:0;
+}
+.team-row img.logo-tiny.has-image{max-width:76px;max-height:36px}
+.saved-value-picker{margin:4px 0 7px;min-height:40px}
+.players-editor .player-picker{font-size:11px;margin:5px 0 7px}
+#collectionPanel[hidden],#statsPanel[hidden],#sportsSummaryStrip[hidden]{display:none!important}
+.stats-panel{display:grid;gap:19px;margin-top:8px;color:#20375b}
+.stats-panel-head{display:flex;justify-content:space-between;align-items:end;flex-wrap:wrap;gap:6px;border-bottom:1px solid #d9e4f4;padding:8px 2px 17px}
+.stats-panel-head h3{font-size:18px;letter-spacing:.02em;margin:0;color:#123c84;font-weight:900}
+.stats-panel-head p{font-size:11px;color:#667e9e;margin:5px 0 0;line-height:1.6}
+.stats-own-count{font:900 14px Poppins,sans-serif;color:#2056d6}
+.stats-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.stats-kpi{border:1px solid #d5e2f3;border-radius:12px;background:linear-gradient(135deg,#fff,#f0f5ff);padding:15px 12px;min-width:0}
+.stats-kpi-label{display:block;font-size:10px;font-weight:800;text-transform:uppercase;color:#617a9a;letter-spacing:.04em}
+.stats-kpi-value{display:block;font:900 26px/1.2 Poppins,sans-serif;color:#1c4daf;margin-top:6px;font-variant-numeric:tabular-nums}
+.stats-kpi-sub{display:block;color:#7a91ab;font-size:9px;margin-top:3px}
+.stats-breakdowns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.stats-breakdown{background:#fff;border:1px solid #dae5f4;border-radius:14px;padding:16px;min-width:0}
+.stats-breakdown h4{font-size:13px;font-weight:900;color:#1b416f;margin:0 0 13px}
+.stats-rank-row{margin:12px 0;min-width:0}
+.stats-rank-top{display:flex;justify-content:space-between;align-items:baseline;gap:12px;color:#456282;font-size:11px;font-weight:700}
+.stats-rank-top>span{min-width:0;overflow-wrap:anywhere}
+.stats-rank-top strong{font-weight:900;color:#2056d6;white-space:nowrap}
+.stats-track{height:6px;background:#e7effa;border-radius:50px;overflow:hidden;margin-top:6px}
+.stats-track span{display:block;height:100%;background:#2056d6;border-radius:inherit}
+.stats-empty{padding:28px 18px;text-align:center;border:1px dashed #bed3ef;border-radius:14px;background:#f6f9ff;color:#65809d;font-size:12px}
+@media(max-width:750px){
+ .stats-kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ .stats-breakdowns{grid-template-columns:minmax(0,1fr);gap:9px}
+ .stats-kpi{padding:12px 10px}
+ .stats-kpi-value{font-size:23px}
+ .tabs{gap:3px;min-width:0}
+ .tabs .tab{padding:13px 10px;font-size:11px;letter-spacing:.03em;gap:5px}
+ .section-nav{gap:8px;flex-wrap:wrap}
+ .nav-actions{margin-left:auto}
+}
+@media(max-width:410px){
+ .tabs{width:100%;justify-content:space-between}
+ .tabs .tab{padding:12px 7px;font-size:10px}
+ .team-row img.logo-tiny.has-image{max-width:60px;max-height:30px}
+ .brand-lockup img.logo-tiny.has-image{max-width:76px;max-height:38px}
+}
+</style>
+  <link rel="stylesheet" href="../shared/photo-zoom.css">
+</head>
+<body>
+  <div class="app-shell">
+    <div class="topline"></div>
+    <div class="rapli-utility-strip" aria-label="Gestion des sauvegardes">
+    <div class="rapli-cloud-module-group" aria-label="Synchronisation avec Supabase">
+      <button type="button" class="rapli-cloud-module-btn" id="rapli-module-cloud-save" aria-label="Enregistrer dans le cloud" title="Enregistrer dans Supabase">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18h10a4 4 0 0 0 .65-7.95A6.2 6.2 0 0 0 6 8.6 4.7 4.7 0 0 0 7 18Z"/><path d="M12 10v8m-3-3 3 3 3-3"/></svg>
+      </button>
+      <button type="button" class="rapli-cloud-module-btn" id="rapli-module-cloud-refresh" aria-label="Actualiser depuis le cloud" title="Récupérer les modifications de l’autre appareil">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14.25-5L3 8.5"/><path d="M3 3.5v5h5"/><path d="M4 13a8 8 0 0 0 14.25 5L21 15.5"/><path d="M21 20.5v-5h-5"/></svg>
+      </button>
+      <span id="rapli-module-cloud-status" role="status" aria-live="polite">Connexion cloud…</span>
+    </div>
+    <div class="header-tools">
+                <button id="importBtn" class="button button-ghost" type="button" title="Importer une sauvegarde JSON"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V3m-5 5 5-5 5 5M4 16v4h16v-4"/></svg> Importer</button>
+        <button id="exportBtn" class="button button-ghost" type="button" title="Exporter une sauvegarde JSON"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13m-5-5 5 5 5-5M4 17v4h16v-4"/></svg> Exporter</button>
+      </div></div>
+  <main>
+      <div class="stats" id="sportsSummaryStrip" aria-label="Aperçu de la collection">
+        <div class="stat"><div class="stat-top"><span>Cartes répertoriées</span><span class="stat-icon" id="statIconAll"></span></div><strong id="statTotal">0</strong></div>
+        <div class="stat"><div class="stat-top"><span>Own · Possédées</span><span class="stat-icon" id="statIconOwn"></span></div><strong id="statOwn">0</strong></div>
+        <div class="stat"><div class="stat-top"><span>Wishlist · Recherchées</span><span class="stat-icon" id="statIconWish"></span></div><strong id="statWish">0</strong></div>
+        <div class="stat"><div class="stat-top"><span>Numérotées</span><span class="stat-icon" id="statIconNumber"></span></div><strong id="statNumber">0</strong></div>
+      </div>
+      <section aria-label="Gestion des cartes">
+        <div class="section-nav">
+          <div class="tabs" role="tablist" aria-label="Collection">
+            <button type="button" role="tab" aria-selected="true" class="tab active" data-view="own">OWN <b id="tabOwnCount">0</b></button>
+            <button type="button" role="tab" aria-selected="false" class="tab" data-view="wishlist">WISHLIST <b id="tabWishCount">0</b></button>
+            <button type="button" role="tab" aria-selected="false" class="tab" data-view="stats">STATISTIQUES</button>
+          </div>
+          <div class="nav-actions">
+            <button id="logosBtn" type="button" class="button button-soft"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg> Gérer les logos</button>
+            <button id="addCardBtn" type="button" class="button button-primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg> Ajouter une carte</button>
+          </div>
+        </div>
+        <div id="collectionPanel">
+        <div class="filters">
+          <div class="field search-field"><label class="field-label" for="filterSearch">RECHERCHE</label><div class="input-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input class="input with-icon" id="filterSearch" type="search" autocomplete="off" placeholder="Joueur, référence, équipe, tag…" aria-label="Rechercher des cartes"></div></div>
+          <div class="field"><label class="field-label" for="filterBrand">MARQUE</label><select class="select" id="filterBrand"><option value="">Toutes les marques</option></select></div>
+          <div class="field"><label class="field-label" for="filterTeam">ÉQUIPE</label><select class="select" id="filterTeam"><option value="">Toutes les équipes</option></select></div>
+          <div class="field"><label class="field-label" for="filterTag">VARIATION / TAG</label><select class="select" id="filterTag"><option value="">Toutes les variations</option></select></div>
+          <div class="field filter-sport"><label class="field-label" for="filterSport">SPORT</label><select class="select" id="filterSport"><option value="">Tous les sports</option></select></div>
+          <div class="field filter-number"><span class="field-label">NUMÉROTATION</span><label class="check-filter"><input id="filterNumbered" class="custom" type="checkbox"><span class="box-check"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></span> Numérotées</label></div>
+          <div class="feature-filter-row" role="group" aria-label="Filtres Auto et Patch">
+            <div class="field"><label class="field-label" for="filterAuto">AUTO</label><select class="select" id="filterAuto">
+              <option value="">Toutes les autos</option>
+              <option value="with">Avec Auto</option>
+              <option value="stickers">Auto Stickers</option>
+              <option value="on-card">Auto On Card</option>
+              <option value="without">Sans Auto</option>
+            </select></div>
+            <div class="field"><label class="field-label" for="filterPatch">PATCH</label><select class="select" id="filterPatch">
+              <option value="">Tous les patchs</option>
+              <option value="with">Avec Patch</option>
+              <option value="game-worn">Patch Game Worn</option>
+              <option value="not-affiliated">Patch Not Affiliated</option>
+              <option value="without">Sans Patch</option>
+            </select></div>
+          </div>
+        </div>
+        <div class="toolbar-foot"><span class="results-label" id="resultsLabel">0 carte</span><div class="results-right"><button id="clearFiltersBtn" type="button" class="link-btn">Effacer les filtres</button><select id="sortSelect" class="sorter" aria-label="Trier les cartes"><option value="recent">Plus récentes</option><option value="name">Joueur A – Z</option><option value="brand">Marque A – Z</option><option value="team">Équipe A – Z</option></select></div></div>
+        <div id="demoBanner" class="demo-strip hidden"><span><strong>APERÇU DE DÉMONSTRATION</strong> — Ces cartes sont des exemples modifiables.</span><button class="link-btn" id="clearDemoBtn" type="button">Supprimer les exemples</button></div>
+        <div id="cardGrid" class="cards-grid" aria-live="polite"></div>
+        <div id="emptyState" class="empty hidden"><div class="empty-mark" id="emptyIcon"></div><h3 id="emptyTitle">Aucune carte pour le moment</h3><p id="emptyCopy">Ta collection commence ici.</p><button type="button" class="button button-primary" id="emptyAddBtn">Ajouter une carte</button></div>
+        </div>
+        <div id="statsPanel" class="stats-panel" role="tabpanel" aria-label="Statistiques des cartes OWN" hidden></div>
+      </section>
+    </main>
+    <footer class="footer"><span>© RAPLI SPORTS · PERSONAL COLLECTION</span><span>SAUVEGARDE LOCALE · EXPORT JSON DISPONIBLE</span></footer>
+  </div>
+  <dialog id="cardDialog" class="modal" aria-labelledby="cardDialogTitle">
+    <form id="cardForm" novalidate>
+      <div class="modal-header"><div><span class="modal-kicker">RAPLI SPORTS / FICHE COLLECTION</span><h2 id="cardDialogTitle" class="modal-title">Ajouter une carte</h2></div><button type="button" class="close-modal" data-close="cardDialog" aria-label="Fermer">×</button></div>
+      <div class="modal-body">
+        <div class="modal-grid">
+          <div><div class="input-group"><label>PHOTO DE LA CARTE</label><div id="photoDrop" class="photo-upload" role="button" tabindex="0" aria-label="Choisir une photo de carte"><div id="photoPrompt" class="upload-prompt"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="2"/><path d="m21 16-5-5L5 21"/></svg><strong>Importer une photo</strong><span>Glisser-déposer ou parcourir</span><span>JPG, PNG, WEBP</span></div><img id="photoPreview" class="hidden" alt="Aperçu de la carte"></div><input id="cardPhotoFile" type="file" accept="image/png,image/jpeg,image/webp" hidden><button type="button" id="removePhotoBtn" class="button button-ghost button-slim photo-remove hidden">Retirer la photo</button></div></div>
+          <div class="form-fields">
+            <div class="input-group"><label>COLLECTION</label><div class="state-picker"><input name="cardStatus" id="statusOwn" type="radio" value="own" checked><label for="statusOwn">OWN</label><input name="cardStatus" id="statusWish" type="radio" value="wishlist"><label for="statusWish">WISHLIST</label></div></div>
+            <div class="form-row">
+              <div class="input-group"><label for="cardBrand">Marque <span class="required">*</span></label><input id="cardBrand" class="input" name="brand" list="brandsList" required maxlength="90" placeholder="Topps, Panini…"><datalist id="brandsList"></datalist></div>
+              <div class="input-group"><label for="cardSport">Sport</label><select id="cardSport" class="select" name="sport"><option value="">Choisir un sport</option><option>Basketball</option><option>Football</option><option>Football américain</option><option>Baseball</option><option>Hockey</option><option>Formule 1</option><option>Tennis</option><option>Cyclisme</option><option>Rugby</option><option>Autre</option></select></div>
+            </div>
+            <div class="input-group players-editor">
+              <div class="players-editor-head">
+                <label>JOUEURS <span class="required">*</span></label>
+                <button id="addPlayerBtn" class="button button-soft player-add-btn" type="button" aria-label="Ajouter un joueur">＋ AJOUTER UN JOUEUR</button>
+              </div>
+              <div id="playerEntries" class="player-entries" aria-label="Joueurs et caractéristiques de la carte"></div>
+              <div id="playerCount" class="field-hint" role="status">1 / 5 joueurs · Auto et Patch rattachés à chaque joueur</div>
+            </div>
+            <div class="input-group"><label for="cardTeam">Équipe</label><select id="cardTeamPicker" class="select saved-value-picker" aria-label="Choisir une équipe déjà enregistrée"><option value="">Choisir une équipe enregistrée…</option></select><input id="cardTeam" class="input" name="team" list="teamsList" maxlength="100" placeholder="Ou saisir une nouvelle équipe"><datalist id="teamsList"></datalist></div>
+            <div class="input-group"><label for="cardReference">Référence</label><input id="cardReference" class="input" name="reference" maxlength="180" placeholder="2025-26 Topps Chrome #…"></div>
+            <div class="input-group"><label for="tagField">Variations / tags</label><select id="tagPicker" class="select saved-value-picker" aria-label="Ajouter un tag déjà enregistré"><option value="">Ajouter un tag existant…</option></select><div id="chipEditor" class="chip-editor"><div id="editChips" style="display:contents"></div><input id="tagField" class="tag-input" placeholder="Chrome, Refractor…" maxlength="60" autocomplete="off"></div><div class="field-hint">Sélectionne un tag existant, ou saisis-en un nouveau puis appuie sur Entrée.</div></div>
+            <div class="number-control"><div class="number-head"><label for="cardNumbered"><input id="cardNumbered" class="custom" type="checkbox"><span class="box-check"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></span> CARTE NUMÉROTÉE</label><span class="field-hint">Ex. 12 / 99</span></div><div id="serialFields" class="number-row hidden"><div class="input-group"><label for="cardSerial">Numéro de la carte</label><input id="cardSerial" class="input" maxlength="8" inputmode="numeric" pattern="[0-9]*" placeholder="12"></div><span class="slash">/</span><div class="input-group"><label for="cardPrintRun">Tirage total</label><input id="cardPrintRun" class="input" maxlength="8" inputmode="numeric" pattern="[0-9]*" placeholder="99"></div></div></div><div class="rookie-control"><label for="cardRookie"><input id="cardRookie" class="custom" type="checkbox"><span class="box-check"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></span> ROOKIE CARD (RC)</label><span class="field-hint">Logo personnalisé selon le sport, sinon RC</span></div>
+          </div>
+        </div>
+        <div class="modal-footer"><button class="button button-ghost" type="button" data-close="cardDialog">Annuler</button><button class="button button-primary" type="submit" id="cardSubmitBtn">Enregistrer la carte</button></div>
+      </div>
+    </form>
+  </dialog>
+  <dialog id="logoDialog" class="modal small" aria-labelledby="logoDialogTitle">
+    <div class="modal-header"><div><span class="modal-kicker">RAPLI SPORTS / IDENTITÉS VISUELLES</span><h2 id="logoDialogTitle" class="modal-title">Bibliothèque de logos</h2></div><button type="button" class="close-modal" data-close="logoDialog" aria-label="Fermer">×</button></div>
+    <div class="modal-body">
+      <div class="logo-tabs"><button type="button" class="logo-tab active" data-logo-type="brand">Marques</button><button type="button" class="logo-tab" data-logo-type="team">Équipes</button><button type="button" class="logo-tab" data-logo-type="rookie">Rookie / RC</button><button type="button" class="logo-tab" data-logo-type="collector">Style des badges</button></div>
+      <div class="logo-create" id="logoCreatePanel"><p class="logo-help" id="logoCreateHelp">Associe une image à une marque ou une équipe : son logo s'affichera automatiquement sur toutes les cartes correspondantes.</p><div class="logo-create-row"><div class="input-group"><label id="logoNameLabel" for="logoName">Nom de la marque</label><input class="input" id="logoName" list="logoNamesList" maxlength="100" placeholder="Topps"><datalist id="logoNamesList"></datalist></div><div class="input-group"><label>Image du logo</label><label class="logo-file" id="logoFileLabel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 16V4m-5 5 5-5 5 5M4 17v4h16v-4"/></svg><span id="logoFileText">Choisir</span><input type="file" id="logoFileInput" accept="image/png,image/jpeg,image/webp"></label></div><button id="saveLogoBtn" type="button" class="button button-primary">Ajouter</button></div></div>
+      <div id="logoList" class="logo-list"></div>
+      <div id="collectorSettingsPanel" hidden>
+        <p class="logo-help">Style des badges de numérotation et Rookie, avec aperçu avant enregistrement.</p>
+        <div class="collector-settings-grid">
+          <div class="input-group"><label for="collectorNumberFont">Police numérotation</label><select class="select" id="collectorNumberFont"><option value="cormorant">Cormorant Garamond · collector</option><option value="baskerville">Baskerville · classique</option><optgroup label="Machine à écrire / Typewriter"><option value="special-elite">Special Elite · vintage</option><option value="courier-prime">Courier Prime · machine classique</option><option value="ibm-plex-mono">IBM Plex Mono · mécanique nette</option><option value="american-typewriter">American Typewriter · rétro</option></optgroup></select></div>
+          <div class="input-group"><label for="collectorRookieFont">Police Rookie</label><select class="select" id="collectorRookieFont"><option value="cormorant">Cormorant Garamond · collector</option><option value="baskerville">Baskerville · classique</option><optgroup label="Machine à écrire / Typewriter"><option value="special-elite">Special Elite · vintage</option><option value="courier-prime">Courier Prime · machine classique</option><option value="ibm-plex-mono">IBM Plex Mono · mécanique nette</option><option value="american-typewriter">American Typewriter · rétro</option></optgroup></select></div>
+          <div class="input-group"><label for="collectorBackground">Fond du badge</label><input id="collectorBackground" type="color" value="#192d4e"></div>
+          <div class="input-group"><label for="collectorForeground">Lettres / contour</label><input id="collectorForeground" type="color" value="#edcf87"></div>
+        </div>
+        <label class="collector-settings-check"><input id="collectorPremium" type="checkbox" checked> Effet foil / relief premium</label>
+        <div id="collectorBadgePreview" aria-label="Aperçu numérotation et Rookie"></div>
+        <button type="button" class="button button-primary" id="saveCollectorStyleBtn">Enregistrer le style</button>
+      </div>
+    </div>
+  </dialog>
+  <input type="file" hidden id="importFile" accept="application/json,.json">
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="collection-stats.js"></script>
+  <script>
+    (() => {
+      'use strict';
+      const $ = (id) => document.getElementById(id);
+      const icons = {
+        layers:'<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 2v4m8-4v4M8 18v4m8-4v4"/>',
+        check:'<path d="m5 12 4 4L19 6"/>',
+        heart:'<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 1 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z"/>',
+        hash:'<path d="M5 9h14M4 15h14M11 3 7 21M17 3l-4 18"/>',
+        edit:'<path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L9 17l-4 1 1-4Z"/>',
+        trash:'<path d="M3 6h18M8 6V4h8v2M5 6l1 15h12l1-15M10 10v7m4-7v7"/>',
+        image:'<rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 16-5-5L5 21"/>',
+        package:'<rect x="3" y="7" width="18" height="14" rx="2"/><path d="M3 11h18M7 3h10l2 4H5l2-4Z"/>',
+        plus:'<path d="M12 5v14M5 12h14"/>'
+      };
+      function ico(key){return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icons[key]||icons.layers}</svg>`}
+      $('statIconAll').innerHTML=ico('layers'); $('statIconOwn').innerHTML=ico('check');$('statIconWish').innerHTML=ico('heart');$('statIconNumber').innerHTML=ico('hash');$('emptyIcon').innerHTML=ico('package');
+      let db=null, cards=[], logos=[], currentView='own', currentTags=[], currentPhoto='', editingId=null, logoType='brand', pendingLogoPhoto='', toastTimer=null;
+      const collator=new Intl.Collator('fr',{sensitivity:'base',numeric:true});
+
+      const MAX_CARD_PLAYERS=5;
+      let playerInputSequence=0;
+      const AUTO_TYPES={stickers:'Stickers','on-card':'On Card'};
+      const PATCH_TYPES={'game-worn':'Game Worn','not-affiliated':'Not Affiliated'};
+      function normalizedPlayer(value){
+        const item=typeof value==='string'?{name:value}:value&&typeof value==='object'?value:{};
+        return {
+          name:String(item.name??'').trim().slice(0,120),
+          auto:Object.prototype.hasOwnProperty.call(AUTO_TYPES,item.auto)?item.auto:'',
+          patch:Object.prototype.hasOwnProperty.call(PATCH_TYPES,item.patch)?item.patch:''
+        };
+      }
+      function cardPlayers(card){
+        const list=Array.isArray(card?.players)?card.players.slice(0,MAX_CARD_PLAYERS).map(normalizedPlayer).filter(p=>p.name):[];
+        return list.length?list:[normalizedPlayer({name:card?.player||''})];
+      }
+      function savedValues(values){
+        const seen=new Map();
+        for(const item of values){
+          const s=String(item??'').trim(),k=normalize(s);
+          if(k&&!seen.has(k))seen.set(k,s);
+        }
+        return [...seen.values()].sort(collator.compare);
+      }
+      function savedPlayers(){return savedValues(cards.flatMap(c=>cardPlayers(c).map(p=>p.name)))}
+      function savedTeams(){return savedValues(cards.map(c=>c.team).concat(logos.filter(x=>x.type==='team').map(x=>x.name)))}
+      function savedTags(){return savedValues(cards.flatMap(c=>Array.isArray(c.tags)?c.tags:[]))}
+      function playerPickerMarkup(){
+        return '<select class="select saved-value-picker player-picker" data-player-picker aria-label="Choisir un athlète déjà enregistré">'+
+          '<option value="">Choisir un athlète enregistré…</option>'+
+          savedPlayers().map(v=>'<option value="'+safeText(v)+'">'+safeText(v)+'</option>').join('')+'</select>';
+      }
+      function playerRowHTML(raw,index){
+        const p=normalizedPlayer(raw);
+        const autoOn=raw?.autoEnabled===true||!!p.auto;
+        const patchOn=raw?.patchEnabled===true||!!p.patch;
+        const id=index===0?'cardPlayer':'cardPlayerExtra'+(++playerInputSequence);
+        const choice=(kind,value,label,selected)=>
+          '<label><input type="checkbox" data-player-type="'+kind+'" value="'+value+'"'+(selected?' checked':'')+'> '+label+'</label>';
+        return '<div class="player-entry" data-player-entry>'+
+          '<div class="player-entry-header"><label for="'+id+'" class="player-entry-label">JOUEUR '+(index+1)+'</label>'+
+          (index?'<button type="button" class="player-entry-remove" data-remove-player aria-label="Retirer ce joueur" title="Retirer ce joueur">×</button>':'')+'</div>'+
+          playerPickerMarkup()+
+          '<input id="'+id+'" class="input player-name-input" name="playerName[]" type="text" maxlength="120" autocomplete="off" placeholder="Nom du joueur"'+(index===0?' required':'')+' value="'+safeText(p.name)+'">'+
+          '<div class="player-feature-groups">'+
+            '<div class="player-feature-group"><label class="player-feature-master"><input type="checkbox" data-player-toggle="auto"'+(autoOn?' checked':'')+'> AUTO</label>'+
+              '<div class="player-feature-choice" data-player-choices="auto"'+(autoOn?'':' hidden')+'>'+
+              choice('auto','stickers','Stickers',p.auto==='stickers')+
+              choice('auto','on-card','On Card',p.auto==='on-card')+'</div></div>'+
+            '<div class="player-feature-group"><label class="player-feature-master"><input type="checkbox" data-player-toggle="patch"'+(patchOn?' checked':'')+'> PATCH</label>'+
+              '<div class="player-feature-choice" data-player-choices="patch"'+(patchOn?'':' hidden')+'>'+
+              choice('patch','game-worn','Game Worn',p.patch==='game-worn')+
+              choice('patch','not-affiliated','Not Affiliated',p.patch==='not-affiliated')+'</div></div>'+
+          '</div></div>';
+      }
+      function recountPlayers(){
+        const rows=Array.from($('playerEntries').querySelectorAll('[data-player-entry]'));
+        rows.forEach((entry,index)=>{
+          entry.querySelector('.player-entry-label').textContent='JOUEUR '+(index+1);
+          const remove=entry.querySelector('[data-remove-player]');
+          if(remove)remove.setAttribute('aria-label','Retirer le joueur '+(index+1));
+        });
+        $('playerCount').textContent=rows.length+' / '+MAX_CARD_PLAYERS+' joueurs · Auto et Patch propres à chaque joueur';
+        $('addPlayerBtn').disabled=rows.length>=MAX_CARD_PLAYERS;
+        $('addPlayerBtn').title=rows.length>=MAX_CARD_PLAYERS?'Maximum de 5 joueurs':'Ajouter un joueur à cette carte';
+      }
+      function addPlayerRow(player){
+        const entries=$('playerEntries'),count=entries.querySelectorAll('[data-player-entry]').length;
+        if(count>=MAX_CARD_PLAYERS){showToast('Maximum de cinq joueurs par carte.');return;}
+        entries.insertAdjacentHTML('beforeend',playerRowHTML(player||{},count));
+        recountPlayers();
+        return entries.lastElementChild;
+      }
+      function resetPlayersForm(card){
+        $('playerEntries').replaceChildren();
+        (card?cardPlayers(card):[normalizedPlayer({name:''})]).forEach(addPlayerRow);
+        recountPlayers();
+      }
+      function collectCardPlayers(){
+        const rows=Array.from($('playerEntries').querySelectorAll('[data-player-entry]'));
+        const roster=[];
+        if(rows.length<1||rows.length>MAX_CARD_PLAYERS)return null;
+        for(let i=0;i<rows.length;i++){
+          const row=rows[i],nameInput=row.querySelector('.player-name-input');
+          const name=nameInput.value.trim();
+          const autoOn=row.querySelector('[data-player-toggle="auto"]').checked;
+          const patchOn=row.querySelector('[data-player-toggle="patch"]').checked;
+          const auto=autoOn?(row.querySelector('[data-player-type="auto"]:checked')?.value||''):'';
+          const patch=patchOn?(row.querySelector('[data-player-type="patch"]:checked')?.value||''):'';
+          if(!name){showToast('Renseigne le nom du joueur '+(i+1)+'.');nameInput.focus();return null;}
+          if(autoOn&&!auto){showToast('Choisis Stickers ou On Card pour '+name+'.');row.querySelector('[data-player-type="auto"]').focus();return null;}
+          if(patchOn&&!patch){showToast('Choisis Game Worn ou Not Affiliated pour '+name+'.');row.querySelector('[data-player-type="patch"]').focus();return null;}
+          roster.push(normalizedPlayer({name,auto,patch}));
+        }
+        return roster;
+      }
+      function playerCardSummary(card){
+        const roster=cardPlayers(card).filter(p=>p.name);
+        const first=roster[0]?.name||card.player||'Joueur non renseigné';
+        const names=roster.length>1?
+          '<div class="player-extra-names">'+roster.slice(1).map(p=>'<span>'+safeText(p.name)+'</span>').join('')+'</div>':'';
+        const badges=roster.flatMap(p=>{
+          const prefix=roster.length>1?'<strong>'+safeText(p.name)+' ·</strong> ':'';
+          const out=[];
+          if(p.auto)out.push('<span class="player-trait player-trait--auto">'+prefix+'AUTO '+AUTO_TYPES[p.auto]+'</span>');
+          if(p.patch)out.push('<span class="player-trait player-trait--patch">'+prefix+'PATCH '+PATCH_TYPES[p.patch]+'</span>');
+          return out;
+        });
+        return '<h3 class="player">'+safeText(first)+'</h3>'+names+
+          (badges.length?'<div class="player-traits">'+badges.join('')+'</div>':'');
+      }
+      function normalize(value){return String(value??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim()}
+      function safeText(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+      function imgSafe(s){return typeof s==='string' && /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(s)}
+      function uid(){return crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36)+'-'+Math.random().toString(36).slice(2)}
+      function showToast(message){$('toast').textContent=message;$('toast').classList.add('visible');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').classList.remove('visible'),3200)}
+      function transactionPut(store,value){if(!db){return Promise.resolve()}return new Promise((resolve,reject)=>{let tr=db.transaction(store,'readwrite');tr.objectStore(store).put(value);tr.oncomplete=resolve;tr.onerror=()=>reject(tr.error)})}
+      function transactionDelete(store,key){if(!db){return Promise.resolve()}return new Promise((resolve,reject)=>{let tr=db.transaction(store,'readwrite');tr.objectStore(store).delete(key);tr.oncomplete=resolve;tr.onerror=()=>reject(tr.error)})}
+      function transactionAll(store){return new Promise((resolve,reject)=>{const tr=db.transaction(store,'readonly');const req=tr.objectStore(store).getAll();req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error)})}
+      function transactionGet(store,key){return new Promise((resolve,reject)=>{let r=db.transaction(store,'readonly').objectStore(store).get(key);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
+      async function openDb(){return new Promise((resolve,reject)=>{const r=indexedDB.open('rapli-sports-v1',1);r.onupgradeneeded=()=>{const database=r.result;database.createObjectStore('cards',{keyPath:'id'});database.createObjectStore('logos',{keyPath:'id'});database.createObjectStore('meta',{keyPath:'key'})};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);r.onblocked=()=>reject(new Error('Base bloquée'))})}
+      async function saveFallback(){try{localStorage.setItem('rapli-sports-fallback',JSON.stringify({cards,logos,initialized:true}))}catch(e){console.warn('Stockage local indisponible',e);showToast('Stockage local indisponible : exporte une sauvegarde JSON.')}}
+      async function saveCard(record){if(db)await transactionPut('cards',record);cards=cards.filter(x=>x.id!==record.id);cards.push(record);if(!db)await saveFallback();window.RapliModuleCloud?.changed?.()}
+      async function removeCard(id){if(db)await transactionDelete('cards',id);cards=cards.filter(x=>x.id!==id);if(!db)await saveFallback();window.RapliModuleCloud?.changed?.()}
+      async function saveLogo(record){if(db)await transactionPut('logos',record);logos=logos.filter(x=>x.id!==record.id);logos.push(record);if(!db)await saveFallback();window.RapliModuleCloud?.changed?.()}
+      async function removeLogo(id){if(db)await transactionDelete('logos',id);logos=logos.filter(x=>x.id!==id);if(!db)await saveFallback();window.RapliModuleCloud?.changed?.()}
+      function sampleCards(){let ts=Date.now();return [
+        {id:'demo-maxey',status:'wishlist',brand:'Topps',player:'Tyrese Maxey',sport:'Basketball',team:'Philadelphia 76ers',reference:'2025–26 · Chrome · #EXEMPLE',tags:['Chrome','Refractor'],numbered:false,serial:'',printRun:'',photo:'',demo:true,createdAt:ts-15000,updatedAt:ts-15000},
+        {id:'demo-embiid',status:'own',brand:'Panini',player:'Joel Embiid',sport:'Basketball',team:'Philadelphia 76ers',reference:'Prizm · #EXEMPLE',tags:['Prizm','Silver'],numbered:true,serial:'12',printRun:'99',photo:'',demo:true,createdAt:ts-13000,updatedAt:ts-13000},
+        {id:'demo-maxey-own',status:'own',brand:'Topps',player:'Tyrese Maxey',sport:'Basketball',team:'Philadelphia 76ers',reference:'Chrome · #EXEMPLE',tags:['Chrome','Base'],numbered:false,serial:'',printRun:'',photo:'',demo:true,createdAt:ts-12000,updatedAt:ts-12000},
+        {id:'demo-wemby',status:'wishlist',brand:'Topps',player:'Victor Wembanyama',sport:'Basketball',team:'San Antonio Spurs',reference:'Chrome · #EXEMPLE',tags:['Chrome','Gold'],numbered:true,serial:'07',printRun:'50',photo:'',demo:true,createdAt:ts-11000,updatedAt:ts-11000}
+      ]}
+      async function initialize(){try{db=await openDb();[cards,logos]=await Promise.all([transactionAll('cards'),transactionAll('logos')]);const initialized=await transactionGet('meta','initialized');if(!initialized){cards=sampleCards();for(const c of cards)await transactionPut('cards',c);await transactionPut('meta',{key:'initialized',value:true})}}catch(e){console.warn('IndexedDB indisponible ; tentative de stockage local',e);db=null;let stored=null;try{stored=localStorage.getItem('rapli-sports-fallback')}catch(_){/* Mode éphémère : accès local bloqué */}if(stored){try{const parsed=JSON.parse(stored);cards=parsed.cards||[];logos=parsed.logos||[]}catch(_){cards=[];logos=[]}}else{cards=sampleCards();try{await saveFallback()}catch(_){}}showToast('Stockage de secours activé. Pense à exporter tes données.')}renderAll()}
+      function logoFor(type,name){if(!name)return '';let o=logos.find(l=>l.type===type&&normalize(l.name)===normalize(name));return o&&imgSafe(o.image)?o.image:''}
+      function brandBadge(type,name){const src=logoFor(type,name);const initials=String(name||'?').split(/\s+/).filter(Boolean).slice(0,2).map(x=>x[0]).join('').toUpperCase().slice(0,2);return src?`<img class="logo-tiny has-image" src="${src}" alt="Logo ${safeText(name)}">`:`<span class="logo-tiny" aria-hidden="true">${safeText(initials)}</span>`}
+
+      const COLLECTOR_STYLE_ID='collector:style';
+      const COLLECTOR_DEFAULTS=Object.freeze({numberFont:'cormorant',rookieFont:'cormorant',background:'#192d4e',foreground:'#edcf87',premium:true});
+      const COLLECTOR_FONTS=new Set(['cormorant','baskerville','special-elite','courier-prime','ibm-plex-mono','american-typewriter']);
+      function collectorFont(value){return COLLECTOR_FONTS.has(value)?value:'cormorant'}
+      function collectorStyle(){
+        const saved=logos.find(x=>x.id===COLLECTOR_STYLE_ID)?.settings||{};
+        const validColor=(value,fallback)=>typeof value==='string'&&/^#[0-9a-f]{6}$/i.test(value)?value:fallback;
+        return {
+          numberFont:collectorFont(saved.numberFont),
+          rookieFont:collectorFont(saved.rookieFont),
+          background:validColor(saved.background,COLLECTOR_DEFAULTS.background),
+          foreground:validColor(saved.foreground,COLLECTOR_DEFAULTS.foreground),
+          premium:saved.premium!==false
+        };
+      }
+      function collectorBadgeMarkup(card,style=collectorStyle()){
+        const numbered=!!card.numbered&&/^\d+$/.test(String(card.serial||''))&&/^\d+$/.test(String(card.printRun||''));
+        const rookie=card.rookie===true;
+        if(!numbered&&!rookie)return '<span class="collector-no-number">Non numérotée</span>';
+        let badges='';
+        if(numbered){
+          badges+=`<span class="collector-badge collector-badge--number ${'font-'+collectorFont(style.numberFont)}" aria-label="Carte numérotée ${safeText(card.serial)} sur ${safeText(card.printRun)}"><span class="collector-badge-main"><span>${safeText(card.serial)}</span><span class="collector-slash">/</span><span>${safeText(card.printRun)}</span></span><span class="collector-badge-caption">SERIAL NUMBER</span></span>`;
+        }
+        if(rookie){
+          const logo=logoFor('rookie',card.sport);
+          badges+=logo
+            ? `<img class="collector-rookie-logo" src="${logo}" alt="Logo Rookie ${safeText(card.sport||'')}">`
+            : `<span class="collector-badge collector-badge--rookie ${'font-'+collectorFont(style.rookieFont)}" aria-label="Rookie Card ${safeText(card.sport||'')}"><span class="collector-badge-main">RC</span><span class="collector-badge-caption">ROOKIE CARD</span></span>`;
+        }
+        return `<div class="collector-row ${style.premium?'is-premium':''}" style="--collector-bg:${style.background};--collector-ink:${style.foreground}">${badges}</div>`;
+      }
+      function updateCollectorPreview(){
+        const style={
+          numberFont:$('collectorNumberFont').value,rookieFont:$('collectorRookieFont').value,
+          background:$('collectorBackground').value,foreground:$('collectorForeground').value,
+          premium:$('collectorPremium').checked
+        };
+        $('collectorBadgePreview').innerHTML=collectorBadgeMarkup({numbered:true,serial:'1',printRun:'1',rookie:true,sport:'__preview__'},style);
+      }
+      function openCollectorSettings(){
+        const style=collectorStyle();
+        $('collectorNumberFont').value=style.numberFont;
+        $('collectorRookieFont').value=style.rookieFont;
+        $('collectorBackground').value=style.background;
+        $('collectorForeground').value=style.foreground;
+        $('collectorPremium').checked=style.premium;
+        updateCollectorPreview();
+      }
+      async function saveCollectorSettings(){
+        const settings={
+          numberFont:collectorFont($('collectorNumberFont').value),
+          rookieFont:collectorFont($('collectorRookieFont').value),
+          background:$('collectorBackground').value,foreground:$('collectorForeground').value,
+          premium:$('collectorPremium').checked
+        };
+        try{
+          await saveLogo({id:COLLECTOR_STYLE_ID,type:'collector',name:'Style des badges',settings});
+          renderAll();showToast('Style collector enregistré ✓');
+        }catch(e){console.error(e);showToast('Impossible d’enregistrer les styles');}
+      }
+      function optionList(id,values,all){const select=$(id),old=select.value;select.replaceChildren(new Option(all,''));[...new Set(values.map(x=>String(x||'').trim()).filter(Boolean))].sort(collator.compare).forEach(x=>select.add(new Option(x,x)));select.value=[...select.options].some(o=>o.value===old)?old:''}
+      function fillSavedPicker(select,values,placeholder){
+        const value=select.value;
+        select.replaceChildren(new Option(placeholder,''));
+        for(const item of savedValues(values))select.add(new Option(item,item));
+        select.value=[...select.options].some(o=>o.value===value)?value:'';
+      }
+      function refreshSavedPickers(){
+        fillSavedPicker($('cardTeamPicker'),savedTeams(),'Choisir une équipe enregistrée…');
+        fillSavedPicker($('tagPicker'),savedTags(),'Ajouter un tag existant…');
+        document.querySelectorAll('[data-player-picker]').forEach(el=>
+          fillSavedPicker(el,savedPlayers(),'Choisir un athlète enregistré…'));
+      }
+      function refreshFilterOptions(){
+        optionList('filterBrand',cards.map(x=>x.brand),'Toutes les marques');
+        optionList('filterTeam',cards.map(x=>x.team),'Toutes les équipes');
+        optionList('filterTag',cards.flatMap(x=>Array.isArray(x.tags)?x.tags:[]),'Toutes les variations');
+        optionList('filterSport',cards.map(x=>x.sport),'Tous les sports');
+        for(const [id,items] of [['brandsList',cards.map(x=>x.brand).concat(logos.filter(x=>x.type==='brand').map(x=>x.name))],['teamsList',savedTeams()]]){
+          const list=$(id);list.replaceChildren();
+          for(const value of savedValues(items))list.append(new Option(value,value));
+        }
+        refreshSavedPickers();
+      }
+      function matchesPlayerFeature(card,kind,criterion){
+        if(!criterion)return true;
+        const assignments=cardPlayers(card).map(p=>p[kind]);
+        if(criterion==='with')return assignments.some(Boolean);
+        if(criterion==='without')return assignments.every(type=>!type);
+        return assignments.includes(criterion);
+      }
+      function filterCards(){
+        const query=normalize($('filterSearch').value),
+          brand=normalize($('filterBrand').value),
+          team=normalize($('filterTeam').value),
+          tag=normalize($('filterTag').value),
+          sport=normalize($('filterSport').value),
+          auto=$('filterAuto').value,patch=$('filterPatch').value,
+          onlyNumbered=$('filterNumbered').checked;
+        const matches=cards.filter(c=>{
+          if(c.status!==currentView)return false;
+          if(brand&&normalize(c.brand)!==brand)return false;
+          if(team&&normalize(c.team)!==team)return false;
+          if(tag&&!(c.tags||[]).some(x=>normalize(x)===tag))return false;
+          if(sport&&normalize(c.sport)!==sport)return false;
+          if(onlyNumbered&&!c.numbered)return false;
+          // A multi-player card matches if one of its assigned players has the chosen tag.
+          // Auto and Patch filters may match different players on the same card.
+          if(!matchesPlayerFeature(c,'auto',auto)||!matchesPlayerFeature(c,'patch',patch))return false;
+          if(query&&!normalize([c.player,...cardPlayers(c).flatMap(p=>[
+            p.name,p.auto?("Auto "+AUTO_TYPES[p.auto]):"",
+            p.patch?("Patch "+PATCH_TYPES[p.patch]):""
+          ]),c.brand,c.sport,c.team,c.reference,...(c.tags||[]),
+            c.numbered?`${c.serial}/${c.printRun}`:''].join(' ')).includes(query))return false;
+          return true;
+        });
+        const sort=$('sortSelect').value;
+        matches.sort((a,b)=>sort==='name'?collator.compare(a.player,b.player):
+          sort==='brand'?collator.compare(a.brand,b.brand):
+          sort==='team'?collator.compare(a.team,b.team):
+          (b.createdAt||0)-(a.createdAt||0));
+        return matches;
+      }
+      function cardMarkup(c){const photo=imgSafe(c.photo)?`<img src="${c.photo}" alt="Carte de ${safeText(c.player)}" loading="lazy">`:`<div class="placeholder"><span class="mini-logo">RAPLI / SPORTS</span><div class="place-center">${ico('layers')}</div><span class="place-foot">COLLECTOR'S CARD</span></div>`;const tags=(c.tags||[]).slice(0,4).map(t=>`<span class="tag">${safeText(t)}</span>`).join('')+((c.tags||[]).length>4?`<span class="tag more">+${c.tags.length-4}</span>`:'');return `<article class="card-item" data-id="${safeText(c.id)}"><div class="photo-side"><div class="card-photo">${photo}${c.demo?'<span class="photo-flag">DÉMO</span>':''}</div></div><div class="card-info"><div class="card-top"><div class="brand-lockup">${brandBadge('brand',c.brand)}${logoFor('brand',c.brand)?'':'<span>'+safeText(c.brand||'Sans marque')+'</span>'}</div><div class="card-controls"><button type="button" class="icon-btn" data-action="edit" data-id="${safeText(c.id)}" aria-label="Modifier cette carte" title="Modifier">${ico('edit')}</button><button type="button" class="icon-btn delete" data-action="delete" data-id="${safeText(c.id)}" aria-label="Supprimer cette carte" title="Supprimer">${ico('trash')}</button></div></div>${playerCardSummary(c)}<div class="team-row">${c.team?brandBadge('team',c.team):''}${logoFor('team',c.team)?'':'<span>'+safeText(c.team||'Équipe non renseignée')+'</span>'}${c.sport?`<span class="sport-chip">${safeText(c.sport)}</span>`:''}</div><div class="reference"><small>RÉFÉRENCE</small>${safeText(c.reference||'Non renseignée')}</div><div class="tags">${tags||'<span class="blank-tag">Aucune variation</span>'}</div><div class="card-bottom">${collectorBadgeMarkup(c)}<button type="button" class="move-card" data-action="move" data-id="${safeText(c.id)}">${c.status==='own'?'→ WISHLIST':'→ OWN'}</button></div></div></article>`}
+      const statsEngine=window.RapliSportsStats;
+      function renderOwnedStatistics(){
+        const data=statsEngine.calculate(cards);
+        const whole=data.total;
+        if(!whole){
+          $('statsPanel').innerHTML='<div class="stats-panel-head"><div><h3>STATISTIQUES DE COLLECTION</h3><p>Uniquement les cartes OWN réelles · sans wishlist et sans démos.</p></div></div>'+
+            '<div class="stats-empty">Aucune carte OWN enregistrée. Ajoute une carte possédée pour découvrir les statistiques de ta collection.</div>';
+          return;
+        }
+        const num=n=>Number(n).toLocaleString('fr-FR');
+        const kpi=metric=>'<div class="stats-kpi"><span class="stats-kpi-label">'+safeText(metric.label)+'</span>'+
+          '<strong class="stats-kpi-value">'+num(metric.value)+'</strong>'+
+          (metric.sub?'<small class="stats-kpi-sub">'+safeText(metric.sub)+'</small>':'')+'</div>';
+        const panel=entry=>{
+          if(!entry.data.length)return '<section class="stats-breakdown"><h4>'+safeText(entry.title)+'</h4><p class="blank-tag">Aucune donnée renseignée.</p></section>';
+          const peak=Math.max(1,entry.data[0].count);
+          const rows=entry.data.slice(0,8).map(item=>{
+            const pct=Math.max(0,Math.min(100,Math.round(item.count/peak*100)));
+            const part=Math.round(item.count/whole*100);
+            return '<div class="stats-rank-row"><div class="stats-rank-top"><span>'+safeText(item.label)+'</span>'+
+              '<strong>'+num(item.count)+' · '+part+' %</strong></div>'+
+              '<div class="stats-track" aria-hidden="true"><span style="width:'+pct+'%"></span></div></div>';
+          }).join('');
+          return '<section class="stats-breakdown"><h4>'+safeText(entry.title)+'</h4>'+rows+
+            (entry.data.length>8?'<p class="stats-kpi-sub">+'+num(entry.data.length-8)+' autres entrées</p>':'')+'</section>';
+        };
+        $('statsPanel').innerHTML='<div class="stats-panel-head"><div><h3>STATISTIQUES DE COLLECTION</h3>'+
+          '<p>Cartes réellement possédées (OWN) uniquement · wishlist et cartes de démonstration exclues. '+
+          'Une carte multi-athlètes peut compter dans plusieurs catégories.</p></div>'+
+          '<strong class="stats-own-count">'+num(whole)+' CARTES OWN</strong></div>'+
+          '<div class="stats-kpis">'+data.kpis.map(kpi).join('')+'</div>'+
+          '<div class="stats-breakdowns">'+data.breakdowns.map(panel).join('')+'</div>';
+      }
+      function renderAll(){
+        refreshFilterOptions();
+        $('statTotal').textContent=cards.length.toLocaleString('fr-FR');
+        $('statOwn').textContent=cards.filter(x=>x.status==='own').length.toLocaleString('fr-FR');
+        $('statWish').textContent=cards.filter(x=>x.status==='wishlist').length.toLocaleString('fr-FR');
+        $('statNumber').textContent=cards.filter(x=>x.numbered).length.toLocaleString('fr-FR');
+        $('tabOwnCount').textContent=cards.filter(x=>x.status==='own').length;
+        $('tabWishCount').textContent=cards.filter(x=>x.status==='wishlist').length;
+        document.querySelectorAll('.tab').forEach(t=>{
+          const active=t.dataset.view===currentView;
+          t.classList.toggle('active',active);
+          t.setAttribute('aria-selected',String(active));
+        });
+        const showStats=currentView==='stats';
+        $('collectionPanel').hidden=showStats;
+        $('statsPanel').hidden=!showStats;
+        $('sportsSummaryStrip').hidden=showStats;
+        if(showStats){renderOwnedStatistics();return;}
+        const match=filterCards();
+        $('resultsLabel').innerHTML='<strong>'+match.length+'</strong> carte'+(match.length>1?'s':'')+
+          (currentView==='own'?' possédée':' recherchée')+(match.length>1?'s':'');
+        $('cardGrid').innerHTML=match.map(cardMarkup).join('');
+        const hasAny=cards.some(x=>x.status===currentView);
+        $('emptyState').classList.toggle('hidden',match.length!==0);
+        $('emptyTitle').textContent=hasAny?'Aucune carte ne correspond aux filtres':currentView==='own'?'Ta collection OWN est vide':'Ta WISHLIST est vide';
+        $('emptyCopy').textContent=hasAny?'Essaie une recherche plus large ou réinitialise les filtres.':'Ajoute ta première carte pour constituer ta collection.';
+        $('demoBanner').classList.toggle('hidden',!cards.some(c=>c.demo));
+      }
+      function openModal(id){$(id).showModal();document.body.style.overflow='hidden'}
+      function closeModal(id){$(id).close();if(!document.querySelector('dialog[open]'))document.body.style.overflow=''}
+      function resetForm(){editingId=null;currentTags=[];currentPhoto='';$('cardForm').reset();$('cardTeamPicker').value='';$('tagPicker').value='';resetPlayersForm();$('cardRookie').checked=false;$('statusOwn').checked=currentView!=='wishlist';$('statusWish').checked=currentView==='wishlist';$('cardDialogTitle').textContent='Ajouter une carte';$('cardSubmitBtn').textContent='Enregistrer la carte';renderTags();updateSerialUI();renderPhoto()}
+      function openCard(card){resetForm();if(card){editingId=card.id;currentTags=[...(card.tags||[])];currentPhoto=imgSafe(card.photo)?card.photo:'';$('cardDialogTitle').textContent='Modifier la carte';$('cardSubmitBtn').textContent='Enregistrer les modifications';$('statusOwn').checked=card.status==='own';$('statusWish').checked=card.status==='wishlist';$('cardBrand').value=card.brand||'';$('cardSport').value=card.sport||'';resetPlayersForm(card);$('cardTeam').value=card.team||'';$('cardReference').value=card.reference||'';$('cardNumbered').checked=Boolean(card.numbered);$('cardRookie').checked=card.rookie===true;$('cardSerial').value=card.serial||'';$('cardPrintRun').value=card.printRun||'';renderTags();renderPhoto();updateSerialUI()}openModal('cardDialog');setTimeout(()=>$('cardBrand').focus(),70)}
+      function renderPhoto(){const valid=imgSafe(currentPhoto);$('photoPreview').classList.toggle('hidden',!valid);$('photoPrompt').classList.toggle('hidden',valid);$('removePhotoBtn').classList.toggle('hidden',!valid);if(valid)$('photoPreview').src=currentPhoto;else $('photoPreview').removeAttribute('src')}
+      function updateSerialUI(){const yes=$('cardNumbered').checked;$('serialFields').classList.toggle('hidden',!yes);$('cardSerial').required=yes;$('cardPrintRun').required=yes}
+      function addTag(value){const newValue=String(value||'').trim().replace(/^#+/,'');if(!newValue)return;if(!currentTags.some(t=>normalize(t)===normalize(newValue))){if(currentTags.length>=30)return showToast('Maximum de 30 tags par carte.');currentTags.push(newValue.slice(0,60));renderTags()}}
+      function renderTags(){$('editChips').innerHTML=currentTags.map((t,i)=>`<span class="edit-chip">${safeText(t)}<button type="button" data-remove-tag="${i}" aria-label="Supprimer ${safeText(t)}">×</button></span>`).join('')}
+      function processTagInput(){let raw=$('tagField').value.trim();if(raw){raw.split(/[,;]+/).forEach(addTag);$('tagField').value=''}}
+      async function readPhoto(file,max=1200,quality=.83,kind='card'){if(!file||!['image/png','image/jpeg','image/webp'].includes(file.type))throw new Error('Utilise une image JPG, PNG ou WEBP.');if(file.size>32*1024*1024)throw new Error('Image trop volumineuse (maximum 32 Mo).');const bitmap=await createImageBitmap(file);const scale=Math.min(1,max/Math.max(bitmap.width,bitmap.height));const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(bitmap.width*scale));canvas.height=Math.max(1,Math.round(bitmap.height*scale));const ctx=canvas.getContext('2d',{alpha:kind==='logo'});ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);bitmap.close?.();return canvas.toDataURL(kind==='logo'?'image/png':'image/jpeg',quality)}
+      async function handleCardPhoto(file){try{currentPhoto=await readPhoto(file,1500,.86,'card');renderPhoto();showToast('Photo ajoutée à la carte')}catch(err){showToast(err.message||'Impossible de lire cette image')}}
+      async function submitCard(e){
+        e.preventDefault();processTagInput();
+        const brand=$('cardBrand').value.trim(),players=collectCardPlayers();
+        if(!players)return;
+        if(!brand){showToast('Renseigne la marque.');$('cardBrand').focus();return;}
+        const numbered=$('cardNumbered').checked;
+        const serial=$('cardSerial').value.trim(),printRun=$('cardPrintRun').value.trim();
+        if(numbered&&(!/^\d+$/.test(serial)||!/^\d+$/.test(printRun)||Number(printRun)<1||Number(serial)<1||Number(serial)>Number(printRun))){
+          showToast('Vérifie la numérotation, par exemple 12 / 99.');$('cardSerial').focus();return;
+        }
+        const prev=editingId?cards.find(x=>x.id===editingId):null,now=Date.now();
+        const card={
+          id:prev?.id||uid(),
+          status:document.querySelector('input[name="cardStatus"]:checked').value,
+          brand,
+          player:players[0].name, // Preserve single-player compatibility.
+          players, // Independent Auto and Patch assignments for each player.
+          sport:$('cardSport').value,
+          team:$('cardTeam').value.trim(),
+          reference:$('cardReference').value.trim(),
+          tags:[...currentTags],numbered,rookie:$('cardRookie').checked,
+          serial:numbered?serial:'',printRun:numbered?printRun:'',
+          photo:currentPhoto,createdAt:prev?.createdAt||now,updatedAt:now
+        };
+        try{await saveCard(card);closeModal('cardDialog');renderAll();showToast(prev?'Carte mise à jour':'Carte ajoutée à la collection');}
+        catch(err){console.error(err);showToast('Enregistrement impossible. Essaie un export puis une image plus légère.');}
+      }
+      async function cardAction(e){const btn=e.target.closest('[data-action]');if(!btn)return;const card=cards.find(x=>x.id===btn.dataset.id);if(!card)return;if(btn.dataset.action==='edit')openCard(card);else if(btn.dataset.action==='delete'){if(confirm(`Supprimer la carte de ${card.player} ?`)){try{await removeCard(card.id);renderAll();showToast('Carte supprimée')}catch(err){showToast('Suppression impossible')}}}else if(btn.dataset.action==='move'){try{await saveCard({...card,status:card.status==='own'?'wishlist':'own',updatedAt:Date.now(),demo:false});renderAll();showToast('Carte transférée vers '+(card.status==='own'?'WISHLIST':'OWN'))}catch(e){showToast('Transfert impossible')}}}
+      function clearFilters(){$('filterSearch').value='';['filterBrand','filterTeam','filterTag','filterSport','filterAuto','filterPatch'].forEach(id=>$(id).value='');$('filterNumbered').checked=false;renderAll()}
+      function setLogoType(type){
+        if(!['brand','team','rookie','collector'].includes(type))type='brand';
+        logoType=type;pendingLogoPhoto='';$('logoName').value='';$('logoFileInput').value='';$('logoFileText').textContent='Choisir';
+        const styleTab=type==='collector';
+        $('logoCreatePanel').hidden=styleTab;$('logoList').hidden=styleTab;$('collectorSettingsPanel').hidden=!styleTab;
+        $('logoNameLabel').textContent=type==='rookie'?'Sport concerné':type==='team'?'Nom de l’équipe':'Nom de la marque';
+        $('logoName').placeholder=type==='rookie'?'Basketball':type==='team'?'Philadelphia 76ers':'Topps';
+        $('logoCreateHelp').textContent=type==='rookie'
+          ? 'Importe un logo RC pour un sport. Il remplacera les lettres RC sur toutes ses Rookie Cards.'
+          : 'Associe un logo à une marque ou une équipe pour l’afficher sur les cartes correspondantes.';
+        $('saveLogoBtn').textContent=type==='rookie'?'Enregistrer le logo RC':'Ajouter';
+        document.querySelectorAll('.logo-tab').forEach(b=>b.classList.toggle('active',b.dataset.logoType===type));
+        if(styleTab)openCollectorSettings();else renderLogos();
+      }
+      function renderLogos(){const data=logos.filter(l=>l.type===logoType).sort((a,b)=>collator.compare(a.name,b.name));$('logoList').innerHTML=data.length?data.map(l=>`<div class="logo-entry">${brandBadge(logoType,l.name)}<span class="logo-entry-name">${safeText(l.name)}</span><button type="button" class="icon-btn delete" data-remove-logo="${safeText(l.id)}" aria-label="Supprimer le logo de ${safeText(l.name)}">${ico('trash')}</button></div>`).join(''):`<div class="blank-tag" style="padding:10px">Aucun logo enregistré dans cette catégorie.</div>`;const list=$('logoNamesList');list.replaceChildren();
+        const names=logoType==='rookie'
+          ? [...document.querySelectorAll('#cardSport option')].map(o=>o.value).concat(cards.map(c=>c.sport))
+          : cards.map(c=>logoType==='brand'?c.brand:c.team);
+        [...new Set(names.filter(Boolean))].sort(collator.compare).forEach(x=>list.append(new Option(x,x)))}
+      async function saveNewLogo(){const name=$('logoName').value.trim();if(!name)return showToast(logoType==='rookie'?'Sélectionne un sport.':'Renseigne un nom de marque ou d’équipe.');if(logoType==='collector')return;if(!pendingLogoPhoto)return showToast('Sélectionne une image de logo.');const id=`${logoType}:${normalize(name)}`;try{await saveLogo({id,type:logoType,name,image:pendingLogoPhoto});setLogoType(logoType);renderAll();showToast('Logo enregistré et associé automatiquement')}catch(e){showToast('Impossible d’enregistrer le logo')}}
+      async function exportData(){const data={app:'Rapli Sports',version:1,exportedAt:new Date().toISOString(),cards,logos};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`Rapli_Sports_${new Date().toISOString().slice(0,10)}.json`;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),3000);showToast('Sauvegarde JSON exportée')}
+      function importCard(x){
+        const now=Date.now(),players=cardPlayers(x).filter(p=>p.name);
+        return {
+          id:typeof x.id==='string'&&x.id.length<140?x.id:uid(),
+          status:x.status==='wishlist'?'wishlist':'own',
+          brand:String(x.brand||'').slice(0,90),
+          player:players[0]?.name||String(x.player||'').slice(0,120),
+          players,
+          sport:String(x.sport||'').slice(0,70),
+          team:String(x.team||'').slice(0,100),
+          reference:String(x.reference||'').slice(0,180),
+          tags:Array.isArray(x.tags)?x.tags.filter(t=>typeof t==='string').slice(0,30).map(t=>t.slice(0,60)):[],
+          numbered:Boolean(x.numbered),rookie:x.rookie===true,
+          serial:String(x.serial||'').slice(0,8),printRun:String(x.printRun||'').slice(0,8),
+          photo:imgSafe(x.photo)?x.photo:'',
+          createdAt:Number(x.createdAt)||now,updatedAt:now,demo:false
+        };
+      }
+      async function importData(file){try{if(file.size>170*1024*1024)throw new Error('Fichier trop volumineux.');const contents=await file.text();const data=JSON.parse(contents);if(!data||!Array.isArray(data.cards)||!Array.isArray(data.logos))throw new Error('Format de sauvegarde non reconnu.');if(!confirm(`Importer ${data.cards.length} carte(s) et ${data.logos.length} logo(s) ?\n\nLes entrées existantes ayant le même identifiant seront mises à jour. Les autres seront conservées.`))return;let count=0;for(const x of data.cards){if(x&&typeof x==='object'){await saveCard(importCard(x));count++}}for(const x of data.logos){
+          if(x&&typeof x==='object'&&['brand','team','rookie'].includes(x.type)&&typeof x.name==='string'&&imgSafe(x.image)){
+            await saveLogo({id:`${x.type}:${normalize(x.name)}`,type:x.type,name:x.name.slice(0,100),image:x.image});
+          }else if(x?.id===COLLECTOR_STYLE_ID&&x?.type==='collector'&&x.settings&&typeof x.settings==='object'){
+            const p=x.settings;
+            const color=(value,fallback)=>typeof value==='string'&&/^#[0-9a-f]{6}$/i.test(value)?value:fallback;
+            await saveLogo({id:COLLECTOR_STYLE_ID,type:'collector',name:'Style des badges',
+              settings:{numberFont:collectorFont(p.numberFont),
+                rookieFont:collectorFont(p.rookieFont),
+                background:color(p.background,COLLECTOR_DEFAULTS.background),
+                foreground:color(p.foreground,COLLECTOR_DEFAULTS.foreground),
+                premium:p.premium!==false}
+            });
+          }
+        }renderAll();showToast(`${count} carte(s) importée(s) avec succès`)}catch(err){console.error(err);showToast(err.message||'Fichier JSON invalide')}finally{$('importFile').value=''}}
+      document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>closeModal(b.dataset.close)));
+      document.querySelectorAll('dialog').forEach(d=>{d.addEventListener('close',()=>{if(!document.querySelector('dialog[open]'))document.body.style.overflow=''})});
+      document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{currentView=t.dataset.view;renderAll()}));
+      ['filterSearch','filterBrand','filterTeam','filterTag','filterSport','filterAuto','filterPatch','filterNumbered','sortSelect'].forEach(id=>$(id).addEventListener(id==='filterSearch'?'input':'change',renderAll));
+      $('clearFiltersBtn').addEventListener('click',clearFilters);$('addCardBtn').addEventListener('click',()=>openCard());$('emptyAddBtn').addEventListener('click',()=>openCard());$('cardForm').addEventListener('submit',submitCard);$('cardGrid').addEventListener('click',cardAction);
+      $('addPlayerBtn').addEventListener('click',()=>{
+        const row=addPlayerRow();
+        row?.querySelector('.player-name-input').focus();
+      });
+      $('playerEntries').addEventListener('click',e=>{
+        const button=e.target.closest('[data-remove-player]');
+        if(!button)return;
+        button.closest('[data-player-entry]').remove();
+        recountPlayers();
+      });
+      $('playerEntries').addEventListener('change',e=>{
+        const input=e.target,entry=input.closest('[data-player-entry]');
+        if(!entry)return;
+        if(input.matches('[data-player-picker]')){
+          if(input.value)entry.querySelector('.player-name-input').value=input.value;
+          input.value='';
+          return;
+        }
+        if(input.matches('[data-player-toggle]')){
+          const detail=entry.querySelector('[data-player-choices="'+input.dataset.playerToggle+'"]');
+          detail.hidden=!input.checked;
+          if(!input.checked)detail.querySelectorAll('input').forEach(option=>option.checked=false);
+        }else if(input.matches('[data-player-type]')&&input.checked){
+          const detail=input.closest('[data-player-choices]');
+          detail.querySelectorAll('input').forEach(option=>{if(option!==input)option.checked=false;});
+        }
+      });
+      $('cardTeamPicker').addEventListener('change',event=>{
+        if(event.target.value)$('cardTeam').value=event.target.value;
+        event.target.value='';
+      });
+      $('tagPicker').addEventListener('change',event=>{
+        if(event.target.value)addTag(event.target.value);
+        event.target.value='';
+      });
+      $('cardNumbered').addEventListener('change',updateSerialUI);
+      $('tagField').addEventListener('keydown',e=>{if(['Enter',',',';'].includes(e.key)){e.preventDefault();processTagInput()}else if(e.key==='Backspace'&&!$('tagField').value&&currentTags.length){currentTags.pop();renderTags()}});
+      $('tagField').addEventListener('blur',processTagInput);
+      $('editChips').addEventListener('click',e=>{const btn=e.target.closest('[data-remove-tag]');if(!btn)return;currentTags.splice(Number(btn.dataset.removeTag),1);renderTags()});
+      $('photoDrop').addEventListener('click',()=>$('cardPhotoFile').click());$('photoDrop').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();$('cardPhotoFile').click()}});$('cardPhotoFile').addEventListener('change',e=>{if(e.target.files[0])handleCardPhoto(e.target.files[0]);e.target.value='' });$('removePhotoBtn').addEventListener('click',()=>{currentPhoto='';renderPhoto()});
+      $('photoDrop').addEventListener('dragover',e=>{e.preventDefault();$('photoDrop').classList.add('dragging')});$('photoDrop').addEventListener('dragleave',()=>$('photoDrop').classList.remove('dragging'));$('photoDrop').addEventListener('drop',e=>{e.preventDefault();$('photoDrop').classList.remove('dragging');if(e.dataTransfer.files[0])handleCardPhoto(e.dataTransfer.files[0])});
+      $('logosBtn').addEventListener('click',()=>{setLogoType('brand');openModal('logoDialog')});document.querySelectorAll('.logo-tab').forEach(b=>b.addEventListener('click',()=>setLogoType(b.dataset.logoType)));
+      $('logoFileInput').addEventListener('change',async e=>{const file=e.target.files[0];if(!file)return;try{pendingLogoPhoto=await readPhoto(file,450,.93,'logo');$('logoFileText').textContent='Prêt ✓';showToast('Logo prêt à enregistrer')}catch(err){showToast(err.message||'Image invalide')}});
+      $('saveLogoBtn').addEventListener('click',saveNewLogo);
+      ['collectorNumberFont','collectorRookieFont','collectorBackground','collectorForeground','collectorPremium']
+        .forEach(id=>$(id).addEventListener('change',updateCollectorPreview));
+      $('saveCollectorStyleBtn').addEventListener('click',saveCollectorSettings);
+      $('logoList').addEventListener('click',async e=>{const btn=e.target.closest('[data-remove-logo]');if(!btn)return;const logo=logos.find(x=>x.id===btn.dataset.removeLogo);if(!logo)return;if(confirm(`Supprimer le logo « ${logo.name} » ? Les cartes seront conservées.`)){try{await removeLogo(logo.id);renderLogos();renderAll();showToast('Logo supprimé')}catch(err){showToast('Suppression impossible')}}});
+      $('exportBtn').addEventListener('click',exportData);$('importBtn').addEventListener('click',()=>$('importFile').click());$('importFile').addEventListener('change',e=>{if(e.target.files[0])importData(e.target.files[0])});
+      $('clearDemoBtn').addEventListener('click',async()=>{if(!confirm('Supprimer toutes les cartes de démonstration ?'))return;try{for(const c of cards.filter(c=>c.demo))await removeCard(c.id);renderAll();showToast('Exemples supprimés')}catch(e){showToast('Impossible de supprimer les exemples')}});
+      document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();if(!document.querySelector('dialog[open]')){$('filterSearch').focus();$('filterSearch').select()}}});
+
+// Shared cloud bridge: independent local state, synced through the RapliLab session.
+const rapliBridge = window.RapliModuleBridge = {
+ module:'sports',
+ ready:false,
+ getState:()=>({records:cards,logos}),
+ notify:msg=>showToast(msg),
+ replaceState:async next=>{
+   if(!next||!Array.isArray(next.records)||!Array.isArray(next.logos)||
+     next.records.length>20000||next.logos.length>5000||
+     [...next.records,...next.logos].some(item=>!item||typeof item.id!=='string'||item.id.length>180))
+     throw Error('Collection cloud invalide.');
+   if(db){
+     await new Promise((resolve,reject)=>{
+       const tr=db.transaction(['cards','logos'],'readwrite');
+       const recordsStore=tr.objectStore('cards');
+       const logosStore=tr.objectStore('logos');
+       recordsStore.clear();logosStore.clear();
+       next.records.forEach(row=>recordsStore.put(row));
+       next.logos.forEach(row=>logosStore.put(row));
+       tr.oncomplete=resolve;
+       tr.onerror=()=>reject(tr.error||Error('Restauration IndexedDB interrompue.'));
+       tr.onabort=()=>reject(tr.error||Error('Restauration IndexedDB annulée.'));
+     });
+   }
+   cards=next.records.map(x=>({...x}));
+   logos=next.logos.map(x=>({...x}));
+   if(!db){try{localStorage.setItem('rapli-sports-fallback',JSON.stringify({cards,logos,initialized:true}));}catch(e){console.warn('Stockage local saturé',e);}}
+   renderAll();
+ }
+};
+function rapliModuleReady(){
+ rapliBridge.ready=true;
+ window.dispatchEvent(new Event('rapli-module-ready'));
+}
+
+      initialize().then(rapliModuleReady).catch(err=>console.warn('Rapli module startup',err));
+    })();
+  </script>
+<script src="../shared/module-cloud.js" defer></script>
+  <script src="../shared/photo-zoom.js" defer></script>
+</body>
+</html>

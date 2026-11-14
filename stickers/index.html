@@ -1745,7 +1745,38 @@ function cleanState(input){if(!input||!Array.isArray(input.stickers)||!input.sti
 function showToast(message){const el=$('toast');el.textContent=message;el.style.display='block';clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.style.display='none',3600);}
 async function initDb(){try{db=await new Promise((resolve,reject)=>{const req=indexedDB.open('sticker-studio-essential',1);req.onupgradeneeded=()=>req.result.createObjectStore('data');req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error)});const stored=await new Promise((resolve,reject)=>{const req=db.transaction('data','readonly').objectStore('data').get('current');req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error)});if(stored)state=cleanState(stored);await activateCustomFonts();registerCustomFontOptions();}catch(e){console.warn('IndexedDB indisponible, tentative de stockage local',e);try{const raw=localStorage.getItem('sticker-studio-essential');if(raw)state=cleanState(JSON.parse(raw));await activateCustomFonts();registerCustomFontOptions();$('saveStatus').textContent='Stockage local de secours actif';}catch(err){console.warn('Stockage local indisponible',err);$('saveStatus').textContent='Stockage indisponible : exporte une sauvegarde JSON';}}resetHistory();renderAll();}
 async function saveNow(){try{if(db){await new Promise((resolve,reject)=>{const tx=db.transaction('data','readwrite');tx.objectStore('data').put(state,'current');tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error)});}else{localStorage.setItem('sticker-studio-essential',JSON.stringify(state));}$('saveStatus').textContent='Enregistré sur cet appareil';}catch(e){console.error(e);$('saveStatus').textContent='Sauvegarde locale impossible : utilise le JSON';showToast('Stockage local indisponible. Exporte une sauvegarde JSON.');}}
-function scheduleSave(){trackHistory();scheduleListRender();clearTimeout(saveTimer);$('saveStatus').textContent='Enregistrement…';saveTimer=setTimeout(saveNow,600);}
+
+/* RapliLab unified cloud adapter — keep stickers, queue, images and custom fonts. */
+const rapliStickerCloudBridge=window.RapliModuleBridge={
+  module:'stickers',
+  ready:false,
+  getState:()=>({records:[{id:'sticker-studio-current',data:state}],logos:[]}),
+  notify:showToast,
+  replaceState:async payload=>{
+    if(!payload||!Array.isArray(payload.records)||payload.records.length!==1||
+       payload.records[0]?.id!=='sticker-studio-current'||!Array.isArray(payload.logos)||
+       payload.logos.length)throw Error('Sauvegarde Stickers Lab invalide.');
+    const restored=cleanState(payload.records[0].data);
+    clearTimeout(saveTimer);
+    if(db){
+      await new Promise((resolve,reject)=>{
+        const tr=db.transaction('data','readwrite');
+        tr.objectStore('data').put(restored,'current');
+        tr.oncomplete=resolve;
+        tr.onerror=()=>reject(tr.error||Error('Enregistrement local interrompu.'));
+        tr.onabort=()=>reject(tr.error||Error('Enregistrement local annulé.'));
+      });
+    }else{
+      localStorage.setItem('sticker-studio-essential',JSON.stringify(restored));
+    }
+    state=restored;
+    await activateCustomFonts();
+    registerCustomFontOptions();
+    resetHistory();
+    renderAll();
+  }
+};
+function scheduleSave(){window.RapliModuleCloud?.changed?.();trackHistory();scheduleListRender();clearTimeout(saveTimer);$('saveStatus').textContent='Enregistrement…';saveTimer=setTimeout(saveNow,600);}
 function mutate(fn){fn();scheduleSave();renderAll();}
 function setTab(tab){editingTab=tab;for(const t of document.querySelectorAll('.stepTab')){const is=t.dataset.tab===tab;t.classList.toggle('active',is);t.setAttribute('aria-selected',String(is));t.tabIndex=is?0:-1;}for(const panel of document.querySelectorAll('.controlBody > .tabPanel'))panel.hidden=panel.id.toLowerCase()!=='panel'+tab;}
 function showPage(next){page=next;const create=next==='create';document.body.classList.toggle('mobileEditorActive',create);$('createView').hidden=!create;$('printView').hidden=create;for(const [id,is] of [['navCreate',create],['navPrint',!create]]){$(id).classList.toggle('active',is);$(id).setAttribute('aria-current',is?'page':'false');$(id).setAttribute('aria-selected',String(is));}if(!create)renderPrint();window.scrollTo?.({top:0,left:0,behavior:'instant'});}
@@ -4536,7 +4567,7 @@ function fitPreviewFrame(sticker=selected()){
  frame.style.width=Math.floor(height*ratio)+'px';frame.style.height=height+'px';
 }
 function installPreviewFitter(){const stage=document.querySelector('.previewStage');if(window.ResizeObserver&&stage){const observer=new ResizeObserver(()=>fitPreviewFrame());observer.observe(stage);}window.addEventListener('resize',()=>fitPreviewFrame());}
-function boot(){installPreviewFitter();buildAdditionalLogoUI();buildStudioUI();organizeEditorSettings();relocateLegacyText();wire();wireStudioUI();wirePrecisionEditor();wireComfort();wireNoiseUI();wireCropUI();enhanceEditor176();wireStickerTransfer();addUpgradeUI();wireUpgradeUI();refineStudio186();arrangeUpgradeUI();window.addEventListener('resize',arrangeUpgradeUI);setTab('photo');initDb();if(document.fonts){document.fonts.addEventListener('loadingdone',()=>{fontRenderEpoch++;masterCache.clear();thumbnailCache.clear();scheduleListRender();renderMain().catch(console.error);});}}
+function boot(){installPreviewFitter();buildAdditionalLogoUI();buildStudioUI();organizeEditorSettings();relocateLegacyText();wire();wireStudioUI();wirePrecisionEditor();wireComfort();wireNoiseUI();wireCropUI();enhanceEditor176();wireStickerTransfer();addUpgradeUI();wireUpgradeUI();refineStudio186();arrangeUpgradeUI();window.addEventListener('resize',arrangeUpgradeUI);setTab('photo');initDb().then(()=>{rapliStickerCloudBridge.ready=true;window.dispatchEvent(new Event('rapli-module-ready'));}).catch(e=>console.warn('Stickers Lab cloud initialisation',e));if(document.fonts){document.fonts.addEventListener('loadingdone',()=>{fontRenderEpoch++;masterCache.clear();thumbnailCache.clear();scheduleListRender();renderMain().catch(console.error);});}}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();
 
@@ -5024,5 +5055,6 @@ body {margin:0!important;overflow-x:hidden!important;background:#edf2f5!importan
   body:not(.mobileEditorActive) .printView{padding-inline:12px!important;}
 }
 </style>
+<script src="../shared/module-cloud.js" defer></script>
 </body>
 </html>

@@ -1096,7 +1096,7 @@ body::before{display:none!important}
       }
       function openModal(id){$(id).showModal();document.body.style.overflow='hidden'}
       function closeModal(id){$(id).close();if(!document.querySelector('dialog[open]'))document.body.style.overflow=''}
-      function resetForm(){editingId=null;currentTags=[];currentPhoto='';$('cardForm').reset();resetPlayersForm();$('cardRookie').checked=false;$('statusOwn').checked=currentView!=='wishlist';$('statusWish').checked=currentView==='wishlist';$('cardDialogTitle').textContent='Ajouter une carte';$('cardSubmitBtn').textContent='Enregistrer la carte';renderTags();updateSerialUI();renderPhoto()}
+      function resetForm(){editingId=null;currentTags=[];currentPhoto='';$('cardForm').reset();$('cardTeamPicker').value='';$('tagPicker').value='';resetPlayersForm();$('cardRookie').checked=false;$('statusOwn').checked=currentView!=='wishlist';$('statusWish').checked=currentView==='wishlist';$('cardDialogTitle').textContent='Ajouter une carte';$('cardSubmitBtn').textContent='Enregistrer la carte';renderTags();updateSerialUI();renderPhoto()}
       function openCard(card){resetForm();if(card){editingId=card.id;currentTags=[...(card.tags||[])];currentPhoto=imgSafe(card.photo)?card.photo:'';$('cardDialogTitle').textContent='Modifier la carte';$('cardSubmitBtn').textContent='Enregistrer les modifications';$('statusOwn').checked=card.status==='own';$('statusWish').checked=card.status==='wishlist';$('cardBrand').value=card.brand||'';$('cardSport').value=card.sport||'';resetPlayersForm(card);$('cardTeam').value=card.team||'';$('cardReference').value=card.reference||'';$('cardNumbered').checked=Boolean(card.numbered);$('cardRookie').checked=card.rookie===true;$('cardSerial').value=card.serial||'';$('cardPrintRun').value=card.printRun||'';renderTags();renderPhoto();updateSerialUI()}openModal('cardDialog');setTimeout(()=>$('cardBrand').focus(),70)}
       function renderPhoto(){const valid=imgSafe(currentPhoto);$('photoPreview').classList.toggle('hidden',!valid);$('photoPrompt').classList.toggle('hidden',valid);$('removePhotoBtn').classList.toggle('hidden',!valid);if(valid)$('photoPreview').src=currentPhoto;else $('photoPreview').removeAttribute('src')}
       function updateSerialUI(){const yes=$('cardNumbered').checked;$('serialFields').classList.toggle('hidden',!yes);$('cardSerial').required=yes;$('cardPrintRun').required=yes}
@@ -1206,6 +1206,11 @@ body::before{display:none!important}
       $('playerEntries').addEventListener('change',e=>{
         const input=e.target,entry=input.closest('[data-player-entry]');
         if(!entry)return;
+        if(input.matches('[data-player-picker]')){
+          if(input.value)entry.querySelector('.player-name-input').value=input.value;
+          input.value='';
+          return;
+        }
         if(input.matches('[data-player-toggle]')){
           const detail=entry.querySelector('[data-player-choices="'+input.dataset.playerToggle+'"]');
           detail.hidden=!input.checked;
@@ -1214,6 +1219,14 @@ body::before{display:none!important}
           const detail=input.closest('[data-player-choices]');
           detail.querySelectorAll('input').forEach(option=>{if(option!==input)option.checked=false;});
         }
+      });
+      $('cardTeamPicker').addEventListener('change',event=>{
+        if(event.target.value)$('cardTeam').value=event.target.value;
+        event.target.value='';
+      });
+      $('tagPicker').addEventListener('change',event=>{
+        if(event.target.value)addTag(event.target.value);
+        event.target.value='';
       });
       $('cardNumbered').addEventListener('change',updateSerialUI);
       $('tagField').addEventListener('keydown',e=>{if(['Enter',',',';'].includes(e.key)){e.preventDefault();processTagInput()}else if(e.key==='Backspace'&&!$('tagField').value&&currentTags.length){currentTags.pop();renderTags()}});

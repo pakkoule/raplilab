@@ -7,6 +7,12 @@
   const n=Number(value);
   return Number.isSafeInteger(n)&&n>0&&n<=MAX_SECONDS?n:null;
  }
+ const validDate=value=>{
+  if(typeof value!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(value))return '';
+  const d=new Date(value+'T00:00:00Z');
+  return !Number.isNaN(d.getTime())&&d.toISOString().slice(0,10)===value?value:'';
+ };
+ const validTime=value=>typeof value==='string'&&/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(value)?value:'';
  function normalize(data){
   if(!Array.isArray(data))return [];
   const ids=new Set();
@@ -14,7 +20,7 @@
    let id=typeof x.id==='string'&&/^[a-zA-Z0-9_-]{1,120}$/.test(x.id)?x.id:'record-attempt-'+(i+1);
    if(ids.has(id))id='record-attempt-'+(i+1)+'-unique';
    ids.add(id);
-   return {id,seconds:seconds(x.seconds),aborted:!!x.aborted};
+   return {id,seconds:seconds(x.seconds),aborted:!!x.aborted,startDate:validDate(x.startDate),startTime:validTime(x.startTime)};
   });
  }
  function summary(raw){
@@ -22,6 +28,16 @@
   const best=valid.reduce((answer,x)=>!answer||x.seconds<answer.seconds?x:answer,null);
   return {total:attempts.length,completed:valid.length,aborted:attempts.filter(x=>x.aborted).length,
    bestSeconds:best?.seconds??null,bestId:best?.id??null};
+ }
+ function earliestStart(raw){
+  const attempts=normalize(raw).filter(x=>x.startDate);
+  attempts.sort((a,b)=>(a.startDate+'T'+(a.startTime||'00:00')).localeCompare(b.startDate+'T'+(b.startTime||'00:00')));
+  return attempts[0]?{date:attempts[0].startDate,time:attempts[0].startTime}:{date:'',time:''};
+ }
+ function latestStart(raw){
+  const attempts=normalize(raw).filter(x=>x.startDate);
+  attempts.sort((a,b)=>(b.startDate+'T'+(b.startTime||'00:00')).localeCompare(a.startDate+'T'+(a.startTime||'00:00')));
+  return attempts[0]?{date:attempts[0].startDate,time:attempts[0].startTime}:{date:'',time:''};
  }
  function parts(total){
   const n=seconds(total);
@@ -44,5 +60,5 @@
   const d=Math.floor(n/86400),h=Math.floor(n%86400/3600),m=Math.floor(n%3600/60),s=n%60;
   return (d?d+' j ':'')+String(h).padStart(2,'0')+' h '+String(m).padStart(2,'0')+' min '+String(s).padStart(2,'0')+' s';
  }
- root.RapliRegattaRecordAttempts={MAX,normalize,summary,parts,fromParts,format};
+ root.RapliRegattaRecordAttempts={MAX,normalize,summary,earliestStart,latestStart,validDate,validTime,parts,fromParts,format};
 })(typeof window!=='undefined'?window:globalThis);

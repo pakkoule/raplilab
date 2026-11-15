@@ -1753,6 +1753,44 @@ main#main-content:has(.dragon-heading) .archive-module-heading.dragon-heading{ma
  .module-settings .tax-row-edition .tax-remove{width:27px!important;min-width:27px!important}
 }
 </style>
+<style id="reference-detective-ui">
+.module-settings-tabs{overflow-x:auto;scrollbar-width:thin}
+.module-settings-tabs .module-settings-tab{flex-shrink:0}
+.detective-panel{display:grid;gap:12px;min-width:0}
+.detective-panel h3{font:800 15px/1.3 Poppins,system-ui,sans-serif;color:#173d60;margin:0}
+.detective-panel .helper{color:#537089;font-size:12px;line-height:1.55;margin:0}
+.detective-filters,.detective-normal{border:1px solid #c3d6e7;border-radius:11px;padding:10px;background:#f7fbff}
+.detective-filters>summary,.detective-normal>summary{font:750 12px/1.4 Poppins,system-ui,sans-serif;color:#245074;cursor:pointer}
+.detective-filter-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:11px 0}
+.detective-filter-label{display:grid;gap:4px;min-width:0;font:650 11px/1.4 Poppins,system-ui,sans-serif;color:#3d5872}
+.detective-filter-label select{width:100%;min-width:0;height:38px;border:1px solid #aebfd1;border-radius:8px;padding:5px;background:#fff;color:#193b5c;font-size:16px}
+.detective-scan{justify-self:start;min-height:40px}
+.detective-status{padding:12px;border:1px solid #bed5e9;border-radius:10px;background:#eef6ff;color:#496b85;font:600 11px/1.6 Poppins,system-ui,sans-serif}
+.detective-status strong{color:#174978;font-size:14px}
+.detective-empty{margin:0;background:#f7f9fb;border-radius:9px;padding:12px;color:#5b7490;font-size:12px}
+.detective-hit{border:1px solid #cbd9e6;border-radius:10px;background:#fff;overflow:hidden;margin:7px 0}
+.detective-hit>summary{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:4px 8px;padding:11px;cursor:pointer;list-style:none}
+.detective-hit>summary::-webkit-details-marker{display:none}
+.detective-hit>summary>span{grid-column:1/-1;font:700 10px Poppins,system-ui,sans-serif;color:#577693}
+.detective-hit>summary strong{min-width:0;overflow-wrap:anywhere;color:#214b6a;font:800 12px/1.3 Poppins,system-ui,sans-serif}
+.detective-hit>summary em{font:700 10px/1.3 Poppins,system-ui,sans-serif;color:#9b621c;white-space:nowrap;font-style:normal}
+.detective-hit-body{display:grid;gap:10px;border-top:1px solid #dce8ef;padding:11px}
+.detective-hit-body>p{font:500 11px/1.5 Poppins,system-ui,sans-serif;color:#5b7289;margin:0}
+.detective-compare{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.detective-card{display:grid;align-content:start;gap:8px;min-width:0;padding:9px;border:1px solid #d6e2ea;background:#fbfdff;border-radius:9px}
+.detective-card>strong{font:850 13px/1.3 Poppins,system-ui,sans-serif;color:#173b61;overflow-wrap:anywhere}
+.detective-card dl{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 7px;margin:0;font:500 10px/1.4 Poppins,system-ui,sans-serif}
+.detective-card dt{color:#6a8299}.detective-card dd{margin:0;color:#284867;overflow-wrap:anywhere}
+.detective-card button,.detective-hit-body>button{font-size:10px!important;min-height:32px;justify-self:start}
+.detective-normal>summary{margin-bottom:8px}
+@media(max-width:520px){
+ .detective-filter-grid{grid-template-columns:1fr}
+ .detective-compare{gap:5px}
+ .detective-card{padding:7px}
+ .detective-card dl{grid-template-columns:1fr;gap:2px}
+ .detective-card dd{margin-bottom:5px}
+}
+</style>
 </head>
 <body>
 <div class="app-shell">
@@ -1992,6 +2030,8 @@ $('#menu-toggle').addEventListener('click',()=>{$('#sidebar').classList.add('ope
 /* initialization deferred until Dragon Blanc module loads */
 
 </script>
+<script src="reference-detective.js"></script>
+<script src="reference-detective-ui.js"></script>
 <script src="catalogue_pdf.js"></script>
 <script src="cloud-sync.js"></script>
 <script>
@@ -2390,13 +2430,14 @@ function pickAdd(){const g=archive.groups.find(g=>g.category==='dragons');if(g)v
 function handleAction(action,el){const id=el.dataset.id;switch(action){case 'archive-layout':{const next=el.dataset.layout;if(['details','cards','artworks'].includes(next)){archiveLayout=next;archivePage=1;archiveArtworkSelection=null;render();}return;}
  case 'archive-page':{const next=Number(el.dataset.page);if(Number.isInteger(next)&&next>=1){archivePage=next;render();window.scrollTo({top:0,behavior:'instant'});}return;}
  case 'archive-artwork-open':{archiveArtworkSelection=el.dataset.artwork||'Sans artwork';archivePage=1;render();return;}
- case 'archive-artwork-back':archiveArtworkSelection=null;archivePage=1;render();return;case 'dashboard-tab':{const next=el.dataset.category;if(MODULES[next]){dashboardModule=next;searchTerm='';activeFilter='all';render();}return;}case 'tile-own':toggleTileOwn(id);return;case 'copy-edition-name':copyEditionName(el.dataset.editionName);return;case 'copy-reference':copyVariantReference(id);return;case 'download-artwork':downloadVariantArtwork(id);return;case 'pick-add':pickAdd();return;case 'add-in-module':{pickAdd();return;}case 'module-settings':openModuleSettings(el.dataset.category||currentView);return;case 'settings-section-tab':{const next=el.dataset.settingsSection;if(next==='number'||MODULES.dragons.fields.some(([field])=>field===next)){activeSettingsSection=next;showSettingsContent();document.querySelector('.module-settings-tab[data-settings-section="'+next+'"]')?.focus({preventScroll:true});}return;}case 'module-tab':editingModule='dragons';showSettingsContent();return;case 'tax-add':{const key=el.dataset.field;draftModuleSettings[editingModule].taxonomies[key].push({id:uid(),label:'',icon:'',color:'#93bca9',logo:''});showSettingsContent();return;}case 'artwork-preview-remove':{const item=draftModuleSettings?.dragons?.taxonomies?.artwork?.[Number(el.dataset.index)];if(item){item.preview='';showSettingsContent();}return;}case 'tax-remove':{const key=el.dataset.field,idx=Number(el.dataset.index);draftModuleSettings[editingModule].taxonomies[key].splice(idx,1);showSettingsContent();return;}case 'save-module-settings':saveModuleSettings();return;case 'new-group':groupModal('','dragons');return;case 'new-variant':variantModal('',el.dataset.group||'');return;default:return legacyHandleAction(action,el);}}
+ case 'archive-artwork-back':archiveArtworkSelection=null;archivePage=1;render();return;case 'dashboard-tab':{const next=el.dataset.category;if(MODULES[next]){dashboardModule=next;searchTerm='';activeFilter='all';render();}return;}case 'tile-own':toggleTileOwn(id);return;case 'copy-edition-name':copyEditionName(el.dataset.editionName);return;case 'copy-reference':copyVariantReference(id);return;case 'download-artwork':downloadVariantArtwork(id);return;case 'pick-add':pickAdd();return;case 'add-in-module':{pickAdd();return;}case 'module-settings':openModuleSettings(el.dataset.category||currentView);return;case 'detective-scan':detectiveScan();return;case 'detective-ignore':detectiveSetIgnored(Number(el.dataset.index),true);return;case 'detective-restore':detectiveSetIgnored(Number(el.dataset.index),false);return;case 'detective-view':{const v=getVariant(el.dataset.id);if(v)openQuickView(v);return;}case 'detective-clear-filters':detectiveFilters={edition:'',artwork:'',rarity:'',language:''};detectiveResults=null;showSettingsContent();return;case 'settings-section-tab':{const next=el.dataset.settingsSection;if(next==='number'||next==='detective'||MODULES.dragons.fields.some(([field])=>field===next)){activeSettingsSection=next;showSettingsContent();document.querySelector('.module-settings-tab[data-settings-section="'+next+'"]')?.focus({preventScroll:true});}return;}case 'module-tab':editingModule='dragons';showSettingsContent();return;case 'tax-add':{const key=el.dataset.field;draftModuleSettings[editingModule].taxonomies[key].push({id:uid(),label:'',icon:'',color:'#93bca9',logo:''});showSettingsContent();return;}case 'artwork-preview-remove':{const item=draftModuleSettings?.dragons?.taxonomies?.artwork?.[Number(el.dataset.index)];if(item){item.preview='';showSettingsContent();}return;}case 'tax-remove':{const key=el.dataset.field,idx=Number(el.dataset.index);draftModuleSettings[editingModule].taxonomies[key].splice(idx,1);showSettingsContent();return;}case 'save-module-settings':saveModuleSettings();return;case 'new-group':groupModal('','dragons');return;case 'new-variant':variantModal('',el.dataset.group||'');return;default:return legacyHandleAction(action,el);}}
 function openModuleSettings(preferred='dragons'){moduleSettings();draftModuleSettings=structuredClone(archive.settings);editingModule='dragons';activeSettingsSection='edition';const body='<div class="module-settings"><p class="helper">Personnalise les éditions, raretés, artworks et langues : icône, drapeau, couleur ou logo. Les tuiles utilisent ces réglages automatiquement.</p><div id="module-settings-container"></div></div>';openModal('Personnaliser Dragon Blanc',body);showSettingsContent();}
 function showSettingsContent(){
  const root=$('#module-settings-container');if(!root||!draftModuleSettings)return;
  const settings=draftModuleSettings[editingModule];
- const tabs=[['number','Numérotation'],...MODULES[editingModule].fields];
+ const tabs=[['number','Numérotation'],...MODULES[editingModule].fields,['detective','Détective']];
   const tabNav='<div class="module-settings-tabs" role="tablist" aria-label="Catégories de personnalisation">'+tabs.map(([field,label])=>`<button type="button" class="module-settings-tab" role="tab" data-action="settings-section-tab" data-settings-section="${field}" aria-selected="${activeSettingsSection===field}" tabindex="${activeSettingsSection===field?'0':'-1'}">${h(label)}</button>`).join('')+'</div>';
+  if(activeSettingsSection==='detective'){root.innerHTML=tabNav+referenceDetectivePanel()+'<div class="settings-footer"><button class="secondary-button" type="button" data-action="close-modal">Fermer</button></div>';return;}
   const sections=MODULES[editingModule].fields.filter(([field])=>field===activeSettingsSection).map(([field,label])=>{
   const entries=settings.taxonomies[field]||[];
   // Affichage alphabétique des éditions uniquement. L'index réel est conservé pour
@@ -2525,7 +2566,7 @@ closeModal();render();toast('Réglages des modules enregistrés ✓');}
 document.addEventListener('keydown',event=>{
   const selected=event.target.closest?.('.module-settings-tab');
   if(!selected||!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
-  const tabs=['number',...MODULES.dragons.fields.map(([field])=>field)];
+  const tabs=['number',...MODULES.dragons.fields.map(([field])=>field),'detective'];
   const current=tabs.indexOf(selected.dataset.settingsSection);
   const next=event.key==='Home'?0:event.key==='End'?tabs.length-1:
     (current+(event.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length;

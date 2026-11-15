@@ -1017,6 +1017,7 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
           <button type="button" class="sports-gallery-option" data-sports-layout="brand" aria-pressed="false">Par marque</button>
           <button type="button" class="sports-gallery-option" data-sports-layout="team" aria-pressed="false">Par équipe</button>
           <button type="button" class="sports-gallery-option" data-sports-layout="athlete" aria-pressed="false">Par athlète</button>
+          <button type="button" class="sports-gallery-option" data-sports-layout="tag" aria-pressed="false">Par tag</button>
           
         </div>
         <div id="demoBanner" class="demo-strip hidden"><span><strong>APERÇU DE DÉMONSTRATION</strong> — Ces cartes sont des exemples modifiables.</span><button class="link-btn" id="clearDemoBtn" type="button">Supprimer les exemples</button></div>
@@ -1711,6 +1712,10 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
       function sportsGalleryGroupValues(card,type){
         if(type==='brand')return [String(card.brand||'Sans marque').trim()||'Sans marque'];
         if(type==='team')return [String(card.team||'Sans équipe').trim()||'Sans équipe'];
+        if(type==='tag'){
+          const tags=savedValues(Array.isArray(card.tags)?card.tags:[]);
+          return tags.length?tags:['Sans tag'];
+        }
         const names=cardPlayers(card).map(p=>p.name).filter(Boolean);
         return savedValues(names.length?names:['Athlète non renseigné']);
       }
@@ -1718,11 +1723,14 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
         const groups=new Map();
         for(const card of items){
           const seen=new Set();
+          const untagged=type==='tag'&&
+            (!Array.isArray(card.tags)||!card.tags.some(tag=>String(tag??'').trim()));
           for(const label of sportsGalleryGroupValues(card,type)){
-            const key=normalize(label);
+            // Keep genuinely untagged cards separate from a user-created "Sans tag" label.
+            const key=untagged?'__rapli_sports_untagged__':normalize(label);
             if(seen.has(key))continue;
             seen.add(key);
-            if(!groups.has(key))groups.set(key,{key,label,items:[]});
+            if(!groups.has(key))groups.set(key,{key,label,items:[],untagged});
             groups.get(key).items.push(card);
           }
         }
@@ -1748,7 +1756,7 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
          (item.sport?'<span class="sports-gallery-sport">'+sportsSportBadge(item.sport)+'</span>':'')+'</span></button></article>';
       }
       function sportsGalleryGroupCard(group,type){
-        const picture=logoFor(type,group.label);
+        const picture=group.untagged?'':logoFor(type,group.label);
         const initials=group.label.split(/\s+/).filter(Boolean).slice(0,2).map(x=>x[0]).join('').toUpperCase();
         const fallback=type==='athlete'?
           '<span class="sports-gallery-initials">'+safeText(initials||'?')+'</span>':
@@ -1975,7 +1983,7 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
         const option=event.target.closest('[data-sports-layout]');
         if(!option)return;
         const next=option.dataset.sportsLayout;
-        if(!['details','cards','brand','team','athlete'].includes(next))return;
+        if(!['details','cards','brand','team','athlete','tag'].includes(next))return;
         sportsGalleryLayout=next;sportsGallerySelected=null;sportsGalleryPage=1;renderAll();
       });
       function sportsPaginationClick(event){

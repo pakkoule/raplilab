@@ -990,13 +990,34 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
 
 <style id="rapli-sports-tag-categories">
 #tagCategoryPanel[hidden]{display:none!important}
-.tag-category-panel{min-width:0;margin:14px 0 0;padding:13px;border:1px solid #355a85;border-radius:10px;background:#112844}
-.tag-category-panel legend{padding:0 6px;color:#d8ecff;font:800 11px/1.4 Poppins,system-ui,sans-serif}
-.tag-category-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:10px}
-.tag-category-options label{display:flex;align-items:center;gap:9px;padding:10px 11px;cursor:pointer;background:#1a3556;border:1px solid #3e6086;border-radius:9px;color:#e8f2ff;font:750 11px/1.3 Poppins,system-ui,sans-serif}
-.tag-category-options label:has(input:checked){background:#23578b;border-color:#7cb9fb;color:#fff}
-.tag-category-options input{accent-color:#68b7ff;width:17px;height:17px;flex-shrink:0}
-.tag-category-panel .field-hint{margin:0;color:#a8c1df;font:500 10px/1.5 Poppins,system-ui,sans-serif}
+.tag-category-panel{
+  display:block;min-width:0;margin:14px 0 0;padding:12px;
+  border:1px solid #d1dce9;border-radius:11px;background:#f6f9fe;
+}
+.tag-category-title{
+  position:static;display:block;margin:0 0 10px;padding:0;
+  font:800 12px/1.45 Poppins,system-ui,sans-serif;letter-spacing:0;
+  color:#244466;white-space:normal;overflow-wrap:anywhere;
+}
+.tag-category-options{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;
+  margin:0;min-width:0;
+}
+.tag-category-options label{
+  display:flex;align-items:center;gap:9px;min-width:0;min-height:43px;
+  margin:0;padding:8px 10px;cursor:pointer;box-sizing:border-box;
+  border:1px solid #cedbec;border-radius:9px;background:#fff;
+  color:#243d5d;font:700 11px/1.35 Poppins,system-ui,sans-serif;
+}
+.tag-category-options label span{min-width:0;overflow-wrap:anywhere}
+.tag-category-options label:has(input:checked){
+  background:#eaf3ff;border-color:#4587da;color:#15467a;
+}
+.tag-category-options label:focus-within{outline:2px solid #4f91e1;outline-offset:2px}
+.tag-category-options input[type="checkbox"]{
+  display:block;flex:0 0 18px;width:18px;height:18px;min-width:18px;
+  padding:0;margin:0;accent-color:#2056d6;cursor:pointer;
+}
 .logo-list.is-tag-category-list{grid-template-columns:1fr}
 .tag-category-entry{min-width:0;flex-wrap:wrap}
 .tag-category-entry .logo-entry-details{display:flex;flex:1;min-width:120px;flex-direction:column;gap:5px}
@@ -1006,7 +1027,12 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
 .tag-category-badge.is-empty{color:#97a9bf;background:#14283f;border-color:#36506a}
 .tag-category-edit{flex-shrink:0;border:1px solid #4c7caa;border-radius:7px;background:#1d4269;color:#dcf0ff;padding:7px 9px;cursor:pointer;font:800 10px/1.2 Poppins,system-ui,sans-serif}
 .tag-category-edit:hover{background:#28639b}
-@media(max-width:520px){.tag-category-options{grid-template-columns:1fr}.tag-category-panel{padding:10px}}
+@media(max-width:420px){
+ .tag-category-panel{padding:10px}
+ .tag-category-options{gap:7px}
+ .tag-category-options label{padding:8px;gap:7px;font-size:10px}
+}
+@media(max-width:340px){.tag-category-options{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -1123,16 +1149,15 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
     <div class="modal-body">
       <div class="logo-tabs"><button type="button" class="logo-tab active" data-logo-type="brand">Marques</button><button type="button" class="logo-tab" data-logo-type="team">Équipes</button><button type="button" class="logo-tab" data-logo-type="rookie">Rookie / RC</button><button type="button" class="logo-tab" data-logo-type="athlete">Portraits athlètes</button><button type="button" class="logo-tab" data-logo-type="tag">Tags / variations</button><button type="button" class="logo-tab" data-logo-type="labels">Étiquettes</button><button type="button" class="logo-tab" data-logo-type="collector">Style des badges</button></div>
       <div class="logo-create" id="logoCreatePanel"><p class="logo-help" id="logoCreateHelp">Associe une image à une marque ou une équipe : son logo s'affichera automatiquement sur toutes les cartes correspondantes.</p><div class="logo-create-row"><div class="input-group"><label id="logoNameLabel" for="logoName">Nom de la marque</label><select id="logoAthletePicker" class="select saved-value-picker" aria-label="Choisir un athlète déjà présent dans la collection" hidden><option value="">Choisir un athlète enregistré…</option></select><select id="logoTeamPicker" class="select saved-value-picker" aria-label="Choisir une équipe enregistrée" hidden><option value="">Choisir une équipe…</option></select><select id="logoTagPicker" class="select saved-value-picker" aria-label="Choisir un tag enregistré" hidden><option value="">Choisir un tag…</option></select><input class="input" id="logoName" list="logoNamesList" maxlength="100" placeholder="Topps"><datalist id="logoNamesList"></datalist></div><div class="input-group"><label id="logoImageLabel">Image du logo</label><label class="logo-file" id="logoFileLabel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 16V4m-5 5 5-5 5 5M4 17v4h16v-4"/></svg><span id="logoFileText">Choisir</span><input type="file" id="logoFileInput" accept="image/png,image/jpeg,image/webp"></label></div><button id="saveLogoBtn" type="button" class="button button-primary">Ajouter</button></div>
-      <fieldset id="tagCategoryPanel" class="tag-category-panel" hidden>
-        <legend>Associer ce tag à une ou plusieurs catégories</legend>
-        <div class="tag-category-options">
+      <section id="tagCategoryPanel" class="tag-category-panel" aria-labelledby="tagCategoryTitle" hidden>
+        <h3 id="tagCategoryTitle" class="tag-category-title">Catégories du tag</h3>
+        <div class="tag-category-options" role="group" aria-labelledby="tagCategoryTitle">
           <label><input type="checkbox" data-tag-category value="collection"><span>Collection</span></label>
           <label><input type="checkbox" data-tag-category value="insert"><span>Insert</span></label>
           <label><input type="checkbox" data-tag-category value="parallel"><span>Parallel Cards</span></label>
           <label><input type="checkbox" data-tag-category value="competition"><span>Compétition</span></label>
         </div>
-        <p class="field-hint">Plusieurs cases possibles. Le logo est facultatif et les cartes existantes ne changent pas.</p>
-      </fieldset></div>
+      </section></div>
       <div id="logoList" class="logo-list"></div>
       <div id="labelSettingsPanel" class="sports-label-settings" hidden>
         <p class="logo-help">Personnalise les étiquettes affichées sur les cartes : intitulé, fond, texte, contour et forme. Les styles sont communs aux cartes OWN et Wishlist, sans modifier leurs données.</p>

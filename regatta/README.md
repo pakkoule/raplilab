@@ -89,3 +89,22 @@ Module intégré à la PR #1 de RapliLab, non fusionnée.
 - Le statut de clôture est persistant dans IndexedDB, JSON et les sauvegardes Supabase du module. Modifier ultérieurement le record ne réactive jamais « En cours », ne supprime jamais ses classements et ne le rouvre pas par accident.
 - Pour éviter de rouvrir de nouvelles tentatives une fois le record clôturé, le bouton « Ajouter une tentative » et la suppression de tentatives sont désactivés ; les données de tentatives existantes peuvent encore être corrigées dans l'éditeur.
 - Aucune notation Rapli /100 n'est calculée sur les records, même après clôture ; les cinq classements finaux sont conservés séparément de cette notation.
+
+
+## Évolutions validées — #16 Palmarès et #17 Fuseaux horaires (15 novembre 2026)
+
+- **Palmarès personnel** : nouvel onglet PALMARÈS en lecture seule, calculé depuis les fiches existantes. Compteurs de victoires, podiums, top 10 et records avec temps validé ; meilleures places, meilleur percentile, meilleure note Rapli /100, course la plus courte, meilleur temps de record, meilleur gain VSR ; meilleurs classements, médailles par type de classement et saisons marquantes.
+- Les courses **terminées et classées** alimentent le palmarès VSR ; les fiches record constituent une catégorie de records distincte et ne reçoivent pas de note VSR.
+- Le palmarès ne crée aucune nouvelle table ni aucun nouvel enregistrement ; il se régénère après ajout, modification, suppression ou synchronisation.
+- **Fuseau horaire par fiche** : champ timezone (identifiant IANA) choisi dans l'éditeur. Par défaut Europe/Paris pour les anciennes fiches, afin de préserver l'interprétation française des horaires historiquement enregistrés. Une course record utilise le même fuseau pour toutes ses tentatives.
+- Les heures de départ et d'arrivée sont des **heures civiles du fuseau choisi**, et non celles du navigateur. Calcul d'arrivée sur instants UTC réels, compteurs et statut automatique basés sur ces mêmes instants. Passage à l'heure d'été : une heure locale inexistante est refusée ; en cas d'heure répétée à l'automne, c'est la première occurrence qui est utilisée (règle documentée).
+- L'export **Apple Calendrier .ics** encode les courses avec heure en UTC (DTSTART/DTEND terminés par Z) pour conserver l'instant exact lors de l'ouverture sur un autre appareil ou dans un autre fuseau. Apple Calendrier affichera cet instant dans le fuseau choisi par son utilisateur. Les courses sans heure restent des événements « journée entière ».
+- Aucune modification des barèmes VSR, des notes figées ou des politiques Supabase / RLS.
+
+### Vérifications ciblées
+
+- Syntaxe des scripts validée et présence des onglets/champs vérifiée.
+- Tests logiques réussis : hiver/été Paris, changement d'heure de mars et d'octobre, heure inexistante, Guadeloupe, New York, UTC et conversion .ics.
+- Cas d'export .ics validés : été français, bascules de mars/octobre, Guadeloupe, course sans heure, rejet d'une heure inexistante.
+- Reste à tester manuellement : rendu et navigation dans PALMARÈS sur PC/iPhone Safari, import et affichage d'un .ics dans Apple Calendrier, synchronisation PC/iPhone avec une fiche comportant un fuseau différent.
+- Modifications uniquement dans la PR #1, toujours en brouillon ; aucune fusion ni mise en production demandée.

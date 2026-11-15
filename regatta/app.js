@@ -69,7 +69,7 @@ function updateArrival(){
    message.textContent='Arrivée calculée automatiquement · '+dateTimeFR(outcome.end,outcome.endTime)+' · '+zoneName({timezone:$('race-timezone').value});
    message.dataset.state='ok';
  }else{
-   const sameAsLegacy=legacyArrival&&date===legacyArrival.start&&time===legacyArrival.startTime&&
+   const sameAsLegacy=legacyArrival&&date===legacyArrival.start&&time===legacyArrival.startTime&&timeEngine.normalize($('race-timezone').value)===legacyArrival.timezone&&
    (duration===legacyArrival.duration||(duration===''&&parseRaceDuration(legacyArrival.duration).status!=='valid'));
    getField('end').value=sameAsLegacy?legacyArrival.end:'';
    getField('endTime').value=sameAsLegacy?legacyArrival.endTime:'';
@@ -870,7 +870,7 @@ function openEditor(r){
  const data=r||normal();
  for(const k of Object.keys(props))if(k!=='boat')getField(k).value=data[k]||'';
  $('race-timezone').value=timeEngine.normalize(data.timezone);
-  legacyArrival={start:data.start,startTime:data.startTime,duration:data.duration,end:data.end,endTime:data.endTime};
+  legacyArrival={start:data.start,startTime:data.startTime,duration:data.duration,end:data.end,endTime:data.endTime,timezone:timeEngine.normalize(data.timezone)};
  updateArrival();
  $('race-live').checked=!!data.live;
  $('race-upcoming').checked=!!data.upcoming;

@@ -773,10 +773,10 @@ body::before{display:none!important}
 .dream-control span{font:900 11px Poppins,sans-serif}
 .dream-control small{display:block;color:#e9d2f7;font:600 10px Poppins,sans-serif}
 .card-item.is-dream-card{border:1px solid #bb88dd;box-shadow:0 0 0 1px #c59eeb55,0 8px 21px #9b67c328}
-.card-dream-badge{display:inline-flex;align-items:center;flex-wrap:wrap;gap:7px;padding:8px 11px;border:1px solid #be9bdb;
- background:linear-gradient(105deg,#433163,#704a8f,#3c315f);color:#fff6ff;border-radius:10px;
- font:900 10px Poppins,sans-serif;letter-spacing:.05em;max-width:max-content}
-.card-dream-badge small{font:650 9px Poppins,sans-serif;color:#f2deff;letter-spacing:0}
+.card-dream-badge{display:inline-flex;align-items:center;flex-wrap:nowrap;gap:4px;padding:3px 6px;border:1px solid #be9bdb;
+ background:linear-gradient(105deg,#433163,#704a8f,#3c315f);color:#fff6ff;border-radius:6px;
+ font:800 8px/1.25 Poppins,sans-serif;letter-spacing:0;max-width:100%;white-space:nowrap}
+.card-dream-badge .dream-sparkle{font-size:10px;line-height:1}
 </style>
 <style id="rapli-sports-filter-collapse">
 .rapli-collapsible-filters{margin:0 0 12px;border:1px solid #cbd8e9;border-radius:13px;background:#f8fafd;overflow:visible}
@@ -1127,6 +1127,9 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
 .cards-grid .card-item .brand-lockup img.logo-tiny.has-image{max-width:53px;max-height:30px}
 .cards-grid .card-item .team-identity img.logo-tiny.has-image{max-width:62px;max-height:33px}
 .cards-grid .card-item .card-bottom{margin-top:auto;padding-top:5px;gap:5px;align-items:center;border-top-color:rgba(38,83,135,.09)}
+.cards-grid .card-item .card-status-badges{display:flex;flex:1 1 auto;align-items:center;
+ flex-wrap:wrap;gap:5px;min-width:0}
+.cards-grid .card-item .card-status-badges>.collector-row{flex:0 1 auto}
 .cards-grid .card-item .move-card{padding:5px 6px;font-size:8px}
 .cards-grid .card-item .collector-row{gap:4px;flex:0 1 auto}
 .cards-grid .card-item .collector-badge{
@@ -2107,7 +2110,7 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
         return logo?'<img class="card-tag-logo" src="'+logo+'" alt="'+safeText(t)+'" title="'+safeText(t)+'" loading="lazy">':
           '<span class="tag">'+safeText(t)+'</span>';
       }
-      function cardMarkup(c){const photo=imgSafe(c.photo)?`<img src="${c.photo}" alt="Carte de ${safeText(c.player)}" loading="lazy">`:`<div class="placeholder"><span class="mini-logo">RAPLI / SPORTS</span><div class="place-center">${ico('layers')}</div><span class="place-foot">COLLECTOR'S CARD</span></div>`;const tags=(c.tags||[]).slice(0,8).map(cardTagMarkup).join('')+((c.tags||[]).length>8?`<span class="tag more">+${c.tags.length-8}</span>`:'');return `<article class="card-item${c.status==='wishlist'&&c.dream?' is-dream-card':''}" data-id="${safeText(c.id)}"><div class="photo-side"><div class="card-photo" style="${sportFrameStyle(c.sport)}">${photo}${c.demo?'<span class="photo-flag">DÉMO</span>':''}</div></div><div class="card-info"><div class="card-top"><div class="card-athlete">${playerCardSummary(c)}</div><div class="card-controls"><button type="button" class="icon-btn" data-action="edit" data-id="${safeText(c.id)}" aria-label="Modifier cette carte" title="Modifier">${ico('edit')}</button><button type="button" class="icon-btn delete" data-action="delete" data-id="${safeText(c.id)}" aria-label="Supprimer cette carte" title="Supprimer">${ico('trash')}</button></div></div><div class="identity-row"><div class="identity-logos"><div class="brand-lockup">${brandBadge('brand',c.brand)}${logoFor('brand',c.brand)?'':'<span>'+safeText(c.brand||'Sans marque')+'</span>'}</div><div class="team-identity">${c.team?brandBadge('team',c.team):''}${logoFor('team',c.team)?'':'<span>'+safeText(c.team||'Équipe non renseignée')+'</span>'}</div></div>${sportsSportBadge(c.sport)}</div>${c.status==='wishlist'&&c.dream?'<span class="card-dream-badge">✨ DANS MES RÊVES <small>Un jour, peut-être…</small></span>':''}<div class="tags">${tags||'<span class="blank-tag">Aucune variation</span>'}</div><div class="card-bottom">${collectorBadgeMarkup(c)}<button type="button" class="move-card" data-action="move" data-id="${safeText(c.id)}">${c.status==='own'?'→ WISHLIST':'→ OWN'}</button></div></div></article>`}
+      function cardMarkup(c){const photo=imgSafe(c.photo)?`<img src="${c.photo}" alt="Carte de ${safeText(c.player)}" loading="lazy">`:`<div class="placeholder"><span class="mini-logo">RAPLI / SPORTS</span><div class="place-center">${ico('layers')}</div><span class="place-foot">COLLECTOR'S CARD</span></div>`;const tags=(c.tags||[]).slice(0,8).map(cardTagMarkup).join('')+((c.tags||[]).length>8?`<span class="tag more">+${c.tags.length-8}</span>`:'');return `<article class="card-item${c.status==='wishlist'&&c.dream?' is-dream-card':''}" data-id="${safeText(c.id)}"><div class="photo-side"><div class="card-photo" style="${sportFrameStyle(c.sport)}">${photo}${c.demo?'<span class="photo-flag">DÉMO</span>':''}</div></div><div class="card-info"><div class="card-top"><div class="card-athlete">${playerCardSummary(c)}</div><div class="card-controls"><button type="button" class="icon-btn" data-action="edit" data-id="${safeText(c.id)}" aria-label="Modifier cette carte" title="Modifier">${ico('edit')}</button><button type="button" class="icon-btn delete" data-action="delete" data-id="${safeText(c.id)}" aria-label="Supprimer cette carte" title="Supprimer">${ico('trash')}</button></div></div><div class="identity-row"><div class="identity-logos"><div class="brand-lockup">${brandBadge('brand',c.brand)}${logoFor('brand',c.brand)?'':'<span>'+safeText(c.brand||'Sans marque')+'</span>'}</div><div class="team-identity">${c.team?brandBadge('team',c.team):''}${logoFor('team',c.team)?'':'<span>'+safeText(c.team||'Équipe non renseignée')+'</span>'}</div></div>${sportsSportBadge(c.sport)}</div><div class="tags">${tags||'<span class="blank-tag">Aucune variation</span>'}</div><div class="card-bottom"><div class="card-status-badges">${collectorBadgeMarkup(c)}${c.status==='wishlist'&&c.dream?'<span class="card-dream-badge"><span class="dream-sparkle" aria-hidden="true">✨</span> DANS MES RÊVES</span>':''}</div><button type="button" class="move-card" data-action="move" data-id="${safeText(c.id)}">${c.status==='own'?'→ WISHLIST':'→ OWN'}</button></div></div></article>`}
       const statsEngine=window.RapliSportsStats;
       const statsVisuals=window.RapliSportsStatsVisuals;
       function renderOwnedStatistics(data=statsEngine.calculate(cards)){

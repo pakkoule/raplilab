@@ -1037,9 +1037,20 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
 
 <style id="rapli-sports-compact-collector-tiles">
 /* Compact Fiches view: visually prioritize an uncropped portrait of the trading card. */
-.cards-grid .card-item{min-height:0}
+.cards-grid{align-items:start}
+.cards-grid .card-item{
+  --tile-max-height:360px;
+  min-height:0;
+  height:clamp(245px,32vw,var(--tile-max-height));
+  max-height:var(--tile-max-height);
+  box-sizing:border-box;
+}
+.cards-grid .card-item.is-content-dense{
+  /* A genuinely crowded multi-player fiche may grow instead of clipping data. */
+  height:auto;max-height:none;
+}
 .cards-grid .card-item .photo-side{
-  display:flex;align-items:flex-start;padding:6px 0 6px 6px;
+  display:flex;align-items:center;min-height:0;padding:6px 0 6px 6px;
 }
 .cards-grid .card-item .card-photo{
   box-sizing:border-box;flex:0 0 auto;width:100%;height:auto;min-height:0;
@@ -1101,17 +1112,14 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
 .cards-grid .card-item .player-trait strong{font-size:inherit}
 .cards-grid .card-item .tags{margin:5px 0 4px;gap:4px;min-height:0}
 .cards-grid .card-item .tag{font-size:8px;padding:3px 5px}
-.cards-grid .card-item .card-tag-logo{height:20px;max-width:50px}
-/* Unused vertical space is reclaimed for the imported logos, not for extra card height.
-   The tier is decided from the actual free space between tags and card footer. */
-.cards-grid .card-item.has-logo-room .card-tag-logo{height:36px;max-width:95px}
-.cards-grid .card-item.has-logo-room-xl .card-tag-logo{height:54px;max-width:135px}
-.cards-grid .card-item.has-logo-room .tags,
-.cards-grid .card-item.has-logo-room-xl .tags{gap:7px}
-.cards-grid .card-item.has-logo-room .brand-lockup img.logo-tiny.has-image{max-width:53px;max-height:30px}
-.cards-grid .card-item.has-logo-room .team-identity img.logo-tiny.has-image{max-width:63px;max-height:32px}
-.cards-grid .card-item.has-logo-room-xl .brand-lockup img.logo-tiny.has-image{max-width:64px;max-height:37px}
-.cards-grid .card-item.has-logo-room-xl .team-identity img.logo-tiny.has-image{max-width:74px;max-height:39px}
+/* Per-tile sizing takes measured available height and width, never a blanket upscale. */
+.cards-grid .card-item .card-tag-logo{
+  width:auto;height:var(--tag-logo-height,20px);
+  max-width:var(--tag-logo-width,50px);object-fit:contain;
+}
+.cards-grid .card-item .tags{gap:7px;align-content:flex-start}
+.cards-grid .card-item .brand-lockup img.logo-tiny.has-image{max-width:56px;max-height:32px}
+.cards-grid .card-item .team-identity img.logo-tiny.has-image{max-width:67px;max-height:35px}
 .cards-grid .card-item .card-bottom{margin-top:auto;padding-top:5px;gap:5px;align-items:center}
 .cards-grid .card-item .move-card{padding:5px 6px;font-size:8px}
 .cards-grid .card-item .collector-row{gap:4px;flex:0 1 auto}
@@ -1135,9 +1143,8 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
   .cards-grid .card-item .card-bottom{gap:4px}
   .cards-grid .card-item .collector-badge{min-width:44px;min-height:32px;padding:2px 4px}
   .cards-grid .card-item .collector-badge-main{font-size:17px;min-height:18px}
+  .cards-grid .card-item{--tile-max-height:325px}
   .cards-grid .card-item .collector-rookie-logo{max-width:46px;max-height:31px}
-  .cards-grid .card-item.has-logo-room .card-tag-logo{height:32px;max-width:80px}
-  .cards-grid .card-item.has-logo-room-xl .card-tag-logo{height:44px;max-width:106px}
 }
 @media(max-width:410px){
   .cards-grid .card-item .card-info{padding:7px 6px 6px}
@@ -1145,9 +1152,8 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
   .cards-grid .card-item .card-ref-inline{font-size:9px;padding:2px 4px}
   .cards-grid .card-item .icon-btn{width:23px;height:23px}
   .cards-grid .card-item .collector-badge{min-width:42px}
+  .cards-grid .card-item{--tile-max-height:280px;height:clamp(245px,67vw,280px)}
   .cards-grid .card-item .collector-rookie-logo{max-width:40px;max-height:28px}
-  .cards-grid .card-item.has-logo-room .card-tag-logo{height:28px;max-width:70px}
-  .cards-grid .card-item.has-logo-room-xl .card-tag-logo{height:37px;max-width:90px}
 }
 </style>
 
@@ -2121,21 +2127,47 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
         }
       }
 
-      // Scale logos only when a fiche actually has unused height.
-      // Measure without tier classes first: recalculations cannot accumulate sizes.
+      // A bounded portrait tile is the source of truth. Fill its remaining height
+      // with logo artwork while checking wrapping and footer clearance.
       function adaptCardLogoSizes(){
         const grid=$('cardGrid');
         if(sportsGalleryLayout!=='details'||!grid||!grid.isConnected)return;
-        const tiles=[...grid.querySelectorAll('.card-item')];
-        for(const tile of tiles)tile.classList.remove('has-logo-room','has-logo-room-xl');
-        for(const tile of tiles){
-          const logos=tile.querySelectorAll('.tags .card-tag-logo');
-          if(!logos.length||logos.length>4)continue;
-          const tags=tile.querySelector('.tags'),footer=tile.querySelector('.card-bottom');
-          if(!tags||!footer||tile.getBoundingClientRect().height<100)continue;
-          const free=footer.getBoundingClientRect().top-tags.getBoundingClientRect().bottom;
-          if(free>=165&&logos.length<=2)tile.classList.add('has-logo-room-xl');
-          else if(free>=90)tile.classList.add('has-logo-room');
+        for(const tile of grid.querySelectorAll('.card-item')){
+          tile.style.removeProperty('--tag-logo-height');
+          tile.style.removeProperty('--tag-logo-width');
+          tile.classList.remove('is-content-dense');
+          if(tile.clientHeight<100)continue;
+          const tags=tile.querySelector('.tags');
+          const footer=tile.querySelector('.card-bottom');
+          if(!tags||!footer)continue;
+          // Exceptional long names/patches take priority over an absolute cap.
+          if(tile.scrollHeight>tile.clientHeight+2){
+            tile.classList.add('is-content-dense');
+            continue;
+          }
+          const logos=[...tags.querySelectorAll('.card-tag-logo')];
+          if(!logos.length)continue;
+          const count=logos.length;
+          const contentWidth=tags.clientWidth;
+          if(contentWidth<70)continue;
+          const maxHeight=count<=2?114:count<=4?78:52;
+          const maxWidth=Math.min(215,Math.floor((contentWidth-8)/Math.min(count,2)));
+          const setSize=size=>{
+            const w=Math.max(50,Math.min(maxWidth,Math.round(size*2.35)));
+            tile.style.setProperty('--tag-logo-height',size+'px');
+            tile.style.setProperty('--tag-logo-width',w+'px');
+          };
+          // Resize is not additive: every run starts from the same 20px baseline.
+          let lo=20,hi=maxHeight,best=20;
+          while(lo<=hi){
+            const size=Math.floor((lo+hi)/2);
+            setSize(size);
+            const clear=footer.getBoundingClientRect().top-tags.getBoundingClientRect().bottom;
+            const overflow=tile.scrollHeight>tile.clientHeight+2;
+            if(clear>=7&&!overflow){best=size;lo=size+1}
+            else hi=size-1;
+          }
+          setSize(best);
         }
       }
       let adaptiveLogoFrame=0;
@@ -2147,6 +2179,10 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
         });
       }
       window.addEventListener('resize',scheduleCardLogoSizes,{passive:true});
+      // Logo images may decode after the first pass. Rebalance when that happens.
+      $('cardGrid').addEventListener('load',event=>{
+        if(event.target?.matches?.('.card-tag-logo'))scheduleCardLogoSizes();
+      },true);
 
       function renderAll(){
         refreshFilterOptions();

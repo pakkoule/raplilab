@@ -1036,21 +1036,21 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
 </style>
 
 <style id="rapli-sports-compact-collector-tiles">
-/* Compact Fiches view: visually prioritize an uncropped portrait of the trading card. */
+/* The trading-card photo defines the natural height; never force empty vertical bands. */
 .cards-grid{align-items:start}
 .cards-grid .card-item{
   --tile-max-height:360px;
   min-height:0;
-  height:clamp(245px,32vw,var(--tile-max-height));
+  height:auto;
   max-height:var(--tile-max-height);
   box-sizing:border-box;
 }
 .cards-grid .card-item.is-content-dense{
-  /* A genuinely crowded multi-player fiche may grow instead of clipping data. */
-  height:auto;max-height:none;
+  /* Exceptional multi-player details may exceed the cap instead of being clipped. */
+  max-height:none;
 }
 .cards-grid .card-item .photo-side{
-  display:flex;align-items:center;min-height:0;padding:6px 0 6px 6px;
+  display:flex;align-items:flex-start;min-height:0;padding:6px 0 6px 6px;
 }
 .cards-grid .card-item .card-photo{
   box-sizing:border-box;flex:0 0 auto;width:100%;height:auto;min-height:0;
@@ -1112,14 +1112,20 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
 .cards-grid .card-item .player-trait strong{font-size:inherit}
 .cards-grid .card-item .tags{margin:5px 0 4px;gap:4px;min-height:0}
 .cards-grid .card-item .tag{font-size:8px;padding:3px 5px}
-/* Per-tile sizing takes measured available height and width, never a blanket upscale. */
+/* Stable, bounded logo sizes: no measurements, resize loops or huge images. */
 .cards-grid .card-item .card-tag-logo{
-  width:auto;height:var(--tag-logo-height,20px);
-  max-width:var(--tag-logo-width,50px);object-fit:contain;
+  width:auto;height:30px;max-width:82px;
+  object-fit:contain;flex:0 1 auto;
+}
+.cards-grid .card-item .tags:has(> .card-tag-logo:only-child) .card-tag-logo{
+  height:46px;max-width:118px;
+}
+.cards-grid .card-item .tags:has(> .card-tag-logo:nth-child(2):last-child) .card-tag-logo{
+  height:38px;max-width:100px;
 }
 .cards-grid .card-item .tags{gap:7px;align-content:flex-start}
-.cards-grid .card-item .brand-lockup img.logo-tiny.has-image{max-width:56px;max-height:32px}
-.cards-grid .card-item .team-identity img.logo-tiny.has-image{max-width:67px;max-height:35px}
+.cards-grid .card-item .brand-lockup img.logo-tiny.has-image{max-width:53px;max-height:30px}
+.cards-grid .card-item .team-identity img.logo-tiny.has-image{max-width:62px;max-height:33px}
 .cards-grid .card-item .card-bottom{margin-top:auto;padding-top:5px;gap:5px;align-items:center}
 .cards-grid .card-item .move-card{padding:5px 6px;font-size:8px}
 .cards-grid .card-item .collector-row{gap:4px;flex:0 1 auto}
@@ -1152,7 +1158,7 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
   .cards-grid .card-item .card-ref-inline{font-size:9px;padding:2px 4px}
   .cards-grid .card-item .icon-btn{width:23px;height:23px}
   .cards-grid .card-item .collector-badge{min-width:42px}
-  .cards-grid .card-item{--tile-max-height:280px;height:clamp(245px,67vw,280px)}
+  .cards-grid .card-item{--tile-max-height:280px}
   .cards-grid .card-item .collector-rookie-logo{max-width:40px;max-height:28px}
 }
 </style>
@@ -2127,63 +2133,15 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
         }
       }
 
-      // A bounded portrait tile is the source of truth. Fill its remaining height
-      // with logo artwork while checking wrapping and footer clearance.
-      function adaptCardLogoSizes(){
+      // Only detect true overflow after render. No logo resizing or reflow search.
+      function ensureCardTilesFit(){
         const grid=$('cardGrid');
-        if(sportsGalleryLayout!=='details'||!grid||!grid.isConnected)return;
+        if(sportsGalleryLayout!=='details'||!grid)return;
         for(const tile of grid.querySelectorAll('.card-item')){
-          tile.style.removeProperty('--tag-logo-height');
-          tile.style.removeProperty('--tag-logo-width');
           tile.classList.remove('is-content-dense');
-          if(tile.clientHeight<100)continue;
-          const tags=tile.querySelector('.tags');
-          const footer=tile.querySelector('.card-bottom');
-          if(!tags||!footer)continue;
-          // Exceptional long names/patches take priority over an absolute cap.
-          if(tile.scrollHeight>tile.clientHeight+2){
-            tile.classList.add('is-content-dense');
-            continue;
-          }
-          const logos=[...tags.querySelectorAll('.card-tag-logo')];
-          if(!logos.length)continue;
-          const count=logos.length;
-          const contentWidth=tags.clientWidth;
-          if(contentWidth<70)continue;
-          const maxHeight=count<=2?114:count<=4?78:52;
-          const maxWidth=Math.min(215,Math.floor((contentWidth-8)/Math.min(count,2)));
-          const setSize=size=>{
-            const w=Math.max(50,Math.min(maxWidth,Math.round(size*2.35)));
-            tile.style.setProperty('--tag-logo-height',size+'px');
-            tile.style.setProperty('--tag-logo-width',w+'px');
-          };
-          // Resize is not additive: every run starts from the same 20px baseline.
-          let lo=20,hi=maxHeight,best=20;
-          while(lo<=hi){
-            const size=Math.floor((lo+hi)/2);
-            setSize(size);
-            const clear=footer.getBoundingClientRect().top-tags.getBoundingClientRect().bottom;
-            const overflow=tile.scrollHeight>tile.clientHeight+2;
-            if(clear>=7&&!overflow){best=size;lo=size+1}
-            else hi=size-1;
-          }
-          setSize(best);
+          if(tile.scrollHeight>tile.clientHeight+2)tile.classList.add('is-content-dense');
         }
       }
-      let adaptiveLogoFrame=0;
-      function scheduleCardLogoSizes(){
-        if(adaptiveLogoFrame)cancelAnimationFrame(adaptiveLogoFrame);
-        adaptiveLogoFrame=requestAnimationFrame(()=>{
-          adaptiveLogoFrame=0;
-          adaptCardLogoSizes();
-        });
-      }
-      window.addEventListener('resize',scheduleCardLogoSizes,{passive:true});
-      // Logo images may decode after the first pass. Rebalance when that happens.
-      $('cardGrid').addEventListener('load',event=>{
-        if(event.target?.matches?.('.card-tag-logo'))scheduleCardLogoSizes();
-      },true);
-
       function renderAll(){
         refreshFilterOptions();
         $('tabOwnCount').textContent=cards.filter(x=>x.status==='own').length;
@@ -2209,7 +2167,7 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
         });
         $('cardGrid').classList.toggle('is-gallery-layout',sportsGalleryLayout!=='details');
         $('cardGrid').innerHTML=renderSportsGallery(match);
-        scheduleCardLogoSizes();
+        if(sportsGalleryLayout==='details')requestAnimationFrame(ensureCardTilesFit);
         const nav=sportsGalleryPagination(sportsGalleryCount(match));
         $('sportsPaginationTop').innerHTML=nav;
         $('sportsPaginationBottom').innerHTML=nav;

@@ -608,6 +608,22 @@ body[data-active="regatta"] .portal-header{background:linear-gradient(120deg,#10
           managerMessage((operation==='save'?'Sauvegarde':'Actualisation')+' : '+(rows.length-failures.length)+'/2 espaces'+(failures.length?' · vérifie le rapport':' ✓'),!!failures.length);
         }));
     }
+    // Once per authenticated device, erase only obsolete root-level Dragon Blanc
+    // images. Shared Sports/Regatta assets remain under their own folder prefixes.
+    // A failure leaves the local marker unset so a future visit can retry.
+    const retiredStorageMarker='rapli-archives-artwork-purged-20261115-v1';
+    window.addEventListener('load',()=>setTimeout(()=>{
+      void (async()=>{
+        try{
+          if(localStorage.getItem(retiredStorageMarker)==='1')return;
+          await initializeIdentity();
+          const response=await client.functions.invoke('rapli-archives-pair',{body:{action:'purge-retired-archives'}});
+          if(response.error||!response.data?.purged)
+            throw Error(response.data?.error||response.error?.message||'Nettoyage incomplet');
+          localStorage.setItem(retiredStorageMarker,'1');
+        }catch(error){console.warn('Nettoyage des anciens artworks Rapli Archives reporté',error);}
+      })();
+    },1200),{once:true});
   })();
   </script>
   <script defer src="shared/retired-cleanup.js"></script>

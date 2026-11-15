@@ -5,6 +5,9 @@ const safe=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'
 const clean=(v,n=150)=>String(v??'').trim().slice(0,n);
 const uid=()=>crypto.randomUUID?crypto.randomUUID():'race-'+Date.now().toString(36)+Math.random().toString(36).slice(2);
 const now=()=>new Date().toISOString();
+const timeEngine=window.RapliRegattaTime;
+if(!timeEngine)throw Error('Moteur de fuseaux horaires non chargé.');
+const zoneName=r=>timeEngine.ZONES[timeEngine.normalize(r?.timezone)]||timeEngine.ZONES[timeEngine.DEFAULT];
 const BOAT_NAME='Rapli LPDB';
 const props={name:180,boatClass:100,start:20,startTime:8,end:20,endTime:8,rank:40,rankTotal:12,rankDepartment:40,rankDepartmentTotal:12,rankNational:40,rankNationalTotal:12,rankCity:40,rankCityTotal:12,rankTeam:40,rankTeamTotal:12,duration:100,durationDays:4,durationHours:2,durationMinutes:2,durationSeconds:2,vsr:5,participantCount:12,gainPoints:9,gainCredits:9};
 const imageKeys=['icon','result','route'];
@@ -45,31 +48,25 @@ function durationFromParts(r){
  const [d,h,m,sec]=entries.map(x=>Number(x||0));
  return d+' j '+h+' h '+m+' min '+sec+' s';
 }
-function calculateArrival(day,time,duration){
+function calculateArrival(day,time,duration,zone=timeEngine.DEFAULT){
  if(!day||!time||!String(duration||'').trim())return {status:'waiting'};
- const validTime=/^([01]\d|2[0-3]):([0-5]\d)(?::([0-5]\d))?$/.exec(time);
- const validDate=/^(\d{4})-(\d{2})-(\d{2})$/.exec(day);
- if(!validTime||!validDate)return {status:'invalid-date'};
- const [year,month,date]=validDate.slice(1).map(Number),hour=Number(validTime[1]),minute=Number(validTime[2]),second=Number(validTime[3]||0);
- const start=new Date(Date.UTC(year,month-1,date,hour,minute,second));
- if(start.getUTCFullYear()!==year||start.getUTCMonth()+1!==month||start.getUTCDate()!==date)
-   return {status:'invalid-date'};
  const parsed=parseRaceDuration(duration);
  if(parsed.status!=='valid')return {status:'invalid-duration'};
- const end=new Date(start.getTime()+parsed.seconds*1000);
- if(!Number.isFinite(end.getTime())||end.getUTCFullYear()>9999)return {status:'invalid-duration'};
- const iso=end.toISOString();
- return {status:'ready',end:iso.slice(0,10),endTime:iso.slice(11,19)};
+ const start=timeEngine.fromWall(day,time,zone);
+ if(start===null)return {status:'invalid-date'};
+ const end=timeEngine.arrival(day,time,parsed.seconds,zone);
+ if(!end)return {status:'invalid-duration'};
+ return {status:'ready',end:end.date,endTime:end.time,timestamp:end.timestamp};
 }
 const dateTimeFR=(day,time)=>[dateFR(day),/^\d{2}:\d{2}(?::\d{2})?$/.test(time||'')?time:''].filter(Boolean).join(' · ');
 let legacyArrival=null;
 function updateArrival(){
  const date=getField('start').value,time=getField('startTime').value,duration=syncDurationInput();
- const outcome=calculateArrival(date,time,duration);
+ const outcome=calculateArrival(date,time,duration,$('race-timezone').value);
  const message=$('arrival-feedback');
  if(outcome.status==='ready'){
    getField('end').value=outcome.end;getField('endTime').value=outcome.endTime;
-   message.textContent='Arrivée calculée automatiquement · '+dateTimeFR(outcome.end,outcome.endTime);
+   message.textContent='Arrivée calculée automatiquement · '+dateTimeFR(outcome.end,outcome.endTime)+' · '+zoneName({timezone:$('race-timezone').value});
    message.dataset.state='ok';
  }else{
    const sameAsLegacy=legacyArrival&&date===legacyArrival.start&&time===legacyArrival.startTime&&
@@ -82,7 +79,7 @@ function updateArrival(){
    else if(outcome.status==='invalid-duration')
      message.textContent='Durée invalide : jours 0–3650, heures 0–23, minutes et secondes 0–59.';
    else if(outcome.status==='invalid-date')
-     message.textContent='Date ou heure de départ invalide.';
+     message.textContent='Date ou heure impossible dans le fuseau choisi (attention aux changements d’heure).';
    else
      message.textContent='Renseigne la date, l’heure de départ et la durée pour calculer l’arrivée.';
  }
@@ -185,7 +182,7 @@ function normalizeRanking(r){
    else {r[key]='';r[totalKey]='';}
  }
 }
-function normal(x={}){const r={id:typeof x.id==='string'&&x.id.length<130?x.id:uid(),createdAt:x.createdAt||now(),updatedAt:x.updatedAt||now(),live:!!x.live&&!x.dnf,upcoming:!!x.upcoming&&!x.live&&!x.dnf,dnf:!!x.dnf,kind:['race','event','record'].includes(x.kind)?x.kind:'race',eventId:clean(x.eventId,130),eventClosed:!!x.eventClosed,recordClosed:!!x.recordClosed,joker:!!x.joker,equipment:validEquipment(x.equipment),edition:clean(x.edition,100)};for(const [k,n] of Object.entries(props))r[k]=clean(x[k],n);
+function normal(x={}){const r={id:typeof x.id==='string'&&x.id.length<130?x.id:uid(),createdAt:x.createdAt||now(),updatedAt:x.updatedAt||now(),live:!!x.live&&!x.dnf,upcoming:!!x.upcoming&&!x.live&&!x.dnf,dnf:!!x.dnf,kind:['race','event','record'].includes(x.kind)?x.kind:'race',eventId:clean(x.eventId,130),eventClosed:!!x.eventClosed,recordClosed:!!x.recordClosed,joker:!!x.joker,equipment:validEquipment(x.equipment),edition:clean(x.edition,100),timezone:timeEngine.normalize(x.timezone)};for(const [k,n] of Object.entries(props))r[k]=clean(x[k],n);
  r.boat=BOAT_NAME;
  r.classColor=colorSafe(x.classColor);r.notes=clean(x.notes,2500);r.vsr=VSR[r.vsr]?r.vsr:'';
  r.attempts=window.RapliRegattaRecordAttempts.normalize(x.attempts);
@@ -212,7 +209,7 @@ function normal(x={}){const r={id:typeof x.id==='string'&&x.id.length<130?x.id:u
  }
  const formatted=durationFromParts(r);
  if(formatted!==null&&formatted!=='')r.duration=formatted;
- for(const k of imageKeys)r[k]=validImage(x[k])?x[k]:'';if(r.kind!=='record'){const arrival=calculateArrival(r.start,r.startTime,r.duration);if(arrival.status==='ready'){r.end=arrival.end;r.endTime=arrival.endTime;}}return r;}
+ for(const k of imageKeys)r[k]=validImage(x[k])?x[k]:'';if(r.kind!=='record'){const arrival=calculateArrival(r.start,r.startTime,r.duration,r.timezone);if(arrival.status==='ready'){r.end=arrival.end;r.endTime=arrival.endTime;}}return r;}
 let rows=[],db=null,editId='',pictures={icon:'',result:'',route:''},uploads=0,writeBusy=false,timer;
 let storageRecoveryBlocked=false;
  let regattaPage=1,regattaResultsCount=0;
@@ -248,21 +245,16 @@ async function saveRow(row){if(storageRecoveryBlocked)throw Error('Stockage des 
 async function deleteRow(id){if(storageRecoveryBlocked)throw Error('Stockage des courses inaccessible : suppression bloquée.');if(!db){localStorage.setItem('rapli-regatta-v1',JSON.stringify(rows.filter(x=>x.id!==id)));return;}const tx=db.transaction('races','readwrite');tx.objectStore('races').delete(id);await done(tx);}
 async function replaceRows(next){if(storageRecoveryBlocked)throw Error('Stockage des courses inaccessible : restauration bloquée.');if(!db){localStorage.setItem('rapli-regatta-v1',JSON.stringify(next));}else{const tx=db.transaction('races','readwrite'),store=tx.objectStore('races');store.clear();next.forEach(x=>store.put(x));await done(tx);}rows=next.map(normal);render();}
 
- function localDateTime(date,time=''){
-   if(!/^\d{4}-\d{2}-\d{2}$/.test(String(date||'')))return null;
-   const p=/^(\d{2}):(\d{2})(?::(\d{2}))?$/.exec(time||'00:00');
-   if(!p)return null;
-   const [year,month,day]=date.split('-').map(Number);
-   const d=new Date(year,month-1,day,Number(p[1]),Number(p[2]),Number(p[3]||0));
-   return d.getFullYear()===year&&d.getMonth()===month-1&&d.getDate()===day?d.getTime():null;
- }
+ function localDateTime(date,time='',zone=timeEngine.DEFAULT){
+ return timeEngine.fromWall(date,time||'00:00',zone);
+}
  function raceClockInfo(row){
    const st=raceStatus(row);
    const live=st==='live'||st==='record-live';
    if(!live&&st!=='planned')return null;
    const attempt=row.kind==='record'?recordEngine.latestStart(row.attempts):null;
    const date=attempt?.date||row.start,time=attempt?.time||row.startTime;
-   const start=time?localDateTime(date,time):null;
+   const start=time?localDateTime(date,time,row.timezone):null;
    return {mode:live?'elapsed':'countdown',start};
  }
  function formatRaceClock(seconds){
@@ -291,7 +283,21 @@ async function replaceRows(next){if(storageRecoveryBlocked)throw Error('Stockage
       formatRaceClock((clock.mode==='countdown'?clock.start-Date.now():Date.now()-clock.start)/1000)+'</strong></div>';
  }
 
- const raceStatus=r=>{if(r.kind==='record')return r.recordClosed?'record-closed':r.live?'record-live':'record';if(r.dnf)return 'dnf';if(r.kind==='event')return r.eventClosed?'finished':r.live?'live':'planned';if(r.upcoming)return 'planned';if(r.live)return 'live';if(rankPairs.some(([key])=>r[key]))return 'finished';if(!r.end)return 'planned';if(!r.endTime)return 'finished';const current=new Date();const local=[current.getFullYear(),String(current.getMonth()+1).padStart(2,'0'),String(current.getDate()).padStart(2,'0')].join('-')+'T'+String(current.getHours()).padStart(2,'0')+':'+String(current.getMinutes()).padStart(2,'0');return (r.end+'T'+r.endTime)<=local?'finished':'planned';},statusTitle={live:'COURSE EN COURS',finished:'TERMINÉE',planned:'À VENIR',dnf:'DNF · ABANDON',record:'COURSE RECORD','record-live':'RECORD EN COURS','record-closed':'RECORD CLÔTURÉ'};
+ const raceStatus=r=>{
+ if(r.kind==='record')return r.recordClosed?'record-closed':r.live?'record-live':'record';
+ if(r.dnf)return 'dnf';
+ if(r.kind==='event')return r.eventClosed?'finished':r.live?'live':'planned';
+ if(r.upcoming)return 'planned';
+ if(r.live)return 'live';
+ if(rankPairs.some(([key])=>r[key]))return 'finished';
+ if(!r.end)return 'planned';
+ if(!r.endTime)return 'finished';
+ const duration=parseRaceDuration(r.duration);
+ const start=timeEngine.fromWall(r.start,r.startTime,r.timezone);
+ const finish=(start!==null&&duration.status==='valid')?start+duration.seconds*1000:
+    timeEngine.fromWall(r.end,r.endTime,r.timezone);
+ return finish!==null&&finish<=Date.now()?'finished':'planned';
+},statusTitle={live:'COURSE EN COURS',finished:'TERMINÉE',planned:'À VENIR',dnf:'DNF · ABANDON',record:'COURSE RECORD','record-live':'RECORD EN COURS','record-closed':'RECORD CLÔTURÉ'};
 const dateFR=v=>/^\d{4}-\d{2}-\d{2}$/.test(v)?v.slice(8)+'/'+v.slice(5,7)+'/'+v.slice(0,4):'';
 const scoreEngine=window.RapliRegattaScore;
 const recordEngine=window.RapliRegattaRecordAttempts;
@@ -328,7 +334,7 @@ function card(r){
  '<div class="card-tag-row"><span class="class-tag" title="'+safe(r.boatClass||'VIRTUAL REGATTA')+'">'+safe(r.boatClass||'VIRTUAL REGATTA')+'</span>'+
  (mode?'<span class="vsr-badge vsr-'+r.vsr+(r.vsr==='hc'?' hc':'')+'" title="Importance VSR : '+(VSR_PRIORITY(r.vsr)+1)+' sur 4">'+safe(mode)+'</span>':'')+'</div></div>'+
  '<div class="card-boat">'+safe(r.boat)+(r.kind==='record'?' · COURSE RECORD':r.kind==='event'?' · COMPÉTITION':r.eventId?' · ÉTAPE'+(r.joker?' JOKER':''):'')+'</div>'+
- raceClockMarkup(r)+'<div class="card-stats">'+(r.kind!=='record'&&r.start?'<span class="stat-chip">DÉPART '+safe(dateTimeFR(r.start,r.startTime))+'</span>':'')+
+ raceClockMarkup(r)+'<div class="card-stats"><span class="stat-chip">🌐 '+safe(zoneName(r))+'</span>'+(r.kind!=='record'&&r.start?'<span class="stat-chip">DÉPART '+safe(dateTimeFR(r.start,r.startTime))+'</span>':'')+
  (r.kind!=='record'&&status!=='dnf'&&r.end?'<span class="stat-chip arrival-chip">ARRIVÉE '+safe(dateTimeFR(r.end,r.endTime))+'</span>':'')+
  (r.kind!=='record'&&r.duration?'<span class="stat-chip duration-chip">⏱ '+safe(r.duration)+'</span>':'')+
  (r.kind!=='record'&&validEquipment(r.equipment)?'<span class="stat-chip equipment">ÉQUIPEMENT · '+safe(equipmentModes[r.equipment])+'</span>':'')+
@@ -406,7 +412,7 @@ function render(){
    (rows.length?'<p>Aucune course ne correspond aux filtres.</p>':'');
  scheduleRankingFit();updateRaceClocks();
  $('empty').hidden=rows.length!==0;
- renderStatistics();renderClassColors();
+ renderStatistics();renderHonors();renderClassColors();
 }
 const statInt=n=>Number(n).toLocaleString('fr-FR');
 const statDecimal=(n,digits=1)=>Number(n).toLocaleString('fr-FR',{minimumFractionDigits:0,maximumFractionDigits:digits});
@@ -526,6 +532,9 @@ function computeRaceStatistics(items){
    meanRelative:relative.length?relative.reduce((sum,x)=>sum+x.value,0)/relative.length:null,
    meanDuration:durationRows.length?totalSeconds/durationRows.length:null
  };
+}
+function renderHonors(){
+ $('honors-content').innerHTML=window.RapliRegattaHonors.render(rows,computeRaceStatistics(rows),scoreView,recordEngine);
 }
 function renderStatistics(){
  const raceRows=rows.filter(r=>r.kind==='race');
@@ -728,7 +737,7 @@ function changeVSRColor(key,value){
  toast('Couleur '+VSR[key]+' appliquée à toutes les courses correspondantes ✓');
 }
 function selectWorkspace(view){
- const valid=['races','stats','colors'];
+ const valid=['races','stats','honors','colors'];
  if(!valid.includes(view))return;
  for(const name of valid){
   const active=name===view;
@@ -737,6 +746,7 @@ function selectWorkspace(view){
   tab.classList.toggle('active',active);tab.setAttribute('aria-selected',String(active));tab.tabIndex=active?0:-1;
  }
  if(view==='stats')renderStatistics();
+  if(view==='honors')renderHonors();
  if(view==='colors')renderClassColors();
 }
 
@@ -859,7 +869,8 @@ function openEditor(r){
  editId=r?.id||'';
  const data=r||normal();
  for(const k of Object.keys(props))if(k!=='boat')getField(k).value=data[k]||'';
- legacyArrival={start:data.start,startTime:data.startTime,duration:data.duration,end:data.end,endTime:data.endTime};
+ $('race-timezone').value=timeEngine.normalize(data.timezone);
+  legacyArrival={start:data.start,startTime:data.startTime,duration:data.duration,end:data.end,endTime:data.endTime};
  updateArrival();
  $('race-live').checked=!!data.live;
  $('race-upcoming').checked=!!data.upcoming;
@@ -886,7 +897,7 @@ dialog.addEventListener('close',()=>{document.body.style.overflow='';editId='';}
 document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',closeEditor));
 async function saveEditor(e){
  e.preventDefault();if(writeBusy||uploads)return;
- const old=rows.find(x=>x.id===editId);const r={...(old||normal()),updatedAt:now(),live:$('race-live').checked,upcoming:$('race-upcoming').checked,dnf:$('race-dnf').checked};
+ const old=rows.find(x=>x.id===editId);const r={...(old||normal()),updatedAt:now(),timezone:timeEngine.normalize($('race-timezone').value),live:$('race-live').checked,upcoming:$('race-upcoming').checked,dnf:$('race-dnf').checked};
  if([r.live,r.upcoming,r.dnf].filter(Boolean).length>1){toast('Choisis un seul statut manuel : en cours, à venir ou DNF.',true);return;}
  r.kind=old?.kind==='record'&&old.recordClosed?'record':['event','record'].includes($('race-kind').value)?$('race-kind').value:'race';
  r.recordClosed=r.kind==='record'&&!!old?.recordClosed;
@@ -1176,9 +1187,8 @@ function calendarEscape(input){
  return String(input??'').replace(/\r\n?/g,'\n').replace(/\\/g,'\\\\')
    .replace(/\n/g,'\\n').replace(/;/g,'\\;').replace(/,/g,'\\,').slice(0,6000);
 }
-function toIcsTime(date,clock='00:00'){
- if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||!/^([01]\d|2[0-3]):[0-5]\d(?::[0-5]\d)?$/.test(clock))return '';
- return date.replace(/-/g,'')+'T'+clock.replace(/:/g,'').padEnd(6,'0');
+function toIcsTime(date,clock='00:00',zone=timeEngine.DEFAULT){
+ return timeEngine.utcIcs(timeEngine.fromWall(date,clock,zone));
 }
 function foldCalendarLine(line){
  const encoder=new TextEncoder();
@@ -1196,18 +1206,16 @@ function calendarText(r){
  const startClock=r.startTime||'';
  let start='',finish='',allDay=false,placeholder=false;
  if(startClock){
-   start=toIcsTime(r.start,startClock);
-   if(!start)throw Error('Heure de départ invalide.');
-   const end=calculateArrival(r.start,startClock,r.duration);
-   if(end.status==='ready'&&parseRaceDuration(r.duration).seconds>0){
-     finish=toIcsTime(end.end,end.endTime);
-   }else{
-     const [year,month,day]=r.start.split('-').map(Number);
-     const [h,m,sec=0]=startClock.split(':').map(Number);
-     const next=new Date(Date.UTC(year,month-1,day,h+1,m,sec)).toISOString();
-     finish=next.slice(0,10).replace(/-/g,'')+'T'+next.slice(11,19).replace(/:/g,'');
-     placeholder=true;
-   }
+   const startInstant=timeEngine.fromWall(r.start,startClock,r.timezone);
+  start=timeEngine.utcIcs(startInstant);
+  if(!start)throw Error('Heure de départ invalide ou inexistante dans le fuseau choisi.');
+  const duration=parseRaceDuration(r.duration);
+  if(duration.status==='valid'&&duration.seconds>0){
+   finish=timeEngine.utcIcs(startInstant+duration.seconds*1000);
+  }else{
+   finish=timeEngine.utcIcs(startInstant+3600000);
+   placeholder=true;
+  }
  }else{
    allDay=true;start=r.start.replace(/-/g,'');
    const [year,month,day]=r.start.split('-').map(Number);
@@ -1258,9 +1266,10 @@ $('record-attempts-list').addEventListener('click',event=>{
 $('record-attempts-list').addEventListener('change',event=>{
  if(event.target.matches('[data-record-aborted]'))event.target.closest('.record-attempt-row').classList.toggle('is-aborted',event.target.checked);
 });
+$('race-timezone').addEventListener('change',updateArrival);
 $('race-kind').addEventListener('change',updateKindFields);
 $('race-event-id').addEventListener('change',updateKindFields);
-for(const view of ['races','stats','colors'])$('view-'+view).addEventListener('click',()=>selectWorkspace(view));
+for(const view of ['races','stats','honors','colors'])$('view-'+view).addEventListener('click',()=>selectWorkspace(view));
 // Palette des classes: disponible dans la barre d'actions de Courses, sans troisième onglet encombrant.
 $('manage-class-colors').addEventListener('click',()=>selectWorkspace('colors'));
 $('colors-back-races').addEventListener('click',()=>selectWorkspace('races'));

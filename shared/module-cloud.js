@@ -1,5 +1,5 @@
 /* RapliLab Cloud Bridge for the maintained workspaces.
- * No service role key. Uses the anonymous Supabase session and existing Archives device pairing.
+ * No service role key. Uses the anonymous Supabase session and shared Supabase device pairing.
  * Local IndexedDB is authoritative until a safe, revision-checked synchronization completes. */
 (() => {
   'use strict';

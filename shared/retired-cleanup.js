@@ -1,11 +1,11 @@
 /* RapliLab PR #1 — clear ONLY local data of modules explicitly retired.
  * Runs on each browser/device when the updated portal is opened.
- * Cloud rows are removed by the server migration; this never touches live modules. */
+ * Only Dragon Blanc catalogue data and retired workspaces are cleaned. Sports and Regatta are never touched. */
 (()=>{
  'use strict';
- const marker='rapli-retired-workspaces-cleaned-20261114-v2';
- const databases=['rapli-time-v1','rapli-refs-v1','rapli-tiers-v1','rapli-top10-v1','rapli-coach-v1','sticker-studio-essential','rapli-lp-v1'];
- const localKeys=['rapli-time-fallback','rapli-refs-fallback',
+ const marker='rapli-retired-workspaces-cleaned-20261115-v3';
+ const databases=['my-archive-v1','rapli-time-v1','rapli-refs-v1','rapli-tiers-v1','rapli-top10-v1','rapli-coach-v1','sticker-studio-essential','rapli-lp-v1'];
+ const localKeys=['archive','rapli-archives-cloud-enabled-v1','rapli-archives-last-successful-cloud-v1','rapli-archives-local-saved-at-v1','rapli-time-fallback','rapli-refs-fallback',
   'rapli-cloud-time-ack-v1','rapli-cloud-refs-ack-v1',
   'rapli-cloud-tiers-ack-v1','rapli-cloud-top10-ack-v1','rapli-cloud-coach-ack-v1',
   'rapli-cloud-stickers-ack-v1','rapli-cloud-tools-ack-v1','rapli-cloud-lp-ack-v1',

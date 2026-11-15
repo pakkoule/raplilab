@@ -21,6 +21,7 @@
   <nav class="workspace-tabs" role="tablist" aria-label="Vues Rapli Regatta">
     <button type="button" id="view-races" class="workspace-tab active" role="tab" aria-selected="true" aria-controls="races-panel">COURSES</button>
     <button type="button" id="view-stats" class="workspace-tab" role="tab" aria-selected="false" aria-controls="stats-panel" tabindex="-1">STATISTIQUES</button>
+    <button type="button" id="view-honors" class="workspace-tab" role="tab" aria-selected="false" aria-controls="honors-panel" tabindex="-1">PALMARÈS</button>
     <button type="button" id="view-colors" class="workspace-tab regatta-settings-tab" role="tab" aria-selected="false" aria-controls="colors-panel" tabindex="-1" hidden>COULEURS DES CLASSES</button>
   </nav>
   <div id="races-panel" role="tabpanel" aria-labelledby="view-races">
@@ -60,6 +61,10 @@
     <div class="stats-intro"><strong>STATISTIQUES DE MES COURSES</strong><span id="stats-summary">Collection personnelle</span></div>
     <div id="stats-content" class="stats-content"></div>
   </section>
+  <section id="honors-panel" class="honors-panel" role="tabpanel" aria-labelledby="view-honors" hidden>
+    <div class="honors-heading"><div><span class="honors-kicker">RAPLI REGATTA · MES EXPLOITS</span><h2>MON PALMARÈS</h2><p>Mes meilleurs classements, podiums et records, calculés à partir des courses enregistrées.</p></div><span class="honors-symbol" aria-hidden="true">🏆</span></div>
+    <div id="honors-content" class="honors-content" aria-live="polite"></div>
+  </section>
   <section id="colors-panel" class="colors-panel" role="tabpanel" aria-labelledby="view-colors" hidden>
     <div class="colors-heading"><strong>COULEURS DES TAGS</strong><button type="button" class="btn subtle tiny" id="colors-back-races">← Retour aux courses</button><p>Réglages communs à toutes les courses : bateaux et catégories VSR. Les couleurs sont conservées dans les sauvegardes.</p></div>
     <div class="color-global">
@@ -91,6 +96,7 @@
         <label>CLASSE DE BATEAU<input id="race-class" maxlength="100" list="boat-classes" placeholder="IMOCA"><datalist id="boat-classes"><option value="IMOCA"><option value="ULTIM"><option value="Class40"><option value="Ocean Fifty"><option value="Mini 6.50"></datalist></label>
         <label class="race-global-start">DATE DE DÉPART<input id="race-start" type="date"></label>
         <label class="race-global-start">HEURE DE DÉPART<input id="race-start-time" type="time" step="60"></label>
+        <label class="wide race-timezone-field">FUSEAU HORAIRE DE LA COURSE<select id="race-timezone"><option value="Europe/Paris">France métropolitaine · Paris</option><option value="UTC">UTC · heure universelle</option><option value="America/Guadeloupe">Guadeloupe · UTC−4</option><option value="America/New_York">New York · heure locale</option><option value="America/Los_Angeles">Los Angeles · heure locale</option><option value="Atlantic/Azores">Açores · heure locale</option><option value="Africa/Cape_Town">Le Cap · UTC+2</option><option value="Pacific/Auckland">Auckland · heure locale</option></select><small>Départ, arrivée, compteur et calendrier utilisent le même fuseau. Les anciennes courses restent en heure française.</small></label>
         <fieldset class="duration-field wide" aria-describedby="duration-help">
           <legend>DURÉE DE LA COURSE</legend>
           <div class="duration-grid">
@@ -100,7 +106,7 @@
             <label>SECONDES<input type="number" id="race-seconds" min="0" max="59" inputmode="numeric" placeholder="0"></label>
           </div>
           <input type="hidden" id="race-duration">
-          <p class="field-help" id="duration-help">Durée précise à la seconde · L’arrivée est calculée automatiquement.</p>
+          <p class="field-help" id="duration-help">Durée précise à la seconde · L’arrivée tient compte du changement d’heure dans le fuseau choisi.</p>
         </fieldset>
         <fieldset class="record-attempts wide" id="race-record-attempts" hidden>
           <legend>TENTATIVES DE RECORD</legend>
@@ -168,6 +174,7 @@
 </dialog>
 <script defer src="record-attempts.js"></script>
 <script defer src="score.js"></script>
+<script defer src="timezone.js"></script>
 <script defer src="app.js"></script>
 <script defer src="../shared/photo-zoom.js"></script>
 <script defer src="../shared/module-cloud.js"></script>

@@ -618,3 +618,35 @@ dialog form{border-radius:18px;background:#fff;display:flex;flex-direction:colum
  .regatta-inline-actions .regatta-icon-action{width:30px;height:33px;min-height:33px}
  .regatta-catalogue-controls>.regatta-filter-disclosure>summary{min-height:33px;padding:5px 6px;font-size:8.5px}
 }
+
+
+/* Rapli Regatta — palmarès personnel (lecture seule, dérivé des fiches). */
+.honors-panel{padding:6px 26px 35px}
+.honors-heading{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:19px 22px;margin:0 0 20px;border:1px solid #cedfe5;border-radius:14px;background:linear-gradient(120deg,#102e45,#1c5067 60%,#0a2b42);color:#fff}
+.honors-kicker{display:block;font-size:9px;letter-spacing:.2em;font-weight:900;color:#82dce4}
+.honors-heading h2{font:900 clamp(23px,4.3vw,37px)/1 'Barlow Condensed',Poppins,sans-serif;letter-spacing:.035em;margin:8px 0}
+.honors-heading p{font-size:11px;line-height:1.5;margin:0;color:#c4e1ea;max-width:540px}
+.honors-symbol{font-size:49px;line-height:1;filter:drop-shadow(0 3px 10px #ffffff30)}
+.honors-content{display:grid;gap:22px}
+.honors-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.honors-kpi{background:#f7fafb;border:1px solid #dbe9ed;border-radius:12px;padding:14px 12px;display:grid;gap:8px}
+.honors-kpi span,.honors-section h3{font-size:10px;letter-spacing:.075em;font-weight:900;color:#567e90}
+.honors-kpi strong{font:900 32px/1 'Barlow Condensed',Poppins,sans-serif;color:#126b8e;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.honors-kpi small{color:#79939e;font-size:9px;line-height:1.5}
+.honors-section h3{font-size:12px;color:#254d63;padding-bottom:9px;border-bottom:1px solid #dbe9ed;margin:0 0 12px}
+.honors-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.honors-item{display:flex;align-items:flex-start;gap:12px;border:1px solid #deeaed;background:#fff;border-radius:11px;padding:13px;min-width:0}
+.honors-medal{display:grid;place-items:center;flex:none;width:39px;height:39px;border:1px solid #dbe9ed;background:#f3f9fb;border-radius:11px;font-size:21px}
+.honors-item-details{min-width:0;display:flex;flex-direction:column;gap:4px}
+.honors-item-details small{color:#7e98a6;font-size:9px;line-height:1.3;font-weight:800}
+.honors-item-details strong{color:#173f59;font-size:13px;overflow-wrap:anywhere;line-height:1.35}
+.honors-item-details span{color:#607e8f;font-size:10px;line-height:1.45}
+.honors-achievements{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.honors-achievement{border:1px solid #d6e4e9;border-radius:12px;background:linear-gradient(150deg,#fbfefe,#f4f9fa);padding:14px;display:flex;gap:11px;min-width:0}
+.honors-achievement .honors-medal{font-size:25px;background:#fdf7eb;border-color:#ecdfc2}
+.honors-achievement strong{display:block;font-weight:900;color:#193d53;font-size:12px;line-height:1.35;overflow-wrap:anywhere}
+.honors-achievement small{display:block;color:#71919d;font-size:10px;line-height:1.6;margin-top:4px}
+.honors-empty{padding:35px 18px;border:1px dashed #bcd6dd;text-align:center;color:#688897;border-radius:12px;line-height:1.6;background:#f8fbfc}
+.race-timezone-field small{font-size:10px;font-weight:500;line-height:1.5;letter-spacing:0;text-transform:none;color:#688898}
+@media(max-width:780px){.honors-panel{padding:6px 14px 30px}.honors-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:550px){.honors-grid,.honors-achievements{grid-template-columns:1fr}.honors-heading{padding:16px}.honors-symbol{font-size:32px}.honors-kpi strong{font-size:29px}}

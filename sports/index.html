@@ -963,6 +963,27 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
  .sports-catalogue-controls .rapli-collapsible-filters .filter-sport{grid-column:span 1}
 }
 </style>
+
+<style id="rapli-sports-tag-categories">
+#tagCategoryPanel[hidden]{display:none!important}
+.tag-category-panel{min-width:0;margin:14px 0 0;padding:13px;border:1px solid #355a85;border-radius:10px;background:#112844}
+.tag-category-panel legend{padding:0 6px;color:#d8ecff;font:800 11px/1.4 Poppins,system-ui,sans-serif}
+.tag-category-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:10px}
+.tag-category-options label{display:flex;align-items:center;gap:9px;padding:10px 11px;cursor:pointer;background:#1a3556;border:1px solid #3e6086;border-radius:9px;color:#e8f2ff;font:750 11px/1.3 Poppins,system-ui,sans-serif}
+.tag-category-options label:has(input:checked){background:#23578b;border-color:#7cb9fb;color:#fff}
+.tag-category-options input{accent-color:#68b7ff;width:17px;height:17px;flex-shrink:0}
+.tag-category-panel .field-hint{margin:0;color:#a8c1df;font:500 10px/1.5 Poppins,system-ui,sans-serif}
+.logo-list.is-tag-category-list{grid-template-columns:1fr}
+.tag-category-entry{min-width:0;flex-wrap:wrap}
+.tag-category-entry .logo-entry-details{display:flex;flex:1;min-width:120px;flex-direction:column;gap:5px}
+.tag-category-entry .logo-entry-name{white-space:normal;overflow-wrap:anywhere;line-height:1.4}
+.tag-category-badges{display:flex;flex-wrap:wrap;gap:4px}
+.tag-category-badge{display:inline-block;background:#244b75;color:#bfe2ff;border:1px solid #3e76a7;border-radius:5px;padding:3px 6px;font:750 9px/1.25 Poppins,system-ui,sans-serif}
+.tag-category-badge.is-empty{color:#97a9bf;background:#14283f;border-color:#36506a}
+.tag-category-edit{flex-shrink:0;border:1px solid #4c7caa;border-radius:7px;background:#1d4269;color:#dcf0ff;padding:7px 9px;cursor:pointer;font:800 10px/1.2 Poppins,system-ui,sans-serif}
+.tag-category-edit:hover{background:#28639b}
+@media(max-width:520px){.tag-category-options{grid-template-columns:1fr}.tag-category-panel{padding:10px}}
+</style>
 </head>
 <body>
   <div class="app-shell">
@@ -1077,7 +1098,17 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
     <div class="modal-header"><div><span class="modal-kicker">RAPLI SPORTS / IDENTITÉS VISUELLES</span><h2 id="logoDialogTitle" class="modal-title">Bibliothèque de logos</h2></div><button type="button" class="close-modal" data-close="logoDialog" aria-label="Fermer">×</button></div>
     <div class="modal-body">
       <div class="logo-tabs"><button type="button" class="logo-tab active" data-logo-type="brand">Marques</button><button type="button" class="logo-tab" data-logo-type="team">Équipes</button><button type="button" class="logo-tab" data-logo-type="rookie">Rookie / RC</button><button type="button" class="logo-tab" data-logo-type="athlete">Portraits athlètes</button><button type="button" class="logo-tab" data-logo-type="tag">Tags / variations</button><button type="button" class="logo-tab" data-logo-type="labels">Étiquettes</button><button type="button" class="logo-tab" data-logo-type="collector">Style des badges</button></div>
-      <div class="logo-create" id="logoCreatePanel"><p class="logo-help" id="logoCreateHelp">Associe une image à une marque ou une équipe : son logo s'affichera automatiquement sur toutes les cartes correspondantes.</p><div class="logo-create-row"><div class="input-group"><label id="logoNameLabel" for="logoName">Nom de la marque</label><select id="logoAthletePicker" class="select saved-value-picker" aria-label="Choisir un athlète déjà présent dans la collection" hidden><option value="">Choisir un athlète enregistré…</option></select><select id="logoTeamPicker" class="select saved-value-picker" aria-label="Choisir une équipe enregistrée" hidden><option value="">Choisir une équipe…</option></select><select id="logoTagPicker" class="select saved-value-picker" aria-label="Choisir un tag enregistré" hidden><option value="">Choisir un tag…</option></select><input class="input" id="logoName" list="logoNamesList" maxlength="100" placeholder="Topps"><datalist id="logoNamesList"></datalist></div><div class="input-group"><label>Image du logo</label><label class="logo-file" id="logoFileLabel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 16V4m-5 5 5-5 5 5M4 17v4h16v-4"/></svg><span id="logoFileText">Choisir</span><input type="file" id="logoFileInput" accept="image/png,image/jpeg,image/webp"></label></div><button id="saveLogoBtn" type="button" class="button button-primary">Ajouter</button></div></div>
+      <div class="logo-create" id="logoCreatePanel"><p class="logo-help" id="logoCreateHelp">Associe une image à une marque ou une équipe : son logo s'affichera automatiquement sur toutes les cartes correspondantes.</p><div class="logo-create-row"><div class="input-group"><label id="logoNameLabel" for="logoName">Nom de la marque</label><select id="logoAthletePicker" class="select saved-value-picker" aria-label="Choisir un athlète déjà présent dans la collection" hidden><option value="">Choisir un athlète enregistré…</option></select><select id="logoTeamPicker" class="select saved-value-picker" aria-label="Choisir une équipe enregistrée" hidden><option value="">Choisir une équipe…</option></select><select id="logoTagPicker" class="select saved-value-picker" aria-label="Choisir un tag enregistré" hidden><option value="">Choisir un tag…</option></select><input class="input" id="logoName" list="logoNamesList" maxlength="100" placeholder="Topps"><datalist id="logoNamesList"></datalist></div><div class="input-group"><label id="logoImageLabel">Image du logo</label><label class="logo-file" id="logoFileLabel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 16V4m-5 5 5-5 5 5M4 17v4h16v-4"/></svg><span id="logoFileText">Choisir</span><input type="file" id="logoFileInput" accept="image/png,image/jpeg,image/webp"></label></div><button id="saveLogoBtn" type="button" class="button button-primary">Ajouter</button></div>
+      <fieldset id="tagCategoryPanel" class="tag-category-panel" hidden>
+        <legend>Associer ce tag à une ou plusieurs catégories</legend>
+        <div class="tag-category-options">
+          <label><input type="checkbox" data-tag-category value="collection"><span>Collection</span></label>
+          <label><input type="checkbox" data-tag-category value="insert"><span>Insert</span></label>
+          <label><input type="checkbox" data-tag-category value="parallel"><span>Parallel Cards</span></label>
+          <label><input type="checkbox" data-tag-category value="competition"><span>Compétition</span></label>
+        </div>
+        <p class="field-hint">Plusieurs cases possibles. Le logo est facultatif et les cartes existantes ne changent pas.</p>
+      </fieldset></div>
       <div id="logoList" class="logo-list"></div>
       <div id="labelSettingsPanel" class="sports-label-settings" hidden>
         <p class="logo-help">Personnalise les étiquettes affichées sur les cartes : intitulé, fond, texte, contour et forme. Les styles sont communs aux cartes OWN et Wishlist, sans modifier leurs données.</p>
@@ -1179,6 +1210,28 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
       function savedBrands(){return savedValues(cards.map(c=>c.brand).concat(logos.filter(l=>l.type==='brand').map(l=>l.name)))}
       function savedTeams(){return savedValues(cards.map(c=>c.team).concat(logos.filter(x=>x.type==='team').map(x=>x.name)))}
       function savedTags(){return savedValues(cards.flatMap(c=>Array.isArray(c.tags)?c.tags:[]).concat(logos.filter(l=>l.type==='tag').map(l=>l.name)))}
+
+      const TAG_CATEGORY_OPTIONS=Object.freeze([
+        {key:'collection',label:'Collection'},{key:'insert',label:'Insert'},
+        {key:'parallel',label:'Parallel Cards'},{key:'competition',label:'Compétition'}
+      ]);
+      function normalizeTagCategories(value){
+        const list=Array.isArray(value)?value:[];
+        return TAG_CATEGORY_OPTIONS.filter(x=>list.includes(x.key)).map(x=>x.key);
+      }
+      function tagProfile(name){return logos.find(l=>l.type==='tag'&&normalize(l.name)===normalize(name))}
+      // Metadata reusable by future filters/stats; unchanged card records.
+      function tagCategories(name){return normalizeTagCategories(tagProfile(name)?.categories)}
+      function currentTagCategories(){
+        return normalizeTagCategories([...document.querySelectorAll('#tagCategoryPanel [data-tag-category]:checked')].map(el=>el.value));
+      }
+      function syncTagCategoryForm(name){
+        const selected=new Set(tagCategories(name));
+        document.querySelectorAll('#tagCategoryPanel [data-tag-category]').forEach(box=>box.checked=selected.has(box.value));
+        const existing=tagProfile(name);
+        $('logoFileText').textContent=existing&&imgSafe(existing.image)?'Logo existant ✓':'Choisir';
+      }
+
       function playerPickerMarkup(){
         return '<select class="select saved-value-picker player-picker" data-player-picker aria-label="Choisir un athlète déjà enregistré">'+
           '<option value="">Choisir un athlète enregistré…</option>'+
@@ -1949,6 +2002,9 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
         $('logoAthletePicker').hidden=type!=='athlete';$('logoAthletePicker').value='';
         $('logoTeamPicker').hidden=type!=='team';$('logoTeamPicker').value='';
         $('logoTagPicker').hidden=type!=='tag';$('logoTagPicker').value='';
+        $('tagCategoryPanel').hidden=type!=='tag';
+        document.querySelectorAll('#tagCategoryPanel [data-tag-category]').forEach(box=>box.checked=false);
+        $('logoImageLabel').textContent=type==='tag'?'Image du logo (facultative)':'Image du logo';
         const styleTab=type==='collector',labelsTab=type==='labels',customTab=styleTab||labelsTab;
         $('logoCreatePanel').hidden=customTab;$('logoList').hidden=customTab;
         $('collectorSettingsPanel').hidden=!styleTab;$('labelSettingsPanel').hidden=!labelsTab;
@@ -1957,13 +2013,40 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
         $('logoCreateHelp').textContent=type==='rookie'
           ? 'Importe un logo RC pour un sport. Il remplacera les lettres RC sur toutes ses Rookie Cards.'
           : type==='athlete'?'Ajoute un portrait par athlète : il s’affiche automatiquement dans la galerie Par athlète. Les joueurs présents sur plusieurs cartes partagent le même portrait.'
-          : type==='tag'?'Associe un logo à un tag : il apparaîtra seul, sans texte ni cadre, sur les tuiles. Les tags sans logo gardent leur présentation.'
+          : type==='tag'?'Classe chaque tag dans Collection, Insert, Parallel Cards et/ou Compétition. Le logo est facultatif ; les cartes existantes restent inchangées.'
           : 'Associe un logo à une marque ou une équipe pour l’afficher sur les cartes correspondantes.';
         $('saveLogoBtn').textContent=type==='rookie'?'Enregistrer le logo RC':type==='athlete'?'Enregistrer le portrait':type==='tag'?'Enregistrer le tag':'Ajouter';
         document.querySelectorAll('.logo-tab').forEach(b=>b.classList.toggle('active',b.dataset.logoType===type));
         if(styleTab)openCollectorSettings();else if(labelsTab)renderLabelEditors();else renderLogos();
       }
-      function renderLogos(){const data=logos.filter(l=>l.type===logoType).sort((a,b)=>collator.compare(a.name,b.name));$('logoList').innerHTML=data.length?data.map(l=>`<div class="logo-entry" data-logo-type="${logoType}">${brandBadge(logoType,l.name)}<span class="logo-entry-name">${safeText(l.name)}</span><button type="button" class="icon-btn delete" data-remove-logo="${safeText(l.id)}" aria-label="Supprimer le logo de ${safeText(l.name)}">${ico('trash')}</button></div>`).join(''):`<div class="blank-tag" style="padding:10px">Aucun logo enregistré dans cette catégorie.</div>`;const list=$('logoNamesList');list.replaceChildren();
+      function renderLogos(){
+        const data=logos.filter(l=>l.type===logoType).sort((a,b)=>collator.compare(a.name));
+        const panel=$('logoList');
+        panel.classList.toggle('is-tag-category-list',logoType==='tag');
+        if(logoType==='tag'){
+          const names=savedTags();
+          panel.innerHTML=names.length?names.map(name=>{
+            const profile=tagProfile(name),categories=tagCategories(name);
+            const badges=categories.length?categories.map(key=>
+              '<span class="tag-category-badge">'+safeText(TAG_CATEGORY_OPTIONS.find(x=>x.key===key).label)+'</span>'
+            ).join(''):'<span class="tag-category-badge is-empty">Sans catégorie</span>';
+            return '<div class="logo-entry tag-category-entry" data-logo-type="tag">'+
+              brandBadge('tag',name)+'<div class="logo-entry-details"><strong class="logo-entry-name">'+safeText(name)+'</strong>'+
+              '<div class="tag-category-badges">'+badges+'</div></div>'+
+              '<button type="button" class="tag-category-edit" data-edit-tag="'+safeText(name)+
+              '" aria-label="Modifier les catégories de '+safeText(name)+'">Modifier</button>'+
+              (profile?'<button type="button" class="icon-btn delete" data-remove-logo="'+safeText(profile.id)+
+               '" aria-label="Supprimer la personnalisation de '+safeText(name)+'">'+ico('trash')+'</button>':'')+'</div>';
+          }).join(''):'<div class="blank-tag" style="padding:10px">Aucun tag enregistré. Ajoute un nom pour le classer.</div>';
+        }else{
+          panel.innerHTML=data.length?data.map(l=>
+            '<div class="logo-entry" data-logo-type="'+safeText(logoType)+'">'+brandBadge(logoType,l.name)+
+            '<span class="logo-entry-name">'+safeText(l.name)+'</span>'+
+            '<button type="button" class="icon-btn delete" data-remove-logo="'+safeText(l.id)+
+            '" aria-label="Supprimer le logo de '+safeText(l.name)+'">'+ico('trash')+'</button></div>'
+          ).join(''):'<div class="blank-tag" style="padding:10px">Aucun logo enregistré dans cette catégorie.</div>';
+        }
+        const list=$('logoNamesList');list.replaceChildren();
         const names=logoType==='rookie'
           ? [...document.querySelectorAll('#cardSport option')].map(o=>o.value).concat(cards.map(c=>c.sport))
           : logoType==='athlete'?savedPlayers().concat(logos.filter(x=>x.type==='athlete').map(x=>x.name))
@@ -1973,7 +2056,23 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
         if(logoType==='team')fillSavedPicker($('logoTeamPicker'),names,'Choisir une équipe enregistrée…');
         if(logoType==='tag')fillSavedPicker($('logoTagPicker'),names,'Choisir un tag enregistré…');
       }
-      async function saveNewLogo(){const name=$('logoName').value.trim();if(!name)return showToast(logoType==='rookie'?'Sélectionne un sport.':logoType==='athlete'?'Renseigne le nom de l’athlète.':logoType==='tag'?'Renseigne le nom du tag.':'Renseigne un nom de marque ou d’équipe.');if(['collector','labels'].includes(logoType))return;if(!pendingLogoPhoto)return showToast(logoType==='athlete'?'Sélectionne un portrait.':'Sélectionne une image de logo.');const id=`${logoType}:${normalize(name)}`;try{await saveLogo({id,type:logoType,name,image:pendingLogoPhoto});setLogoType(logoType);renderAll();showToast('Logo enregistré et associé automatiquement')}catch(e){showToast('Impossible d’enregistrer le logo')}}
+      async function saveNewLogo(){
+        const name=$('logoName').value.trim();
+        if(!name)return showToast(logoType==='rookie'?'Sélectionne un sport.':
+          logoType==='athlete'?'Renseigne le nom de l’athlète.':logoType==='tag'?'Renseigne le nom du tag.':'Renseigne un nom de marque ou d’équipe.');
+        if(['collector','labels'].includes(logoType))return;
+        const existing=logoType==='tag'?tagProfile(name):null;
+        if(logoType!=='tag'&&!pendingLogoPhoto)return showToast(logoType==='athlete'?'Sélectionne un portrait.':'Sélectionne une image de logo.');
+        const id=existing?.id||logoType+':'+normalize(name);
+        const row=logoType==='tag'?
+          {...existing,id,type:'tag',name,image:pendingLogoPhoto||existing?.image||'',categories:currentTagCategories()}:
+          {id,type:logoType,name,image:pendingLogoPhoto};
+        try{
+          await saveLogo(row);
+          setLogoType(logoType);renderAll();
+          showToast(logoType==='tag'?'Catégories du tag enregistrées ✓':'Logo enregistré et associé automatiquement');
+        }catch(e){console.error(e);showToast('Enregistrement impossible. Réessaie.');}
+      }
       document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>closeModal(b.dataset.close)));
       document.querySelectorAll('dialog').forEach(d=>{d.addEventListener('close',()=>{if(!document.querySelector('dialog[open]'))document.body.style.overflow=''})});
       document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
@@ -2066,8 +2165,14 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
         event.target.value='';
       });
       for(const id of ['logoTeamPicker','logoTagPicker'])$(id).addEventListener('change',event=>{
-        if(event.target.value)$('logoName').value=event.target.value;
+        if(event.target.value){
+          $('logoName').value=event.target.value;
+          if(id==='logoTagPicker')syncTagCategoryForm(event.target.value);
+        }
         event.target.value='';
+      });
+      $('logoName').addEventListener('input',event=>{
+        if(logoType==='tag')syncTagCategoryForm(event.target.value.trim());
       });
       $('logoFileInput').addEventListener('change',async e=>{const file=e.target.files[0];if(!file)return;try{pendingLogoPhoto=logoType==='athlete'?await readPhoto(file,620,.86,'portrait'):await readPhoto(file,450,.93,'logo');$('logoFileText').textContent='Prêt ✓';showToast('Logo prêt à enregistrer')}catch(err){showToast(err.message||'Image invalide')}});
       $('saveLogoBtn').addEventListener('click',saveNewLogo);
@@ -2110,9 +2215,29 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
         const row=event.target.closest('[data-label-row]');
         if(row)updateLabelPreview(row);
       });
-      $('logoList').addEventListener('click',async e=>{const btn=e.target.closest('[data-remove-logo]');if(!btn)return;const logo=logos.find(x=>x.id===btn.dataset.removeLogo);if(!logo)return;if(confirm(`Supprimer le logo « ${logo.name} » ? Les cartes seront conservées.`)){try{await removeLogo(logo.id);renderLogos();renderAll();showToast('Logo supprimé')}catch(err){showToast('Suppression impossible')}}});
-      
-      $('clearDemoBtn').addEventListener('click',async()=>{if(!confirm('Supprimer toutes les cartes de démonstration ?'))return;try{for(const c of cards.filter(c=>c.demo))await removeCard(c.id);renderAll();showToast('Exemples supprimés')}catch(e){showToast('Impossible de supprimer les exemples')}});
+      $('logoList').addEventListener('click',async e=>{
+        const edit=e.target.closest('[data-edit-tag]');
+        if(edit){
+          const name=edit.dataset.editTag;
+          $('logoName').value=name;pendingLogoPhoto='';$('logoFileInput').value='';
+          syncTagCategoryForm(name);
+          $('logoName').focus();
+          $('logoCreatePanel').scrollIntoView?.({behavior:'smooth',block:'nearest'});
+          return;
+        }
+        const btn=e.target.closest('[data-remove-logo]');
+        if(!btn)return;
+        const logo=logos.find(x=>x.id===btn.dataset.removeLogo);
+        if(!logo)return;
+        const question=logo.type==='tag'?
+          'Supprimer la personnalisation du tag « '+logo.name+' » (catégories et logo) ? Les cartes restent conservées.':
+          'Supprimer le logo « '+logo.name+' » ? Les cartes seront conservées.';
+        if(confirm(question)){
+          try{await removeLogo(logo.id);renderLogos();renderAll();showToast(logo.type==='tag'?'Personnalisation supprimée':'Logo supprimé');}
+          catch(e){showToast('Suppression impossible');}
+        }
+      });
+            $('clearDemoBtn').addEventListener('click',async()=>{if(!confirm('Supprimer toutes les cartes de démonstration ?'))return;try{for(const c of cards.filter(c=>c.demo))await removeCard(c.id);renderAll();showToast('Exemples supprimés')}catch(e){showToast('Impossible de supprimer les exemples')}});
       document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();if(!document.querySelector('dialog[open]')){$('filterSearch').focus();$('filterSearch').select()}}});
 
 // Shared cloud bridge: independent local state, synced through the RapliLab session.

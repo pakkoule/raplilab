@@ -55,7 +55,7 @@
    return '<article class="honors-achievement"><span class="honors-medal" aria-hidden="true">'+ico+'</span>'+
      '<div><strong>'+esc('#'+number(rank)+' · '+r.name)+'</strong><small>'+esc(details)+'</small></div></article>';
   }).join('');
-  const medalTable=podiums.filter(p=>p.ranked>0||p.podiums>0).map(p=>item('🏅',p.name,
+  const medalTable=podiums.filter(p=>p.ranked>0||p.podiums>0).map(p=>item(p.icon||'🏅',p.label,
    number(p.podiums)+' podium'+(p.podiums>1?'s':''),
    number(p.gold)+' or · '+number(p.silver)+' argent · '+number(p.bronze)+' bronze')).join('');
   const yearly=[...(stats.yearly||[])].filter(y=>y.year!=='Sans date').slice(0,8).map(y=>item('📅',y.year,

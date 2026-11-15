@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#0d2039">
-  <meta name="description" content="Rapli Archives, Sports et Regatta réunis dans un même espace personnel.">
-  <title>RAPLI LAB — Archives, Sports et Regatta</title>
+  <meta name="description" content="Rapli Sports et Rapli Regatta réunis dans un même espace personnel.">
+  <title>RAPLI LAB — Sports et Regatta</title>
   <link rel="icon" type="image/png" sizes="96x96" href="assets/rapli-lab-icon-96.png">
   <link rel="apple-touch-icon" href="assets/rapli-lab-icon-96.png">
   <meta name="apple-mobile-web-app-title" content="Rapli Lab">
@@ -18,14 +18,13 @@ body{background:radial-gradient(ellipse 880px 340px at 50% 0%,rgba(94,155,225,.1
 .portal{width:min(calc(100% - 48px),var(--frame-max));margin:20px auto 28px;border:1px solid var(--frame-border);border-radius:20px;overflow:hidden;background:#fff;box-shadow:0 18px 60px rgba(18,46,85,.13),0 1px 5px rgba(18,46,85,.05)}
 .portal-header{position:relative;display:flex;align-items:center;justify-content:center;min-height:72px;padding:5px 12px 8px;background:linear-gradient(120deg,#09182c,#102e56 54%,#09182c);border-bottom:3px solid var(--accent)}
 .portal-header::before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,transparent 23%,rgba(255,255,255,.045) 52%,transparent 83%)}
-.product-tabs{position:relative;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:min(100%,656px);gap:9px;align-items:center;justify-content:center}
+.product-tabs{position:relative;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:min(100%,656px);gap:9px;align-items:center;justify-content:center}
 .product-tab{position:relative;display:flex;align-items:center;justify-content:center;min-width:0;width:100%;height:54px;padding:3px 8px;background:rgba(255,255,255,.055);border:1px solid rgba(226,239,251,.23);border-radius:11px;cursor:pointer;transition:transform .16s ease,border-color .16s ease,background-color .16s ease,box-shadow .16s ease}
 .product-tab:hover{background:rgba(255,255,255,.13);transform:translateY(-1px)}
 .product-tab:focus-visible{outline:3px solid #fff;outline-offset:2px}
 .product-tab[aria-selected="true"]{border-color:var(--accent);background:rgba(255,255,255,.12);box-shadow:inset 0 0 0 1px var(--accent),0 4px 18px rgba(0,0,0,.17)}
 .product-tab[aria-selected="true"]::after{content:"";position:absolute;left:35%;right:35%;bottom:-10px;height:3px;border-radius:4px;background:var(--accent)}
 .product-tab img{display:block;max-width:100%;height:auto;max-height:46px;object-fit:contain;pointer-events:none}
-.product-tab[data-product="archives"] img{max-width:93px;max-height:45px}
 .frame-wrap{width:100%;min-width:0;background:#fff}
 .app-frame{display:block;width:100%;height:calc(100dvh - 123px);min-height:560px;border:0;background:#fff}
 .app-frame[hidden]{display:none!important}
@@ -36,7 +35,6 @@ body{background:radial-gradient(ellipse 880px 340px at 50% 0%,rgba(94,155,225,.1
   .product-tabs{gap:7px;width:min(100%,625px)}
   .product-tab{height:48px;border-radius:10px;padding:3px 6px}
   .product-tab img{max-height:41px}
-  .product-tab[data-product="archives"] img{max-width:76px;max-height:40px}
   .product-tab[aria-selected="true"]::after{bottom:-9px}
   .app-frame{height:calc(100dvh - 60px);min-height:0}
 }
@@ -44,7 +42,6 @@ body{background:radial-gradient(ellipse 880px 340px at 50% 0%,rgba(94,155,225,.1
   .portal-header{min-height:54px;padding:3px 6px 6px}
   .product-tabs{gap:5px}
   .product-tab{height:44px;border-radius:8px;padding:3px 4px}
-  .product-tab[data-product="archives"] img{max-width:68px;max-height:35px}
   .app-frame{height:calc(100dvh - 54px)}
 }
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
@@ -63,11 +60,11 @@ body{background:radial-gradient(ellipse 880px 340px at 50% 0%,rgba(94,155,225,.1
 /* RAPLI LAB — identité des espaces conservés. */
 body[data-active="sports"]{--accent:#277de7;--frame-bg:#e9f1fc;--frame-border:#b3cde9}
 body[data-active="sports"] .portal-header{background:linear-gradient(115deg,#0b2344,#123d73 52%,#0b2344)}
-.product-tabs{grid-template-columns:repeat(3,minmax(0,1fr));width:min(100%,720px);gap:8px}
+.product-tabs{grid-template-columns:repeat(2,minmax(0,1fr));width:min(100%,720px);gap:8px}
 .product-tab{min-width:0;padding:4px 7px;height:56px}
 @media(max-width:800px){
  .portal-header{min-height:60px;padding:5px 8px 8px}
- .product-tabs{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+ .product-tabs{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
  .product-tab{height:46px}
  .app-frame{height:calc(100dvh - 71px);min-height:0}
 }
@@ -147,8 +144,8 @@ body[data-active="sports"] .portal-header{background:linear-gradient(115deg,#0b2
 body[data-active="regatta"]{--accent:#03bac8;--frame-bg:#ebf7f6;--frame-border:#bedede}
 body[data-active="regatta"] .portal-header{background:linear-gradient(120deg,#102c3f,#006174 53%,#112a40)}
 .product-tab[data-product="regatta"][aria-selected="true"]{background-color:rgba(0,200,212,.16)!important}
-@media(min-width:801px){.product-tabs{grid-template-columns:repeat(6,minmax(0,1fr));width:min(100%,1018px)}}
-/* Mobile: eleven tabs stay on a single swipeable rail without shrinking. */
+@media(min-width:801px){.product-tabs{grid-template-columns:repeat(2,minmax(0,1fr));width:min(100%,1018px)}}
+/* Mobile: both workspaces stay accessible and compact. */
 @media(max-width:800px){
   .portal-header{min-height:0}
   .product-tabs{
@@ -173,8 +170,7 @@ body[data-active="regatta"] .portal-header{background:linear-gradient(120deg,#10
 /* RAPLI LAB — PREMIUM LATERAL BRAND ATMOSPHERE (option C)
    Draw behind the existing portal, without changing its size or iframe behavior. */
 @media (min-width:1100px) {
-  body { --side-theme:#1a416c; --side-logo:url("assets/archives-logo.webp"); background:#050708; isolation:isolate; }
-  body[data-active="archives"] {--side-theme:#1a416c;--side-logo:url("assets/archives-logo.webp")}
+  body { --side-theme:#15519b; --side-logo:url("sports/assets/logo.png"); background:#050708; isolation:isolate; }
   body[data-active="sports"] {--side-theme:#15519b;--side-logo:url("sports/assets/logo.png")}
   body[data-active="regatta"] {--side-theme:#006d7a;--side-logo:url("regatta/assets/logo.webp")}
   body::before,body::after {
@@ -218,7 +214,7 @@ body[data-active="regatta"] .portal-header{background:linear-gradient(120deg,#10
 .portal-header{display:flex;flex-wrap:nowrap;justify-content:center;min-height:72px;padding:7px 12px 9px;gap:0}
 .portal-nav-strip{position:relative;display:flex;align-items:center;justify-content:center;gap:12px;width:100%;max-width:1160px;min-width:0}
 .portal-nav-strip .product-tabs{
-  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
   flex:1 1 auto;width:100%;max-width:1018px;min-width:0;gap:7px;
 }
 .portal-nav-strip .global-cloud-controls{
@@ -274,7 +270,7 @@ body[data-active="regatta"] .portal-header{background:linear-gradient(120deg,#10
 .global-manager-content h3{margin:0 0 7px;font:850 13px/1.25 Inter,system-ui,sans-serif;color:#1c3c5c}
 .global-manager-box{border:1px solid #d3e1ec;border-radius:12px;padding:13px;background:white}
 .global-manager-buttons{display:flex;flex-wrap:wrap;gap:8px;margin-top:9px}
-.global-manager-buttons button,#global-manager-enable,#global-manager-archives-advanced{border-radius:9px;border:1px solid #a9c4de;
+.global-manager-buttons button,#global-manager-enable{border-radius:9px;border:1px solid #a9c4de;
  background:#edf5fc;color:#174d7c;padding:9px 12px;font:800 11px/1.3 Inter,system-ui,sans-serif;cursor:pointer}
 .global-manager-buttons button.primary,#global-manager-enable{background:#153f68;color:#fff;border-color:#153f68}
 .global-manager-buttons button:hover:not(:disabled),#global-manager-enable:hover:not(:disabled){filter:brightness(.95)}
@@ -288,7 +284,7 @@ body[data-active="regatta"] .portal-header{background:linear-gradient(120deg,#10
 #global-manager-state,#global-manager-feedback{padding:8px 10px!important;border-radius:8px;
  background:#eef5fb;border:1px solid #d2e4f1;color:#17496e!important;line-height:1.45!important}
 #global-manager-feedback[data-error=true]{background:#fff1f2;border-color:#e6bbc1;color:#93363f!important}
-#global-manager-conflict[hidden],#global-manager-enable[hidden],#global-pair-create[hidden],#global-manager-archives-advanced-panel[hidden]{display:none!important}
+#global-manager-enable[hidden],#global-pair-create[hidden]{display:none!important}
 #global-manager-conflict{border-color:#e8c8a2;background:#fff8ef}
 #global-manager-conflict h3{color:#8d551e}
 .global-manager-backup-dates{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:11px 0}
@@ -301,7 +297,7 @@ body[data-active="regatta"] .portal-header{background:linear-gradient(120deg,#10
 @media(max-width:420px){.global-manager-backup-dates{grid-template-columns:1fr}}
 @media(max-width:800px){
  .portal-nav-strip{overflow-x:visible;overflow-y:visible;touch-action:auto;gap:6px}
- .portal-nav-strip .product-tabs{flex:1 1 auto;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+ .portal-nav-strip .product-tabs{flex:1 1 auto;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
    width:100%;max-width:none;min-width:0;padding:0;gap:5px}
  .portal-nav-strip .product-tab{flex:none;width:100%;min-width:0;height:43px;padding:3px}
  .portal-nav-strip .global-cloud-controls{flex:0 0 auto;padding:0;align-self:center;gap:4px}
@@ -343,58 +339,56 @@ body[data-active="regatta"] .portal-header{background:linear-gradient(120deg,#10
   <link rel="stylesheet" href="shared/ios-input-focus.css">
   <script defer src="shared/ios-input-focus.js"></script>
 </head>
-<body data-active="archives">
+<body data-active="sports">
   <div class="portal">
     <header class="portal-header">
       <div class="portal-nav-strip">
-      <div class="portal-brand">
-        <img src="assets/rapli-lab-logo.png" alt="Rapli Lab" width="220" height="131" draggable="false">
-      </div>
-      <nav class="product-tabs" role="tablist" aria-label="Choisir le projet Rapli">
-        <button type="button" id="tab-archives" class="product-tab" data-product="archives" role="tab" aria-selected="true" aria-controls="panel-archives" tabindex="0" title="Rapli Archives">
-          <img src="assets/archives-logo.webp" alt="Rapli Archives" width="100" height="57" draggable="false">
-        </button>
-        <button type="button" id="tab-sports" class="product-tab" data-product="sports" role="tab" aria-selected="false" aria-controls="panel-sports" tabindex="-1" title="Rapli Sports — collection de cartes">
-          <img src="sports/assets/logo.png" alt="Rapli Sports" draggable="false">
-        </button>
-        <button type="button" id="tab-regatta" class="product-tab" data-product="regatta" role="tab" aria-selected="false" aria-controls="panel-regatta" tabindex="-1" title="Rapli Regatta — journal de courses">
-          <img src="regatta/assets/logo.webp" alt="Rapli Regatta" draggable="false">
-        </button>
-      </nav>
-
-      <div class="global-cloud-controls" role="group" aria-label="Sauvegardes RapliLab">
-        <button id="global-cloud-manage" type="button" title="Gérer les sauvegardes et associer PC / iPhone" aria-label="Gérer les sauvegardes de tous les onglets">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 3.5H17l2.5 2.5v14.5h-15z"/><path d="M8 3.5v6h8v-6M8 20.5v-7h8v7"/></svg>
-        </button>
-        <button id="global-cloud-save" type="button" title="Enregistrer les trois espaces dans Supabase" aria-label="Enregistrer tous les espaces RapliLab dans le cloud">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18h10a4 4 0 0 0 .65-7.95A6.2 6.2 0 0 0 6 8.6 4.7 4.7 0 0 0 7 18Z"/><path d="M12 10v8m-3-3 3 3 3-3"/></svg>
-        </button>
-        <button id="global-cloud-refresh" type="button" title="Actualiser les trois espaces depuis Supabase" aria-label="Récupérer les modifications de tous les espaces RapliLab depuis le cloud">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14.25-5L3 8.5"/><path d="M3 3.5v5h5"/><path d="M4 13a8 8 0 0 0 14.25 5L21 15.5"/><path d="M21 20.5v-5h-5"/></svg>
-        </button>
-      </div>
+        <div class="portal-brand">
+          <img src="assets/rapli-lab-logo.png" alt="Rapli Lab" width="220" height="131" draggable="false">
+        </div>
+        <nav class="product-tabs" role="tablist" aria-label="Choisir le projet Rapli">
+          <button type="button" id="tab-sports" class="product-tab" data-product="sports" role="tab" aria-selected="true" aria-controls="panel-sports" tabindex="0" title="Rapli Sports — collection de cartes">
+            <img src="sports/assets/logo.png" alt="Rapli Sports" draggable="false">
+          </button>
+          <button type="button" id="tab-regatta" class="product-tab" data-product="regatta" role="tab" aria-selected="false" aria-controls="panel-regatta" tabindex="-1" title="Rapli Regatta — journal de courses">
+            <img src="regatta/assets/logo.webp" alt="Rapli Regatta" draggable="false">
+          </button>
+        </nav>
+        <div class="global-cloud-controls" role="group" aria-label="Sauvegardes RapliLab">
+          <button id="global-cloud-manage" type="button" title="Gérer les sauvegardes et associer PC / iPhone" aria-label="Gérer les sauvegardes des deux espaces">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 3.5H17l2.5 2.5v14.5h-15z"/><path d="M8 3.5v6h8v-6M8 20.5v-7h8v7"/></svg>
+          </button>
+          <button id="global-cloud-save" type="button" title="Enregistrer Sports et Regatta dans Supabase" aria-label="Enregistrer les deux espaces dans le cloud">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18h10a4 4 0 0 0 .65-7.95A6.2 6.2 0 0 0 6 8.6 4.7 4.7 0 0 0 7 18Z"/><path d="M12 10v8m-3-3 3 3 3-3"/></svg>
+          </button>
+          <button id="global-cloud-refresh" type="button" title="Actualiser Sports et Regatta depuis Supabase" aria-label="Actualiser les deux espaces depuis le cloud">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14.25-5L3 8.5"/><path d="M3 3.5v5h5"/><path d="M4 13a8 8 0 0 0 14.25 5L21 15.5"/><path d="M21 20.5v-5h-5"/></svg>
+          </button>
+        </div>
       </div>
     </header>
     <div id="global-cloud-feedback" role="status" aria-live="polite" hidden></div>
     <dialog id="global-cloud-manager" aria-labelledby="global-cloud-manager-title">
       <div class="global-manager-head">
-        <div><h2 id="global-cloud-manager-title">Sauvegardes RapliLab</h2><small>Archives · Sports · Regatta — une seule session Supabase</small></div>
+        <div><h2 id="global-cloud-manager-title">Sauvegardes RapliLab</h2><small>Sports · Regatta — une session Supabase commune</small></div>
         <button type="button" id="global-manager-close" aria-label="Fermer le gestionnaire">×</button>
       </div>
       <div class="global-manager-content">
-        <p>Sauvegarde et récupération communes aux trois onglets. Les données de chaque espace restent séparées et protégées contre les conflits de versions.</p>
-        <section class="global-manager-box" aria-label="Enregistrer ou actualiser les collections">
+        <p>Les deux collections restent séparées. Toute restauration conserve la vérification des conflits et ne remplace jamais silencieusement les données locales.</p>
+        <section class="global-manager-box" aria-label="Synchronisation">
           <h3>Sauvegarde globale</h3>
           <div class="global-manager-buttons">
-            <button type="button" class="primary" id="global-manager-save">Enregistrer les 3 onglets</button>
-            <button type="button" id="global-manager-refresh">Actualiser les 3 onglets</button>
+            <button type="button" class="primary" id="global-manager-save">Enregistrer les 2 onglets</button>
+            <button type="button" id="global-manager-refresh">Actualiser les 2 onglets</button>
           </div>
         </section>
         <section class="global-manager-box" aria-label="Appairage de deux appareils">
           <h3>Relier PC et iPhone</h3>
-          <p id="global-manager-state" role="status" aria-live="polite">Lecture de la session...</p>
-          <button type="button" id="global-manager-enable" hidden>Activer la sauvegarde Supabase</button>
-          <div class="global-manager-buttons"><button type="button" id="global-pair-create" hidden>Générer un code sur cet appareil</button></div>
+          <p id="global-manager-state" role="status" aria-live="polite">Lecture de la session…</p>
+          <button type="button" id="global-manager-enable" hidden>Activer Supabase</button>
+          <div class="global-manager-buttons">
+            <button type="button" id="global-pair-create" hidden>Générer un code sur cet appareil</button>
+          </div>
           <output id="global-pair-output" aria-live="polite"></output>
           <div class="global-manager-buttons">
             <label for="global-pair-input">Code reçu de l’autre appareil
@@ -402,52 +396,14 @@ body[data-active="regatta"] .portal-header{background:linear-gradient(120deg,#10
             </label>
             <button type="button" class="primary" id="global-pair-redeem">Associer cet appareil</button>
           </div>
-          <p style="margin-top:9px">Un code est valable 10 minutes et n’est utilisable qu’une seule fois. L’appairage est commun à RapliLab. Conserve une sauvegarde locale avant de restaurer des données.</p>
-        </section>
-        <section id="global-manager-conflict" class="global-manager-box" hidden aria-label="Résoudre un conflit de sauvegarde Archives">
-          <h3>Deux versions d’Archives différentes</h3>
-          <p>Compare les dates et exporte le JSON de cet appareil avant de choisir. Les dates seules ne prouvent pas quelle version est la plus complète.</p>
-          <div class="global-manager-backup-dates" role="group" aria-label="Dates des sauvegardes Archives">
-            <div class="global-manager-date">
-              <strong>Sur cet appareil</strong>
-              <output id="global-manager-local-date">Date locale inconnue</output>
-              <small id="global-manager-local-edit">Dernière date de fiche : indisponible</small>
-            </div>
-            <div class="global-manager-date">
-              <strong>Dans Supabase</strong>
-              <output id="global-manager-remote-date">Date cloud inconnue</output>
-              <small id="global-manager-remote-revision">Révision : indisponible</small>
-            </div>
-          </div>
-          <p id="global-manager-dates-warning">La date locale est suivie depuis cette mise à jour ; les anciennes sauvegardes peuvent ne pas avoir d’horodatage.</p>
-          <div class="global-manager-buttons">
-            <button type="button" id="global-manager-export-local" class="global-manager-export">Exporter la version locale (JSON)</button>
-            <button type="button" id="global-manager-import-local" class="global-manager-export">Importer une sauvegarde locale (JSON)</button>
-            <input id="global-manager-import-file" type="file" accept=".json,application/json" hidden aria-label="Fichier de sauvegarde Rapli Archives">
-          </div>
-          <div class="global-manager-buttons">
-            <button type="button" id="global-manager-restore" class="primary">Restaurer Archives depuis Supabase</button>
-            <button type="button" id="global-manager-keep-local">Conserver Archives de cet appareil</button>
-          </div>
+          <p style="margin-top:9px">Codes à usage unique, valables 10 minutes. Les données locales de Sports et Regatta ne sont jamais remplacées automatiquement lors de la liaison.</p>
         </section>
         <p id="global-manager-feedback" role="status" aria-live="polite">Aucune action lancée.</p>
-        <button type="button" id="global-manager-archives-advanced" aria-expanded="false" aria-controls="global-manager-archives-advanced-panel">Options avancées / JSON d’Archives ▾</button>
-        <section id="global-manager-archives-advanced-panel" class="global-manager-box" hidden aria-label="Options avancées des sauvegardes Archives">
-          <h3>Options avancées — Archives</h3>
-          <p>Enregistre une copie JSON de ton catalogue actuel ou importe une sauvegarde existante. L’import remplace les données locales uniquement, après vérification et confirmation ; Supabase reste protégé.</p>
-          <div class="global-manager-buttons">
-            <button type="button" id="global-manager-advanced-export">Exporter Archives (JSON)</button>
-            <button type="button" id="global-manager-advanced-import">Importer Archives (JSON)</button>
-          </div>
-        </section>
       </div>
     </dialog>
     <div class="frame-wrap">
-      <section id="panel-archives" role="tabpanel" aria-labelledby="tab-archives">
-        <iframe id="frame-archives" class="app-frame" data-src="archives/index.html" title="Rapli Archives — catalogue Dragon Blanc aux Yeux Bleus" allow="clipboard-read; clipboard-write" loading="eager"></iframe>
-      </section>
-      <section id="panel-sports" role="tabpanel" aria-labelledby="tab-sports" hidden>
-        <iframe id="frame-sports" class="app-frame" data-src="sports/index.html" title="Rapli Sports — cartes de sport" loading="lazy"></iframe>
+      <section id="panel-sports" role="tabpanel" aria-labelledby="tab-sports">
+        <iframe id="frame-sports" class="app-frame" data-src="sports/index.html" title="Rapli Sports — cartes de sport" loading="eager"></iframe>
       </section>
       <section id="panel-regatta" role="tabpanel" aria-labelledby="tab-regatta" hidden>
         <iframe id="frame-regatta" class="app-frame" data-src="regatta/index.html" title="Rapli Regatta — journal de courses" allow="clipboard-read; clipboard-write" loading="lazy"></iframe>
@@ -457,333 +413,201 @@ body[data-active="regatta"] .portal-header{background:linear-gradient(120deg,#10
   <script>
   (() => {
     'use strict';
-    const projects=['archives','sports','regatta'];
-    const tabs=Object.fromEntries(projects.map(name=>[name,document.getElementById('tab-'+name)]));
-    const panels=Object.fromEntries(projects.map(name=>[name,document.getElementById('panel-'+name)]));
-    const frames=Object.fromEntries(projects.map(name=>[name,document.getElementById('frame-'+name)]));
-    let current='archives';
-    // Inactive apps can pause noncritical thumbnail/pixel work without losing state.
-    const sendActivity=(project,isActive)=>{const frame=frames[project];if(frame?.contentWindow&&frame?.src)try{frame.contentWindow.postMessage({type:'RAPLI_APP_ACTIVITY',active:isActive},location.origin)}catch(e){}};
-    const fromHash=()=>{const name=location.hash.slice(1).toLowerCase();return projects.includes(name)?name:'archives';};
-    function select(name, updateHash=false, focus=false) {
-      if(!projects.includes(name))name='archives';
-      current=name;
-      // Do not launch the heavyweight editors (and their model libraries) until visited.
+    const projects=['sports','regatta'];
+    const tabs=Object.fromEntries(projects.map(n=>[n,document.getElementById('tab-'+n)]));
+    const panels=Object.fromEntries(projects.map(n=>[n,document.getElementById('panel-'+n)]));
+    const frames=Object.fromEntries(projects.map(n=>[n,document.getElementById('frame-'+n)]));
+    const names={sports:'Sports',regatta:'Regatta'};
+    let current='sports',cloudBusy=false,requestSequence=0,managerBusy=false;
+    const pause=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+    const sanitize=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
+    const fromHash=()=>projects.includes(location.hash.slice(1).toLowerCase())?location.hash.slice(1).toLowerCase():'sports';
+    function activity(name,active){
       const frame=frames[name];
-      if(!frame.src && frame.dataset.src){frame.src=frame.dataset.src;delete frame.dataset.src;}
+      if(frame?.contentWindow&&frame.src)try{frame.contentWindow.postMessage({type:'RAPLI_APP_ACTIVITY',active},location.origin)}catch(_){}
+    }
+    function select(name,hash=false,focus=false){
+      if(!projects.includes(name))name='sports';
+      current=name;
+      const frame=frames[name];
+      if(!frame.src&&frame.dataset.src){frame.src=frame.dataset.src;delete frame.dataset.src;}
       document.body.dataset.active=name;
       for(const project of projects){
         const active=project===name;
         tabs[project].setAttribute('aria-selected',String(active));
         tabs[project].tabIndex=active?0:-1;
-        panels[project].hidden=!active;
-        frames[project].hidden=!active;
-        sendActivity(project,active);
+        panels[project].hidden=!active;frames[project].hidden=!active;
+        activity(project,active);
       }
-      document.title=({archives:'RAPLI — Archives · Dragon Blanc aux Yeux Bleus',sports:'RAPLI — Sports',regatta:'RAPLI — Regatta'})[name];
-      if(updateHash && location.hash !=='#'+name)history.pushState({project:name},'', '#'+name);
-      // Keep the active tab visible in the one-row mobile scroll rail.
-      if(window.matchMedia('(max-width: 800px)').matches){
+      document.title='RAPLI LAB — '+names[name];
+      if(hash&&location.hash!=='#'+name)history.pushState({project:name},'','#'+name);
+      if(window.matchMedia('(max-width:800px)').matches){
         const rail=document.querySelector('.portal-nav-strip');
-        const selected=tabs[name];
-        const left=Math.max(0,selected.offsetLeft-(rail.clientWidth-selected.offsetWidth)/2);
-        rail.scrollTo({left,behavior:updateHash?'smooth':'auto'});
+        const chosen=tabs[name];
+        rail.scrollTo({left:Math.max(0,chosen.offsetLeft-(rail.clientWidth-chosen.offsetWidth)/2),behavior:hash?'smooth':'auto'});
       }
       if(focus)tabs[name].focus();
     }
     for(const name of projects){
       tabs[name].addEventListener('click',()=>select(name,true));
-      tabs[name].addEventListener('keydown',e=>{
+      tabs[name].addEventListener('keydown',event=>{
         let next;
-        if(e.key==='ArrowRight')next=projects[(projects.indexOf(name)+1)%projects.length];
-        else if(e.key==='ArrowLeft')next=projects[(projects.indexOf(name)+projects.length-1)%projects.length];
-        else if(e.key==='Home')next=projects[0];
-        else if(e.key==='End')next=projects[projects.length-1];
-        if(next){e.preventDefault();select(next,true,true);}
+        if(event.key==='ArrowRight')next=projects[(projects.indexOf(name)+1)%projects.length];
+        if(event.key==='ArrowLeft')next=projects[(projects.indexOf(name)+projects.length-1)%projects.length];
+        if(event.key==='Home')next=projects[0];
+        if(event.key==='End')next=projects[projects.length-1];
+        if(next){event.preventDefault();select(next,true,true);}
       });
+      frames[name].addEventListener('load',()=>activity(name,name===current));
     }
-    addEventListener('popstate',()=>select(fromHash()));
-    addEventListener('hashchange',()=>select(fromHash()));
-    // Re-send state once iframes have finished their first load.
-    for(const name of projects)frames[name].addEventListener('load',()=>sendActivity(name,name===current));
+    window.addEventListener('popstate',()=>select(fromHash()));
+    window.addEventListener('hashchange',()=>select(fromHash()));
     select(fromHash());
-
-    // One global action, executed separately for each isolated private collection.
-    // Lazy iframes are loaded on demand, including the inactive modules.
-    const cloudNames={archives:'Archives',sports:'Sports',regatta:'Regatta'};
-    const cloudSave=document.getElementById('global-cloud-save');
-    const cloudRefresh=document.getElementById('global-cloud-refresh');
-    const cloudFeedback=document.getElementById('global-cloud-feedback');
-    let globalCloudBusy=false,requestSequence=0;
-    const cloudPause=ms=>new Promise(resolve=>setTimeout(resolve,ms));
-    async function ensureCloudFrame(name) {
+    const save=document.getElementById('global-cloud-save'),refresh=document.getElementById('global-cloud-refresh');
+    const feedback=document.getElementById('global-cloud-feedback');
+    async function readyFrame(name){
       const frame=frames[name];
-      if(!frame)throw Error('Onglet introuvable.');
-      if(!frame.src&&frame.dataset.src){
-        frame.loading='eager';
-        frame.src=frame.dataset.src;
-        delete frame.dataset.src;
-      }
+      if(!frame.src&&frame.dataset.src){frame.loading='eager';frame.src=frame.dataset.src;delete frame.dataset.src;}
       const started=Date.now();
-      while(Date.now()-started<45000) {
-        try{
-          const app=frame.contentWindow;
-          const initialized=name==='archives'
-            ? app?.RapliCloud?.isInitialized?.()
-            : app?.RapliModuleBridge?.ready && !!app?.RapliModuleCloud;
-          if(initialized)return frame;
-        }catch(e){ /* Same-origin check, retry while iframe initializes. */ }
-        await cloudPause(200);
+      while(Date.now()-started<45000){
+        try{if(frame.contentWindow?.RapliModuleBridge?.ready&&frame.contentWindow?.RapliModuleCloud)return frame;}catch(_){}
+        await pause(200);
       }
-      throw Error('Application non initialisée. Ouvre cet onglet et réessaie.');
+      throw Error('Application '+names[name]+' non initialisée.');
     }
-    async function syncCloudModule(name,operation) {
-      const frame=await ensureCloudFrame(name);
+    async function oneSync(name,operation){
+      const frame=await readyFrame(name);
       const id='global-'+Date.now().toString(36)+'-'+(++requestSequence)+'-'+name;
       return new Promise((resolve,reject)=>{
         let timeout;
-        function cleanup(){clearTimeout(timeout);window.removeEventListener('message',receive);}
+        const cleanup=()=>{clearTimeout(timeout);window.removeEventListener('message',receive);};
         function receive(event){
-          const data=event.data;
-          if(event.origin!==location.origin||event.source!==frame.contentWindow||
-             data?.type!=='RAPLI_GLOBAL_SYNC_RESULT'||data.id!==id||
-             data.module!==name||data.operation!==operation)return;
-          cleanup();
-          resolve({success:!!data.success,message:String(data.message||''),conflict:!!data.conflict});
+          const d=event.data;
+          if(event.origin!==location.origin||event.source!==frame.contentWindow||d?.type!=='RAPLI_GLOBAL_SYNC_RESULT'||
+            d.id!==id||d.module!==name||d.operation!==operation)return;
+          cleanup();resolve({success:!!d.success,message:String(d.message||''),conflict:!!d.conflict});
         }
         window.addEventListener('message',receive);
         timeout=setTimeout(()=>{cleanup();reject(Error('Délai de synchronisation dépassé'));},120000);
-        try{
-          frame.contentWindow.postMessage({type:'RAPLI_GLOBAL_SYNC_REQUEST',id,module:name,operation},location.origin);
-        }catch(e){cleanup();reject(e);}
+        try{frame.contentWindow.postMessage({type:'RAPLI_GLOBAL_SYNC_REQUEST',id,module:name,operation},location.origin);}
+        catch(e){cleanup();reject(e);}
       });
     }
-    const escapeCloud=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-    function reportGlobalCloud(operation,completed,results) {
-      const errors=results.filter(r=>!r.success);
-      const successes=results.length-errors.length;
+    function reportSync(operation,progress,results){
+      const errors=results.filter(x=>!x.success);
+      feedback.hidden=false;feedback.dataset.status=errors.length?'error':'ok';
       const title=operation==='save'?'Sauvegarde':'Actualisation';
-      const progress=completed<projects.length;
-      cloudFeedback.hidden=false;
-      cloudFeedback.dataset.status=errors.length?'error':'ok';
-      if(progress){
-        cloudFeedback.textContent=title+' globale : '+completed+'/'+projects.length+' espaces vérifiés…';
-      }else{
-        const summary=title+' globale · '+successes+'/'+projects.length+
-          ' espaces '+(successes===projects.length?'synchronisés ✓':'réussis');
-        const detail=errors.length
-          ? '<details open><summary>'+errors.length+' espace(s) à vérifier</summary><ul>'+
-              errors.map(e=>'<li><strong>'+escapeCloud(cloudNames[e.name])+'</strong> : '+escapeCloud(e.message)+'</li>').join('')+
-            '</ul></details>'
-          : '<details><summary>Afficher le détail des trois espaces</summary><ul>'+
-              results.map(e=>'<li>'+escapeCloud(cloudNames[e.name])+' : '+escapeCloud(e.message)+'</li>').join('')+
-            '</ul></details>';
-        cloudFeedback.innerHTML='<strong>'+escapeCloud(summary)+'</strong>'+detail+
-          '<button type="button" class="global-cloud-dismiss" aria-label="Masquer le résultat de la synchronisation" title="Fermer ce message">×</button>';
+      if(progress<projects.length){
+        feedback.textContent=title+' globale : '+progress+'/'+projects.length+' espaces vérifiés…';return;
       }
+      const success=results.length-errors.length;
+      feedback.innerHTML='<strong>'+sanitize(title+' globale · '+success+'/'+projects.length+' espaces vérifiés')+'</strong>'+
+        '<details'+(errors.length?' open':'')+'><summary>'+sanitize(errors.length?errors.length+' espace(s) à vérifier':'Afficher le détail')+'</summary><ul>'+
+        results.map(x=>'<li><strong>'+sanitize(names[x.name])+'</strong> : '+sanitize(x.message)+'</li>').join('')+'</ul></details>'+
+        '<button type="button" class="global-cloud-dismiss" aria-label="Fermer le résultat">×</button>';
     }
-    async function runGlobalCloud(operation) {
-      if(globalCloudBusy)return;
-      globalCloudBusy=true;
-      cloudSave.disabled=cloudRefresh.disabled=true;
-      const active=operation==='save'?cloudSave:cloudRefresh;
-      active.classList.add('is-busy');
-      active.setAttribute('aria-busy','true');
+    async function sync(operation){
+      if(cloudBusy)return [];
+      cloudBusy=true;save.disabled=refresh.disabled=true;
+      const btn=operation==='save'?save:refresh;
+      btn.classList.add('is-busy');btn.setAttribute('aria-busy','true');
       const results=[];
       try{
-        reportGlobalCloud(operation,0,results);
+        reportSync(operation,0,results);
         for(const name of projects){
-          let response;
-          try{response=await syncCloudModule(name,operation);}
-          catch(e){response={success:false,message:e?.message||'Synchronisation indisponible'};}
-          results.push({name,...response});
-          reportGlobalCloud(operation,results.length,results);
+          let outcome;
+          try{outcome=await oneSync(name,operation);}
+          catch(e){outcome={success:false,message:e?.message||'Indisponible'};}
+          results.push({name,...outcome});
+          reportSync(operation,results.length,results);
         }
         return results;
       }finally{
-        globalCloudBusy=false;
-        cloudSave.disabled=cloudRefresh.disabled=false;
-        active.classList.remove('is-busy');
-        active.removeAttribute('aria-busy');
+        cloudBusy=false;save.disabled=refresh.disabled=false;btn.classList.remove('is-busy');btn.removeAttribute('aria-busy');
       }
     }
-    cloudFeedback.addEventListener('click',event=>{
-      if(event.target.closest('.global-cloud-dismiss') && !globalCloudBusy){
-        cloudFeedback.hidden=true;
-      }
-    });
-    cloudSave.addEventListener('click',()=>void runGlobalCloud('save'));
-    cloudRefresh.addEventListener('click',()=>void runGlobalCloud('refresh'));
+    save.addEventListener('click',()=>void sync('save'));
+    refresh.addEventListener('click',()=>void sync('refresh'));
+    feedback.addEventListener('click',e=>{if(e.target.closest('.global-cloud-dismiss')&&!cloudBusy)feedback.hidden=true;});
 
-    // A single diskette manages the secure device-linking flow for every workspace.
-    // The pairing code and credentials stay inside the existing Archives Supabase client.
+    // Device pairing is shared identity infrastructure, not part of any card catalogue.
+    const SUPABASE_URL='https://widiyulvmthbaypdxhbw.supabase.co';
+    const PUBLIC_KEY='sb_publishable_aietige1gJ1QfPZ6HaHiVA_zwqcJYyF';
     const manager=document.getElementById('global-cloud-manager');
-    const managerStatus=document.getElementById('global-manager-state');
-    const managerFeedback=document.getElementById('global-manager-feedback');
-    const managerEnable=document.getElementById('global-manager-enable');
-    const managerPairCreate=document.getElementById('global-pair-create');
-    const managerRedeem=document.getElementById('global-pair-redeem');
-    const managerInput=document.getElementById('global-pair-input');
-    const managerCode=document.getElementById('global-pair-output');
-    const managerConflict=document.getElementById('global-manager-conflict');
-    let managerBusy=false,managerReady=false;
-    const managerActionIds=['global-manager-enable','global-pair-create','global-pair-redeem',
-      'global-manager-save','global-manager-refresh','global-manager-export-local','global-manager-import-local','global-manager-advanced-export','global-manager-advanced-import','global-manager-restore','global-manager-keep-local'];
-    const readableSaveDate=value=>{
-      if(typeof value!=='string'||!value)return null;
-      const date=new Date(value);
-      return Number.isNaN(date.getTime())?null:new Intl.DateTimeFormat('fr-FR',{dateStyle:'medium',timeStyle:'short'}).format(date);
-    };
-    function managerMessage(message,bad=false){
-      managerFeedback.textContent=message;
-      managerFeedback.dataset.error=String(!!bad);
+    const state=document.getElementById('global-manager-state');
+    const result=document.getElementById('global-manager-feedback');
+    const create=document.getElementById('global-pair-create');
+    const redeem=document.getElementById('global-pair-redeem');
+    const input=document.getElementById('global-pair-input');
+    const codeOutput=document.getElementById('global-pair-output');
+    const managerButtons=['global-manager-enable','global-pair-create','global-pair-redeem','global-manager-save','global-manager-refresh'];
+    let client=null,clientUser=null,clientOwner=null,managerPromise=null;
+    const managerMessage=(message,error=false)=>{result.textContent=message;result.dataset.error=String(error);};
+    function setManagerBusy(busy){
+      managerBusy=busy;
+      for(const id of managerButtons){const el=document.getElementById(id);if(el)el.disabled=busy;}
     }
-    function managerRender(state){
-      managerReady=!!state.ready;
-      managerStatus.textContent=!state.ready?(state.status||'Sauvegarde Supabase non activée')
-        :state.linked?'Appareil associé à une collection partagée · '+state.status
-        :'Appareil principal · '+state.status;
-      managerEnable.hidden=!!state.ready;
-      managerPairCreate.hidden=!state.ready||!state.primary;
-      managerConflict.hidden=!state.conflict;
-      const localDate=readableSaveDate(state.localSavedAt);
-      const recordDate=readableSaveDate(state.localEditedAt);
-      const cloudDate=readableSaveDate(state.remoteSavedAt);
-      document.getElementById('global-manager-local-date').textContent=localDate
-        ?'Dernier enregistrement local : '+localDate
-        :'Enregistrement local : date inconnue';
-      document.getElementById('global-manager-local-edit').textContent=recordDate
-        ?'Dernière date de fiche : '+recordDate+' (indicatif)'
-        :'Dernière date de fiche : indisponible';
-      document.getElementById('global-manager-remote-date').textContent=cloudDate
-        ?'Dernière sauvegarde : '+cloudDate
-        :'Dernière sauvegarde : date inconnue';
-      document.getElementById('global-manager-remote-revision').textContent=state.remoteRevision
-        ?'Révision Supabase n° '+state.remoteRevision
-        :'Aucune révision renseignée';
-      const warning=document.getElementById('global-manager-dates-warning');
-      warning.dataset.warning=String(!!state.remoteInfoOutdated);
-      warning.textContent=state.remoteInfoOutdated
-        ?'Supabase a été modifié depuis le chargement de cette version. Recharge Archives avant de choisir une restauration.'
-        :'Dates indicatives : la plus récente n’est pas forcément la plus complète. Une ancienne sauvegarde locale peut ne pas être horodatée.';
-      managerActionIds.forEach(id=>{
-        const button=document.getElementById(id);
-        if(button)button.disabled=managerBusy ||
-          (!state.ready&&id!=='global-manager-enable'&&!['global-manager-save','global-manager-refresh','global-manager-export-local','global-manager-import-local','global-manager-advanced-export','global-manager-advanced-import'].includes(id)) ||
-          (id==='global-pair-create'&&!state.primary) ||
-          (state.remoteInfoOutdated&&['global-manager-restore','global-manager-keep-local'].includes(id));
-      });
+    async function initializeIdentity(){
+      if(!managerPromise)managerPromise=(async()=>{
+        const sdk=await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.83.0/+esm');
+        client=sdk.createClient(SUPABASE_URL,PUBLIC_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}});
+        const session=await client.auth.getSession();
+        if(session.error)throw session.error;
+        let user=session.data.session?.user;
+        if(!user){const signed=await client.auth.signInAnonymously();if(signed.error)throw signed.error;user=signed.data.user;}
+        if(!user?.id)throw Error('Session Supabase indisponible.');
+        clientUser=user.id;
+        const members=await client.from('rapli_archive_members').select('owner_id').eq('member_id',clientUser).maybeSingle();
+        if(members.error)throw members.error;
+        clientOwner=members.data?.owner_id||clientUser;
+      })().catch(error=>{managerPromise=null;throw error;});
+      await managerPromise;
+      const linked=clientUser!==clientOwner;
+      state.textContent=linked?'Appareil associé à la collection partagée':'Appareil principal · connexion Supabase active';
+      create.hidden=linked;
+      document.getElementById('global-manager-enable').hidden=true;
+      return {linked};
     }
-    async function withManager(message,work){
+    async function managerOperation(label,work){
       if(managerBusy)return;
-      managerBusy=true;
-      managerMessage(message);
-      managerActionIds.forEach(id=>{const button=document.getElementById(id);if(button)button.disabled=true;});
-      try{
-        const frame=await ensureCloudFrame('archives');
-        const api=frame.contentWindow.RapliCloud;
-        if(!api?.getManagerState)throw Error('Gestion des sauvegardes Archives non initialisée.');
-        const outcome=await work(api);
-        managerBusy=false;
-        managerRender(api.getManagerState());
-        if(outcome?.message)managerMessage(outcome.message,!!outcome.error);
-        else managerMessage(api.getManagerState().status,!!api.getManagerState().error);
-      }catch(e){
-        managerBusy=false;
-        managerMessage('Gestion des sauvegardes indisponible : '+(e?.message||e),true);
-        managerActionIds.forEach(id=>{const button=document.getElementById(id);if(button)button.disabled=false;});
-      }
+      setManagerBusy(true);managerMessage(label);
+      try{await initializeIdentity();await work();}
+      catch(e){managerMessage('Action impossible : '+(e?.message||'connexion Supabase'),true);}
+      finally{setManagerBusy(false);}
     }
-    function openCloudManager(){
+    document.getElementById('global-cloud-manage').addEventListener('click',()=>{
       if(!manager.open)manager.showModal();
-      managerMessage('Lecture des sauvegardes et de l’appairage...');
-      void withManager('Connexion au gestionnaire...',async api=>{
-        try{await api.refreshBackupInfo?.();}
-        catch(error){return {message:'Dates Supabase non actualisées : '+(error?.message||'connexion indisponible'),error:true};}
-        return {message:api.getManagerState().status};
-      });
-    }
-    document.getElementById('global-cloud-manage').addEventListener('click',openCloudManager);
+      void managerOperation('Connexion à Supabase…',async()=>managerMessage('Session prête.'));
+    });
     document.getElementById('global-manager-close').addEventListener('click',()=>manager.close());
     manager.addEventListener('click',e=>{if(e.target===manager)manager.close();});
-    managerEnable.addEventListener('click',()=>void withManager('Connexion à Supabase...',async api=>{
-      await api.enableManager();
-      const state=api.getManagerState();
-      return {message:state.status,error:!state.ready};
+    document.getElementById('global-manager-enable').addEventListener('click',()=>void managerOperation('Connexion…',async()=>managerMessage('Session prête.')));
+    create.addEventListener('click',()=>void managerOperation('Création du code…',async()=>{
+      const response=await client.functions.invoke('rapli-archives-pair',{body:{action:'issue'}});
+      if(response.error||!response.data?.code)throw Error(response.data?.error||response.error?.message||'Code indisponible');
+      codeOutput.textContent=response.data.code+' · valable 10 minutes';
+      managerMessage('Entre ce code sur l’autre appareil.');
     }));
-    managerPairCreate.addEventListener('click',()=>void withManager('Génération du code...',async api=>{
-      const code=await api.issuePairingCode();
-      if(code)managerCode.textContent=code+' · valable 10 minutes';
-      return {message:code?'Code à saisir sur le second appareil.':api.getManagerState().status,error:!code};
-    }));
-    managerRedeem.addEventListener('click',()=>void withManager('Appairage de cet appareil...',async api=>{
-      const code=managerInput.value.trim();
-      if(!code)return {message:'Saisis le code de liaison reçu de l’autre appareil.',error:true};
-      const linked=await api.redeemPairingCode(code);
-      if(linked){managerInput.value='';managerCode.textContent='';}
-      return {message:linked?'Appareil associé ✓ Choisis la version Archives à conserver, puis actualise les autres onglets.'
-        :api.getManagerState().status,error:!linked};
-    }));
-    // Synchronous same-origin call keeps the download inside Safari's user gesture.
-    function exportArchivesJson(){
-      try{
-        const api=frames.archives?.contentWindow?.RapliCloud;
-        if(!api?.exportLocalSnapshot)throw Error('Archive non initialisée : rouvre Sauvegardes.');
-        const started=api.exportLocalSnapshot();
-        managerMessage(started?'Export JSON de la version locale lancé. Garde ce fichier avant toute restauration.':'Export local indisponible.',!started);
-      }catch(error){managerMessage('Export local impossible : '+(error?.message||error),true);}
-    }
-    document.getElementById('global-manager-export-local').addEventListener('click',exportArchivesJson);
-    document.getElementById('global-manager-advanced-export').addEventListener('click',exportArchivesJson);
-    const importFile=document.getElementById('global-manager-import-file');
-    function chooseArchivesJson(){
-      // Native file picker must open directly during the user's Safari gesture.
-      importFile.click();
-    }
-    document.getElementById('global-manager-import-local').addEventListener('click',chooseArchivesJson);
-    document.getElementById('global-manager-advanced-import').addEventListener('click',chooseArchivesJson);
-    importFile.addEventListener('change',event=>{
-      const file=event.target.files?.[0];
-      event.target.value=''; // Allow retrying the same JSON.
-      if(!file)return;
-      void withManager('Vérification de la sauvegarde locale...',async api=>{
-        if(!api.importLocalSnapshot)throw Error('Import Archives indisponible.');
-        const result=await api.importLocalSnapshot(file);
-        return {message:result?.message||'Import terminé.',error:!!result?.error};
-      });
-    });
-    document.getElementById('global-manager-restore').addEventListener('click',()=>void withManager('Restauration Archives...',async api=>{
-      const restored=await api.restoreFromCloud();
-      return {message:restored?'Archives restaurées ✓ Pour les autres collections, clique « Actualiser les 3 onglets ».'
-        :api.getManagerState().status,error:!restored};
-    }));
-    document.getElementById('global-manager-keep-local').addEventListener('click',()=>void withManager('Envoi de la version locale...',async api=>{
-      const saved=await api.keepLocalVersion();
-      return {message:saved?'Version Archives de cet appareil conservée sur Supabase ✓':api.getManagerState().status,error:!saved};
+    redeem.addEventListener('click',()=>void managerOperation('Association…',async()=>{
+      const code=input.value.trim().toUpperCase();
+      if(!code)throw Error('Saisis le code reçu.');
+      if(!confirm('Associer cet appareil à l’autre ? Les données locales de Sports et Regatta ne seront pas remplacées automatiquement.'))return;
+      const response=await client.functions.invoke('rapli-archives-pair',{body:{action:'redeem',code}});
+      if(response.error||!response.data?.linked)throw Error(response.data?.error||response.error?.message||'Code invalide');
+      input.value='';codeOutput.textContent='';
+      managerMessage('Appareil associé ✓ Recharge Rapli Lab pour utiliser la collection partagée.');
+      // Module cloud clients resolve owner at boot; refresh sessions only on explicit reload.
+      state.textContent='Appareil associé ✓ · recharge la page pour activer le lien';
+      create.hidden=true;
     }));
     for(const operation of ['save','refresh']){
-      document.getElementById('global-manager-'+operation).addEventListener('click',()=>void withManager(
-        operation==='save'?'Sauvegarde des trois onglets...':'Actualisation des trois onglets...',
-        async api=>{
-          const outcomes=await runGlobalCloud(operation);
-          const failed=outcomes.filter(row=>!row.success);
-          return {message:(operation==='save'?'Sauvegarde':'Actualisation')+
-            ' globale : '+(outcomes.length-failed.length)+' / '+projects.length+
-            ' onglets vérifiés'+(failed.length?' · consulte le détail sous la barre des onglets':' ✓'),
-            error:failed.length>0};
+      document.getElementById('global-manager-'+operation).addEventListener('click',()=>void managerOperation(
+        operation==='save'?'Enregistrement…':'Actualisation…',async()=>{
+          const rows=await sync(operation);
+          const failures=rows.filter(x=>!x.success);
+          managerMessage((operation==='save'?'Sauvegarde':'Actualisation')+' : '+(rows.length-failures.length)+'/2 espaces'+(failures.length?' · vérifie le rapport':' ✓'),!!failures.length);
         }));
     }
-    const advancedToggle=document.getElementById('global-manager-archives-advanced');
-    const advancedPanel=document.getElementById('global-manager-archives-advanced-panel');
-    advancedToggle.addEventListener('click',()=>{
-      const expand=advancedPanel.hidden;
-      advancedPanel.hidden=!expand;
-      advancedToggle.setAttribute('aria-expanded',String(expand));
-    });
-    window.addEventListener('message',event=>{
-      if(event.origin!==location.origin || event.source!==frames.archives?.contentWindow)return;
-      if(event.data?.type==='RAPLI_SHOW_BACKUP_MANAGER')openCloudManager();
-    });
   })();
   </script>
   <script defer src="shared/retired-cleanup.js"></script>

@@ -933,7 +933,7 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
 .sports-catalogue-controls .rapli-collapsible-filters .field-label{font-size:8px}
 .sports-catalogue-controls .rapli-collapsible-filters .input,
 .sports-catalogue-controls .rapli-collapsible-filters .select,
-.sports-catalogue-controls .rapli-collapsible-filters .sorter{min-height:35px;height:35px;padding-top:7px;padding-bottom:7px}
+.sports-catalogue-controls .rapli-collapsible-filters .sorter{min-height:35px;height:35px;padding-top:0;padding-bottom:0;line-height:normal}
 .sports-catalogue-controls .rapli-collapsible-filters .toolbar-foot{padding:6px 10px 8px}
 .sports-gallery-switch{margin:0 0 4px;gap:5px}
 .sports-gallery-title{margin-right:3px}
@@ -948,8 +948,17 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
  }
  .sports-catalogue-controls .rapli-collapsible-filters .search-field{grid-column:1/-1}
  .sports-catalogue-controls .rapli-collapsible-filters .filter-number{grid-column:1/-1}
- .sports-catalogue-controls .rapli-collapsible-filters input,
- .sports-catalogue-controls .rapli-collapsible-filters select{font-size:16px}
+ /* iOS 16px text cannot fit in a 35px select with 14px vertical padding. */
+ .sports-catalogue-controls .rapli-collapsible-filters input:not([type="checkbox"]),
+ .sports-catalogue-controls .rapli-collapsible-filters select{
+  box-sizing:border-box;min-height:44px;height:44px;
+  padding-top:0;padding-bottom:0;line-height:normal;font-size:16px;
+  -webkit-text-size-adjust:100%;text-size-adjust:100%;
+ }
+ .sports-catalogue-controls .rapli-collapsible-filters .select{
+  padding-left:11px;padding-right:34px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap
+ }
+ .sports-catalogue-controls .rapli-collapsible-filters .feature-filter-row .select{height:44px;min-height:44px}
  .sports-gallery-switch{margin-bottom:3px}
  #sportsPaginationTop .sports-gallery-pagination{margin:2px auto 6px}
  #sportsPaginationBottom .sports-gallery-pagination{margin:7px auto 2px}
@@ -961,6 +970,21 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
  .sports-catalogue-controls .rapli-collapsible-filters>summary{min-height:35px;padding:6px 8px;font-size:9px}
  .sports-catalogue-controls .rapli-collapsible-filters .filters{grid-template-columns:repeat(2,minmax(0,1fr))}
  .sports-catalogue-controls .rapli-collapsible-filters .filter-sport{grid-column:span 1}
+ /* Do not squeeze the count, clear action and sort into one tiny mobile row. */
+ .sports-catalogue-controls .rapli-collapsible-filters .toolbar-foot{
+   display:grid;grid-template-columns:minmax(0,1fr);gap:5px;align-items:center
+ }
+ .sports-catalogue-controls .rapli-collapsible-filters .results-right{
+   width:100%;min-width:0;display:flex;align-items:center;justify-content:space-between;gap:8px
+ }
+ .sports-catalogue-controls .rapli-collapsible-filters .sorter{
+   flex:0 1 176px;min-width:0;max-width:176px;width:100%;
+   padding:0 27px 0 9px;line-height:normal;
+   appearance:none;-webkit-appearance:none;
+   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%232056d6' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+   background-repeat:no-repeat;background-position:right 7px center;background-size:16px;
+   white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+ }
 }
 </style>
 
@@ -1013,14 +1037,14 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
           <div class="field filter-number"><span class="field-label">NUMÉROTATION</span><label class="check-filter"><input id="filterNumbered" class="custom" type="checkbox"><span class="box-check"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></span> Numérotées</label></div>
           <div class="feature-filter-row" role="group" aria-label="Filtres Auto et Patch">
             <div class="field"><label class="field-label" for="filterAuto">AUTO</label><select class="select" id="filterAuto">
-              <option value="">Toutes les autos</option>
+              <option value="">Toutes</option>
               <option value="with">Avec Auto</option>
               <option value="stickers">Auto Stickers</option>
               <option value="on-card">Auto On Card</option>
               <option value="without">Sans Auto</option>
             </select></div>
             <div class="field"><label class="field-label" for="filterPatch">PATCH</label><select class="select" id="filterPatch">
-              <option value="">Tous les patchs</option>
+              <option value="">Tous</option>
               <option value="with">Avec Patch</option>
               <option value="game-worn">Patch Game Worn</option>
               <option value="not-affiliated">Patch Not Affiliated</option>
@@ -1712,10 +1736,10 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
           fillSavedPicker(el,savedPlayers(),'Choisir un athlète enregistré…'));
       }
       function refreshFilterOptions(){
-        optionList('filterBrand',cards.map(x=>x.brand),'Toutes les marques');
-        optionList('filterTeam',cards.map(x=>x.team),'Toutes les équipes');
-        optionList('filterTag',cards.flatMap(x=>Array.isArray(x.tags)?x.tags:[]),'Toutes les variations');
-        optionList('filterSport',cards.map(x=>x.sport),'Tous les sports');
+        optionList('filterBrand',cards.map(x=>x.brand),'Toutes');
+        optionList('filterTeam',cards.map(x=>x.team),'Toutes');
+        optionList('filterTag',cards.flatMap(x=>Array.isArray(x.tags)?x.tags:[]),'Toutes');
+        optionList('filterSport',cards.map(x=>x.sport),'Tous');
         for(const [id,items] of [['brandsList',savedBrands()],['teamsList',savedTeams()]]){
           const list=$(id);list.replaceChildren();
           for(const value of savedValues(items))list.append(new Option(value,value));

@@ -1034,6 +1034,109 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
 }
 @media(max-width:340px){.tag-category-options{grid-template-columns:1fr}}
 </style>
+
+<style id="rapli-sports-compact-collector-tiles">
+/* Compact Fiches view: visually prioritize an uncropped portrait of the trading card. */
+.cards-grid .card-item{min-height:0}
+.cards-grid .card-item .photo-side{
+  display:flex;align-items:flex-start;padding:6px 0 6px 6px;
+}
+.cards-grid .card-item .card-photo{
+  box-sizing:border-box;flex:0 0 auto;width:100%;height:auto;min-height:0;
+  aspect-ratio:5 / 7;overflow:hidden;border:2px solid transparent;border-radius:12px;
+  padding:3px;
+  background:
+    linear-gradient(#f6f9ff,#eef3fc) padding-box,
+    linear-gradient(145deg,#fff 0%,var(--sport-frame-light,#d6e6f9) 18%,var(--sport-frame,#527eac) 55%,#fff 78%,var(--sport-frame,#527eac) 100%) border-box;
+  box-shadow:0 0 0 1px color-mix(in srgb,var(--sport-frame,#527eac) 30%,transparent),
+    0 3px 10px color-mix(in srgb,var(--sport-frame,#527eac) 12%,transparent),
+    inset 0 0 0 1px #ffffffd9;
+}
+.cards-grid .card-item .card-photo::after{
+  inset:3px;border:1px solid color-mix(in srgb,var(--sport-frame,#527eac) 25%,transparent);
+  border-radius:8px;
+}
+.cards-grid .card-item .card-photo img{
+  display:block;width:100%;height:100%;max-width:100%;max-height:100%;
+  object-fit:contain;object-position:center;
+}
+.cards-grid .card-item .card-info{
+  min-width:0;padding:9px 10px 8px;
+}
+.cards-grid .card-item .card-top{min-height:0;gap:5px;align-items:flex-start}
+.cards-grid .card-item .card-athlete{min-width:0;flex:1 1 0}
+.cards-grid .card-item .player-name-reference{
+  display:flex;align-items:baseline;flex-wrap:wrap;gap:2px 8px;min-width:0
+}
+.cards-grid .card-item .card-athlete .player{
+  min-width:0;margin:0!important;
+  font-size:clamp(13px,1.25vw,19px);line-height:1.22;
+  overflow-wrap:anywhere;
+}
+.cards-grid .card-item .player-extra-names{
+  display:inline;margin:0;white-space:normal;
+  font:750 .68em/1.3 Poppins,system-ui,sans-serif;color:#54718e
+}
+.cards-grid .card-item .player-extra-names::before,
+.cards-grid .card-item .player-extra-names span::before{content:none}
+.cards-grid .card-item .card-ref-inline{
+  display:inline-block;flex:0 1 auto;max-width:100%;
+  margin:0;padding:2px 5px;box-sizing:border-box;
+  border:1px solid #d9e2ed;border-radius:5px;background:#f3f6fb;
+  color:#455a72;font:750 clamp(9px,.8vw,11px)/1.25 'Courier Prime','Courier New',monospace;
+  letter-spacing:0;overflow-wrap:anywhere;
+}
+.cards-grid .card-item .card-controls{gap:1px}
+.cards-grid .card-item .icon-btn{width:25px;height:25px}
+.cards-grid .card-item .icon-btn svg{width:13px;height:13px}
+.cards-grid .card-item .identity-row{margin:5px 0 1px;gap:5px}
+.cards-grid .card-item .identity-logos{gap:7px}
+.cards-grid .card-item .brand-lockup,
+.cards-grid .card-item .team-identity{gap:4px}
+.cards-grid .card-item .brand-lockup img.logo-tiny.has-image{max-width:46px;max-height:25px}
+.cards-grid .card-item .team-identity img.logo-tiny.has-image{max-width:56px;max-height:27px}
+.cards-grid .card-item .sport-chip{font-size:8px;padding:2px 5px}
+.cards-grid .card-item .player-traits{gap:4px;margin:4px 0 1px}
+.cards-grid .card-item .player-trait{font-size:8px;padding:3px 5px;line-height:1.25}
+.cards-grid .card-item .player-trait strong{font-size:inherit}
+.cards-grid .card-item .tags{margin:5px 0 4px;gap:4px;min-height:0}
+.cards-grid .card-item .tag{font-size:8px;padding:3px 5px}
+.cards-grid .card-item .card-tag-logo{height:20px;max-width:50px}
+.cards-grid .card-item .card-bottom{margin-top:auto;padding-top:5px;gap:5px;align-items:center}
+.cards-grid .card-item .move-card{padding:5px 6px;font-size:8px}
+.cards-grid .card-item .collector-row{gap:4px;flex:0 1 auto}
+.cards-grid .card-item .collector-badge{
+  min-width:48px;min-height:34px;padding:3px 5px 2px;border-radius:6px;
+}
+.cards-grid .card-item .collector-badge-main{min-height:19px;font-size:19px}
+.cards-grid .card-item .collector-badge.font-baskerville .collector-badge-main,
+.cards-grid .card-item .collector-badge.font-courier-prime .collector-badge-main,
+.cards-grid .card-item .collector-badge.font-american-typewriter .collector-badge-main{font-size:15px}
+.cards-grid .card-item .collector-badge.font-special-elite .collector-badge-main{font-size:14px}
+.cards-grid .card-item .collector-badge.font-ibm-plex-mono .collector-badge-main{font-size:14px}
+.cards-grid .card-item .collector-badge-caption{font-size:5px;letter-spacing:.04em;margin-top:1px}
+.cards-grid .card-item .collector-rookie-logo{max-width:55px;max-height:35px}
+.cards-grid .card-item .collector-no-number{font-size:8px}
+@media(max-width:750px){
+  .cards-grid .card-item .photo-side{padding:5px 0 5px 5px}
+  .cards-grid .card-item .card-info{padding:8px 8px 7px}
+  .cards-grid .card-item .card-athlete .player{font-size:clamp(12px,3vw,16px)}
+  .cards-grid .card-item .identity-row{margin-top:4px}
+  .cards-grid .card-item .card-bottom{gap:4px}
+  .cards-grid .card-item .collector-badge{min-width:44px;min-height:32px;padding:2px 4px}
+  .cards-grid .card-item .collector-badge-main{font-size:17px;min-height:18px}
+  .cards-grid .card-item .collector-rookie-logo{max-width:46px;max-height:31px}
+}
+@media(max-width:410px){
+  .cards-grid .card-item .card-info{padding:7px 6px 6px}
+  .cards-grid .card-item .card-athlete .player{font-size:13px}
+  .cards-grid .card-item .card-ref-inline{font-size:9px;padding:2px 4px}
+  .cards-grid .card-item .icon-btn{width:23px;height:23px}
+  .cards-grid .card-item .collector-badge{min-width:42px}
+  .cards-grid .card-item .collector-rookie-logo{max-width:40px;max-height:28px}
+}
+</style>
+
 </head>
 <body>
   <div class="app-shell">
@@ -1532,17 +1635,31 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
       function playerCardSummary(card){
         const roster=cardPlayers(card).filter(p=>p.name);
         const first=roster[0]?.name||card.player||'Joueur non renseigné';
-        const names=roster.length>1?
-          '<div class="player-extra-names">'+roster.slice(1).map(p=>'<span>'+safeText(p.name)+'</span>').join('')+'</div>':'';
-        const badges=roster.flatMap(p=>{
+        // Other players share one "+" and are separated with "/" on the same line.
+        const more=roster.length>1?
+          '<span class="player-extra-names">+ '+roster.slice(1).map(p=>safeText(p.name)).join(' / ')+'</span>':'';
+        const autos=roster.flatMap(p=>{
+          if(!p.auto)return [];
           const prefix=roster.length>1?'<strong>'+safeText(p.name)+' ·</strong> ':'';
-          const out=[];
-          if(p.auto)out.push(sportsFeatureBadge('auto',p.auto,prefix));
-          if(p.patch)out.push(sportsFeatureBadge('patch',p.patch,prefix));
-          return out;
+          return [sportsFeatureBadge('auto',p.auto,prefix)];
         });
-        return '<h3 class="player">'+safeText(first)+'</h3>'+names+
-          (badges.length?'<div class="player-traits">'+badges.join('')+'</div>':'');
+        // Several athletes with the same patch type share one badge.
+        // Different patch types retain separate badges and their correct athlete names.
+        const patches=new Map();
+        for(const player of roster){
+          if(!player.patch)continue;
+          if(!patches.has(player.patch))patches.set(player.patch,[]);
+          patches.get(player.patch).push(player.name);
+        }
+        const patchBadges=[...patches].map(([kind,names])=>{
+          const prefix=roster.length>1?'<strong>'+names.map(safeText).join(' / ')+' ·</strong> ':'';
+          return sportsFeatureBadge('patch',kind,prefix);
+        });
+        const badges=[...autos,...patchBadges].filter(Boolean);
+        const reference=String(card.reference||'').trim();
+        return '<div class="player-name-reference"><h3 class="player">'+safeText(first)+more+'</h3>'+
+          (reference?'<span class="card-ref-inline" title="'+safeText(reference)+'">'+safeText(reference)+'</span>':'')+
+          '</div>'+(badges.length?'<div class="player-traits">'+badges.join('')+'</div>':'');
       }
       function normalize(value){return String(value??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim()}
       function safeText(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
@@ -1915,12 +2032,31 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
         return sportsGalleryPageMarkup(groups,g=>sportsGalleryGroupCard(g,sportsGalleryLayout));
       }
 
+
+      // Sport identity palette for a restrained foil-like frame around card photos.
+      // Static values only; no user-provided CSS is injected.
+      const SPORT_PHOTO_FRAMES=Object.freeze({
+        basketball:['#c87936','#ffe3bd'],
+        football:['#247a55','#c6ebd5'],
+        'football americain':['#305ba2','#dae4ff'],
+        baseball:['#af534c','#ffe3db'],
+        hockey:['#4386a9','#d9f3ff'],
+        'formule 1':['#b52e48','#ffd7de'],
+        tennis:['#819e29','#eef6c6'],
+        cyclisme:['#a88624','#fff0b7'],
+        rugby:['#2d7652','#d3ecdc']
+      });
+      function sportFrameStyle(sport){
+        const [tone,light]=SPORT_PHOTO_FRAMES[normalize(sport)]||['#527eac','#d6e6f9'];
+        return '--sport-frame:'+tone+';--sport-frame-light:'+light+';';
+      }
+
       function cardTagMarkup(t){
         const logo=logoFor('tag',t);
         return logo?'<img class="card-tag-logo" src="'+logo+'" alt="'+safeText(t)+'" title="'+safeText(t)+'" loading="lazy">':
           '<span class="tag">'+safeText(t)+'</span>';
       }
-      function cardMarkup(c){const photo=imgSafe(c.photo)?`<img src="${c.photo}" alt="Carte de ${safeText(c.player)}" loading="lazy">`:`<div class="placeholder"><span class="mini-logo">RAPLI / SPORTS</span><div class="place-center">${ico('layers')}</div><span class="place-foot">COLLECTOR'S CARD</span></div>`;const tags=(c.tags||[]).slice(0,8).map(cardTagMarkup).join('')+((c.tags||[]).length>8?`<span class="tag more">+${c.tags.length-8}</span>`:'');return `<article class="card-item${c.status==='wishlist'&&c.dream?' is-dream-card':''}" data-id="${safeText(c.id)}"><div class="photo-side"><div class="card-photo">${photo}${c.demo?'<span class="photo-flag">DÉMO</span>':''}</div></div><div class="card-info"><div class="card-top"><div class="card-athlete">${playerCardSummary(c)}</div><div class="card-controls"><button type="button" class="icon-btn" data-action="edit" data-id="${safeText(c.id)}" aria-label="Modifier cette carte" title="Modifier">${ico('edit')}</button><button type="button" class="icon-btn delete" data-action="delete" data-id="${safeText(c.id)}" aria-label="Supprimer cette carte" title="Supprimer">${ico('trash')}</button></div></div><div class="identity-row"><div class="identity-logos"><div class="brand-lockup">${brandBadge('brand',c.brand)}${logoFor('brand',c.brand)?'':'<span>'+safeText(c.brand||'Sans marque')+'</span>'}</div><div class="team-identity">${c.team?brandBadge('team',c.team):''}${logoFor('team',c.team)?'':'<span>'+safeText(c.team||'Équipe non renseignée')+'</span>'}</div></div>${sportsSportBadge(c.sport)}</div><div class="reference"><small>RÉFÉRENCE</small><span class="reference-code">${safeText(c.reference||'Non renseignée')}</span></div>${c.status==='wishlist'&&c.dream?'<span class="card-dream-badge">✨ DANS MES RÊVES <small>Un jour, peut-être…</small></span>':''}<div class="tags">${tags||'<span class="blank-tag">Aucune variation</span>'}</div><div class="card-bottom">${collectorBadgeMarkup(c)}<button type="button" class="move-card" data-action="move" data-id="${safeText(c.id)}">${c.status==='own'?'→ WISHLIST':'→ OWN'}</button></div></div></article>`}
+      function cardMarkup(c){const photo=imgSafe(c.photo)?`<img src="${c.photo}" alt="Carte de ${safeText(c.player)}" loading="lazy">`:`<div class="placeholder"><span class="mini-logo">RAPLI / SPORTS</span><div class="place-center">${ico('layers')}</div><span class="place-foot">COLLECTOR'S CARD</span></div>`;const tags=(c.tags||[]).slice(0,8).map(cardTagMarkup).join('')+((c.tags||[]).length>8?`<span class="tag more">+${c.tags.length-8}</span>`:'');return `<article class="card-item${c.status==='wishlist'&&c.dream?' is-dream-card':''}" data-id="${safeText(c.id)}"><div class="photo-side"><div class="card-photo" style="${sportFrameStyle(c.sport)}">${photo}${c.demo?'<span class="photo-flag">DÉMO</span>':''}</div></div><div class="card-info"><div class="card-top"><div class="card-athlete">${playerCardSummary(c)}</div><div class="card-controls"><button type="button" class="icon-btn" data-action="edit" data-id="${safeText(c.id)}" aria-label="Modifier cette carte" title="Modifier">${ico('edit')}</button><button type="button" class="icon-btn delete" data-action="delete" data-id="${safeText(c.id)}" aria-label="Supprimer cette carte" title="Supprimer">${ico('trash')}</button></div></div><div class="identity-row"><div class="identity-logos"><div class="brand-lockup">${brandBadge('brand',c.brand)}${logoFor('brand',c.brand)?'':'<span>'+safeText(c.brand||'Sans marque')+'</span>'}</div><div class="team-identity">${c.team?brandBadge('team',c.team):''}${logoFor('team',c.team)?'':'<span>'+safeText(c.team||'Équipe non renseignée')+'</span>'}</div></div>${sportsSportBadge(c.sport)}</div>${c.status==='wishlist'&&c.dream?'<span class="card-dream-badge">✨ DANS MES RÊVES <small>Un jour, peut-être…</small></span>':''}<div class="tags">${tags||'<span class="blank-tag">Aucune variation</span>'}</div><div class="card-bottom">${collectorBadgeMarkup(c)}<button type="button" class="move-card" data-action="move" data-id="${safeText(c.id)}">${c.status==='own'?'→ WISHLIST':'→ OWN'}</button></div></div></article>`}
       const statsEngine=window.RapliSportsStats;
       const statsVisuals=window.RapliSportsStatsVisuals;
       function renderOwnedStatistics(data=statsEngine.calculate(cards)){

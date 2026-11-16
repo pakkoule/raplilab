@@ -2020,6 +2020,20 @@ html:not([data-rapli-role="editor"]) .move-card{display:none!important}
       function tagProfile(name){return logos.find(l=>l.type==='tag'&&normalize(l.name)===normalize(name))}
       // Metadata reusable by future filters/stats; unchanged card records.
       function tagCategories(name){return normalizeTagCategories(tagProfile(name)?.categories)}
+      // Card/display tag order is independent from the order they were selected.
+      // Édition keeps its existing 'collection' storage key for compatibility.
+      const CARD_TAG_ORDER=Object.freeze(['competition','collection','insert','parallel']);
+      function cardTagSortRank(tag){
+        const categories=tagCategories(tag);
+        const ranks=categories.map(category=>CARD_TAG_ORDER.indexOf(category)).filter(rank=>rank>=0);
+        return ranks.length?Math.min(...ranks):CARD_TAG_ORDER.length; // Non défini last.
+      }
+      function compareCardTags(a,b){
+        return cardTagSortRank(a)-cardTagSortRank(b)||collator.compare(String(a),String(b));
+      }
+      function orderedCardTags(tags){
+        return (Array.isArray(tags)?tags:[]).slice().sort(compareCardTags);
+      }
       function tagBrands(name){
         const value=tagProfile(name)?.brands;
         return savedValues((Array.isArray(value)?value:[]).filter(x=>typeof x==='string').map(x=>x.trim().slice(0,100)));
@@ -2855,7 +2869,7 @@ html:not([data-rapli-role="editor"]) .move-card{display:none!important}
         return logo?'<img class="card-tag-logo" src="'+logo+'" alt="'+safeText(t)+'" title="'+safeText(t)+'" loading="lazy">':
           '<span class="tag">'+safeText(t)+'</span>';
       }
-      function cardMarkup(c){const photo=imgSafe(c.photo)?`<img src="${c.photo}" alt="Carte de ${safeText(c.player)}" loading="lazy">`:`<div class="placeholder"><span class="mini-logo">RAPLI / SPORTS</span><div class="place-center">${ico('layers')}</div><span class="place-foot">COLLECTOR'S CARD</span></div>`;const tags=(c.tags||[]).slice(0,8).map(tag=>'<span class="card-tag-entry">'+cardTagMarkup(tag)+'</span>').join('')+
+      function cardMarkup(c){const photo=imgSafe(c.photo)?`<img src="${c.photo}" alt="Carte de ${safeText(c.player)}" loading="lazy">`:`<div class="placeholder"><span class="mini-logo">RAPLI / SPORTS</span><div class="place-center">${ico('layers')}</div><span class="place-foot">COLLECTOR'S CARD</span></div>`;const tags=orderedCardTags(c.tags).slice(0,8).map(tag=>'<span class="card-tag-entry">'+cardTagMarkup(tag)+'</span>').join('')+
         ((c.tags||[]).length>8?`<span class="card-tag-entry"><span class="tag more">+${c.tags.length-8}</span></span>`:'');return `<article class="card-item ${cardTileFoilClass(c)}${c.status==='wishlist'&&c.dream?' is-dream-card':''}" data-id="${safeText(c.id)}"><div class="photo-side"><div class="card-photo" style="${sportFrameStyle(c.sport)}">${photo}${c.demo?'<span class="photo-flag">DÉMO</span>':''}${recentCard(c)?'<span class="sports-new-flag">NEW</span>':''}</div></div><div class="card-info"><div class="card-top"><div class="card-athlete">${playerCardSummary(c)}</div><div class="card-controls"><button type="button" class="icon-btn" data-action="edit" data-id="${safeText(c.id)}" aria-label="Modifier cette carte" title="Modifier">${ico('edit')}</button><button type="button" class="icon-btn delete" data-action="delete" data-id="${safeText(c.id)}" aria-label="Supprimer cette carte" title="Supprimer">${ico('trash')}</button></div></div><div class="identity-row"><div class="identity-logos"><div class="brand-lockup">${brandBadge('brand',c.brand)}${logoFor('brand',c.brand)?'':'<span>'+safeText(c.brand||'Sans marque')+'</span>'}</div><div class="team-identity">${c.team?brandBadge('team',c.team):''}${logoFor('team',c.team)?'':'<span>'+safeText(c.team||'Équipe non renseignée')+'</span>'}</div></div></div><div class="tags">${tags||'<span class="blank-tag">Aucune variation</span>'}</div><div class="card-bottom"><div class="card-status-badges">${collectorBadgeMarkup(c)}${sportsSportBadge(c.sport)}${c.graded?'<span class="sports-grade-badge">🏅 '+safeText(gradeLabel(c))+'</span>':''}${c.status==='wishlist'&&c.dream?'<span class="card-dream-badge"><span class="dream-sparkle" aria-hidden="true">✨</span> DANS MES RÊVES</span>':''}</div><button type="button" class="move-card" data-action="move" data-id="${safeText(c.id)}">${c.status==='own'?'→ WISHLIST':'→ OWN'}</button></div></div></article>`}
       const statsEngine=window.RapliSportsStats;
       const statsVisuals=window.RapliSportsStatsVisuals;
@@ -3151,7 +3165,7 @@ html:not([data-rapli-role="editor"]) .move-card{display:none!important}
         $('cardNumberHint').textContent=wishlist?'Ex. /75 ou /100 · numéro facultatif':'Ex. 12 / 99';
       }
       function addTag(value){const newValue=String(value||'').trim().replace(/^#+/,'');if(!newValue)return;if(!currentTags.some(t=>normalize(t)===normalize(newValue))){if(currentTags.length>=30)return showToast('Maximum de 30 tags par carte.');currentTags.push(newValue.slice(0,60));renderTags()}}
-      function renderTags(){$('editChips').innerHTML=currentTags.map((t,i)=>`<span class="edit-chip">${safeText(t)}<button type="button" data-remove-tag="${i}" aria-label="Supprimer ${safeText(t)}">×</button></span>`).join('')}
+      function renderTags(){const items=currentTags.map((name,index)=>({name,index})).sort((a,b)=>compareCardTags(a.name,b.name)||a.index-b.index);$('editChips').innerHTML=items.map(({name,index})=>`<span class="edit-chip">${safeText(name)}<button type="button" data-remove-tag="${index}" aria-label="Supprimer ${safeText(name)}">×</button></span>`).join('')}
       function processTagInput(){let raw=$('tagField').value.trim();if(raw){raw.split(/[,;]+/).forEach(addTag);$('tagField').value=''}}
       async function readPhoto(file,max=1200,quality=.83,kind='card'){if(!file||!['image/png','image/jpeg','image/webp'].includes(file.type))throw new Error('Utilise une image JPG, PNG ou WEBP.');if(file.size>32*1024*1024)throw new Error('Image trop volumineuse (maximum 32 Mo).');const bitmap=await createImageBitmap(file);const scale=Math.min(1,max/Math.max(bitmap.width,bitmap.height));const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(bitmap.width*scale));canvas.height=Math.max(1,Math.round(bitmap.height*scale));const ctx=canvas.getContext('2d',{alpha:kind==='logo'});ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);bitmap.close?.();return canvas.toDataURL(kind==='logo'?'image/png':'image/jpeg',quality)}
       async function handleCardPhoto(file){try{currentPhoto=await readPhoto(file,1500,.86,'card');renderPhoto();showToast('Photo ajoutée à la carte')}catch(err){showToast(err.message||'Impossible de lire cette image')}}

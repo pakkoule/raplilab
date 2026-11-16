@@ -11,6 +11,16 @@
 - Le Cloud ne sauvegarde plus les changements depuis un appareil visiteur.
 - Les données existantes (54 cartes Sports + 83 logos, Regatta séparé à la date de préparation) restent dans les lignes Supabase actuelles, sans migration des enregistrements.
 
+## Correction du callback localhost et des liens expirés
+
+Dans Supabase **Authentication → URL Configuration** :
+- Définir **Site URL** sur `https://raplilab.netlify.app/` (remplacer `http://localhost:3000`).
+- Ajouter dans **Redirect URLs** :
+  - `https://raplilab.netlify.app/**`
+  - `https://deploy-preview-1--raplilab.netlify.app/**`
+- Dans **Authentication → Email Templates → Magic Link**, vérifier que le lien utilise `{{ .ConfirmationURL }}` (celui-ci inclut la redirection demandée), et non une URL `localhost` ou un lien construit avec `{{ .SiteURL }}` incompatible avec les previews.
+- Un lien qui renvoie `otp_expired` est expiré ou déjà utilisé : il n'est pas récupérable. Demander **un nouveau lien après correction des URLs**, sans multiplier les demandes tant que le quota email Supabase est atteint.
+
 ## Ordre de mise en route obligatoire
 1. Vérifier dans Supabase Auth que l’envoi de liens email est actif et que **https://deploy-preview-1--raplilab.netlify.app/** et **https://raplilab.netlify.app/** sont autorisées dans **Authentication → URL Configuration → Redirect URLs**. Pendant les tests de la PR, ouvrir **https://deploy-preview-1--raplilab.netlify.app/** : le lien e-mail revient à cette preview (et non à la production qui ne possède pas encore la connexion).
 2. Sur le site de test, ouvrir « MODE ÉDITION », entrer l’adresse administrateur et cliquer sur le lien reçu. Vérifier que le footer affiche « Administrateur connecté ».

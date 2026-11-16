@@ -1,0 +1,19 @@
+{
+  "id": "/",
+  "name": "Rapli Lab",
+  "short_name": "Rapli Lab",
+  "description": "Collection Rapli Sports",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#061122",
+  "theme_color": "#061122",
+  "icons": [
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

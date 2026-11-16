@@ -115,6 +115,15 @@
     document.body.style.overflow = 'hidden';
     closeButton.focus({preventScroll:true});
   }
+  // Allow collection widgets to open an existing picture directly without
+  // navigating to the card editor. The caller must validate its source URL.
+  window.RapliPhotoZoom=Object.freeze({
+    openSource(src,alt='Photo de la carte'){
+      if(typeof src!=='string'||!src.trim())return false;
+      open({src,currentSrc:src,alt:String(alt||'Photo de la carte')});
+      return true;
+    }
+  });
   function close() {
     if (!root || root.hidden) return;
     root.hidden = true;

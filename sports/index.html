@@ -1353,6 +1353,46 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
 .sports-rainbow-variant.is-own{background:rgba(213,250,232,.85);border-color:#a8d5c1;color:#1a6148}
 .sports-rainbow-variant.is-wishlist{background:rgba(249,234,255,.85);border-color:#d6bde6;color:#6c418a}
 .sports-rainbow-base-badge{background:rgba(232,255,245,.93);border-color:#a4d6c6;color:#1e6e57}
+/* Rainbow variations: full-row photo preview and elevated numbering chips. */
+.sports-rainbow-variant{
+  display:flex;align-items:center;gap:5px;min-width:0;
+}
+.sports-rainbow-variant-open,
+.sports-rainbow-variant-unlinked{
+  display:flex;flex:1 1 auto;align-items:center;gap:7px;min-width:0;
+  color:inherit;text-align:left;font:inherit;
+}
+.sports-rainbow-variant-open{
+  width:100%;border:0;padding:0;background:transparent;
+  text-decoration:none;cursor:zoom-in;
+}
+.sports-rainbow-variant-open:hover .sports-rainbow-variant-title{
+  text-decoration:underline;text-underline-offset:2px;
+}
+.sports-rainbow-variant-open:focus-visible{
+  outline:2px solid #48af99;outline-offset:3px;border-radius:5px;
+}
+.sports-rainbow-variant-title{min-width:0;flex:1 1 auto;font-weight:850;overflow-wrap:anywhere}
+.sports-rainbow-variant-status{flex:0 0 auto;font-weight:900}
+.sports-rainbow-variant .sports-rainbow-variation-icon{flex:0 0 28px;width:28px}
+.sports-rainbow-print-run{
+  flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;
+  min-width:32px;white-space:nowrap;padding:4px 7px;border-radius:7px;
+  font:900 10px/1.15 Poppins,system-ui,sans-serif;
+  font-variant-numeric:tabular-nums;
+}
+.sports-rainbow-print-run.is-numbered{
+  border:1px solid #a8adbf;color:#2c455c;
+  background:linear-gradient(115deg,#f1f4fb,#cedce9 37%,#fff 61%,#dce5f0 92%);
+  box-shadow:inset 0 1px 0 #fff,0 1px 3px #40617b1c;
+}
+.sports-rainbow-print-run.is-nn{
+  color:#587284;background:rgba(239,244,247,.9);border:1px solid #d0dce3;
+}
+@media(max-width:470px){
+ .sports-rainbow-variant-open,.sports-rainbow-variant-unlinked{gap:5px}
+ .sports-rainbow-print-run{font-size:9px;min-width:28px;padding:3px 5px}
+}
 
 /* Compact premium Rainbow counters: legible, balanced, and consistent with foil tiles. */
 .sports-rainbow-counts{
@@ -1778,7 +1818,7 @@ html:not([data-rapli-role="editor"]) .move-card{display:none!important}
       <label class="input-group">Nom du Rainbow *<input id="rainbowName" class="input" maxlength="160" required placeholder="2025–26 Topps Chrome · Tyrese Maxey #…"></label>
       <div class="sports-rainbow-form-cols"><label class="input-group">Athlète<input id="rainbowAthlete" class="input" maxlength="120" list="rainbowAthleteList" placeholder="Tyrese Maxey"><datalist id="rainbowAthleteList"></datalist></label><label class="input-group">Marque<input id="rainbowBrand" class="input" maxlength="90" list="brandsList" placeholder="Topps"></label></div>
       <label class="input-group">Références acceptées pour ce Rainbow<textarea id="rainbowBaseRef" class="input" rows="3" maxlength="5400" placeholder="Ex. #41 · Topps Chrome\nEx. #41-A · Topps Chrome Autograph"></textarea><span class="field-hint">Une référence par ligne. Les cartes correspondantes seront proposées, même si la référence change entre versions classiques et autographiées.</span></label>
-      <label class="input-group">Checklist des parallèles *<textarea id="rainbowVariants" class="input" rows="7" required placeholder="Base&#10;Refractor&#10;Purple Refractor&#10;Gold Refractor&#10;Superfractor 1/1"></textarea><span class="field-hint">Une variante par ligne, maximum 80. Le 1/1 n'est compté que si tu l'ajoutes à cette checklist.</span></label>
+      <label class="input-group">Checklist des parallèles *<textarea id="rainbowVariants" class="input" rows="7" required placeholder="Base NN&#10;Prism Refractor /150&#10;Purple Refractor /99&#10;Superfractor 1/1"></textarea><span class="field-hint">Une variation par ligne (maximum 80). Un suffixe /150, /99 ou 1/1 affiche le tirage ; NN signifie « non numérotée ». Les lignes sans tirage explicite sont affichées NN.</span></label>
       <div class="sports-rainbow-bind-head"><strong>ASSOCIER LES CARTES AUX PARALLÈLES</strong><p>Associe chaque variante à une carte : son statut OWN ou Wishlist est détecté automatiquement. Coche « Carte de base » à côté de la variation qui doit illustrer la tuile, même si elle porte un autre nom. Une seule case peut être cochée par Rainbow ; décoche-la pour retirer le visuel principal. Sans association, la variante reste manquante.</p><label class="input-group">Chercher parmi les cartes<input id="rainbowCardSearch" class="input" type="search" placeholder="Athlète, parallèle…"></label></div>
       <div id="rainbowVariantLinks" class="sports-rainbow-bind-list"></div>
     </div><div class="modal-footer"><button type="button" class="button button-ghost" data-close="rainbowDialog">Annuler</button><button id="saveRainbowBtn" class="button button-primary" type="submit">Enregistrer le Rainbow</button></div></div></form>
@@ -2794,10 +2834,17 @@ html:not([data-rapli-role="editor"]) .move-card{display:none!important}
             '<div class="sports-rainbow-cover"><span class="sports-rainbow-cover-placeholder">'+(baseCard?'Base<br>sans photo':'Base<br>à associer')+'</span></div>';
           const icons={own:'✓',wishlist:'♡',missing:'○'};
           const variants=group.entries.map(entry=>{
-            const clickable=entry.card?'<button type="button" data-rainbow-open-card="'+safeText(entry.card.id)+'" title="Ouvrir la fiche associée">'+safeText(entry.label)+'</button>':
-              '<strong>'+safeText(entry.label)+'</strong>';
-            return '<div class="sports-rainbow-variant is-'+entry.status+'">'+
-              rainbowVariationIcon(entry)+'<span aria-hidden="true">'+icons[entry.status]+'</span>'+clickable+(entry.isBase?'<span class="sports-rainbow-base-badge" title="Carte sélectionnée pour illustrer le Rainbow">BASE</span>':'')+
+            const numbering=rainbowEngine.variantNumbering(entry.label);
+            const labelText='<span class="sports-rainbow-variant-title">'+safeText(numbering.title)+'</span>'+
+              '<span class="sports-rainbow-print-run'+(numbering.numbered?' is-numbered':' is-nn')+
+              '" title="'+(numbering.numbered?'Tirage limité':'Non numérotée')+'">'+safeText(numbering.badge)+'</span>';
+            const contents=rainbowVariationIcon(entry)+'<span class="sports-rainbow-variant-status" aria-hidden="true">'+icons[entry.status]+'</span>'+labelText;
+            const row=entry.card?
+              '<button type="button" class="sports-rainbow-variant-open" data-rainbow-open-card="'+safeText(entry.card.id)+
+              '" aria-label="Agrandir la photo de '+safeText(entry.label)+'">'+contents+'</button>':
+              '<span class="sports-rainbow-variant-unlinked">'+contents+'</span>';
+            return '<div class="sports-rainbow-variant is-'+entry.status+'">'+row+
+              (entry.isBase?'<span class="sports-rainbow-base-badge" title="Carte sélectionnée pour illustrer le Rainbow">BASE</span>':'')+
               '<span class="sr-only">'+(entry.status==='own'?'Possédée':entry.status==='wishlist'?'Wishlist':'Manquante')+'</span></div>';
           }).join('');
           return '<article class="sports-rainbow-group"><div class="sports-rainbow-cover-row">'+cover+'<div class="sports-rainbow-summary"><div class="sports-rainbow-top"><h3>'+safeText(group.name||'Rainbow sans nom')+'</h3>'+
@@ -3144,7 +3191,15 @@ html:not([data-rapli-role="editor"]) .move-card{display:none!important}
       });
       $('rainbowList').addEventListener('click',async event=>{
         const open=event.target.closest('[data-rainbow-open-card]');
-        if(open){const linked=cards.find(c=>c.id===open.dataset.rainbowOpenCard);if(linked)openCard(linked);return;}
+        if(open){
+          const linked=cards.find(c=>c.id===open.dataset.rainbowOpenCard);
+          if(!linked)return;
+          if(!imgSafe(linked.photo)){showToast('Aucune photo disponible pour cette variation.');return;}
+          if(!window.RapliPhotoZoom?.openSource?.(linked.photo,'Carte de '+String(linked.player||'la variation'))){
+            showToast('Agrandissement photo indisponible.');
+          }
+          return;
+        }
         const edit=event.target.closest('[data-rainbow-edit]');
         if(edit){const group=savedRainbows().find(r=>r.id===edit.dataset.rainbowEdit);if(group)openRainbow(group);return;}
         const del=event.target.closest('[data-rainbow-delete]');

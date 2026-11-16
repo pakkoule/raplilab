@@ -1501,6 +1501,23 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
  .cards-grid .card-item .card-status-badges>.sport-chip{font-size:8px;padding:3px 5px}
 }
 </style>
+<style id="rapli-sports-editor-lock">
+/* Viewer defaults are fail-closed. The server must separately enforce RLS. */
+html:not([data-rapli-role="editor"]) #logosBtn,
+html:not([data-rapli-role="editor"]) #addCardBtn,
+html:not([data-rapli-role="editor"]) #newRainbowBtn,
+html:not([data-rapli-role="editor"]) #clearDemoBtn,
+html:not([data-rapli-role="editor"]) #emptyAddBtn,
+html:not([data-rapli-role="editor"]) #rapli-module-cloud-save,
+html:not([data-rapli-role="editor"]) [data-rainbow-edit],
+html:not([data-rapli-role="editor"]) [data-rainbow-delete],
+html:not([data-rapli-role="editor"]) [data-action="edit"],
+html:not([data-rapli-role="editor"]) [data-action="delete"],
+html:not([data-rapli-role="editor"]) [data-action="move"],
+html:not([data-rapli-role="editor"]) [data-remove-logo],
+html:not([data-rapli-role="editor"]) .card-controls,
+html:not([data-rapli-role="editor"]) .move-card{display:none!important}
+</style>
 </head>
 <body>
   <div class="app-shell">
@@ -1732,6 +1749,12 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
       };
       function ico(key){return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icons[key]||icons.layers}</svg>`}
       $('statIconAll').innerHTML=ico('layers'); $('statIconOwn').innerHTML=ico('check');$('statIconWish').innerHTML=ico('heart');$('statIconNumber').innerHTML=ico('hash');$('emptyIcon').innerHTML=ico('package');
+      const isRapliEditor=()=>window.RapliAdminAccess?.isEditor?.()===true;
+      const requireRapliEditor=()=>{
+        if(isRapliEditor())return true;
+        showToast('Lecture seule · connecte-toi depuis le footer Rapli Lab pour modifier.');
+        return false;
+      };
       let db=null, cards=[], logos=[], currentView='own', currentTags=[], currentPhoto='', editingId=null, logoType='brand', pendingLogoPhoto='', toastTimer=null;
       let sportsGalleryLayout='details',sportsGallerySelected=null,sportsGalleryPage=1;
       const rainbowEngine=window.RapliSportsRainbow;
@@ -2110,10 +2133,10 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
       function transactionGet(store,key){return new Promise((resolve,reject)=>{let r=db.transaction(store,'readonly').objectStore(store).get(key);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
       async function openDb(){return new Promise((resolve,reject)=>{const r=indexedDB.open('rapli-sports-v1',1);r.onupgradeneeded=()=>{const database=r.result;database.createObjectStore('cards',{keyPath:'id'});database.createObjectStore('logos',{keyPath:'id'});database.createObjectStore('meta',{keyPath:'key'})};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);r.onblocked=()=>reject(new Error('Base bloquée'))})}
       async function saveFallback(nextCards=cards,nextLogos=logos){try{localStorage.setItem('rapli-sports-fallback',JSON.stringify({cards:nextCards,logos:nextLogos,initialized:true}))}catch(e){console.warn('Stockage local indisponible',e);showToast('Enregistrement impossible : stockage local indisponible.');throw Error('Stockage local indisponible');}}
-      async function saveCard(record){const next=cards.filter(x=>x.id!==record.id);next.push(record);if(db)await transactionPut('cards',record);else await saveFallback(next,logos);cards=next;window.RapliModuleCloud?.changed?.()}
-      async function removeCard(id){const next=cards.filter(x=>x.id!==id);if(db)await transactionDelete('cards',id);else await saveFallback(next,logos);cards=next;window.RapliModuleCloud?.changed?.()}
-      async function saveLogo(record){const next=logos.filter(x=>x.id!==record.id);next.push(record);if(db)await transactionPut('logos',record);else await saveFallback(cards,next);logos=next;window.RapliModuleCloud?.changed?.()}
-      async function removeLogo(id){const next=logos.filter(x=>x.id!==id);if(db)await transactionDelete('logos',id);else await saveFallback(cards,next);logos=next;window.RapliModuleCloud?.changed?.()}
+      async function saveCard(record){if(!isRapliEditor())throw Error('Modification réservée à l’administrateur.');const next=cards.filter(x=>x.id!==record.id);next.push(record);if(db)await transactionPut('cards',record);else await saveFallback(next,logos);cards=next;window.RapliModuleCloud?.changed?.()}
+      async function removeCard(id){if(!isRapliEditor())throw Error('Modification réservée à l’administrateur.');const next=cards.filter(x=>x.id!==id);if(db)await transactionDelete('cards',id);else await saveFallback(next,logos);cards=next;window.RapliModuleCloud?.changed?.()}
+      async function saveLogo(record){if(!isRapliEditor())throw Error('Modification réservée à l’administrateur.');const next=logos.filter(x=>x.id!==record.id);next.push(record);if(db)await transactionPut('logos',record);else await saveFallback(cards,next);logos=next;window.RapliModuleCloud?.changed?.()}
+      async function removeLogo(id){if(!isRapliEditor())throw Error('Modification réservée à l’administrateur.');const next=logos.filter(x=>x.id!==id);if(db)await transactionDelete('logos',id);else await saveFallback(cards,next);logos=next;window.RapliModuleCloud?.changed?.()}
       function sampleCards(){let ts=Date.now();return [
         {id:'demo-maxey',status:'wishlist',brand:'Topps',player:'Tyrese Maxey',sport:'Basketball',team:'Philadelphia 76ers',reference:'2025–26 · Chrome · #EXEMPLE',tags:['Chrome','Refractor'],numbered:false,serial:'',printRun:'',photo:'',demo:true,createdAt:ts-15000,updatedAt:ts-15000},
         {id:'demo-embiid',status:'own',brand:'Panini',player:'Joel Embiid',sport:'Basketball',team:'Philadelphia 76ers',reference:'Prizm · #EXEMPLE',tags:['Prizm','Silver'],numbered:true,serial:'12',printRun:'99',photo:'',demo:true,createdAt:ts-13000,updatedAt:ts-13000},
@@ -2902,7 +2925,7 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
         try{await saveCard(card);closeModal('cardDialog');renderAll();showToast(prev?'Carte mise à jour':'Carte ajoutée à la collection');}
         catch(err){console.error(err);showToast('Enregistrement impossible. Essaie un export puis une image plus légère.');}
       }
-      async function cardAction(e){const btn=e.target.closest('[data-action]');if(!btn)return;const card=cards.find(x=>x.id===btn.dataset.id);if(!card)return;if(btn.dataset.action==='edit')openCard(card);else if(btn.dataset.action==='delete'){if(confirm(`Supprimer la carte de ${card.player} ?`)){try{await removeCard(card.id);renderAll();showToast('Carte supprimée')}catch(err){showToast('Suppression impossible')}}}else if(btn.dataset.action==='move'){if(card.status==='wishlist'&&card.numbered&&(!/^\d+$/.test(String(card.serial||''))||Number(card.serial)<1||Number(card.serial)>Number(card.printRun))){openCard({...card,status:'own',dream:false});showToast('Pour passer en OWN, indique le numéro individuel de la carte.');return;}try{await saveCard({...card,status:card.status==='own'?'wishlist':'own',dream:false,updatedAt:Date.now(),demo:false});renderAll();showToast('Carte transférée vers '+(card.status==='own'?'WISHLIST':'OWN'))}catch(e){showToast('Transfert impossible')}}}
+      async function cardAction(e){if(!requireRapliEditor())return;const btn=e.target.closest('[data-action]');if(!btn)return;const card=cards.find(x=>x.id===btn.dataset.id);if(!card)return;if(btn.dataset.action==='edit')openCard(card);else if(btn.dataset.action==='delete'){if(confirm(`Supprimer la carte de ${card.player} ?`)){try{await removeCard(card.id);renderAll();showToast('Carte supprimée')}catch(err){showToast('Suppression impossible')}}}else if(btn.dataset.action==='move'){if(card.status==='wishlist'&&card.numbered&&(!/^\d+$/.test(String(card.serial||''))||Number(card.serial)<1||Number(card.serial)>Number(card.printRun))){openCard({...card,status:'own',dream:false});showToast('Pour passer en OWN, indique le numéro individuel de la carte.');return;}try{await saveCard({...card,status:card.status==='own'?'wishlist':'own',dream:false,updatedAt:Date.now(),demo:false});renderAll();showToast('Carte transférée vers '+(card.status==='own'?'WISHLIST':'OWN'))}catch(e){showToast('Transfert impossible')}}}
 
       function showRandomSportsCard(){
         const pool=currentView==='own'||currentView==='wishlist'?filterCards():
@@ -3211,6 +3234,12 @@ const rapliBridge = window.RapliModuleBridge = {
  module:'sports',
  ready:false,
  getState:()=>({records:cards,logos}),
+ previewState:next=>{
+   if(!next||!Array.isArray(next.records)||!Array.isArray(next.logos))throw Error('Collection publique invalide');
+   cards=next.records.map(x=>({...x}));
+   logos=next.logos.map(x=>({...x}));
+   renderAll();
+ },
  notify:msg=>showToast(msg),
  replaceState:async next=>{
    if(!next||!Array.isArray(next.records)||!Array.isArray(next.logos)||
@@ -3245,6 +3274,7 @@ function rapliModuleReady(){
       initialize().then(rapliModuleReady).catch(err=>console.warn('Rapli module startup',err));
     })();
   </script>
+<script src="../shared/admin-access.js" defer></script>
 <script src="../shared/module-cloud.js" defer></script>
   <script src="../shared/photo-zoom.js" defer></script>
 </body>

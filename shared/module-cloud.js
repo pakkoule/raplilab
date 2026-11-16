@@ -68,6 +68,7 @@
     if(bridge.notify)bridge.notify(value);
   }
   async function auth() {
+    await window.RapliAdminAccess?.initialize?.();
     if(!client){
       const sdk=await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.83.0/+esm');
       client=sdk.createClient(SUPABASE_URL,PUBLIC_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}});

@@ -1777,7 +1777,7 @@ html:not([data-rapli-role="editor"]) .move-card{display:none!important}
     <div class="modal-body"><div class="sports-rainbow-form">
       <label class="input-group">Nom du Rainbow *<input id="rainbowName" class="input" maxlength="160" required placeholder="2025–26 Topps Chrome · Tyrese Maxey #…"></label>
       <div class="sports-rainbow-form-cols"><label class="input-group">Athlète<input id="rainbowAthlete" class="input" maxlength="120" list="rainbowAthleteList" placeholder="Tyrese Maxey"><datalist id="rainbowAthleteList"></datalist></label><label class="input-group">Marque<input id="rainbowBrand" class="input" maxlength="90" list="brandsList" placeholder="Topps"></label></div>
-      <label class="input-group">Référence de la carte de base<input id="rainbowBaseRef" class="input" maxlength="180" placeholder="Ex. #23 · 2025–26 Topps Chrome"></label>
+      <label class="input-group">Références acceptées pour ce Rainbow<textarea id="rainbowBaseRef" class="input" rows="3" maxlength="5400" placeholder="Ex. #41 · Topps Chrome\nEx. #41-A · Topps Chrome Autograph"></textarea><span class="field-hint">Une référence par ligne. Les cartes correspondantes seront proposées, même si la référence change entre versions classiques et autographiées.</span></label>
       <label class="input-group">Checklist des parallèles *<textarea id="rainbowVariants" class="input" rows="7" required placeholder="Base&#10;Refractor&#10;Purple Refractor&#10;Gold Refractor&#10;Superfractor 1/1"></textarea><span class="field-hint">Une variante par ligne, maximum 80. Le 1/1 n'est compté que si tu l'ajoutes à cette checklist.</span></label>
       <div class="sports-rainbow-bind-head"><strong>ASSOCIER LES CARTES AUX PARALLÈLES</strong><p>Associe chaque variante à une carte : son statut OWN ou Wishlist est détecté automatiquement. Coche « Carte de base » à côté de la variation qui doit illustrer la tuile, même si elle porte un autre nom. Une seule case peut être cochée par Rainbow ; décoche-la pour retirer le visuel principal. Sans association, la variante reste manquante.</p><label class="input-group">Chercher parmi les cartes<input id="rainbowCardSearch" class="input" type="search" placeholder="Athlète, parallèle…"></label></div>
       <div id="rainbowVariantLinks" class="sports-rainbow-bind-list"></div>
@@ -2785,7 +2785,8 @@ html:not([data-rapli-role="editor"]) .move-card{display:none!important}
           '<span><strong>'+owned+' / '+total+'</strong> parallèles OWN</span>'+
           '<span><strong>'+(total?Math.round(owned/total*100):0)+' %</strong> complétion globale</span></div>';
         $('rainbowList').innerHTML=groups.length?groups.map(group=>{
-          const details=[group.athlete,group.brand,group.baseReference].filter(Boolean).join(' · ');
+          const refs=rainbowEngine.referenceLines(group.baseReferences||group.baseReference);
+          const details=[group.athlete,group.brand,refs.join(' / ')].filter(Boolean).join(' · ');
           const base=rainbowBaseEntry(group),baseCard=base?.card;
           const hasBasePhoto=imgSafe(baseCard?.photo);
           const cover=hasBasePhoto?
@@ -2836,15 +2837,29 @@ html:not([data-rapli-role="editor"]) .move-card{display:none!important}
         const parallel=matching||(parallels.length?parallels.join(' / '):'Sans parallèle');
         return athlete+' · '+parallel;
       }
+      function rainbowReferenceMatches(cardReference,allowedReferences){
+        if(!allowedReferences.length)return true; // Existing unrestricted Rainbow: no forced migration.
+        const compact=value=>normalize(value).replace(/[^a-z0-9]+/g,' ').trim();
+        const current=compact(cardReference);
+        if(!current)return false;
+        // Match complete words/numbers, allowing case, punctuation and spacing differences,
+        // but avoid false matches such as #41 being confused with #410.
+        return allowedReferences.some(ref=>{
+          const expected=compact(ref);
+          return !!expected&&(' '+current+' ').includes(' '+expected+' ');
+        });
+      }
       function renderRainbowLinks(){
         const names=rainbowEngine.variantLines($('rainbowVariants').value);
         if(!names.some(label=>normalize(label)===rainbowBaseVariant))rainbowBaseVariant='';
         const brand=normalize($('rainbowBrand').value),athlete=normalize($('rainbowAthlete').value);
+        const references=rainbowEngine.referenceLines($('rainbowBaseRef').value);
         const search=normalize($('rainbowCardSearch').value);
         let matches=cards.filter(card=>{
           if(brand&&normalize(card.brand)!==brand)return false;
           if(athlete&&!cardPlayers(card).some(p=>normalize(p.name).includes(athlete)))return false;
-          if(search&&!matchesFuzzy(search,[card.brand,card.player,card.reference,...(card.tags||[])]))return false;
+          if(!rainbowReferenceMatches(card.reference,references))return false;
+          if(search&&!matchesFuzzy(search,[...cardPlayers(card).map(p=>p.name),card.reference,...(card.tags||[])]))return false;
           return true;
         }).sort((a,b)=>collator.compare(a.player||'',b.player||''));
         matches=matches.slice(0,100);
@@ -2871,7 +2886,7 @@ html:not([data-rapli-role="editor"]) .move-card{display:none!important}
         $('rainbowName').value=clean?.name||'';
         $('rainbowAthlete').value=clean?.athlete||'';
         $('rainbowBrand').value=clean?.brand||'';
-        $('rainbowBaseRef').value=clean?.baseReference||'';
+        $('rainbowBaseRef').value=(clean?.baseReferences||[]).join('\n');
         $('rainbowVariants').value=(clean?.variants||[]).map(v=>v.label).join('\n');
         $('rainbowCardSearch').value='';
         const list=$('rainbowAthleteList');list.replaceChildren();
@@ -2892,7 +2907,7 @@ html:not([data-rapli-role="editor"]) .move-card{display:none!important}
         const group=rainbowEngine.cleanGroup({
           id:prior?.id||'rainbow:'+uid(),name,
           brand:$('rainbowBrand').value,athlete:$('rainbowAthlete').value,
-          baseReference:$('rainbowBaseRef').value,
+          baseReferences:rainbowEngine.referenceLines($('rainbowBaseRef').value),
           variants:variants.map(label=>({label,cardId:rainbowAssignments.get(normalize(label))||'',isBase:normalize(label)===rainbowBaseVariant})),
           createdAt:prior?.createdAt||Date.now(),updatedAt:Date.now()
         });
@@ -3114,6 +3129,7 @@ html:not([data-rapli-role="editor"]) .move-card{display:none!important}
       $('newRainbowBtn').addEventListener('click',()=>openRainbow());
       $('rainbowForm').addEventListener('submit',submitRainbow);
       $('rainbowVariants').addEventListener('input',()=>{readRainbowAssigned();renderRainbowLinks();});
+      $('rainbowBaseRef').addEventListener('input',()=>{readRainbowAssigned();renderRainbowLinks();});
       $('rainbowCardSearch').addEventListener('input',()=>{readRainbowAssigned();renderRainbowLinks();});
       for(const id of ['rainbowAthlete','rainbowBrand'])$(id).addEventListener('input',()=>{readRainbowAssigned();renderRainbowLinks();});
       $('rainbowVariantLinks').addEventListener('change',event=>{

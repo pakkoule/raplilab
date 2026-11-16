@@ -527,6 +527,9 @@ body::before{display:none!important}
 .sports-player-country{display:grid;gap:5px;color:#a4bddb;font-size:9px;letter-spacing:.035em;font-weight:800;margin:6px 0}
 .sports-player-country .input{width:100%;max-width:160px}
 .sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+
+/* Hidden wishlist-only control must stay hidden across author CSS layers. */
+#filterDreamWrap[hidden]{display:none!important}
 </style>
 <style id="rapli-cloud-module-controls">
 .rapli-utility-strip .rapli-cloud-module-group{display:flex;align-items:center;gap:6px;margin-right:auto;min-width:0}
@@ -2142,7 +2145,7 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
           (recentCard(item)?'<span class="sports-gallery-new">NEW</span>':'')+
          (item.status==='wishlist'&&item.dream?'<span class="sports-gallery-dream">✨ RÊVE</span>':'')+
          (tagLogos?'<span class="sports-gallery-tags">'+tagLogos+'</span>':'')+'</span>'+
-         '<span class="sports-gallery-caption"><strong>'+safeText(item.player||'Sans athlète')+'</strong>'+
+         '<span class="sports-gallery-caption"><strong>'+safeText(item.player||'Sans athlète')+(cardPlayers(item)[0]?.nationality?' '+flagFor(cardPlayers(item)[0].nationality):'')+'</strong>'+
          (sub?'<small>'+safeText(sub)+'</small>':'')+
          (item.reference?'<span class="sports-gallery-reference">'+safeText(item.reference)+'</span>':'')+
           (item.graded?'<span class="sports-grade-badge">🏅 '+safeText(gradeLabel(item))+'</span>':'')+

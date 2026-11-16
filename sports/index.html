@@ -2075,6 +2075,150 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
   }
 }
 </style>
+
+<style id="rapli-sports-pr1-mobile-gallery-fixes">
+/* Collection groups: 3 minimum across all devices, FICHES and VIGNETTES unaffected. */
+#cardGrid.is-gallery-layout .sports-gallery-grid.is-group-gallery{
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:12px;
+}
+#cardGrid.is-gallery-layout .is-group-gallery .sports-gallery-group{padding:4px}
+#cardGrid.is-gallery-layout .is-group-gallery .sports-gallery-group-picture{
+  position:relative;display:grid;place-items:center;
+  aspect-ratio:1.25 / 1;padding:0;min-width:0;overflow:hidden;
+}
+/* Use an absolute, padded contain frame: no tall logo or portrait can be cropped.
+   Includes teams, brands, editions, inserts, athletes, etc. */
+#cardGrid.is-gallery-layout .is-group-gallery .sports-gallery-group-picture img,
+#cardGrid.is-gallery-layout .is-group-gallery .sports-gallery-group[data-group-type=athlete] .sports-gallery-group-picture img{
+  position:absolute!important;top:7px!important;left:7px!important;right:7px!important;bottom:7px!important;
+  display:block;width:calc(100% - 14px)!important;height:calc(100% - 14px)!important;
+  max-width:none!important;max-height:none!important;
+  object-fit:contain!important;object-position:center!important;
+  border:0!important;border-radius:0!important;
+  z-index:1;
+}
+#cardGrid.is-gallery-layout .is-group-gallery .sports-gallery-group-info{
+  gap:2px;padding:9px 7px 8px;
+}
+#cardGrid.is-gallery-layout .is-group-gallery .sports-gallery-group-info strong{
+  font:800 clamp(10px,1.1vw,13px)/1.2 Poppins,system-ui,sans-serif;
+  letter-spacing:-.02em;
+}
+#cardGrid.is-gallery-layout .sports-gallery-group-kicker{font-size:7px}
+#cardGrid.is-gallery-layout .sports-gallery-group-count{font-size:8px}
+#cardGrid.is-gallery-layout .sports-gallery-group-count b{font-size:11px}
+
+/* VIGNETTES: the card photo is the whole tile, with only the athlete name overlay. */
+#cardGrid.is-gallery-layout .sports-gallery-grid:not(.is-group-gallery) .sports-gallery-tile{
+  padding:4px;min-width:0;
+}
+#cardGrid.is-gallery-layout .sports-gallery-grid:not(.is-group-gallery) .sports-gallery-card-action{
+  display:block;min-width:0;border-radius:11px;overflow:hidden;
+}
+#cardGrid.is-gallery-layout .sports-gallery-grid:not(.is-group-gallery) .sports-gallery-media{
+  position:relative;display:grid;place-items:center;aspect-ratio:2.7 / 4;
+  padding:4px;border-radius:10px;overflow:hidden;
+  background:linear-gradient(145deg,#283b4d,#101c2f 55%,#314658);
+}
+#cardGrid.is-gallery-layout .sports-gallery-grid:not(.is-group-gallery) .sports-gallery-media img{
+  display:block;width:100%;height:100%;max-width:100%;max-height:100%;
+  object-fit:contain;object-position:center;
+}
+#cardGrid.is-gallery-layout .sports-gallery-grid:not(.is-group-gallery) .sports-gallery-media::before{
+  content:"";position:absolute;inset:auto 0 0;height:34%;
+  background:linear-gradient(180deg,transparent,rgba(5,18,30,.66) 73%,rgba(3,12,23,.82));
+  pointer-events:none;z-index:3;
+}
+#cardGrid.is-gallery-layout .sports-gallery-athlete-foil{
+  position:absolute;bottom:8px;left:9px;right:7px;z-index:4;
+  text-align:left;overflow-wrap:anywhere;
+  font:900 clamp(10px,1.2vw,15px)/1.16 Poppins,system-ui,sans-serif;
+  letter-spacing:-.028em;
+  background:linear-gradient(105deg,#fff 0%,#dceff5 24%,#fadfb1 48%,#e0d2fa 69%,#b7f3e2 88%,#fff 100%);
+  background-clip:text;-webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;color:#f5f9fb;
+  filter:drop-shadow(0 1px 2px #071222) drop-shadow(0 0 3px rgba(7,21,36,.65));
+  pointer-events:none;
+}
+/* Compact header: keep all four collection tabs on one line. */
+.section-nav .sports-stats-tab-short{display:none}
+@media(max-width:750px){
+  #cardGrid.is-gallery-layout .sports-gallery-grid.is-group-gallery{
+    grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;
+  }
+  #cardGrid.is-gallery-layout .is-group-gallery .sports-gallery-group-picture{
+    aspect-ratio:1.2 / 1;padding:0;
+  }
+  #cardGrid.is-gallery-layout .is-group-gallery .sports-gallery-group-info{padding:8px 5px 7px}
+  #cardGrid.is-gallery-layout .is-group-gallery .sports-gallery-group-info strong{
+    font-size:clamp(9px,2.4vw,11px);line-height:1.18;
+  }
+  #cardGrid.is-gallery-layout .sports-gallery-group-kicker{font-size:7px;letter-spacing:.04em}
+  #cardGrid.is-gallery-layout .sports-gallery-group-count{font-size:7px;gap:3px}
+  #cardGrid.is-gallery-layout .sports-gallery-group-count b{font-size:10px}
+  #cardGrid.is-gallery-layout .sports-gallery-athlete-foil{font-size:clamp(10px,2.6vw,13px);left:7px;bottom:7px}
+  .section-nav{grid-template-columns:42px minmax(0,1fr);gap:5px}
+  .section-nav .sports-lab-brand{width:42px;min-width:0}
+  .section-nav .sports-lab-brand img{width:42px;height:42px}
+  .section-nav .tabs{display:flex;flex-wrap:nowrap;gap:2px;width:100%;max-width:100%;min-width:0;justify-content:space-between}
+  .section-nav .tabs .tab{
+    min-width:0;flex:1 1 0;gap:3px;padding:9px 2px 11px;
+    font-size:clamp(8px,1.7vw,10px);letter-spacing:0;white-space:nowrap;
+  }
+  .section-nav .tabs .tab b{font-size:8px;line-height:1.2;padding:2px 3px}
+  .section-nav .tabs .tab.active::after{left:4px;right:4px}
+
+  /* Search, filter summary and the three actions fit the same toolbar row. */
+  .sports-catalogue-controls{
+    display:grid;grid-template-columns:max-content minmax(62px,75px) minmax(0,1fr);
+    column-gap:5px;row-gap:6px;align-items:start;min-width:0;
+  }
+  .sports-catalogue-controls>.nav-actions{grid-column:1;grid-row:1;gap:3px}
+  .sports-catalogue-controls .sports-icon-action{
+    width:clamp(27px,5.5vw,34px);height:36px;min-height:36px;border-radius:9px;
+  }
+  .sports-catalogue-controls>.rapli-collapsible-filters:not([open]){
+    grid-column:2;grid-row:1;min-width:0;width:100%;max-width:100%;justify-self:stretch;
+  }
+  .sports-catalogue-controls .rapli-collapsible-filters>summary{
+    min-height:36px;padding:6px 4px;gap:2px;justify-content:center;font-size:9px;
+  }
+  .sports-catalogue-controls>.sports-catalogue-search{
+    grid-column:3;grid-row:1;min-width:0;width:100%;align-self:start;
+  }
+  .sports-catalogue-search .input-wrap{width:100%;min-width:0}
+  .sports-catalogue-search .input-wrap svg{left:8px;width:15px;height:15px}
+  .sports-catalogue-search .input.with-icon{
+    box-sizing:border-box;display:block;min-width:0;width:100%;
+    height:36px;min-height:36px;padding:0 4px 0 27px;
+    font-size:16px;white-space:nowrap;text-overflow:ellipsis;
+  }
+  .sports-catalogue-controls>.rapli-collapsible-filters[open]{
+    grid-column:1/-1;grid-row:2;width:100%;max-width:100%;
+  }
+}
+@media(max-width:400px){
+  .section-nav{grid-template-columns:34px minmax(0,1fr);gap:3px}
+  .section-nav .sports-lab-brand{width:34px}
+  .section-nav .sports-lab-brand img{width:34px;height:38px}
+  .section-nav .tabs .tab{font-size:9px;padding:8px 1px 10px;gap:2px}
+  .section-nav .sports-stats-tab-full{display:none}
+  .section-nav .sports-stats-tab-short{display:inline}
+  .sports-catalogue-controls{grid-template-columns:max-content 61px minmax(0,1fr);column-gap:4px}
+  .sports-catalogue-controls .sports-icon-action{width:28px;height:34px;min-height:34px}
+  .sports-catalogue-controls .rapli-collapsible-filters>summary{font-size:8px;min-height:34px}
+  .sports-catalogue-search .input.with-icon{height:34px;min-height:34px}
+  #cardGrid.is-gallery-layout .is-group-gallery .sports-gallery-group-picture img,
+  #cardGrid.is-gallery-layout .is-group-gallery .sports-gallery-group[data-group-type=athlete] .sports-gallery-group-picture img{
+    top:5px!important;left:5px!important;right:5px!important;bottom:5px!important;
+    width:calc(100% - 10px)!important;height:calc(100% - 10px)!important;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  #cardGrid.is-gallery-layout .sports-gallery-athlete-foil{transition:none}
+}
+</style>
 </head>
 <body>
   <div class="app-shell">
@@ -2087,7 +2231,7 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
             <button type="button" role="tab" aria-selected="true" class="tab active" data-view="own">OWN <b id="tabOwnCount">0</b></button>
             <button type="button" role="tab" aria-selected="false" class="tab" data-view="wishlist">WISHLIST <b id="tabWishCount">0</b></button>
             <button type="button" role="tab" aria-selected="false" class="tab" data-view="rainbow">🌈 RAINBOW <b id="tabRainbowCount">0</b></button>
-            <button type="button" role="tab" aria-selected="false" class="tab" data-view="stats">STATISTIQUES</button>
+            <button type="button" role="tab" aria-selected="false" class="tab" data-view="stats"><span class="sports-stats-tab-full">STATISTIQUES</span><span class="sports-stats-tab-short" aria-hidden="true">STATS</span></button>
           </div>
         </div>
         <div id="collectionPanel">
@@ -2125,7 +2269,7 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
         </div>
         <div class="toolbar-foot"><span class="results-label" id="resultsLabel">0 carte</span><div class="results-right"><button id="clearFiltersBtn" type="button" class="link-btn">Effacer les filtres</button><select id="sortSelect" class="sorter" aria-label="Trier les cartes"><option value="recent">Plus récentes</option><option value="name">Joueur A – Z</option><option value="brand">Marque A – Z</option><option value="team">Équipe A – Z</option></select></div></div>
         </details>
-        <div class="field search-field sports-catalogue-search"><label class="field-label" for="filterSearch">RECHERCHE</label><div class="input-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input class="input with-icon" id="filterSearch" type="search" autocomplete="off" placeholder="Joueur, référence, marque, sport, tag, /75…" aria-label="Rechercher dans toutes les informations des cartes"></div></div>
+        <div class="field search-field sports-catalogue-search"><label class="field-label" for="filterSearch">RECHERCHE</label><div class="input-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input class="input with-icon" id="filterSearch" type="search" autocomplete="off" placeholder="Rechercher une carte…" aria-label="Rechercher dans toutes les informations des cartes"></div></div>
         </div>
         <div id="sportsGalleryToolbar" class="sports-gallery-switch" role="group" aria-label="Mode de consultation des cartes">
           <span class="sports-gallery-title">VUE</span>
@@ -3118,27 +3262,18 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
         return isOneOfOne?'card-foil-gold':'card-foil-silver';
       }
       function sportsGalleryCard(item){
-        const photo=imgSafe(item.photo)?'<img src="'+item.photo+'" alt="Photo de '+safeText(item.player||'la carte')+'" loading="lazy" decoding="async">':
-          '<div class="sports-gallery-placeholder">'+ico('layers')+'<span>PHOTO NON AJOUTÉE</span></div>';
-        const sub=[item.brand,item.team].filter(Boolean).join(' · ');
-        const tagLogos=(item.tags||[]).slice(0,5).map(t=>{
-          const logo=logoFor('tag',t);
-          return logo?'<img src="'+logo+'" alt="'+safeText(t)+'" title="'+safeText(t)+'" loading="lazy">':'';
-        }).filter(Boolean).join('');
-        return '<article class="sports-gallery-tile '+cardTileFoilClass(item)+(item.rookie===true?' is-rookie-card':'')+(item.status==='wishlist'&&item.dream?' is-dream-gallery':'')+'" data-card-id="'+safeText(item.id)+'">'+
-         '<span class="sports-tile-corners" aria-hidden="true"></span>'+
-         '<button type="button" class="sports-gallery-card-action" data-sports-gallery-card="'+safeText(item.id)+'" aria-label="Ouvrir la fiche de '+safeText(item.player||'cette carte')+'">'+
-         '<span class="sports-gallery-media">'+photo+(item.demo?'<span class="photo-flag">DÉMO</span>':'')+
-         (item.status==='own'&&!item.demo?'<span class="sports-gallery-own">OWN</span>':'')+
-          (recentCard(item)?'<span class="sports-gallery-new">NEW</span>':'')+
-         (item.status==='wishlist'&&item.dream?'<span class="sports-gallery-dream">✨ RÊVE</span>':'')+
-         (tagLogos?'<span class="sports-gallery-tags">'+tagLogos+'</span>':'')+'</span>'+
-         '<span class="sports-gallery-caption"><strong>'+safeText(item.player||'Sans athlète')+(cardPlayers(item)[0]?.nationality?' '+flagFor(cardPlayers(item)[0].nationality):'')+'</strong>'+
-         (sub?'<small>'+safeText(sub)+'</small>':'')+
-         (item.reference?'<span class="sports-gallery-reference">'+safeText(item.reference)+'</span>':'')+
-         (item.numbered&&/^\d+$/.test(String(item.printRun||''))?'<span class="sports-gallery-numbering">'+(item.serial?safeText(item.serial):'')+'/'+safeText(item.printRun)+'</span>':'')+
-          (item.graded?'<span class="sports-grade-badge">🏅 '+safeText(gradeLabel(item))+'</span>':'')+
-         (item.sport?'<span class="sports-gallery-sport">'+sportsSportBadge(item.sport)+'</span>':'')+'</span></button></article>';
+        const photo=imgSafe(item.photo)?
+          '<img src="'+item.photo+'" alt="Carte de '+safeText(item.player||'cet athlète')+'" loading="lazy" decoding="async">':
+          '<span class="sports-gallery-placeholder">'+ico('layers')+'</span>';
+        const athlete=cardPlayers(item).map(p=>p.name).filter(Boolean).join(' / ')||item.player||'Athlète non renseigné';
+        return '<article class="sports-gallery-tile '+cardTileFoilClass(item)+(item.rookie===true?' is-rookie-card':'')+
+          (item.status==='wishlist'&&item.dream?' is-dream-gallery':'')+'" data-card-id="'+safeText(item.id)+'">'+
+          '<span class="sports-tile-corners" aria-hidden="true"></span>'+
+          '<button type="button" class="sports-gallery-card-action" data-sports-gallery-card="'+safeText(item.id)+
+          '" aria-label="Ouvrir la fiche de '+safeText(athlete)+'">'+
+          '<span class="sports-gallery-media">'+photo+
+          '<span class="sports-gallery-athlete-foil">'+safeText(athlete)+'</span>'+
+          '</span></button></article>';
       }
       function sportsGalleryGroupCard(group,type){
         const isCategoryView=Boolean(SPORTS_TAG_GALLERY_TYPES[type]);

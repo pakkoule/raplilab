@@ -334,6 +334,56 @@ body[data-active="regatta"] .portal-header{background:linear-gradient(120deg,#10
 @media(max-width:360px){
   .portal-nav-strip .portal-brand{flex-basis:44px;width:44px;height:30px}
 }
+/* Responsive portal: let the header and feedback determine the remaining height. */
+.portal{display:flex;flex-direction:column;height:calc(100vh - 48px);height:calc(100dvh - 48px);min-height:0}
+.portal-header{flex:0 0 auto;padding:8px 12px 10px}
+#global-cloud-feedback{flex:0 0 auto;max-height:35vh;overflow-y:auto;overflow-wrap:anywhere}
+.frame-wrap{flex:1 1 0;min-height:0}
+.frame-wrap>section{height:100%;min-height:0}
+.frame-wrap .app-frame{height:100%;min-height:0}
+.portal-nav-strip{overflow:visible;gap:12px;touch-action:auto}
+.portal-nav-strip .product-tabs{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+ flex:1 1 0;width:auto;max-width:none;min-width:0;gap:8px;padding:0;
+ overflow:visible;touch-action:auto;
+}
+.portal-nav-strip .product-tab{
+ width:100%;min-width:0;height:56px;padding:5px 12px;
+ opacity:1;filter:none;transform:none;border-radius:11px;
+ background:linear-gradient(125deg,rgba(174,232,211,.17),rgba(235,222,195,.11))!important;
+ background-clip:padding-box;
+}
+.portal-nav-strip .product-tab[aria-selected="true"]{
+ background:linear-gradient(125deg,rgba(174,232,211,.29),rgba(235,222,195,.22))!important;
+ box-shadow:inset 0 0 0 1px rgba(255,255,255,.16),0 3px 10px rgba(0,0,0,.13);
+}
+.portal-nav-strip .product-tab[aria-selected="true"]::after{
+ bottom:2px;left:24%;right:24%;height:2px;box-shadow:none;
+}
+.portal-nav-strip .product-tab[aria-selected="true"]::before{display:none}
+.portal-nav-strip .product-tab img{width:100%;height:100%;max-height:44px;object-fit:contain}
+.portal-nav-strip .global-cloud-controls{flex:0 0 auto;gap:4px;padding:0}
+.portal-nav-strip .global-cloud-controls button{width:44px;height:44px}
+@media(hover:hover) and (pointer:fine){
+ .portal-nav-strip .product-tab:hover{background:linear-gradient(125deg,rgba(174,232,211,.33),rgba(235,222,195,.26))!important}
+}
+@media(max-width:800px){
+ .portal{height:100vh;height:100dvh;min-height:0}
+ .portal-header{padding:calc(6px + env(safe-area-inset-top,0px)) max(6px,env(safe-area-inset-right,0px)) 8px max(6px,env(safe-area-inset-left,0px))}
+ .portal-nav-strip{gap:6px}
+ .portal-nav-strip .portal-brand{flex:0 0 48px;width:48px;height:40px}
+ .portal-nav-strip .product-tabs{gap:6px}
+ .portal-nav-strip .product-tab{height:48px;padding:4px 5px;border-radius:9px}
+ .portal-nav-strip .product-tab img{max-height:38px}
+ .frame-wrap{padding-bottom:env(safe-area-inset-bottom,0px)}
+}
+/* Keep the brands readable and all three cloud actions visible on small phones. */
+@media(max-width:480px){
+ .portal-nav-strip{display:grid;grid-template-columns:48px minmax(0,1fr);gap:6px}
+ .portal-nav-strip .portal-brand{grid-column:1;grid-row:1}
+ .portal-nav-strip .product-tabs{grid-column:2;grid-row:1}
+ .portal-nav-strip .global-cloud-controls{grid-column:1 / -1;grid-row:2;justify-content:center}
+}
 </style>
   
   <link rel="stylesheet" href="shared/ios-input-focus.css">
@@ -441,11 +491,6 @@ body[data-active="regatta"] .portal-header{background:linear-gradient(120deg,#10
       }
       document.title='RAPLI LAB — '+names[name];
       if(hash&&location.hash!=='#'+name)history.pushState({project:name},'','#'+name);
-      if(window.matchMedia('(max-width:800px)').matches){
-        const rail=document.querySelector('.portal-nav-strip');
-        const chosen=tabs[name];
-        rail.scrollTo({left:Math.max(0,chosen.offsetLeft-(rail.clientWidth-chosen.offsetWidth)/2),behavior:hash?'smooth':'auto'});
-      }
       if(focus)tabs[name].focus();
     }
     for(const name of projects){
@@ -629,3 +674,4 @@ body[data-active="regatta"] .portal-header{background:linear-gradient(120deg,#10
   <script defer src="shared/retired-cleanup.js"></script>
 </body>
 </html>
+

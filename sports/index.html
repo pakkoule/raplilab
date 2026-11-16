@@ -2393,8 +2393,8 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
   <dialog id="logoDialog" class="modal small" aria-labelledby="logoDialogTitle">
     <div class="modal-header"><div><span class="modal-kicker">RAPLI SPORTS / IDENTITÉS VISUELLES</span><h2 id="logoDialogTitle" class="modal-title">Bibliothèque de logos</h2></div><button type="button" class="close-modal" data-close="logoDialog" aria-label="Fermer">×</button></div>
     <div class="modal-body">
-      <div class="logo-tabs"><button type="button" class="logo-tab active" data-logo-type="brand">Marques</button><button type="button" class="logo-tab" data-logo-type="team">Équipes</button><button type="button" class="logo-tab" data-logo-type="rookie">Rookie / RC</button><button type="button" class="logo-tab" data-logo-type="athlete">Portraits athlètes</button><button type="button" class="logo-tab" data-logo-type="tag">Tags / variations</button><button type="button" class="logo-tab" data-logo-type="labels">Étiquettes</button><button type="button" class="logo-tab" data-logo-type="collector">Style des badges</button></div>
-      <div class="logo-create" id="logoCreatePanel"><p class="logo-help" id="logoCreateHelp">Associe une image à une marque ou une équipe : son logo s'affichera automatiquement sur toutes les cartes correspondantes.</p><div class="logo-create-row"><div class="input-group"><label id="logoNameLabel" for="logoName">Nom de la marque</label><select id="logoAthletePicker" class="select saved-value-picker" aria-label="Choisir un athlète déjà présent dans la collection" hidden><option value="">Choisir un athlète enregistré…</option></select><select id="logoTeamPicker" class="select saved-value-picker" aria-label="Choisir une équipe enregistrée" hidden><option value="">Choisir une équipe…</option></select><select id="logoTagPicker" class="select saved-value-picker" aria-label="Choisir un tag enregistré" hidden><option value="">Choisir un tag…</option></select><input class="input" id="logoName" list="logoNamesList" maxlength="100" placeholder="Topps"><datalist id="logoNamesList"></datalist></div><div class="input-group"><label id="logoImageLabel">Image du logo</label><label class="logo-file" id="logoFileLabel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 16V4m-5 5 5-5 5 5M4 17v4h16v-4"/></svg><span id="logoFileText">Choisir</span><input type="file" id="logoFileInput" accept="image/png,image/jpeg,image/webp"></label></div><button id="saveLogoBtn" type="button" class="button button-primary">Ajouter</button></div>
+      <div class="logo-tabs"><button type="button" class="logo-tab active" data-logo-type="brand">Marques</button><button type="button" class="logo-tab" data-logo-type="team">Équipes</button><button type="button" class="logo-tab" data-logo-type="rookie">Rookie / RC</button><button type="button" class="logo-tab" data-logo-type="athlete">Portraits athlètes</button><button type="button" class="logo-tab" data-logo-type="nationality">Pays</button><button type="button" class="logo-tab" data-logo-type="sport">Sports</button><button type="button" class="logo-tab" data-logo-type="tag">Tags / variations</button><button type="button" class="logo-tab" data-logo-type="labels">Étiquettes</button><button type="button" class="logo-tab" data-logo-type="collector">Style des badges</button></div>
+      <div class="logo-create" id="logoCreatePanel"><p class="logo-help" id="logoCreateHelp">Associe une image à une marque ou une équipe : son logo s'affichera automatiquement sur toutes les cartes correspondantes.</p><div class="logo-create-row"><div class="input-group"><label id="logoNameLabel" for="logoName">Nom de la marque</label><select id="logoAthletePicker" class="select saved-value-picker" aria-label="Choisir un athlète déjà présent dans la collection" hidden><option value="">Choisir un athlète enregistré…</option></select><select id="logoTeamPicker" class="select saved-value-picker" aria-label="Choisir une équipe enregistrée" hidden><option value="">Choisir une équipe…</option></select><select id="logoTagPicker" class="select saved-value-picker" aria-label="Choisir un tag enregistré" hidden><option value="">Choisir un tag…</option></select><select id="logoGroupPicker" class="select saved-value-picker" aria-label="Choisir un pays ou un sport" hidden><option value="">Choisir une catégorie…</option></select><input class="input" id="logoName" list="logoNamesList" maxlength="100" placeholder="Topps"><datalist id="logoNamesList"></datalist></div><div class="input-group"><label id="logoImageLabel">Image du logo</label><label class="logo-file" id="logoFileLabel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 16V4m-5 5 5-5 5 5M4 17v4h16v-4"/></svg><span id="logoFileText">Choisir</span><input type="file" id="logoFileInput" accept="image/png,image/jpeg,image/webp"></label></div><button id="saveLogoBtn" type="button" class="button button-primary">Ajouter</button></div>
       <section id="tagCategoryPanel" class="tag-category-panel" aria-labelledby="tagCategoryTitle" hidden>
         <h3 id="tagCategoryTitle" class="tag-category-title">Catégories du tag</h3>
         <div class="tag-category-options" role="group" aria-labelledby="tagCategoryTitle">
@@ -3773,11 +3773,13 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
       }
       function clearFilters(){$('filterDream').checked=false;$('filterSearch').value='';['filterBrand','filterTeam','filterTag','filterSport','filterAuto','filterPatch'].forEach(id=>$(id).value='');$('filterNumbered').checked=false;sportsGalleryPage=1;sportsGallerySelected=null;renderAll()}
       function setLogoType(type){
-        if(!['brand','team','rookie','athlete','tag','labels','collector'].includes(type))type='brand';
+        if(!['brand','team','rookie','athlete','nationality','sport','tag','labels','collector'].includes(type))type='brand';
         logoType=type;pendingLogoPhoto='';$('logoName').value='';$('logoFileInput').value='';$('logoFileText').textContent='Choisir';
         $('logoAthletePicker').hidden=type!=='athlete';$('logoAthletePicker').value='';
         $('logoTeamPicker').hidden=type!=='team';$('logoTeamPicker').value='';
         $('logoTagPicker').hidden=type!=='tag';$('logoTagPicker').value='';
+        $('logoGroupPicker').hidden=!['nationality','sport'].includes(type);$('logoGroupPicker').value='';
+        $('logoGroupPicker').setAttribute('aria-label',type==='nationality'?'Choisir un pays de la collection':'Choisir un sport de la collection');
         $('tagCategoryPanel').hidden=type!=='tag';
         if(type==='tag')renderTagBrandOptions();
         document.querySelectorAll('#tagCategoryPanel [data-tag-category]').forEach(box=>box.checked=false);
@@ -3785,14 +3787,16 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
         const styleTab=type==='collector',labelsTab=type==='labels',customTab=styleTab||labelsTab;
         $('logoCreatePanel').hidden=customTab;$('logoList').hidden=customTab;
         $('collectorSettingsPanel').hidden=!styleTab;$('labelSettingsPanel').hidden=!labelsTab;
-        $('logoNameLabel').textContent=type==='rookie'?'Sport concerné':type==='team'?'Nom de l’équipe':type==='athlete'?'Nom de l’athlète':type==='tag'?'Nom du tag':'Nom de la marque';
-        $('logoName').placeholder=type==='rookie'?'Basketball':type==='team'?'Philadelphia 76ers':type==='athlete'?'Tyrese Maxey':type==='tag'?'Gold Refractor':'Topps';
+        $('logoNameLabel').textContent=type==='rookie'?'Sport concerné':type==='team'?'Nom de l’équipe':type==='athlete'?'Nom de l’athlète':type==='nationality'?'Pays de la collection':type==='sport'?'Nom du sport':type==='tag'?'Nom du tag':'Nom de la marque';
+        $('logoName').placeholder=type==='rookie'?'Basketball':type==='team'?'Philadelphia 76ers':type==='athlete'?'Tyrese Maxey':type==='nationality'?'France 🇫🇷':type==='sport'?'Basketball':type==='tag'?'Gold Refractor':'Topps';
         $('logoCreateHelp').textContent=type==='rookie'
           ? 'Importe un logo RC pour un sport. Il remplacera les lettres RC sur toutes ses Rookie Cards.'
           : type==='athlete'?'Ajoute un portrait par athlète : il s’affiche automatiquement dans la galerie Par athlète. Les joueurs présents sur plusieurs cartes partagent le même portrait.'
+          : type==='nationality'?'Choisis un pays de la collection, puis importe son icône. Sans icône personnalisée, le drapeau reste affiché.'
+          : type==='sport'?'Choisis un sport, puis importe son icône. Sans icône personnalisée, le symbole sportif reste affiché.'
           : type==='tag'?'Classe tes tags et associe-les à une ou plusieurs marques pour adapter les suggestions lors de la saisie d’une carte. Le logo est facultatif.'
           : 'Associe un logo à une marque ou une équipe pour l’afficher sur les cartes correspondantes.';
-        $('saveLogoBtn').textContent=type==='rookie'?'Enregistrer le logo RC':type==='athlete'?'Enregistrer le portrait':type==='tag'?'Enregistrer le tag':'Ajouter';
+        $('saveLogoBtn').textContent=type==='rookie'?'Enregistrer le logo RC':type==='athlete'?'Enregistrer le portrait':(['nationality','sport'].includes(type)?'Enregistrer l’icône':type==='tag'?'Enregistrer le tag':'Ajouter');
         document.querySelectorAll('.logo-tab').forEach(b=>b.classList.toggle('active',b.dataset.logoType===type));
         if(styleTab)openCollectorSettings();else if(labelsTab)renderLabelEditors();else renderLogos();
       }
@@ -3833,16 +3837,19 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
         const names=logoType==='rookie'
           ? [...document.querySelectorAll('#cardSport option')].map(o=>o.value).concat(cards.map(c=>c.sport))
           : logoType==='athlete'?savedPlayers().concat(logos.filter(x=>x.type==='athlete').map(x=>x.name))
+          : logoType==='nationality'?cards.flatMap(c=>sportsGalleryGroupValues(c,'nationality')).concat(logos.filter(x=>x.type==='nationality').map(x=>x.name))
+          : logoType==='sport'?cards.map(c=>c.sport).concat([...document.querySelectorAll('#cardSport option')].map(o=>o.value),logos.filter(x=>x.type==='sport').map(x=>x.name))
           : logoType==='tag'?savedTags():logoType==='team'?savedTeams():cards.map(c=>c.brand);
         [...new Set(names.filter(Boolean))].sort(collator.compare).forEach(x=>list.append(new Option(x,x)));
         if(logoType==='athlete')fillSavedPicker($('logoAthletePicker'),names,'Choisir un athlète enregistré…');
         if(logoType==='team')fillSavedPicker($('logoTeamPicker'),names,'Choisir une équipe enregistrée…');
         if(logoType==='tag')fillSavedPicker($('logoTagPicker'),names,'Choisir un tag enregistré…');
+        if(logoType==='nationality'||logoType==='sport')fillSavedPicker($('logoGroupPicker'),names,logoType==='nationality'?'Choisir un pays enregistré…':'Choisir un sport enregistré…');
       }
       async function saveNewLogo(){
         const name=$('logoName').value.trim();
         if(!name)return showToast(logoType==='rookie'?'Sélectionne un sport.':
-          logoType==='athlete'?'Renseigne le nom de l’athlète.':logoType==='tag'?'Renseigne le nom du tag.':'Renseigne un nom de marque ou d’équipe.');
+          logoType==='athlete'?'Renseigne le nom de l’athlète.':logoType==='nationality'?'Choisis un pays.':logoType==='sport'?'Choisis un sport.':logoType==='tag'?'Renseigne le nom du tag.':'Renseigne un nom de marque ou d’équipe.');
         if(['collector','labels'].includes(logoType))return;
         const existing=logos.find(row=>row.type===logoType&&normalize(row.name)===normalize(name));
         if(logoType!=='tag'&&!pendingLogoPhoto)return showToast(logoType==='athlete'?'Sélectionne un portrait.':'Sélectionne une image de logo.');
@@ -4009,6 +4016,10 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
           $('logoName').value=event.target.value;
           if(id==='logoTagPicker')syncTagCategoryForm(event.target.value);
         }
+        event.target.value='';
+      });
+      $('logoGroupPicker').addEventListener('change',event=>{
+        if(event.target.value)$('logoName').value=event.target.value;
         event.target.value='';
       });
       $('logoName').addEventListener('input',event=>{

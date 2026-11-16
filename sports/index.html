@@ -1307,6 +1307,7 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
     </main>
     <footer class="footer"><span>© RAPLI SPORTS · PERSONAL COLLECTION</span><span>SYNCHRONISATION GLOBALE RAPLILAB</span></footer>
   </div>
+  <datalist id="sportsCountryCodes"><option value="FR"><option value="US"><option value="GB"><option value="ES"><option value="DE"><option value="IT"><option value="PT"><option value="BE"><option value="NL"><option value="CH"><option value="BR"><option value="AR"><option value="UY"><option value="CA"><option value="AU"><option value="NZ"><option value="JP"><option value="CN"><option value="KR"><option value="RS"><option value="HR"><option value="PL"><option value="NO"><option value="SE"><option value="DK"><option value="FI"><option value="MA"><option value="DZ"><option value="TN"><option value="SN"><option value="NG"><option value="ZA"><option value="EG"><option value="MX"><option value="CO"><option value="IE"><option value="GR"><option value="TR"><option value="IN"></datalist>
   <dialog id="cardDialog" class="modal" aria-labelledby="cardDialogTitle">
     <form id="cardForm" novalidate>
       <div class="modal-header"><div><span class="modal-kicker">RAPLI SPORTS / FICHE COLLECTION</span><h2 id="cardDialogTitle" class="modal-title">Ajouter une carte</h2></div><button type="button" class="close-modal" data-close="cardDialog" aria-label="Fermer">×</button></div>
@@ -2018,7 +2019,7 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
           tag=normalize($('filterTag').value),
           sport=normalize($('filterSport').value),
           auto=$('filterAuto').value,patch=$('filterPatch').value,
-          onlyNumbered=$('filterNumbered').checked;
+          onlyNumbered=$('filterNumbered').checked,onlyDreams=currentView==='wishlist'&&$('filterDream').checked;
         const matches=cards.filter(c=>{
           if(c.status!==currentView)return false;
           if(brand&&normalize(c.brand)!==brand)return false;
@@ -2026,6 +2027,7 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
           if(tag&&!(c.tags||[]).some(x=>normalize(x)===tag))return false;
           if(sport&&normalize(c.sport)!==sport)return false;
           if(onlyNumbered&&!c.numbered)return false;
+           if(onlyDreams&&!c.dream)return false;
           // A multi-player card matches if one of its assigned players has the chosen tag.
           // Auto and Patch filters may match different players on the same card.
           if(!matchesPlayerFeature(c,'auto',auto)||!matchesPlayerFeature(c,'patch',patch))return false;
@@ -2104,11 +2106,13 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
          '<button type="button" class="sports-gallery-card-action" data-sports-gallery-card="'+safeText(item.id)+'" aria-label="Ouvrir la fiche de '+safeText(item.player||'cette carte')+'">'+
          '<span class="sports-gallery-media">'+photo+(item.demo?'<span class="photo-flag">DÉMO</span>':'')+
          (item.status==='own'&&!item.demo?'<span class="sports-gallery-own">OWN</span>':'')+
+          (recentCard(item)?'<span class="sports-gallery-new">NEW</span>':'')+
          (item.status==='wishlist'&&item.dream?'<span class="sports-gallery-dream">✨ RÊVE</span>':'')+
          (tagLogos?'<span class="sports-gallery-tags">'+tagLogos+'</span>':'')+'</span>'+
          '<span class="sports-gallery-caption"><strong>'+safeText(item.player||'Sans athlète')+'</strong>'+
          (sub?'<small>'+safeText(sub)+'</small>':'')+
          (item.reference?'<span class="sports-gallery-reference">'+safeText(item.reference)+'</span>':'')+
+          (item.graded?'<span class="sports-grade-badge">🏅 '+safeText(gradeLabel(item))+'</span>':'')+
          (item.sport?'<span class="sports-gallery-sport">'+sportsSportBadge(item.sport)+'</span>':'')+'</span></button></article>';
       }
       function sportsGalleryGroupCard(group,type){
@@ -2194,7 +2198,7 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
         return logo?'<img class="card-tag-logo" src="'+logo+'" alt="'+safeText(t)+'" title="'+safeText(t)+'" loading="lazy">':
           '<span class="tag">'+safeText(t)+'</span>';
       }
-      function cardMarkup(c){const photo=imgSafe(c.photo)?`<img src="${c.photo}" alt="Carte de ${safeText(c.player)}" loading="lazy">`:`<div class="placeholder"><span class="mini-logo">RAPLI / SPORTS</span><div class="place-center">${ico('layers')}</div><span class="place-foot">COLLECTOR'S CARD</span></div>`;const tags=(c.tags||[]).slice(0,8).map(cardTagMarkup).join('')+((c.tags||[]).length>8?`<span class="tag more">+${c.tags.length-8}</span>`:'');return `<article class="card-item${c.status==='wishlist'&&c.dream?' is-dream-card':''}" data-id="${safeText(c.id)}"><div class="photo-side"><div class="card-photo" style="${sportFrameStyle(c.sport)}">${photo}${c.demo?'<span class="photo-flag">DÉMO</span>':''}</div></div><div class="card-info"><div class="card-top"><div class="card-athlete">${playerCardSummary(c)}</div><div class="card-controls"><button type="button" class="icon-btn" data-action="edit" data-id="${safeText(c.id)}" aria-label="Modifier cette carte" title="Modifier">${ico('edit')}</button><button type="button" class="icon-btn delete" data-action="delete" data-id="${safeText(c.id)}" aria-label="Supprimer cette carte" title="Supprimer">${ico('trash')}</button></div></div><div class="identity-row"><div class="identity-logos"><div class="brand-lockup">${brandBadge('brand',c.brand)}${logoFor('brand',c.brand)?'':'<span>'+safeText(c.brand||'Sans marque')+'</span>'}</div><div class="team-identity">${c.team?brandBadge('team',c.team):''}${logoFor('team',c.team)?'':'<span>'+safeText(c.team||'Équipe non renseignée')+'</span>'}</div></div>${sportsSportBadge(c.sport)}</div><div class="tags">${tags||'<span class="blank-tag">Aucune variation</span>'}</div><div class="card-bottom"><div class="card-status-badges">${collectorBadgeMarkup(c)}${c.status==='wishlist'&&c.dream?'<span class="card-dream-badge"><span class="dream-sparkle" aria-hidden="true">✨</span> DANS MES RÊVES</span>':''}</div><button type="button" class="move-card" data-action="move" data-id="${safeText(c.id)}">${c.status==='own'?'→ WISHLIST':'→ OWN'}</button></div></div></article>`}
+      function cardMarkup(c){const photo=imgSafe(c.photo)?`<img src="${c.photo}" alt="Carte de ${safeText(c.player)}" loading="lazy">`:`<div class="placeholder"><span class="mini-logo">RAPLI / SPORTS</span><div class="place-center">${ico('layers')}</div><span class="place-foot">COLLECTOR'S CARD</span></div>`;const tags=(c.tags||[]).slice(0,8).map(cardTagMarkup).join('')+((c.tags||[]).length>8?`<span class="tag more">+${c.tags.length-8}</span>`:'');return `<article class="card-item${c.status==='wishlist'&&c.dream?' is-dream-card':''}" data-id="${safeText(c.id)}"><div class="photo-side"><div class="card-photo" style="${sportFrameStyle(c.sport)}">${photo}${c.demo?'<span class="photo-flag">DÉMO</span>':''}${recentCard(c)?'<span class="sports-new-flag">NEW</span>':''}</div></div><div class="card-info"><div class="card-top"><div class="card-athlete">${playerCardSummary(c)}</div><div class="card-controls"><button type="button" class="icon-btn" data-action="edit" data-id="${safeText(c.id)}" aria-label="Modifier cette carte" title="Modifier">${ico('edit')}</button><button type="button" class="icon-btn delete" data-action="delete" data-id="${safeText(c.id)}" aria-label="Supprimer cette carte" title="Supprimer">${ico('trash')}</button></div></div><div class="identity-row"><div class="identity-logos"><div class="brand-lockup">${brandBadge('brand',c.brand)}${logoFor('brand',c.brand)?'':'<span>'+safeText(c.brand||'Sans marque')+'</span>'}</div><div class="team-identity">${c.team?brandBadge('team',c.team):''}${logoFor('team',c.team)?'':'<span>'+safeText(c.team||'Équipe non renseignée')+'</span>'}</div></div>${sportsSportBadge(c.sport)}</div><div class="tags">${tags||'<span class="blank-tag">Aucune variation</span>'}</div><div class="card-bottom"><div class="card-status-badges">${collectorBadgeMarkup(c)}${c.graded?'<span class="sports-grade-badge">🏅 '+safeText(gradeLabel(c))+'</span>':''}${c.status==='wishlist'&&c.dream?'<span class="card-dream-badge"><span class="dream-sparkle" aria-hidden="true">✨</span> DANS MES RÊVES</span>':''}</div><button type="button" class="move-card" data-action="move" data-id="${safeText(c.id)}">${c.status==='own'?'→ WISHLIST':'→ OWN'}</button></div></div></article>`}
       const statsEngine=window.RapliSportsStats;
       const statsVisuals=window.RapliSportsStatsVisuals;
       function renderOwnedStatistics(data=statsEngine.calculate(cards)){
@@ -2258,6 +2262,8 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
         refreshFilterOptions();
         $('tabOwnCount').textContent=cards.filter(x=>x.status==='own').length;
         $('tabWishCount').textContent=cards.filter(x=>x.status==='wishlist').length;
+        $('tabRainbowCount').textContent=logos.filter(x=>x.type==='rainbow').length;
+        $('filterDreamWrap').hidden=currentView!=='wishlist';
         document.querySelectorAll('.tab').forEach(t=>{
           const active=t.dataset.view===currentView;
           t.classList.toggle('active',active);
@@ -2292,8 +2298,8 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
       function openModal(id){$(id).showModal();document.body.style.overflow='hidden'}
       function closeModal(id){$(id).close();if(!document.querySelector('dialog[open]'))document.body.style.overflow=''}
       function syncDreamField(){const eligible=$('statusWish').checked;$('cardDreamWrap').hidden=!eligible;if(!eligible)$('cardDream').checked=false;}
-      function resetForm(){editingId=null;currentTags=[];currentPhoto='';$('cardForm').reset();$('cardSport').querySelectorAll('option[data-custom-sport]').forEach(option=>option.remove());$('cardBrandPicker').value='';$('cardTeamPicker').value='';$('tagPicker').value='';resetPlayersForm();$('cardRookie').checked=false;$('statusOwn').checked=currentView!=='wishlist';$('statusWish').checked=currentView==='wishlist';$('cardDialogTitle').textContent='Ajouter une carte';$('cardSubmitBtn').textContent='Enregistrer la carte';renderTags();updateSerialUI();renderPhoto();syncDreamField()}
-      function openCard(card){resetForm();if(card){editingId=card.id;currentTags=[...(card.tags||[])];currentPhoto=imgSafe(card.photo)?card.photo:'';$('cardDialogTitle').textContent='Modifier la carte';$('cardSubmitBtn').textContent='Enregistrer les modifications';$('statusOwn').checked=card.status==='own';$('statusWish').checked=card.status==='wishlist';$('cardBrand').value=card.brand||'';const sportSelect=$('cardSport');if(card.sport&&![...sportSelect.options].some(option=>option.value===card.sport)){const custom=new Option(card.sport,card.sport);custom.dataset.customSport='';sportSelect.add(custom);}sportSelect.value=card.sport||'';resetPlayersForm(card);$('cardTeam').value=card.team||'';$('cardReference').value=card.reference||'';$('cardNumbered').checked=Boolean(card.numbered);$('cardRookie').checked=card.rookie===true;$('cardSerial').value=card.serial||'';$('cardPrintRun').value=card.printRun||'';$('cardDream').checked=card.status==='wishlist'&&card.dream===true;renderTags();renderPhoto();updateSerialUI();syncDreamField()}openModal('cardDialog');setTimeout(()=>$('cardBrand').focus(),70)}
+      function resetForm(){editingId=null;currentTags=[];currentPhoto='';$('cardForm').reset();$('cardGradeFields').classList.add('hidden');$('cardGradeOrg').value='';$('cardGradeScore').value='';$('cardSport').querySelectorAll('option[data-custom-sport]').forEach(option=>option.remove());$('cardBrandPicker').value='';$('cardTeamPicker').value='';$('tagPicker').value='';resetPlayersForm();$('cardRookie').checked=false;$('statusOwn').checked=currentView!=='wishlist';$('statusWish').checked=currentView==='wishlist';$('cardDialogTitle').textContent='Ajouter une carte';$('cardSubmitBtn').textContent='Enregistrer la carte';renderTags();updateSerialUI();renderPhoto();syncDreamField()}
+      function openCard(card){resetForm();if(card){editingId=card.id;currentTags=[...(card.tags||[])];currentPhoto=imgSafe(card.photo)?card.photo:'';$('cardDialogTitle').textContent='Modifier la carte';$('cardSubmitBtn').textContent='Enregistrer les modifications';$('statusOwn').checked=card.status==='own';$('statusWish').checked=card.status==='wishlist';$('cardBrand').value=card.brand||'';const sportSelect=$('cardSport');if(card.sport&&![...sportSelect.options].some(option=>option.value===card.sport)){const custom=new Option(card.sport,card.sport);custom.dataset.customSport='';sportSelect.add(custom);}sportSelect.value=card.sport||'';resetPlayersForm(card);$('cardTeam').value=card.team||'';$('cardReference').value=card.reference||'';$('cardNumbered').checked=Boolean(card.numbered);$('cardRookie').checked=card.rookie===true;$('cardSerial').value=card.serial||'';$('cardPrintRun').value=card.printRun||'';$('cardDream').checked=card.status==='wishlist'&&card.dream===true;$('cardGraded').checked=!!card.graded;$('cardGradeOrg').value=['PSA','BGS','SGC','CGC','Autre'].includes(card.gradeOrg)?card.gradeOrg:'';$('cardGradeScore').value=card.gradeScore||'';$('cardGradeFields').classList.toggle('hidden',!card.graded);renderTags();renderPhoto();updateSerialUI();syncDreamField()}openModal('cardDialog');setTimeout(()=>$('cardBrand').focus(),70)}
       function renderPhoto(){const valid=imgSafe(currentPhoto);$('photoPreview').classList.toggle('hidden',!valid);$('photoPrompt').classList.toggle('hidden',valid);$('removePhotoBtn').classList.toggle('hidden',!valid);if(valid)$('photoPreview').src=currentPhoto;else $('photoPreview').removeAttribute('src')}
       function updateSerialUI(){const yes=$('cardNumbered').checked;$('serialFields').classList.toggle('hidden',!yes);$('cardSerial').required=yes;$('cardPrintRun').required=yes}
       function addTag(value){const newValue=String(value||'').trim().replace(/^#+/,'');if(!newValue)return;if(!currentTags.some(t=>normalize(t)===normalize(newValue))){if(currentTags.length>=30)return showToast('Maximum de 30 tags par carte.');currentTags.push(newValue.slice(0,60));renderTags()}}
@@ -2311,6 +2317,8 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
         if(numbered&&(!/^\d+$/.test(serial)||!/^\d+$/.test(printRun)||Number(printRun)<1||Number(serial)<1||Number(serial)>Number(printRun))){
           showToast('Vérifie la numérotation, par exemple 12 / 99.');$('cardSerial').focus();return;
         }
+        const gradeScore=$('cardGraded').checked?gradingScore($('cardGradeScore').value):'';
+        if(gradeScore===null){showToast('Note de grading invalide : saisis une valeur entre 0,5 et 10.');$('cardGradeScore').focus();return;}
         const prev=editingId?cards.find(x=>x.id===editingId):null,now=Date.now();
         const card={
           id:prev?.id||uid(),
@@ -2321,7 +2329,7 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
           sport:$('cardSport').value,
           team:$('cardTeam').value.trim(),
           reference:$('cardReference').value.trim(),
-          tags:[...currentTags],numbered,rookie:$('cardRookie').checked,dream:$('statusWish').checked&&$('cardDream').checked,
+          tags:[...currentTags],numbered,graded:$('cardGraded').checked,gradeOrg:$('cardGraded').checked?$('cardGradeOrg').value:'',gradeScore,rookie:$('cardRookie').checked,dream:$('statusWish').checked&&$('cardDream').checked,
           serial:numbered?serial:'',printRun:numbered?printRun:'',
           photo:currentPhoto,createdAt:prev?.createdAt||now,updatedAt:now
         };
@@ -2329,7 +2337,7 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
         catch(err){console.error(err);showToast('Enregistrement impossible. Essaie un export puis une image plus légère.');}
       }
       async function cardAction(e){const btn=e.target.closest('[data-action]');if(!btn)return;const card=cards.find(x=>x.id===btn.dataset.id);if(!card)return;if(btn.dataset.action==='edit')openCard(card);else if(btn.dataset.action==='delete'){if(confirm(`Supprimer la carte de ${card.player} ?`)){try{await removeCard(card.id);renderAll();showToast('Carte supprimée')}catch(err){showToast('Suppression impossible')}}}else if(btn.dataset.action==='move'){try{await saveCard({...card,status:card.status==='own'?'wishlist':'own',dream:false,updatedAt:Date.now(),demo:false});renderAll();showToast('Carte transférée vers '+(card.status==='own'?'WISHLIST':'OWN'))}catch(e){showToast('Transfert impossible')}}}
-      function clearFilters(){$('filterSearch').value='';['filterBrand','filterTeam','filterTag','filterSport','filterAuto','filterPatch'].forEach(id=>$(id).value='');$('filterNumbered').checked=false;sportsGalleryPage=1;sportsGallerySelected=null;renderAll()}
+      function clearFilters(){$('filterDream').checked=false;$('filterSearch').value='';['filterBrand','filterTeam','filterTag','filterSport','filterAuto','filterPatch'].forEach(id=>$(id).value='');$('filterNumbered').checked=false;sportsGalleryPage=1;sportsGallerySelected=null;renderAll()}
       function setLogoType(type){
         if(!['brand','team','rookie','athlete','tag','labels','collector'].includes(type))type='brand';
         logoType=type;pendingLogoPhoto='';$('logoName').value='';$('logoFileInput').value='';$('logoFileText').textContent='Choisir';
@@ -2442,7 +2450,7 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
         }
       });
       $('statsExportPngBtn').addEventListener('click',()=>void exportOwnedStatsPng());
-      ['filterSearch','filterBrand','filterTeam','filterTag','filterSport','filterAuto','filterPatch','filterNumbered','sortSelect']
+      ['filterSearch','filterBrand','filterTeam','filterTag','filterSport','filterAuto','filterPatch','filterNumbered','filterDream','sortSelect']
         .forEach(id=>$(id).addEventListener(id==='filterSearch'?'input':'change',()=>{
           sportsGalleryPage=1;sportsGallerySelected=null;renderAll();
         }));
@@ -2487,6 +2495,7 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
         event.target.value='';
       });
       $('cardNumbered').addEventListener('change',updateSerialUI);
+      $('cardGraded').addEventListener('change',()=>{$('cardGradeFields').classList.toggle('hidden',!$('cardGraded').checked);});
       for(const id of ['statusOwn','statusWish'])$(id).addEventListener('change',syncDreamField);
       $('tagField').addEventListener('keydown',e=>{if(['Enter',',',';'].includes(e.key)){e.preventDefault();processTagInput()}else if(e.key==='Backspace'&&!$('tagField').value&&currentTags.length){currentTags.pop();renderTags()}});
       $('tagField').addEventListener('blur',processTagInput);

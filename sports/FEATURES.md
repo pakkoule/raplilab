@@ -11,6 +11,13 @@ PR ouverte et en brouillon, aucune fusion ni mise en production.
 - **#57 Nationalité de l’athlète** : code pays ISO alpha-2 facultatif par joueur (y compris multi-athlètes) et drapeau visible.
 - **#99 Recherche tolérante** : correspondance sur un caractère erroné, ajouté, supprimé ou transposé pour les mots de cinq caractères et plus.
 
+## Affichages de la collection
+
+- Les modes Fiches/Vignettes, Par marque, Par équipe, Par athlète, Par tag, Par compétition, Par édition, Par insert et Par parallèle sont conservés.
+- **Par nationalité** est accessible directement depuis AFFICHAGE : drapeau, pays et compteur ; une carte à plusieurs athlètes peut appartenir à plusieurs pays, sans doublon dans un même pays. Groupe « Nationalité non renseignée » pour les fiches sans code pays.
+- **Autres vues…** regroupe cinq modes complémentaires sans surcharger la barre : Par sport, Par grading (PSA, BGS, SGC, CGC, Autre, non gradées), Par autographe (On Card, Stickers, sans auto), Par patch (Game Worn, Not Affiliated, sans patch), Par numérotation (1/1, /5, /10, /25, /50, /99, autres tirages exacts, non numérotées).
+- Les regroupements utilisent les attributs déjà enregistrés, respectent les filtres OWN/Wishlist et conservent l'ouverture d'une fiche, le retour aux groupes et la pagination. Aucun nouveau champ ni migration Supabase.
+
 ## Mode Rainbow 🌈
 
 Un Rainbow est une checklist manuelle des versions parallèles d’une même carte de base.

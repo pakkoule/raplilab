@@ -11,6 +11,9 @@ const zoneName=r=>timeEngine.ZONES[timeEngine.normalize(r?.timezone)]||timeEngin
 const BOAT_NAME='Rapli LPDB';
 const props={name:180,boatClass:100,start:20,startTime:8,end:20,endTime:8,rank:40,rankTotal:12,rankDepartment:40,rankDepartmentTotal:12,rankNational:40,rankNationalTotal:12,rankCity:40,rankCityTotal:12,rankTeam:40,rankTeamTotal:12,duration:100,durationDays:4,durationHours:2,durationMinutes:2,durationSeconds:2,vsr:5,participantCount:12,gainPoints:9,gainCredits:9};
 const imageKeys=['icon','result','route'];
+const ROUTE_TYPES=Object.freeze({'tour-du-monde':'Tour du monde','transatlantique':'Transatlantique','cotier':'Côtier','etapes':'Course à étapes','record-distance':'Record de distance','autre':'Autre parcours'});
+const routeType=v=>Object.prototype.hasOwnProperty.call(ROUTE_TYPES,v)?v:'';
+let regattaCompact=false;try{regattaCompact=localStorage.getItem('rapli-regatta-compact-v1')==='1';}catch(_){/* stockage indisponible */}
 
 /* A date and clock time represent the course's own civil time.
    UTC-based calendar arithmetic avoids differences between users' browser timezones. */
@@ -182,7 +185,7 @@ function normalizeRanking(r){
    else {r[key]='';r[totalKey]='';}
  }
 }
-function normal(x={}){const r={id:typeof x.id==='string'&&x.id.length<130?x.id:uid(),createdAt:x.createdAt||now(),updatedAt:x.updatedAt||now(),live:!!x.live&&!x.dnf,upcoming:!!x.upcoming&&!x.live&&!x.dnf,dnf:!!x.dnf,kind:['race','event','record'].includes(x.kind)?x.kind:'race',eventId:clean(x.eventId,130),eventClosed:!!x.eventClosed,recordClosed:!!x.recordClosed,joker:!!x.joker,equipment:validEquipment(x.equipment),edition:clean(x.edition,100),timezone:timeEngine.normalize(x.timezone)};for(const [k,n] of Object.entries(props))r[k]=clean(x[k],n);
+function normal(x={}){const r={id:typeof x.id==='string'&&x.id.length<130?x.id:uid(),createdAt:x.createdAt||now(),updatedAt:x.updatedAt||now(),live:!!x.live&&!x.dnf,upcoming:!!x.upcoming&&!x.live&&!x.dnf,dnf:!!x.dnf,kind:['race','event','record'].includes(x.kind)?x.kind:'race',eventId:clean(x.eventId,130),eventClosed:!!x.eventClosed,recordClosed:!!x.recordClosed,joker:!!x.joker,equipment:validEquipment(x.equipment),edition:clean(x.edition,100),timezone:timeEngine.normalize(x.timezone),routeType:routeType(x.routeType)};for(const [k,n] of Object.entries(props))r[k]=clean(x[k],n);
  r.boat=BOAT_NAME;
  r.classColor=colorSafe(x.classColor);r.notes=clean(x.notes,2500);r.vsr=VSR[r.vsr]?r.vsr:'';
  r.attempts=window.RapliRegattaRecordAttempts.normalize(x.attempts);
@@ -317,6 +320,9 @@ function recordCardContent(r){
 }
 function card(r){
  const status=raceStatus(r),tag=getClassTagColor(r.boatClass),vsrTag=getVSRTagColor(r.vsr),mode=VSR[r.vsr]||'';
+ const today=timeEngine.wallAt(Date.now(),r.timezone)?.date;
+ const recordStart=r.kind==='record'?recordEngine.latestStart(r.attempts)?.date:'';
+ const departsToday=(recordStart||r.start)===today&&!!today;
  const score=scoreView(r);
  // La note n'a ni cartouche ni mention, elle est placée à droite du classement général.
  const scoreRing=score.available?
@@ -329,11 +335,11 @@ function card(r){
    rankHtml('🏙️','VILLE',r.rankCity,r.rankCityTotal,'rank-city',podiumMedalFor(r,'rankCity','rankCityTotal'))+
    rankHtml('🏴‍☠️','TEAM',r.rankTeam,r.rankTeamTotal,'rank-team',podiumMedalFor(r,'rankTeam','rankTeamTotal')));
  return '<article class="card'+((status==='live'||status==='record-live')?' live':'')+(status==='planned'&&r.upcoming?' upcoming':'')+(status==='dnf'?' dnf':'')+(r.kind==='event'?' event':'')+(r.kind==='record'?' record':'')+(showRecordRanking?' record-closed':'')+'" data-id="'+safe(r.id)+'" style="--class-tag:'+tag+';--class-ink:'+classTextColor(tag)+';--vsr-color:'+vsrTag+';--vsr-ink:'+classTextColor(vsrTag)+'">'+
- '<div class="card-top"><div class="race-icon card-photo">'+(validImage(r.icon)?imageTag(r.icon,'Affiche '+r.name):'<div class="icon-placeholder">⛵</div>')+'</div><span class="badge-status">'+statusTitle[status]+'</span></div>'+
+ '<div class="card-top"><div class="race-icon card-photo">'+(validImage(r.icon)?imageTag(r.icon,'Affiche '+r.name):'<div class="icon-placeholder">⛵</div>')+'</div><span class="badge-status">'+statusTitle[status]+'</span>'+(departsToday?'<span class="start-today-flag" title="Départ aujourd’hui, dans le fuseau de la course">🏁 DÉPART AUJOURD’HUI</span>':'')+'</div>'+
  '<div class="card-content"><div class="card-title-row"><h2 title="'+safe(r.name)+'">'+safe(r.name)+'</h2>'+
  '<div class="card-tag-row"><span class="class-tag" title="'+safe(r.boatClass||'VIRTUAL REGATTA')+'">'+safe(r.boatClass||'VIRTUAL REGATTA')+'</span>'+
  (mode?'<span class="vsr-badge vsr-'+r.vsr+(r.vsr==='hc'?' hc':'')+'" title="Importance VSR : '+(VSR_PRIORITY(r.vsr)+1)+' sur 4">'+safe(mode)+'</span>':'')+'</div></div>'+
- '<div class="card-boat">'+safe(r.boat)+(r.kind==='record'?' · COURSE RECORD':r.kind==='event'?' · COMPÉTITION':r.eventId?' · ÉTAPE'+(r.joker?' JOKER':''):'')+'</div>'+
+ '<div class="card-boat">'+safe(r.boat)+(r.routeType?' · '+safe(ROUTE_TYPES[r.routeType]):'')+(r.kind==='record'?' · COURSE RECORD':r.kind==='event'?' · COMPÉTITION':r.eventId?' · ÉTAPE'+(r.joker?' JOKER':''):'')+'</div>'+
  raceClockMarkup(r)+'<div class="card-stats"><span class="stat-chip">🌐 '+safe(zoneName(r))+'</span>'+(r.kind!=='record'&&r.start?'<span class="stat-chip">DÉPART '+safe(dateTimeFR(r.start,r.startTime))+'</span>':'')+
  (r.kind!=='record'&&status!=='dnf'&&r.end?'<span class="stat-chip arrival-chip">ARRIVÉE '+safe(dateTimeFR(r.end,r.endTime))+'</span>':'')+
  (r.kind!=='record'&&r.duration?'<span class="stat-chip duration-chip">⏱ '+safe(r.duration)+'</span>':'')+
@@ -381,7 +387,7 @@ function render(){
  const q=$('search').value.toLocaleLowerCase('fr').trim(),status=$('filter-status').value,cls=$('filter-class').value,vsr=$('filter-vsr').value;
  const filtered=rows.filter(r=>(!status||(status==='record'?r.kind==='record':status==='live'?['live','record-live'].includes(raceStatus(r)):status==='finished'?['finished','record-closed'].includes(raceStatus(r)):raceStatus(r)===status))&&(!cls||r.boatClass===cls)&&(!vsr||r.vsr===vsr)&&
    (!q||[r.name,r.boatClass,r.boat,r.rank,r.rankNational,r.rankDepartment,r.rankCity,r.rankTeam,
-           r.startTime,r.end,r.endTime,...(r.kind==='record'?recordEngine.normalize(r.attempts).map(x=>x.startDate+' '+x.startTime):[]),VSR[r.vsr]||'',equipmentModes[r.equipment]||''].some(v=>String(v||'').toLocaleLowerCase('fr').includes(q))));
+           r.startTime,r.end,r.endTime,ROUTE_TYPES[r.routeType]||'',...(r.kind==='record'?recordEngine.normalize(r.attempts).map(x=>x.startDate+' '+x.startTime):[]),VSR[r.vsr]||'',equipmentModes[r.equipment]||''].some(v=>String(v||'').toLocaleLowerCase('fr').includes(q))));
  const out=[...filtered],sort=$('sort').value;
  const noFilters=!q&&!status&&!cls&&!vsr;
  const statusPriority=item=>{
@@ -408,7 +414,10 @@ function render(){
  const controls=regattaPager(out.length);
  $('regatta-pagination-top').innerHTML=controls;
  $('regatta-pagination-bottom').innerHTML=controls;
- $('cards').innerHTML=out.slice(pageStart,pageStart+REGATTA_PAGE_SIZE).map(card).join('')||
+ $('cards').classList.toggle('regatta-compact',regattaCompact);
+  $('compact-cards').setAttribute('aria-pressed',String(regattaCompact));
+  $('compact-cards').title=regattaCompact?'Afficher les fiches complètes':'Afficher les fiches compactes';
+  $('cards').innerHTML=out.slice(pageStart,pageStart+REGATTA_PAGE_SIZE).map(card).join('')||
    (rows.length?'<p>Aucune course ne correspond aux filtres.</p>':'');
  scheduleRankingFit();updateRaceClocks();
  $('empty').hidden=rows.length!==0;
@@ -870,6 +879,7 @@ function openEditor(r){
  const data=r||normal();
  for(const k of Object.keys(props))if(k!=='boat')getField(k).value=data[k]||'';
  $('race-timezone').value=timeEngine.normalize(data.timezone);
+  $('race-route-type').value=routeType(data.routeType);
   legacyArrival={start:data.start,startTime:data.startTime,duration:data.duration,end:data.end,endTime:data.endTime,timezone:timeEngine.normalize(data.timezone)};
  updateArrival();
  $('race-live').checked=!!data.live;
@@ -897,7 +907,7 @@ dialog.addEventListener('close',()=>{document.body.style.overflow='';editId='';}
 document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',closeEditor));
 async function saveEditor(e){
  e.preventDefault();if(writeBusy||uploads)return;
- const old=rows.find(x=>x.id===editId);const r={...(old||normal()),updatedAt:now(),timezone:timeEngine.normalize($('race-timezone').value),live:$('race-live').checked,upcoming:$('race-upcoming').checked,dnf:$('race-dnf').checked};
+ const old=rows.find(x=>x.id===editId);const r={...(old||normal()),updatedAt:now(),routeType:routeType($('race-route-type').value),timezone:timeEngine.normalize($('race-timezone').value),live:$('race-live').checked,upcoming:$('race-upcoming').checked,dnf:$('race-dnf').checked};
  if([r.live,r.upcoming,r.dnf].filter(Boolean).length>1){toast('Choisis un seul statut manuel : en cours, à venir ou DNF.',true);return;}
  r.kind=old?.kind==='record'&&old.recordClosed?'record':['event','record'].includes($('race-kind').value)?$('race-kind').value:'race';
  r.recordClosed=r.kind==='record'&&!!old?.recordClosed;
@@ -1282,6 +1292,7 @@ $('vsr-colors-list').addEventListener('change',event=>{
  const el=event.target;
  if(el.matches?.('input[data-vsr-key]'))changeVSRColor(el.dataset.vsrKey,el.value);
 });
+$('compact-cards').addEventListener('click',()=>{regattaCompact=!regattaCompact;try{localStorage.setItem('rapli-regatta-compact-v1',regattaCompact?'1':'0');}catch(_){/* mode éphémère */}render();});
 $('new-race').addEventListener('click',()=>openEditor());$('empty-add').addEventListener('click',()=>openEditor());$('race-form').addEventListener('submit',saveEditor);$('delete-race').addEventListener('click',()=>{if(editId)deleteRace(editId);});
 for(const id of ['search','filter-status','filter-vsr','filter-class','sort'])$(id).addEventListener(id==='search'?'input':'change',()=>{
  regattaPage=1;render();

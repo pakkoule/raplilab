@@ -650,3 +650,20 @@ dialog form{border-radius:18px;background:#fff;display:flex;flex-direction:colum
 .race-timezone-field small{font-size:10px;font-weight:500;line-height:1.5;letter-spacing:0;text-transform:none;color:#688898}
 @media(max-width:780px){.honors-panel{padding:6px 14px 30px}.honors-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:550px){.honors-grid,.honors-achievements{grid-template-columns:1fr}.honors-heading{padding:16px}.honors-symbol{font-size:32px}.honors-kpi strong{font-size:29px}}
+
+/* PR #1 : affichage compact sans retirer les données de course. */
+.start-today-flag{position:absolute;right:8px;bottom:9px;z-index:2;display:inline-flex;align-items:center;gap:4px;background:#ecfbf4;color:#216951;border:1px solid #9ae2c0;border-radius:6px;padding:5px 8px;font-size:9px;font-weight:900;box-shadow:0 3px 9px #0003}
+#compact-cards[aria-pressed="true"]{background:#cceaf1;border-color:#0b92a9;color:#17536e}
+.cards.regatta-compact{grid-template-columns:repeat(3,minmax(0,1fr));gap:11px}
+.regatta-compact .card-content{padding:11px 12px}
+.regatta-compact .card h2{font-size:15px}
+.regatta-compact .card-boat{font-size:10px}
+.regatta-compact .shots,.regatta-compact .card-note,.regatta-compact .rank-grid .rank-national,.regatta-compact .rank-grid .rank-department,.regatta-compact .rank-grid .rank-city,.regatta-compact .rank-grid .rank-team{display:none}
+.regatta-compact .card-stats{gap:4px;margin-top:8px}
+.regatta-compact .stat-chip{font-size:9px;padding:4px 6px}
+.regatta-compact .rank-plate{padding:6px}
+.regatta-compact .card-actions{gap:4px}
+.regatta-compact .card-actions .btn{font-size:9px;min-height:29px;padding:5px 6px}
+.regatta-compact .start-today-flag{font-size:8px;padding:4px 6px}
+@media(max-width:840px){.cards.regatta-compact{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:570px){.cards.regatta-compact{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;padding:0 9px 17px}.regatta-compact .card-content{padding:8px}.regatta-compact .card h2{font-size:12px}.regatta-compact .card-actions .btn{font-size:8px;min-height:27px;padding:4px}.regatta-compact .card-actions{flex-wrap:wrap}.regatta-compact .badge-status{font-size:7px;padding:4px 5px}}

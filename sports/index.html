@@ -1435,6 +1435,8 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
       $('statIconAll').innerHTML=ico('layers'); $('statIconOwn').innerHTML=ico('check');$('statIconWish').innerHTML=ico('heart');$('statIconNumber').innerHTML=ico('hash');$('emptyIcon').innerHTML=ico('package');
       let db=null, cards=[], logos=[], currentView='own', currentTags=[], currentPhoto='', editingId=null, logoType='brand', pendingLogoPhoto='', toastTimer=null;
       let sportsGalleryLayout='details',sportsGallerySelected=null,sportsGalleryPage=1;
+      const rainbowEngine=window.RapliSportsRainbow;
+      let rainbowEditingId=null,rainbowAssignments=new Map(),randomSportsCardId=null;
       const SPORTS_GALLERY_PAGE_SIZE=30;
       const collator=new Intl.Collator('fr',{sensitivity:'base',numeric:true});
 
@@ -1442,12 +1444,19 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
       let playerInputSequence=0;
       const AUTO_TYPES={stickers:'Stickers','on-card':'On Card'};
       const PATCH_TYPES={'game-worn':'Game Worn','not-affiliated':'Not Affiliated'};
+      const NATIONALITIES=['FR','US','GB','ES','DE','IT','PT','BE','NL','CH','BR','AR','UY','CA','AU','NZ','JP','CN','KR','RS','HR','PL','NO','SE','DK','FI','MA','DZ','TN','SN','NG','ZA','EG','MX','CO','IE','GR','TR','IN'];
+      const COUNTRY_CODE=value=>{const v=String(value||'').trim().toUpperCase();return /^[A-Z]{2}$/.test(v)?v:'';};
+      function flagFor(code){const value=COUNTRY_CODE(code);return value?[...value].map(ch=>String.fromCodePoint(127397+ch.charCodeAt(0))).join(''):'';}
+      const recentCard=c=>{const ts=Number(c?.createdAt)||Date.parse(c?.createdAt||'');return !c?.demo&&Number.isFinite(ts)&&ts>0&&Date.now()>=ts&&Date.now()-ts<7*86400000;};
+      const gradeLabel=c=>c?.graded?([c.gradeOrg,c.gradeScore].filter(Boolean).join(' ')||'GRADÉE'):'';
+      const gradingScore=value=>{const s=String(value??'').trim().replace(',','.');if(!s)return '';if(!/^(?:10(?:\.0)?|[1-9](?:\.5|\.0)?|0\.5)$/.test(s))return null;return String(Number(s));};
       function normalizedPlayer(value){
         const item=typeof value==='string'?{name:value}:value&&typeof value==='object'?value:{};
         return {
           name:String(item.name??'').trim().slice(0,120),
           auto:Object.prototype.hasOwnProperty.call(AUTO_TYPES,item.auto)?item.auto:'',
-          patch:Object.prototype.hasOwnProperty.call(PATCH_TYPES,item.patch)?item.patch:''
+          patch:Object.prototype.hasOwnProperty.call(PATCH_TYPES,item.patch)?item.patch:'',
+          nationality:COUNTRY_CODE(item.nationality)
         };
       }
       function cardPlayers(card){
@@ -1505,6 +1514,7 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
           (index?'<button type="button" class="player-entry-remove" data-remove-player aria-label="Retirer ce joueur" title="Retirer ce joueur">×</button>':'')+'</div>'+
           playerPickerMarkup()+
           '<input id="'+id+'" class="input player-name-input" name="playerName[]" type="text" maxlength="120" autocomplete="off" placeholder="Nom du joueur"'+(index===0?' required':'')+' value="'+safeText(p.name)+'">'+
+          '<label class="sports-player-country">🌐 NATIONALITÉ (CODE ISO À 2 LETTRES)<input class="input player-nationality" data-player-nationality maxlength="2" list="sportsCountryCodes" placeholder="FR, US, GB…" value="'+safeText(p.nationality)+'"></label>'+
           '<div class="player-feature-groups">'+
             '<div class="player-feature-group"><label class="player-feature-master"><input type="checkbox" data-player-toggle="auto"'+(autoOn?' checked':'')+'> AUTO</label>'+
               '<div class="player-feature-choice" data-player-choices="auto"'+(autoOn?'':' hidden')+'>'+
@@ -1553,7 +1563,9 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
           if(!name){showToast('Renseigne le nom du joueur '+(i+1)+'.');nameInput.focus();return null;}
           if(autoOn&&!auto){showToast('Choisis Stickers ou On Card pour '+name+'.');row.querySelector('[data-player-type="auto"]').focus();return null;}
           if(patchOn&&!patch){showToast('Choisis Game Worn ou Not Affiliated pour '+name+'.');row.querySelector('[data-player-type="patch"]').focus();return null;}
-          roster.push(normalizedPlayer({name,auto,patch}));
+          const nationality=COUNTRY_CODE(row.querySelector('[data-player-nationality]').value);
+          if(row.querySelector('[data-player-nationality]').value.trim()&&!nationality){showToast('Code pays invalide : deux lettres (FR, US, GB…).');row.querySelector('[data-player-nationality]').focus();return null;}
+          roster.push(normalizedPlayer({name,auto,patch,nationality}));
         }
         return roster;
       }
@@ -1741,7 +1753,7 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
         const first=roster[0]?.name||card.player||'Joueur non renseigné';
         // Other players share one "+" and are separated with "/" on the same line.
         const more=roster.length>1?
-          '<span class="player-extra-names">+ '+roster.slice(1).map(p=>safeText(p.name)).join(' / ')+'</span>':'';
+          '<span class="player-extra-names">+ '+roster.slice(1).map(p=>safeText(p.name)+(p.nationality?' '+flagFor(p.nationality):'')).join(' / ')+'</span>':'';
         const autos=roster.flatMap(p=>{
           if(!p.auto)return [];
           const prefix=roster.length>1?'<strong>'+safeText(p.name)+' ·</strong> ':'';
@@ -1761,7 +1773,7 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
         });
         const badges=[...autos,...patchBadges].filter(Boolean);
         const reference=String(card.reference||'').trim();
-        return '<div class="player-name-reference"><h3 class="player">'+safeText(first)+more+'</h3>'+
+        return '<div class="player-name-reference"><h3 class="player">'+safeText(first)+(roster[0]?.nationality?' <span class="sports-flag" title="Pays '+safeText(roster[0].nationality)+'">'+flagFor(roster[0].nationality)+'</span>':'')+more+'</h3>'+
           (reference?'<span class="card-ref-inline" title="'+safeText(reference)+'">'+safeText(reference)+'</span>':'')+
           '</div>'+(badges.length?'<div class="player-traits">'+badges.join('')+'</div>':'');
       }

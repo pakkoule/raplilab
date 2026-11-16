@@ -1518,6 +1518,27 @@ html:not([data-rapli-role="editor"]) [data-remove-logo],
 html:not([data-rapli-role="editor"]) .card-controls,
 html:not([data-rapli-role="editor"]) .move-card{display:none!important}
 </style>
+
+<style id="rapli-sports-card-tile-foil">
+/* Collection tiles: calm silver/pearl foil, echoing the Rainbow backgrounds.
+   A true One of One (1/1) switches to champagne gold. No animations or overlays
+   covering images/text; keep existing sport photo frames and dream accents. */
+.app-shell .cards-grid .card-item.card-foil-silver,
+.sports-gallery-tile.card-foil-silver{
+  background:
+    linear-gradient(116deg,transparent 8%,rgba(255,255,255,.62) 31%,rgba(255,255,255,.12) 48%,transparent 72%),
+    linear-gradient(139deg,#fbfcff 0%,#edf2f9 20%,#dee7ef 42%,#f8fafc 63%,#e7edf6 80%,#fafcff 100%) !important;
+}
+.app-shell .cards-grid .card-item.card-foil-gold,
+.sports-gallery-tile.card-foil-gold{
+  background:
+    linear-gradient(116deg,transparent 8%,rgba(255,255,255,.65) 32%,rgba(255,248,220,.15) 49%,transparent 73%),
+    linear-gradient(139deg,#fffdf7 0%,#f8efda 19%,#eadcb8 40%,#fffbef 63%,#f1e2bf 82%,#fffaf0 100%) !important;
+}
+/* Gallery card media keeps its own neutral backdrop to frame the photo. */
+.sports-gallery-tile.card-foil-silver .sports-gallery-caption,
+.sports-gallery-tile.card-foil-gold .sports-gallery-caption{background:transparent}
+</style>
 </head>
 <body>
   <div class="app-shell">
@@ -2526,6 +2547,13 @@ html:not([data-rapli-role="editor"]) .move-card{display:none!important}
         }
         return [...groups.values()].sort((a,b)=>collator.compare(a.label,b.label));
       }
+      function cardTileFoilClass(card){
+        // One-of-one cards use a softer champagne-gold foil, including wishlist items.
+        const isOneOfOne=(card.numbered&&/^0*1$/.test(String(card.printRun??'').trim()))||
+          (Array.isArray(card.tags)&&card.tags.some(tag=>
+            /^(?:1\s*\/\s*1|1\s*of\s*1|one[\s-]*of[\s-]*one)$/i.test(String(tag??'').trim())));
+        return isOneOfOne?'card-foil-gold':'card-foil-silver';
+      }
       function sportsGalleryCard(item){
         const photo=imgSafe(item.photo)?'<img src="'+item.photo+'" alt="Photo de '+safeText(item.player||'la carte')+'" loading="lazy" decoding="async">':
           '<div class="sports-gallery-placeholder">'+ico('layers')+'<span>PHOTO NON AJOUTÉE</span></div>';
@@ -2534,7 +2562,7 @@ html:not([data-rapli-role="editor"]) .move-card{display:none!important}
           const logo=logoFor('tag',t);
           return logo?'<img src="'+logo+'" alt="'+safeText(t)+'" title="'+safeText(t)+'" loading="lazy">':'';
         }).filter(Boolean).join('');
-        return '<article class="sports-gallery-tile'+(item.status==='wishlist'&&item.dream?' is-dream-gallery':'')+'">'+
+        return '<article class="sports-gallery-tile '+cardTileFoilClass(item)+(item.status==='wishlist'&&item.dream?' is-dream-gallery':'')+'">'+
          '<button type="button" class="sports-gallery-card-action" data-sports-gallery-card="'+safeText(item.id)+'" aria-label="Ouvrir la fiche de '+safeText(item.player||'cette carte')+'">'+
          '<span class="sports-gallery-media">'+photo+(item.demo?'<span class="photo-flag">DÉMO</span>':'')+
          (item.status==='own'&&!item.demo?'<span class="sports-gallery-own">OWN</span>':'')+
@@ -2637,7 +2665,7 @@ html:not([data-rapli-role="editor"]) .move-card{display:none!important}
         return logo?'<img class="card-tag-logo" src="'+logo+'" alt="'+safeText(t)+'" title="'+safeText(t)+'" loading="lazy">':
           '<span class="tag">'+safeText(t)+'</span>';
       }
-      function cardMarkup(c){const photo=imgSafe(c.photo)?`<img src="${c.photo}" alt="Carte de ${safeText(c.player)}" loading="lazy">`:`<div class="placeholder"><span class="mini-logo">RAPLI / SPORTS</span><div class="place-center">${ico('layers')}</div><span class="place-foot">COLLECTOR'S CARD</span></div>`;const tags=(c.tags||[]).slice(0,8).map(cardTagMarkup).join('')+((c.tags||[]).length>8?`<span class="tag more">+${c.tags.length-8}</span>`:'');return `<article class="card-item${c.status==='wishlist'&&c.dream?' is-dream-card':''}" data-id="${safeText(c.id)}"><div class="photo-side"><div class="card-photo" style="${sportFrameStyle(c.sport)}">${photo}${c.demo?'<span class="photo-flag">DÉMO</span>':''}${recentCard(c)?'<span class="sports-new-flag">NEW</span>':''}</div></div><div class="card-info"><div class="card-top"><div class="card-athlete">${playerCardSummary(c)}</div><div class="card-controls"><button type="button" class="icon-btn" data-action="edit" data-id="${safeText(c.id)}" aria-label="Modifier cette carte" title="Modifier">${ico('edit')}</button><button type="button" class="icon-btn delete" data-action="delete" data-id="${safeText(c.id)}" aria-label="Supprimer cette carte" title="Supprimer">${ico('trash')}</button></div></div><div class="identity-row"><div class="identity-logos"><div class="brand-lockup">${brandBadge('brand',c.brand)}${logoFor('brand',c.brand)?'':'<span>'+safeText(c.brand||'Sans marque')+'</span>'}</div><div class="team-identity">${c.team?brandBadge('team',c.team):''}${logoFor('team',c.team)?'':'<span>'+safeText(c.team||'Équipe non renseignée')+'</span>'}</div></div></div><div class="tags">${tags||'<span class="blank-tag">Aucune variation</span>'}</div><div class="card-bottom"><div class="card-status-badges">${collectorBadgeMarkup(c)}${sportsSportBadge(c.sport)}${c.graded?'<span class="sports-grade-badge">🏅 '+safeText(gradeLabel(c))+'</span>':''}${c.status==='wishlist'&&c.dream?'<span class="card-dream-badge"><span class="dream-sparkle" aria-hidden="true">✨</span> DANS MES RÊVES</span>':''}</div><button type="button" class="move-card" data-action="move" data-id="${safeText(c.id)}">${c.status==='own'?'→ WISHLIST':'→ OWN'}</button></div></div></article>`}
+      function cardMarkup(c){const photo=imgSafe(c.photo)?`<img src="${c.photo}" alt="Carte de ${safeText(c.player)}" loading="lazy">`:`<div class="placeholder"><span class="mini-logo">RAPLI / SPORTS</span><div class="place-center">${ico('layers')}</div><span class="place-foot">COLLECTOR'S CARD</span></div>`;const tags=(c.tags||[]).slice(0,8).map(cardTagMarkup).join('')+((c.tags||[]).length>8?`<span class="tag more">+${c.tags.length-8}</span>`:'');return `<article class="card-item ${cardTileFoilClass(c)}${c.status==='wishlist'&&c.dream?' is-dream-card':''}" data-id="${safeText(c.id)}"><div class="photo-side"><div class="card-photo" style="${sportFrameStyle(c.sport)}">${photo}${c.demo?'<span class="photo-flag">DÉMO</span>':''}${recentCard(c)?'<span class="sports-new-flag">NEW</span>':''}</div></div><div class="card-info"><div class="card-top"><div class="card-athlete">${playerCardSummary(c)}</div><div class="card-controls"><button type="button" class="icon-btn" data-action="edit" data-id="${safeText(c.id)}" aria-label="Modifier cette carte" title="Modifier">${ico('edit')}</button><button type="button" class="icon-btn delete" data-action="delete" data-id="${safeText(c.id)}" aria-label="Supprimer cette carte" title="Supprimer">${ico('trash')}</button></div></div><div class="identity-row"><div class="identity-logos"><div class="brand-lockup">${brandBadge('brand',c.brand)}${logoFor('brand',c.brand)?'':'<span>'+safeText(c.brand||'Sans marque')+'</span>'}</div><div class="team-identity">${c.team?brandBadge('team',c.team):''}${logoFor('team',c.team)?'':'<span>'+safeText(c.team||'Équipe non renseignée')+'</span>'}</div></div></div><div class="tags">${tags||'<span class="blank-tag">Aucune variation</span>'}</div><div class="card-bottom"><div class="card-status-badges">${collectorBadgeMarkup(c)}${sportsSportBadge(c.sport)}${c.graded?'<span class="sports-grade-badge">🏅 '+safeText(gradeLabel(c))+'</span>':''}${c.status==='wishlist'&&c.dream?'<span class="card-dream-badge"><span class="dream-sparkle" aria-hidden="true">✨</span> DANS MES RÊVES</span>':''}</div><button type="button" class="move-card" data-action="move" data-id="${safeText(c.id)}">${c.status==='own'?'→ WISHLIST':'→ OWN'}</button></div></div></article>`}
       const statsEngine=window.RapliSportsStats;
       const statsVisuals=window.RapliSportsStatsVisuals;
       function renderOwnedStatistics(data=statsEngine.calculate(cards)){

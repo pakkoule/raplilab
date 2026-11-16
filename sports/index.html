@@ -1343,8 +1343,35 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
 }
 .sports-catalogue-search .input.with-icon::placeholder{color:#708da1;opacity:1}
 .sports-catalogue-search .input.with-icon:focus{border-color:#58baa8;box-shadow:0 0 0 3px rgba(90,202,173,.14)}
+/* Keep the filter toggle compact while search occupies the flexible column. */
+.sports-catalogue-controls{grid-template-columns:auto minmax(0,1fr) 125px;column-gap:9px}
+.sports-catalogue-controls>.sports-catalogue-search{min-width:0}
+.sports-catalogue-controls>.rapli-collapsible-filters:not([open]){width:125px;max-width:125px;min-width:0;justify-self:end}
+.sports-catalogue-controls .rapli-collapsible-filters>summary{
+  display:flex;justify-content:space-between;gap:6px;
+  padding:8px 10px;min-height:37px;white-space:nowrap;
+}
+.sports-catalogue-controls .rapli-collapsible-filters>summary span{display:none}
+.sports-catalogue-controls>.rapli-collapsible-filters[open]{grid-column:1/-1;grid-row:2;width:100%}
+/* Low-contrast pearlescent foil on the selected Affichage tab. */
+.sports-gallery-switch .sports-gallery-option[aria-pressed="true"],
+.sports-gallery-switch .sports-gallery-other.is-selected{
+  color:#174963;
+  border:1px solid #9dbed1;
+  background:
+    linear-gradient(115deg,transparent 15%,rgba(255,255,255,.68) 37%,rgba(255,255,255,.18) 55%,transparent 75%),
+    linear-gradient(108deg,#c5eee5 0%,#e2f4fb 23%,#d8dbf2 43%,#f3e2ee 62%,#f8e5c8 80%,#d1f4ec 100%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.95),0 2px 8px rgba(44,74,116,.12);
+  text-shadow:0 1px 0 rgba(255,255,255,.62);
+}
+.sports-gallery-switch .sports-gallery-option[aria-pressed="true"]:hover,
+.sports-gallery-switch .sports-gallery-other.is-selected:hover{
+  border-color:#7bafbf;
+  box-shadow:inset 0 1px 0 #fff,0 3px 10px rgba(44,74,116,.16);
+}
 @media(max-width:680px){
  .sports-catalogue-controls{grid-template-columns:auto minmax(0,1fr);gap:7px}
+ .sports-catalogue-controls>.rapli-collapsible-filters:not([open]){width:125px;max-width:125px}
  .sports-catalogue-controls>.sports-catalogue-search{grid-column:1/-1;grid-row:1}
  .sports-catalogue-controls>.nav-actions{grid-column:1;grid-row:2}
  .sports-catalogue-controls>.rapli-collapsible-filters:not([open]){grid-column:2;grid-row:2}
@@ -1373,8 +1400,8 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
             <button id="sportsRandomBtn" type="button" class="button button-soft sports-icon-action" aria-label="Découvrir une carte au hasard" title="Carte aléatoire">⚄</button>
             <button id="addCardBtn" type="button" class="button button-primary sports-icon-action" aria-label="Ajouter une carte" title="Ajouter une carte"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
           </div>
-        <div class="field search-field sports-catalogue-search"><label class="field-label" for="filterSearch">RECHERCHE</label><div class="input-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input class="input with-icon" id="filterSearch" type="search" autocomplete="off" placeholder="Joueur, référence, équipe, tag…" aria-label="Rechercher des cartes"></div></div>
-        <details class="rapli-collapsible-filters" id="sportsCollapsibleFilters"><summary>☷ FILTRES ET TRI <span>Ouvrir / masquer les filtres</span></summary>
+        <div class="field search-field sports-catalogue-search"><label class="field-label" for="filterSearch">RECHERCHE</label><div class="input-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input class="input with-icon" id="filterSearch" type="search" autocomplete="off" placeholder="Joueur, référence, marque, sport, tag, /75…" aria-label="Rechercher dans toutes les informations des cartes"></div></div>
+        <details class="rapli-collapsible-filters" id="sportsCollapsibleFilters"><summary aria-label="Filtres et tri" title="Filtres et tri">☷ FILTRES <span>Ouvrir / masquer les filtres</span></summary>
         <div class="filters">
 
           <div class="field"><label class="field-label" for="filterBrand">MARQUE</label><select class="select" id="filterBrand"><option value="">Toutes les marques</option></select></div>
@@ -2210,12 +2237,40 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
         return true;
       }
       function matchesFuzzy(query,values){
-        const hay=normalize(values.join(' '));
-        if(hay.includes(query))return true;
-        const words=hay.split(/[^a-z0-9]+/).filter(Boolean);
-        return query.split(/\s+/).filter(Boolean).every(part=>
-          hay.includes(part)||(part.length>=5&&words.some(word=>
-            Math.abs(word.length-part.length)<=1&&oneTypoAway(part,word))));
+        // Search all visible card metadata, accent-insensitively, by keyword.
+        // One missing, extra, wrong or transposed character is tolerated on longer terms.
+        const canonical=value=>normalize(value).replace(/[‐‑‒–—−]/g,'-');
+        const hay=canonical(values.filter(value=>value!==null&&value!==undefined).join(' '));
+        const parts=canonical(query).split(/[^a-z0-9]+/).filter(Boolean);
+        if(!parts.length)return true;
+        const words=[...new Set(hay.split(/[^a-z0-9]+/).filter(Boolean))];
+        return parts.every(part=>hay.includes(part)||words.some(word=>
+          (part.length>=3&&word.startsWith(part))||
+          (part.length>=4&&Math.abs(part.length-word.length)<=1&&oneTypoAway(part,word))
+        ));
+      }
+      function cardSearchValues(card){
+        const players=cardPlayers(card);
+        const tags=Array.isArray(card.tags)?card.tags:[];
+        return [
+          card.player,card.brand,card.team,card.sport,card.reference,
+          card.status==='own'?'OWN possédée':'Wishlist recherchée',
+          ...players.flatMap(player=>[
+            player.name,player.nationality,
+            player.nationality?(SPORTS_COUNTRY_NAMES?.of(player.nationality)||player.nationality):'',
+            player.auto?('Autographe auto '+(AUTO_TYPES[player.auto]||player.auto)):'',
+            player.patch?('Patch '+(PATCH_TYPES[player.patch]||player.patch)):''
+          ]),
+          ...tags,...tags.flatMap(tag=>tagCategories(tag)),
+          card.graded?('Grading gradée '+gradeLabel(card)):'',
+          card.numbered?[
+            card.serial?card.serial+'/'+card.printRun:'/'+card.printRun,
+            '/'+card.printRun,card.printRun,'numérotée limitée'
+          ].join(' '):'non numérotée',
+          card.rookie?'Rookie RC':'',
+          card.dream?'Dans mes rêves Dreamlist':'',
+          recentCard(card)?'NEW récente':''
+        ];
       }
       function filterCards(){
         const query=normalize($('filterSearch').value),
@@ -2236,11 +2291,7 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
           // A multi-player card matches if one of its assigned players has the chosen tag.
           // Auto and Patch filters may match different players on the same card.
           if(!matchesPlayerFeature(c,'auto',auto)||!matchesPlayerFeature(c,'patch',patch))return false;
-          if(query&&!matchesFuzzy(query,[c.player,...cardPlayers(c).flatMap(p=>[
-            p.name,p.auto?("Auto "+AUTO_TYPES[p.auto]):"",
-            p.patch?("Patch "+PATCH_TYPES[p.patch]):""
-          ]),c.brand,c.sport,c.team,c.reference,...(c.tags||[]),
-            c.numbered?`${c.serial}/${c.printRun}`:'']))return false;
+          if(query&&!matchesFuzzy(query,cardSearchValues(c)))return false;
           return true;
         });
         const sort=$('sortSelect').value;

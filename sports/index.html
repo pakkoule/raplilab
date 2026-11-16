@@ -1049,6 +1049,7 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
 
 <style id="rapli-sports-tag-categories">
 #tagCategoryPanel[hidden]{display:none!important}
+.tag-brand-summary{display:block;margin-top:6px;color:#496378;font-size:11px;line-height:1.5;overflow-wrap:anywhere}
 .tag-category-panel{
   display:block;min-width:0;margin:14px 0 0;padding:12px;
   border:1px solid #d1dce9;border-radius:11px;background:#f6f9fe;
@@ -1360,6 +1361,9 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
           <label><input type="checkbox" data-tag-category value="parallel"><span>Parallel Cards</span></label>
           <label><input type="checkbox" data-tag-category value="competition"><span>Compétition</span></label>
         </div>
+        <h3 id="tagBrandsTitle" class="tag-category-title" style="margin-top:16px">Marques associées</h3>
+        <p class="logo-help" id="tagBrandsHelp">Coche une ou plusieurs marques. Sans sélection, ce tag est commun à toutes les marques.</p>
+        <div id="tagBrandOptions" class="tag-category-options" role="group" aria-labelledby="tagBrandsTitle" aria-describedby="tagBrandsHelp"></div>
       </section></div>
       <div id="logoList" class="logo-list"></div>
       <div id="labelSettingsPanel" class="sports-label-settings" hidden>
@@ -1496,10 +1500,33 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
       function tagProfile(name){return logos.find(l=>l.type==='tag'&&normalize(l.name)===normalize(name))}
       // Metadata reusable by future filters/stats; unchanged card records.
       function tagCategories(name){return normalizeTagCategories(tagProfile(name)?.categories)}
+      function tagBrands(name){
+        const value=tagProfile(name)?.brands;
+        return savedValues((Array.isArray(value)?value:[]).filter(x=>typeof x==='string').map(x=>x.trim().slice(0,100)));
+      }
+      function tagMatchesBrand(name,brand){
+        const linked=tagBrands(name);
+        return !normalize(brand)||!linked.length||linked.some(x=>normalize(x)===normalize(brand));
+      }
+      function renderTagBrandOptions(name=''){
+        const selected=tagBrands(name),keys=new Set(selected.map(normalize));
+        const brands=savedValues(savedBrands().concat(selected));
+        $('tagBrandOptions').innerHTML=brands.length?brands.map(brand=>
+          '<label><input type="checkbox" data-tag-brand value="'+safeText(brand)+'"'+
+          (keys.has(normalize(brand))?' checked':'')+'><span>'+safeText(brand)+'</span></label>'
+        ).join(''):'<p class="logo-help">Ajoute une marque à une carte ou dans l’onglet Marques pour pouvoir la sélectionner ici.</p>';
+      }
+      function currentTagBrands(){
+        return savedValues([...document.querySelectorAll('#tagBrandOptions [data-tag-brand]:checked')].map(el=>el.value));
+      }
+      function refreshCardTagPicker(){
+        fillSavedPicker($('tagPicker'),savedTags().filter(tag=>tagMatchesBrand(tag,$('cardBrand').value)),'Ajouter un tag existant…');
+      }
       function currentTagCategories(){
         return normalizeTagCategories([...document.querySelectorAll('#tagCategoryPanel [data-tag-category]:checked')].map(el=>el.value));
       }
       function syncTagCategoryForm(name){
+        renderTagBrandOptions(name);
         const selected=new Set(tagCategories(name));
         document.querySelectorAll('#tagCategoryPanel [data-tag-category]').forEach(box=>box.checked=selected.has(box.value));
         const existing=tagProfile(name);
@@ -1998,7 +2025,7 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
       function refreshSavedPickers(){
         fillSavedPicker($('cardBrandPicker'),savedBrands(),'Choisir une marque enregistrée…');
         fillSavedPicker($('cardTeamPicker'),savedTeams(),'Choisir une équipe enregistrée…');
-        fillSavedPicker($('tagPicker'),savedTags(),'Ajouter un tag existant…');
+        refreshCardTagPicker();
         document.querySelectorAll('[data-player-picker]').forEach(el=>
           fillSavedPicker(el,savedPlayers(),'Choisir un athlète enregistré…'));
       }
@@ -2447,7 +2474,7 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
       function closeModal(id){$(id).close();if(!document.querySelector('dialog[open]'))document.body.style.overflow=''}
       function syncDreamField(){const eligible=$('statusWish').checked;$('cardDreamWrap').hidden=!eligible;if(!eligible)$('cardDream').checked=false;}
       function resetForm(){editingId=null;currentTags=[];currentPhoto='';$('cardForm').reset();$('cardGradeFields').classList.add('hidden');$('cardGradeOrg').value='';$('cardGradeScore').value='';$('cardSport').querySelectorAll('option[data-custom-sport]').forEach(option=>option.remove());$('cardBrandPicker').value='';$('cardTeamPicker').value='';$('tagPicker').value='';resetPlayersForm();$('cardRookie').checked=false;$('statusOwn').checked=currentView!=='wishlist';$('statusWish').checked=currentView==='wishlist';$('cardDialogTitle').textContent='Ajouter une carte';$('cardSubmitBtn').textContent='Enregistrer la carte';renderTags();updateSerialUI();renderPhoto();syncDreamField()}
-      function openCard(card){resetForm();if(card){editingId=card.id;currentTags=[...(card.tags||[])];currentPhoto=imgSafe(card.photo)?card.photo:'';$('cardDialogTitle').textContent='Modifier la carte';$('cardSubmitBtn').textContent='Enregistrer les modifications';$('statusOwn').checked=card.status==='own';$('statusWish').checked=card.status==='wishlist';$('cardBrand').value=card.brand||'';const sportSelect=$('cardSport');if(card.sport&&![...sportSelect.options].some(option=>option.value===card.sport)){const custom=new Option(card.sport,card.sport);custom.dataset.customSport='';sportSelect.add(custom);}sportSelect.value=card.sport||'';resetPlayersForm(card);$('cardTeam').value=card.team||'';$('cardReference').value=card.reference||'';$('cardNumbered').checked=Boolean(card.numbered);$('cardRookie').checked=card.rookie===true;$('cardSerial').value=card.serial||'';$('cardPrintRun').value=card.printRun||'';$('cardDream').checked=card.status==='wishlist'&&card.dream===true;$('cardGraded').checked=!!card.graded;$('cardGradeOrg').value=['PSA','BGS','SGC','CGC','Autre'].includes(card.gradeOrg)?card.gradeOrg:'';$('cardGradeScore').value=card.gradeScore||'';$('cardGradeFields').classList.toggle('hidden',!card.graded);renderTags();renderPhoto();updateSerialUI();syncDreamField()}openModal('cardDialog');setTimeout(()=>$('cardBrand').focus(),70)}
+      function openCard(card){resetForm();if(card){editingId=card.id;currentTags=[...(card.tags||[])];currentPhoto=imgSafe(card.photo)?card.photo:'';$('cardDialogTitle').textContent='Modifier la carte';$('cardSubmitBtn').textContent='Enregistrer les modifications';$('statusOwn').checked=card.status==='own';$('statusWish').checked=card.status==='wishlist';$('cardBrand').value=card.brand||'';const sportSelect=$('cardSport');if(card.sport&&![...sportSelect.options].some(option=>option.value===card.sport)){const custom=new Option(card.sport,card.sport);custom.dataset.customSport='';sportSelect.add(custom);}sportSelect.value=card.sport||'';resetPlayersForm(card);$('cardTeam').value=card.team||'';$('cardReference').value=card.reference||'';$('cardNumbered').checked=Boolean(card.numbered);$('cardRookie').checked=card.rookie===true;$('cardSerial').value=card.serial||'';$('cardPrintRun').value=card.printRun||'';$('cardDream').checked=card.status==='wishlist'&&card.dream===true;$('cardGraded').checked=!!card.graded;$('cardGradeOrg').value=['PSA','BGS','SGC','CGC','Autre'].includes(card.gradeOrg)?card.gradeOrg:'';$('cardGradeScore').value=card.gradeScore||'';$('cardGradeFields').classList.toggle('hidden',!card.graded);renderTags();renderPhoto();updateSerialUI();syncDreamField()}refreshCardTagPicker();openModal('cardDialog');setTimeout(()=>$('cardBrand').focus(),70)}
       function renderPhoto(){const valid=imgSafe(currentPhoto);$('photoPreview').classList.toggle('hidden',!valid);$('photoPrompt').classList.toggle('hidden',valid);$('removePhotoBtn').classList.toggle('hidden',!valid);if(valid)$('photoPreview').src=currentPhoto;else $('photoPreview').removeAttribute('src')}
       function updateSerialUI(){const yes=$('cardNumbered').checked;$('serialFields').classList.toggle('hidden',!yes);$('cardSerial').required=yes;$('cardPrintRun').required=yes}
       function addTag(value){const newValue=String(value||'').trim().replace(/^#+/,'');if(!newValue)return;if(!currentTags.some(t=>normalize(t)===normalize(newValue))){if(currentTags.length>=30)return showToast('Maximum de 30 tags par carte.');currentTags.push(newValue.slice(0,60));renderTags()}}
@@ -2512,6 +2539,7 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
         $('logoTeamPicker').hidden=type!=='team';$('logoTeamPicker').value='';
         $('logoTagPicker').hidden=type!=='tag';$('logoTagPicker').value='';
         $('tagCategoryPanel').hidden=type!=='tag';
+        if(type==='tag')renderTagBrandOptions();
         document.querySelectorAll('#tagCategoryPanel [data-tag-category]').forEach(box=>box.checked=false);
         $('logoImageLabel').textContent=type==='tag'?'Image du logo (facultative)':'Image du logo';
         const styleTab=type==='collector',labelsTab=type==='labels',customTab=styleTab||labelsTab;
@@ -2522,7 +2550,7 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
         $('logoCreateHelp').textContent=type==='rookie'
           ? 'Importe un logo RC pour un sport. Il remplacera les lettres RC sur toutes ses Rookie Cards.'
           : type==='athlete'?'Ajoute un portrait par athlète : il s’affiche automatiquement dans la galerie Par athlète. Les joueurs présents sur plusieurs cartes partagent le même portrait.'
-          : type==='tag'?'Classe chaque tag dans Collection, Insert, Parallel Cards et/ou Compétition. Le logo est facultatif ; les cartes existantes restent inchangées.'
+          : type==='tag'?'Classe tes tags et associe-les à une ou plusieurs marques pour adapter les suggestions lors de la saisie d’une carte. Le logo est facultatif.'
           : 'Associe un logo à une marque ou une équipe pour l’afficher sur les cartes correspondantes.';
         $('saveLogoBtn').textContent=type==='rookie'?'Enregistrer le logo RC':type==='athlete'?'Enregistrer le portrait':type==='tag'?'Enregistrer le tag':'Ajouter';
         document.querySelectorAll('.logo-tab').forEach(b=>b.classList.toggle('active',b.dataset.logoType===type));
@@ -2541,9 +2569,9 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
             ).join(''):'<span class="tag-category-badge is-empty">Sans catégorie</span>';
             return '<div class="logo-entry tag-category-entry" data-logo-type="tag">'+
               brandBadge('tag',name)+'<div class="logo-entry-details"><strong class="logo-entry-name">'+safeText(name)+'</strong>'+
-              '<div class="tag-category-badges">'+badges+'</div></div>'+
+              '<div class="tag-category-badges">'+badges+'</div><small class="tag-brand-summary">'+safeText(tagBrands(name).length?'Marques : '+tagBrands(name).join(' · '):'Toutes les marques')+'</small></div>'+
               '<button type="button" class="tag-category-edit" data-edit-tag="'+safeText(name)+
-              '" aria-label="Modifier les catégories de '+safeText(name)+'">Modifier</button>'+
+              '" aria-label="Modifier les catégories et marques de '+safeText(name)+'">Modifier</button>'+
               (profile?'<button type="button" class="icon-btn delete" data-remove-logo="'+safeText(profile.id)+
                '" aria-label="Supprimer la personnalisation de '+safeText(name)+'">'+ico('trash')+'</button>':'')+'</div>';
           }).join(''):'<div class="blank-tag" style="padding:10px">Aucun tag enregistré. Ajoute un nom pour le classer.</div>';
@@ -2574,12 +2602,12 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
         if(logoType!=='tag'&&!pendingLogoPhoto)return showToast(logoType==='athlete'?'Sélectionne un portrait.':'Sélectionne une image de logo.');
         const id=existing?.id||logoType+':'+normalize(name);
         const row=logoType==='tag'?
-          {...existing,id,type:'tag',name,image:pendingLogoPhoto||existing?.image||'',categories:currentTagCategories()}:
+          {...existing,id,type:'tag',name,image:pendingLogoPhoto||existing?.image||'',categories:currentTagCategories(),brands:currentTagBrands()}:
           {id,type:logoType,name,image:pendingLogoPhoto};
         try{
           await saveLogo(row);
           setLogoType(logoType);renderAll();
-          showToast(logoType==='tag'?'Catégories du tag enregistrées ✓':'Logo enregistré et associé automatiquement');
+          showToast(logoType==='tag'?'Tag et marques associées enregistrés ✓':'Logo enregistré et associé automatiquement');
         }catch(e){console.error(e);showToast('Enregistrement impossible. Réessaie.');}
       }
       document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>closeModal(b.dataset.close)));
@@ -2675,8 +2703,11 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
       });
       $('cardBrandPicker').addEventListener('change',event=>{
         if(event.target.value)$('cardBrand').value=event.target.value;
+        refreshCardTagPicker();
         event.target.value='';
       });
+      $('cardBrand').addEventListener('input',refreshCardTagPicker);
+      $('cardBrand').addEventListener('change',refreshCardTagPicker);
       $('cardTeamPicker').addEventListener('change',event=>{
         if(event.target.value)$('cardTeam').value=event.target.value;
         event.target.value='';
@@ -2764,7 +2795,7 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
         const logo=logos.find(x=>x.id===btn.dataset.removeLogo);
         if(!logo)return;
         const question=logo.type==='tag'?
-          'Supprimer la personnalisation du tag « '+logo.name+' » (catégories et logo) ? Les cartes restent conservées.':
+          'Supprimer la personnalisation du tag « '+logo.name+' » (catégories, marques et logo) ? Les cartes restent conservées.':
           'Supprimer le logo « '+logo.name+' » ? Les cartes seront conservées.';
         if(confirm(question)){
           try{await removeLogo(logo.id);renderLogos();renderAll();showToast(logo.type==='tag'?'Personnalisation supprimée':'Logo supprimé');}

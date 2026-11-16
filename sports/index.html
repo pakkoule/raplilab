@@ -522,6 +522,11 @@ body::before{display:none!important}
 .sports-random-meta strong{font-size:17px;color:white}
 @media(max-width:780px){.sports-rainbow-list{grid-template-columns:1fr}.sports-rainbow-head{align-items:flex-start;flex-direction:column}}
 @media(max-width:470px){.sports-rainbow-variants,.sports-rainbow-form-cols,.sports-rainbow-bind{grid-template-columns:1fr}.sports-rainbow-panel{padding:10px 6px 24px}.sports-grade-fields{grid-template-columns:1fr}}
+
+/* Individual athlete country editor, accessible Rainbow labels. */
+.sports-player-country{display:grid;gap:5px;color:#a4bddb;font-size:9px;letter-spacing:.035em;font-weight:800;margin:6px 0}
+.sports-player-country .input{width:100%;max-width:160px}
+.sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
 </style>
 <style id="rapli-cloud-module-controls">
 .rapli-utility-strip .rapli-cloud-module-group{display:flex;align-items:center;gap:6px;margin-right:auto;min-width:0}
@@ -1450,7 +1455,7 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
       function flagFor(code){const value=COUNTRY_CODE(code);return value?[...value].map(ch=>String.fromCodePoint(127397+ch.charCodeAt(0))).join(''):'';}
       const recentCard=c=>{const ts=Number(c?.createdAt)||Date.parse(c?.createdAt||'');return !c?.demo&&Number.isFinite(ts)&&ts>0&&Date.now()>=ts&&Date.now()-ts<7*86400000;};
       const gradeLabel=c=>c?.graded?([c.gradeOrg,c.gradeScore].filter(Boolean).join(' ')||'GRADÉE'):'';
-      const gradingScore=value=>{const s=String(value??'').trim().replace(',','.');if(!s)return '';if(!/^(?:10(?:\.0)?|[1-9](?:\.5|\.0)?|0\.5)$/.test(s))return null;return String(Number(s));};
+      const gradingScore=value=>{const s=String(value??'').trim().replace(',','.');if(!s)return '';if(!/^\d{1,2}(?:\.\d)?$/.test(s))return null;const n=Number(s);return n>=0.5&&n<=10?String(n):null;};
       function normalizedPlayer(value){
         const item=typeof value==='string'?{name:value}:value&&typeof value==='object'?value:{};
         return {

@@ -1354,6 +1354,41 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
 .sports-rainbow-variant.is-wishlist{background:rgba(249,234,255,.85);border-color:#d6bde6;color:#6c418a}
 .sports-rainbow-base-badge{background:rgba(232,255,245,.93);border-color:#a4d6c6;color:#1e6e57}
 
+/* Compact premium Rainbow counters: legible, balanced, and consistent with foil tiles. */
+.sports-rainbow-counts{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:7px;margin:11px 0 13px;
+}
+.sports-rainbow-stat{
+  display:flex;align-items:center;justify-content:flex-start;gap:7px;
+  min-width:0;min-height:53px;padding:7px 9px;
+  border:1px solid rgba(125,155,166,.35);border-radius:10px;
+  background:linear-gradient(128deg,rgba(255,255,255,.83),rgba(240,247,249,.66));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.88),0 2px 7px rgba(24,60,87,.06);
+  color:#294c60;
+}
+.sports-rainbow-stat-icon{
+  flex:0 0 23px;display:grid;place-items:center;
+  width:23px;height:23px;border:1px solid currentColor;border-radius:50%;
+  background:rgba(255,255,255,.45);font-size:14px;line-height:1;font-weight:900;
+}
+.sports-rainbow-stat-info{display:flex;flex-direction:column;gap:1px;min-width:0}
+.sports-rainbow-stat-info strong{font:900 18px/1.05 Poppins,system-ui,sans-serif;color:#203f55;font-variant-numeric:tabular-nums}
+.sports-rainbow-stat-info small{font:850 8px/1.25 Poppins,system-ui,sans-serif;letter-spacing:.025em;color:#466277;overflow-wrap:anywhere}
+.sports-rainbow-stat--own{background:linear-gradient(127deg,#f3fff8,#dbf6e8 88%);border-color:#a0d7bb}
+.sports-rainbow-stat--own .sports-rainbow-stat-icon{color:#1c815d}
+.sports-rainbow-stat--wishlist{background:linear-gradient(127deg,#fcf8ff,#ede1f5 88%);border-color:#d4b8e2}
+.sports-rainbow-stat--wishlist .sports-rainbow-stat-icon{color:#8656a2}
+.sports-rainbow-stat--missing{background:linear-gradient(127deg,#fffefd,#f2f0e9 88%);border-color:#d7d2c3}
+.sports-rainbow-stat--missing .sports-rainbow-stat-icon{color:#846e4d}
+@media(max-width:540px){
+ .sports-rainbow-counts{gap:5px}
+ .sports-rainbow-stat{flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:63px;padding:7px 3px;text-align:center}
+ .sports-rainbow-stat-icon{width:21px;height:21px;flex-basis:21px;font-size:12px}
+ .sports-rainbow-stat-info strong{font-size:16px}
+ .sports-rainbow-stat-info small{font-size:7px}
+}
+
 /* Independent catalogue search: remains visible when Filtres et tri is closed. */
 .sports-catalogue-controls{grid-template-columns:auto minmax(170px,1fr) minmax(165px,220px);align-items:start}
 .sports-catalogue-controls>.sports-catalogue-search{min-width:0;align-self:start;display:block}
@@ -1744,7 +1779,7 @@ html:not([data-rapli-role="editor"]) .move-card{display:none!important}
       <div class="sports-rainbow-form-cols"><label class="input-group">Athlète<input id="rainbowAthlete" class="input" maxlength="120" list="rainbowAthleteList" placeholder="Tyrese Maxey"><datalist id="rainbowAthleteList"></datalist></label><label class="input-group">Marque<input id="rainbowBrand" class="input" maxlength="90" list="brandsList" placeholder="Topps"></label></div>
       <label class="input-group">Référence de la carte de base<input id="rainbowBaseRef" class="input" maxlength="180" placeholder="Ex. #23 · 2025–26 Topps Chrome"></label>
       <label class="input-group">Checklist des parallèles *<textarea id="rainbowVariants" class="input" rows="7" required placeholder="Base&#10;Refractor&#10;Purple Refractor&#10;Gold Refractor&#10;Superfractor 1/1"></textarea><span class="field-hint">Une variante par ligne, maximum 80. Le 1/1 n'est compté que si tu l'ajoutes à cette checklist.</span></label>
-      <div class="sports-rainbow-bind-head"><strong>ASSOCIER LES CARTES AUX PARALLÈLES</strong><p>Lie chaque variante à une fiche OWN ou Wishlist. Coche « Carte de base » à côté de la variation qui doit illustrer la tuile, même si elle porte un autre nom. Une seule case peut être cochée par Rainbow ; décoche-la pour retirer le visuel principal. Sans association, la variante reste manquante.</p><label class="input-group">Chercher parmi les cartes<input id="rainbowCardSearch" class="input" type="search" placeholder="Joueur, variation, référence…"></label></div>
+      <div class="sports-rainbow-bind-head"><strong>ASSOCIER LES CARTES AUX PARALLÈLES</strong><p>Associe chaque variante à une carte : son statut OWN ou Wishlist est détecté automatiquement. Coche « Carte de base » à côté de la variation qui doit illustrer la tuile, même si elle porte un autre nom. Une seule case peut être cochée par Rainbow ; décoche-la pour retirer le visuel principal. Sans association, la variante reste manquante.</p><label class="input-group">Chercher parmi les cartes<input id="rainbowCardSearch" class="input" type="search" placeholder="Athlète, parallèle…"></label></div>
       <div id="rainbowVariantLinks" class="sports-rainbow-bind-list"></div>
     </div><div class="modal-footer"><button type="button" class="button button-ghost" data-close="rainbowDialog">Annuler</button><button id="saveRainbowBtn" class="button button-primary" type="submit">Enregistrer le Rainbow</button></div></div></form>
   </dialog>
@@ -2768,8 +2803,16 @@ html:not([data-rapli-role="editor"]) .move-card{display:none!important}
             '<span class="sports-rainbow-percent">'+group.percent+' %</span></div>'+
             '<p class="sports-rainbow-meta">'+safeText(details||'Carte de base non renseignée')+'</p>'+
             '<div class="sports-rainbow-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+group.percent+'" aria-label="Complétion de '+safeText(group.name)+'"><span style="width:'+group.percent+'%"></span></div>'+
-            '<div class="sports-rainbow-counts"><span>✓ OWN '+group.owned+'</span><span>♡ Wishlist '+group.wishlist+
-            '</span><span>○ Manquantes '+group.missing+'</span></div>'+
+            '<div class="sports-rainbow-counts" role="group" aria-label="Statistiques du Rainbow">'+
+            '<span class="sports-rainbow-stat sports-rainbow-stat--own" aria-label="'+group.owned+' cartes possédées">'+
+              '<span class="sports-rainbow-stat-icon" aria-hidden="true">✓</span>'+
+              '<span class="sports-rainbow-stat-info"><strong>'+group.owned+'</strong><small>OWN</small></span></span>'+
+            '<span class="sports-rainbow-stat sports-rainbow-stat--wishlist" aria-label="'+group.wishlist+' cartes en wishlist">'+
+              '<span class="sports-rainbow-stat-icon" aria-hidden="true">♡</span>'+
+              '<span class="sports-rainbow-stat-info"><strong>'+group.wishlist+'</strong><small>WISHLIST</small></span></span>'+
+            '<span class="sports-rainbow-stat sports-rainbow-stat--missing" aria-label="'+group.missing+' variations manquantes">'+
+              '<span class="sports-rainbow-stat-icon" aria-hidden="true">○</span>'+
+              '<span class="sports-rainbow-stat-info"><strong>'+group.missing+'</strong><small>MANQUANTES</small></span></span></div>'+
             '</div></div><details class="sports-rainbow-disclosure" data-rainbow-disclosure="'+safeText(group.id)+'"'+(expanded.has(group.id)?' open':'')+'><summary>Variations · '+group.total+'</summary><div class="sports-rainbow-variants">'+variants+'</div></details>'+
             '<div class="sports-rainbow-actions"><button type="button" class="button button-soft" data-rainbow-edit="'+safeText(group.id)+'">MODIFIER</button>'+
             '<button type="button" class="button button-ghost" data-rainbow-delete="'+safeText(group.id)+'">SUPPRIMER LE RAINBOW</button></div></article>';
@@ -2779,6 +2822,19 @@ html:not([data-rapli-role="editor"]) .move-card{display:none!important}
         $('rainbowVariantLinks').querySelectorAll('[data-rainbow-variant-select]').forEach(el=>{
           rainbowAssignments.set(el.dataset.rainbowVariantSelect,el.value);
         });
+      }
+      function rainbowCandidateLabel(card,variantName){
+        const athlete=cardPlayers(card).map(player=>player.name).filter(Boolean).join(' / ')||
+          String(card.player||'Athlète non renseigné');
+        // Only the tag(s) classified as Parallel Cards appear in the option.
+        // Accept a tag matching this Rainbow checklist even on older cards
+        // whose tag category has not yet been assigned.
+        const parallels=sportsGalleryClassifiedTags(card,'parallel');
+        const variantKey=normalize(variantName);
+        const matching=parallels.find(tag=>normalize(tag)===variantKey)||
+          (Array.isArray(card.tags)?card.tags:[]).find(tag=>normalize(tag)===variantKey);
+        const parallel=matching||(parallels.length?parallels.join(' / '):'Sans parallèle');
+        return athlete+' · '+parallel;
       }
       function renderRainbowLinks(){
         const names=rainbowEngine.variantLines($('rainbowVariants').value);
@@ -2798,9 +2854,7 @@ html:not([data-rapli-role="editor"]) .move-card{display:none!important}
           const choices=chosen&&!matches.some(card=>card.id===chosen.id)?[chosen,...matches]:matches;
           const options=['<option value="">— Non associée / manquante —</option>',
             ...choices.map(card=>{
-              const status=card.demo?'DÉMO':card.status==='own'?'OWN':'WISHLIST';
-              const full=[card.player,card.reference,(card.tags||[]).join(' / ')].filter(Boolean).join(' · ');
-              return '<option value="'+safeText(card.id)+'"'+(card.id===linked?' selected':'')+'>'+safeText(status+' · '+full)+'</option>';
+              return '<option value="'+safeText(card.id)+'"'+(card.id===linked?' selected':'')+'>'+safeText(rainbowCandidateLabel(card,label))+'</option>';
             })];
           if(linked&&!chosen)options.push('<option value="'+safeText(linked)+'" selected>⚠ Fiche associée supprimée</option>');
           return '<div class="sports-rainbow-bind"><div class="sports-rainbow-bind-name"><strong>'+safeText(label)+'</strong><label class="sports-rainbow-base-choice"><input type="checkbox" data-rainbow-base value="'+safeText(key)+'"'+(key===rainbowBaseVariant?' checked':'')+' aria-label="Utiliser '+safeText(label)+' comme carte de base"> Carte de base</label></div>'+ 

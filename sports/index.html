@@ -1341,52 +1341,35 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
 }
 .sports-rainbow-top h3{color:#1e3855}
 .sports-rainbow-meta{color:#4b637b}
-/* Topps Inception-inspired percentage: gold foil, deep black ink,
-   with a restrained multicolour paint-burst contour. */
+/* Inception-inspired gold foil, intentionally light for small Rainbow tiles.
+   Keep the glyphs clean: no duplicated black text layers or thick strokes. */
 .sports-rainbow-percent{
   display:inline-flex;align-items:baseline;justify-content:flex-end;gap:2px;
   flex:0 0 auto;white-space:nowrap;
-  font:900 30px/1 Poppins,system-ui,sans-serif;
-  font-variant-numeric:tabular-nums;letter-spacing:-.04em;
-  background:none;color:#d5ad4b;
+  font:750 29px/1.08 Poppins,system-ui,sans-serif;
+  font-variant-numeric:tabular-nums;letter-spacing:-.025em;
+  background:none;color:#c59634;
 }
 .sports-rainbow-percent-value,
 .sports-rainbow-percent-symbol{
-  position:relative;isolation:isolate;display:inline-block;line-height:1;
-  color:#d5ad4b;
-  background:linear-gradient(180deg,#fff2b5 0%,#e7c35b 29%,#9c6d20 67%,#f5d579 100%);
+  position:relative;display:inline-block;line-height:1.08;
+  background:linear-gradient(180deg,#f8e7a6 0%,#dbb54e 34%,#a97824 69%,#efcf75 100%);
   -webkit-background-clip:text;background-clip:text;
-  -webkit-text-fill-color:transparent;
-  -webkit-text-stroke:.85px #141316;
-  text-shadow:0 2px 2px rgba(12,12,18,.16);
-  filter:drop-shadow(0 1px 1px rgba(0,0,0,.22));
-}
-.sports-rainbow-percent-value::before,
-.sports-rainbow-percent-symbol::before{
-  content:attr(data-text);position:absolute;inset:0;z-index:-1;
-  color:#111116;-webkit-text-fill-color:#111116;
-  -webkit-text-stroke:2.2px #111116;
-  text-shadow:0 1px 0 #07070a;
-}
-.sports-rainbow-percent-value::after,
-.sports-rainbow-percent-symbol::after{
-  content:attr(data-text);position:absolute;inset:0;z-index:-2;
-  background:linear-gradient(100deg,#00baff 4%,#1ddc88 24%,#ffce43 43%,#ff7144 60%,#ff48a9 81%,#7459ed 100%);
-  -webkit-background-clip:text;background-clip:text;
-  color:transparent;-webkit-text-fill-color:transparent;
-  -webkit-text-stroke:2.8px transparent;
-  filter:blur(.35px) saturate(1.35)
-    drop-shadow(1px 0 #00baff) drop-shadow(-1px 0 #ff4b9b);
-  transform:translate(1px,.5px);
-  opacity:.9;
+  color:#c59634;-webkit-text-fill-color:transparent;
+  -webkit-text-stroke:.35px #1a1a20;
+  /* Discreet black depth and tiny rainbow ink flecks around, not over, the gold. */
+  text-shadow:
+    0 1px 0 rgba(12,13,20,.55),
+    -1px -.5px 0 rgba(0,178,233,.65),
+    1px .5px 0 rgba(234,55,141,.65),
+    0 -1px 0 rgba(45,197,124,.4),
+    0 2px 4px rgba(15,22,30,.13);
 }
 .sports-rainbow-percent-symbol{
-  font-size:.55em;letter-spacing:0;margin-left:1px;
+  font-size:.57em;letter-spacing:0;margin-left:1px;
 }
 @media(max-width:470px){
-  .sports-rainbow-percent{font-size:25px}
-  .sports-rainbow-percent-value::after,
-  .sports-rainbow-percent-symbol::after{filter:blur(.25px) saturate(1.2)}
+  .sports-rainbow-percent{font-size:24px}
 }
 .sports-rainbow-track{background:rgba(52,87,109,.19)}
 .sports-rainbow-counts{color:#38526b}

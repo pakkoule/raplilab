@@ -17,6 +17,18 @@
   }
   return out;
  }
+ const MAX_REFERENCES=30;
+ function referenceLines(raw){
+  const values=Array.isArray(raw)?raw:String(raw||'').split(/\r?\n/);
+  const seen=new Set(),out=[];
+  for(const value of values){
+   const label=trim(value,180),key=norm(label);
+   if(!key||seen.has(key))continue;
+   seen.add(key);out.push(label);
+   if(out.length>=MAX_REFERENCES)break;
+  }
+  return out;
+ }
  function cleanGroup(input){
   const raw=input&&typeof input==='object'?input:{};
   const seen=new Set(),variants=[];
@@ -32,10 +44,16 @@
   const selected=variants.findIndex(v=>v.isBase);
   const baseIndex=explicit?selected:variants.findIndex(v=>['base','base card','carte de base'].includes(norm(v.label)));
   variants.forEach((v,index)=>{v.isBase=index===baseIndex;});
+  // Old saved Rainbows have one baseReference; keep it as the first allowed
+  // reference and retain all new references on subsequent edits.
+  const references=referenceLines([
+   ...referenceLines(raw.baseReference),
+   ...referenceLines(raw.baseReferences)
+  ]);
   return {
    id:trim(raw.id,180),type:'rainbow',name:trim(raw.name,160),
    brand:trim(raw.brand,90),athlete:trim(raw.athlete,120),
-   baseReference:trim(raw.baseReference,180),variants,
+   baseReference:references[0]||'',baseReferences:references,variants,
    createdAt:Number(raw.createdAt)||Date.now(),updatedAt:Number(raw.updatedAt)||Date.now()
   };
  }
@@ -60,5 +78,5 @@
   return {...data,entries,owned,wishlist,missing,total:entries.length,
    percent:entries.length?Math.round(owned/entries.length*100):0};
  }
- root.RapliSportsRainbow=Object.freeze({MAX_VARIANTS,norm,variantLines,cleanGroup,progress});
+ root.RapliSportsRainbow=Object.freeze({MAX_VARIANTS,MAX_REFERENCES,norm,variantLines,referenceLines,cleanGroup,progress});
 })(window);

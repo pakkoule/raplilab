@@ -7,6 +7,7 @@
   let scale = 1, x = 0, y = 0, oldOverflow = '', previousFocus = null;
   const pointers = new Map();
   let gesture = null;
+  let tapCandidate = null;
 
   function clamp(n) { return Math.max(MIN, Math.min(MAX, n)); }
   function distance(a, b) { return Math.hypot(a.x - b.x, a.y - b.y); }
@@ -16,6 +17,7 @@
     percent.textContent = Math.round(scale * 100) + ' %';
     minusButton.disabled = scale <= MIN;
     plusButton.disabled = scale >= MAX;
+    stage.classList.toggle('is-zoomed', scale > MIN);
   }
   function setZoom(next) {
     scale = clamp(next);
@@ -36,7 +38,7 @@
       '<button type="button" data-zoom="in" aria-label="Agrandir le zoom">+</button>' +
       '<button type="button" class="rapli-zoom-close" data-zoom="close" aria-label="Fermer la photo">×</button>' +
       '</div><div class="rapli-zoom-stage"><img class="rapli-zoom-image" alt="" draggable="false"></div>' +
-      '<p class="rapli-zoom-help">Molette ou boutons pour zoomer · Pincer sur mobile · Glisser pour déplacer · Échap pour fermer</p>';
+      '<p class="rapli-zoom-help">Cliquer ou toucher la photo pour fermer · Molette ou boutons pour zoomer · Pincer et glisser pour déplacer</p>';
     document.body.appendChild(root);
     stage = root.querySelector('.rapli-zoom-stage');
     picture = root.querySelector('.rapli-zoom-image');
@@ -63,12 +65,15 @@
       if (root.hidden) return;
       event.preventDefault();
       stage.setPointerCapture?.(event.pointerId);
+      // Only a short, single-pointer tap closes the viewer; drags and pinches must remain usable.
+      tapCandidate = pointers.size === 0 ? {id:event.pointerId,x:event.clientX,y:event.clientY} : null;
       pointers.set(event.pointerId, {x:event.clientX,y:event.clientY});
       beginGesture();
       stage.classList.add('is-dragging');
     });
     stage.addEventListener('pointermove', event => {
       if (!pointers.has(event.pointerId) || root.hidden) return;
+      if (tapCandidate?.id === event.pointerId && Math.hypot(event.clientX-tapCandidate.x,event.clientY-tapCandidate.y) > 10) tapCandidate = null;
       pointers.set(event.pointerId, {x:event.clientX,y:event.clientY});
       const pts = [...pointers.values()];
       if (pts.length >= 2 && gesture && gesture.kind === 'pinch') {
@@ -85,9 +90,13 @@
       }
     });
     const pointerEnd = event => {
+      const isTap = event.type === 'pointerup' && tapCandidate?.id === event.pointerId &&
+        pointers.size === 1 && Math.hypot(event.clientX-tapCandidate.x,event.clientY-tapCandidate.y) <= 10;
+      tapCandidate = null;
       if (!pointers.delete(event.pointerId)) return;
       stage.classList.toggle('is-dragging', pointers.size > 0);
       beginGesture();
+      if (isTap) close();
     };
     stage.addEventListener('pointerup',pointerEnd);
     stage.addEventListener('pointercancel',pointerEnd);
@@ -109,7 +118,7 @@
     oldOverflow = document.body.style.overflow;
     picture.src = src;
     picture.alt = img.alt || 'Photo agrandie';
-    scale = 1; x = 0; y = 0; pointers.clear(); gesture = null;
+    scale = 1; x = 0; y = 0; pointers.clear(); gesture = null; tapCandidate = null;
     sync();
     root.hidden = false;
     document.body.style.overflow = 'hidden';
@@ -127,8 +136,8 @@
   function close() {
     if (!root || root.hidden) return;
     root.hidden = true;
-    pointers.clear(); gesture = null;
-    stage.classList.remove('is-dragging');
+    pointers.clear(); gesture = null; tapCandidate = null;
+    stage.classList.remove('is-dragging','is-zoomed');
     picture.removeAttribute('src');
     document.body.style.overflow = oldOverflow;
     if (previousFocus && previousFocus.isConnected) previousFocus.focus({preventScroll:true});

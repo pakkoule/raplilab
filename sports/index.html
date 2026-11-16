@@ -471,6 +471,57 @@ body::before{display:none!important}
   .app-shell .stats{padding:6px}
 }
 
+
+/* Sports - rainbow, grading, flags, newly acquired cards */
+.sports-rainbow-panel{padding:17px 16px 30px}
+.sports-rainbow-head{display:flex;justify-content:space-between;align-items:center;gap:18px;padding:20px;border:1px solid #596484;border-radius:15px;margin-bottom:16px;background:linear-gradient(105deg,#172a44,#39406a,#665084,#285274)}
+.sports-rainbow-kicker{font-size:9px;font-weight:900;letter-spacing:.15em;color:#c0f2f0}
+.sports-rainbow-head h2{margin:7px 0;color:white;font-size:25px}
+.sports-rainbow-head p{font-size:11px;line-height:1.55;color:#d1dcf1;margin:0;max-width:580px}
+.sports-rainbow-overview{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:15px}
+.sports-rainbow-overview span{border:1px solid #496387;border-radius:9px;padding:10px 12px;background:#142a46;color:#d0deef;font-size:11px}
+.sports-rainbow-overview strong{color:#fff;font-size:18px;margin-right:5px}
+.sports-rainbow-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.sports-rainbow-group{min-width:0;border:1px solid #3b5777;border-radius:13px;background:#15263f;padding:15px}
+.sports-rainbow-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.sports-rainbow-top h3{font-size:16px;color:#fff;margin:0;overflow-wrap:anywhere}
+.sports-rainbow-percent{font-size:28px;font-weight:900;letter-spacing:-.04em;white-space:nowrap;background:linear-gradient(90deg,#8bc4ff,#96efbc,#f3d98b,#eba4e4);-webkit-background-clip:text;background-clip:text;color:transparent}
+.sports-rainbow-meta{font-size:10px;color:#9bb2cf;margin:6px 0 12px;line-height:1.5}
+.sports-rainbow-track{height:9px;background:#344862;border-radius:99px;overflow:hidden}
+.sports-rainbow-track>span{display:block;height:100%;background:linear-gradient(90deg,#71c7fa,#76e8b7,#f2ce8e,#dcb1f6);border-radius:inherit}
+.sports-rainbow-counts{font-size:10px;color:#a7c4e7;display:flex;flex-wrap:wrap;gap:9px;margin:9px 0 13px}
+.sports-rainbow-variants{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-bottom:14px}
+.sports-rainbow-variant{display:flex;align-items:center;gap:6px;min-width:0;border:1px solid #38516c;border-radius:7px;padding:8px;background:#182d48;color:#c3d5eb;font-size:10px}
+.sports-rainbow-variant.is-own{color:#bbf8d8;border-color:#408c77;background:#183b3b}
+.sports-rainbow-variant.is-wishlist{color:#e5c5f5;border-color:#735c91}
+.sports-rainbow-variant button{border:0;background:transparent;color:inherit;text-align:left;text-decoration:underline;cursor:pointer;padding:0;font:inherit;overflow-wrap:anywhere}
+.sports-rainbow-actions{display:flex;flex-wrap:wrap;gap:8px}
+.sports-rainbow-actions .button{font-size:10px}
+.sports-rainbow-empty{text-align:center;border:1px dashed #59728b;color:#b5c7dd;border-radius:10px;padding:35px 18px;line-height:1.6}
+.sports-rainbow-form{display:grid;gap:13px}
+.sports-rainbow-form .input-group{display:grid;gap:5px;color:#c4d6ec;font-size:11px;font-weight:800}
+.sports-rainbow-form .input{width:100%}
+.sports-rainbow-form textarea{resize:vertical;min-height:115px}
+.sports-rainbow-form-cols{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.sports-rainbow-bind-head{border-top:1px solid #395473;padding-top:12px}
+.sports-rainbow-bind-head strong{color:white;font-size:11px}
+.sports-rainbow-bind-head p{color:#a8bbd7;font-size:10px}
+.sports-rainbow-bind-list{display:grid;gap:7px;max-height:330px;overflow-y:auto}
+.sports-rainbow-bind{display:grid;grid-template-columns:minmax(100px,1fr) minmax(170px,2fr);align-items:center;gap:8px;background:#152742;border:1px solid #3d5677;padding:9px;border-radius:9px}
+.sports-rainbow-bind label{font-size:11px;font-weight:800;color:#d9e6fa;overflow-wrap:anywhere}
+.sports-rainbow-bind select{width:100%;padding:7px;font-size:11px}
+.sports-grade-toggle{display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:900;color:#dbeafc}
+.sports-grade-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:8px 0}
+.sports-grade-fields label{display:grid;gap:4px;font-size:10px;color:#a9bfdb}
+.sports-new-flag{position:absolute;top:8px;left:8px;z-index:5;background:#123e3a;color:#baffdc;border:1px solid #5bd09d;border-radius:5px;font-size:8px;font-weight:900;padding:4px 6px;box-shadow:0 3px 10px #0008}
+.sports-gallery-new{position:absolute;top:8px;right:8px;z-index:5;background:#124b39;color:#b6ffda;border:1px solid #51d69e;border-radius:5px;font-size:8px;font-weight:900;padding:4px 6px}
+.sports-grade-badge{display:inline-flex;align-items:center;gap:3px;background:linear-gradient(105deg,#6d5a2c,#22364d);color:#ffe6aa;border:1px solid #bfa66b;border-radius:6px;font-size:9px;font-weight:900;padding:4px 7px}
+.sports-flag{margin-left:4px;white-space:nowrap}
+.sports-random-photo{width:100%;max-height:315px;object-fit:contain;border-radius:9px;background:#14243c}
+.sports-random-meta{display:grid;gap:7px;margin:12px 0;color:#c0d5ef;font-size:11px}
+.sports-random-meta strong{font-size:17px;color:white}
+@media(max-width:780px){.sports-rainbow-list{grid-template-columns:1fr}.sports-rainbow-head{align-items:flex-start;flex-direction:column}}
+@media(max-width:470px){.sports-rainbow-variants,.sports-rainbow-form-cols,.sports-rainbow-bind{grid-template-columns:1fr}.sports-rainbow-panel{padding:10px 6px 24px}.sports-grade-fields{grid-template-columns:1fr}}
 </style>
 <style id="rapli-cloud-module-controls">
 .rapli-utility-strip .rapli-cloud-module-group{display:flex;align-items:center;gap:6px;margin-right:auto;min-width:0}

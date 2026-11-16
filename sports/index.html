@@ -2012,6 +2012,34 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
         if(criterion==='without')return assignments.every(type=>!type);
         return assignments.includes(criterion);
       }
+
+      function oneTypoAway(a,b){
+        if(a===b)return true;
+        if(Math.abs(a.length-b.length)>1)return false;
+        if(a.length===b.length){
+          const differences=[];
+          for(let i=0;i<a.length;i++)if(a[i]!==b[i])differences.push(i);
+          if(differences.length===1)return true;
+          return differences.length===2&&differences[1]===differences[0]+1&&
+            a[differences[0]]===b[differences[1]]&&a[differences[1]]===b[differences[0]];
+        }
+        let short=a,long=b;if(a.length>b.length){short=b;long=a;}
+        let i=0,j=0,skipped=false;
+        while(i<short.length&&j<long.length){
+          if(short[i]===long[j]){i++;j++;continue;}
+          if(skipped)return false;
+          skipped=true;j++;
+        }
+        return true;
+      }
+      function matchesFuzzy(query,values){
+        const hay=normalize(values.join(' '));
+        if(hay.includes(query))return true;
+        const words=hay.split(/[^a-z0-9]+/).filter(Boolean);
+        return query.split(/\s+/).filter(Boolean).every(part=>
+          hay.includes(part)||(part.length>=5&&words.some(word=>
+            Math.abs(word.length-part.length)<=1&&oneTypoAway(part,word))));
+      }
       function filterCards(){
         const query=normalize($('filterSearch').value),
           brand=normalize($('filterBrand').value),
@@ -2031,11 +2059,11 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
           // A multi-player card matches if one of its assigned players has the chosen tag.
           // Auto and Patch filters may match different players on the same card.
           if(!matchesPlayerFeature(c,'auto',auto)||!matchesPlayerFeature(c,'patch',patch))return false;
-          if(query&&!normalize([c.player,...cardPlayers(c).flatMap(p=>[
+          if(query&&!matchesFuzzy(query,[c.player,...cardPlayers(c).flatMap(p=>[
             p.name,p.auto?("Auto "+AUTO_TYPES[p.auto]):"",
             p.patch?("Patch "+PATCH_TYPES[p.patch]):""
           ]),c.brand,c.sport,c.team,c.reference,...(c.tags||[]),
-            c.numbered?`${c.serial}/${c.printRun}`:''].join(' ')).includes(query))return false;
+            c.numbered?`${c.serial}/${c.printRun}`:'']))return false;
           return true;
         });
         const sort=$('sortSelect').value;
@@ -2337,6 +2365,25 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
         catch(err){console.error(err);showToast('Enregistrement impossible. Essaie un export puis une image plus légère.');}
       }
       async function cardAction(e){const btn=e.target.closest('[data-action]');if(!btn)return;const card=cards.find(x=>x.id===btn.dataset.id);if(!card)return;if(btn.dataset.action==='edit')openCard(card);else if(btn.dataset.action==='delete'){if(confirm(`Supprimer la carte de ${card.player} ?`)){try{await removeCard(card.id);renderAll();showToast('Carte supprimée')}catch(err){showToast('Suppression impossible')}}}else if(btn.dataset.action==='move'){try{await saveCard({...card,status:card.status==='own'?'wishlist':'own',dream:false,updatedAt:Date.now(),demo:false});renderAll();showToast('Carte transférée vers '+(card.status==='own'?'WISHLIST':'OWN'))}catch(e){showToast('Transfert impossible')}}}
+
+      function showRandomSportsCard(){
+        const pool=currentView==='own'||currentView==='wishlist'?filterCards():
+          cards.filter(c=>c.status==='own'&&!c.demo);
+        if(!pool.length){showToast('Aucune carte disponible pour un tirage aléatoire.');return;}
+        let choices=pool;
+        if(pool.length>1&&randomSportsCardId)choices=pool.filter(c=>c.id!==randomSportsCardId);
+        const choice=choices[Math.floor(Math.random()*choices.length)];
+        randomSportsCardId=choice.id;
+        const photo=imgSafe(choice.photo)?'<img class="sports-random-photo" src="'+choice.photo+'" alt="Carte de '+safeText(choice.player)+'">':
+          '<div class="sports-rainbow-empty">Aucune photo enregistrée</div>';
+        const fullPlayers=cardPlayers(choice).map(p=>safeText(p.name)+(p.nationality?' '+flagFor(p.nationality):'')).join(' · ');
+        $('sportsRandomBody').innerHTML=photo+'<div class="sports-random-meta"><strong>'+fullPlayers+'</strong>'+
+          '<span>'+safeText([choice.brand,choice.team,choice.sport].filter(Boolean).join(' · '))+'</span>'+
+          '<small>'+safeText(choice.reference||'Référence non renseignée')+'</small>'+
+          '<small>'+safeText((choice.tags||[]).join(' · '))+'</small>'+
+          (choice.graded?'<span class="sports-grade-badge">🏅 '+safeText(gradeLabel(choice))+'</span>':'')+'</div>';
+        if(!$('sportsRandomDialog').open)openModal('sportsRandomDialog');
+      }
       function clearFilters(){$('filterDream').checked=false;$('filterSearch').value='';['filterBrand','filterTeam','filterTag','filterSport','filterAuto','filterPatch'].forEach(id=>$(id).value='');$('filterNumbered').checked=false;sportsGalleryPage=1;sportsGallerySelected=null;renderAll()}
       function setLogoType(type){
         if(!['brand','team','rookie','athlete','tag','labels','collector'].includes(type))type='brand';
@@ -2454,6 +2501,9 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
         .forEach(id=>$(id).addEventListener(id==='filterSearch'?'input':'change',()=>{
           sportsGalleryPage=1;sportsGallerySelected=null;renderAll();
         }));
+      $('sportsRandomBtn').addEventListener('click',showRandomSportsCard);
+      $('sportsRandomAgain').addEventListener('click',showRandomSportsCard);
+      $('sportsRandomEdit').addEventListener('click',()=>{const picked=cards.find(c=>c.id===randomSportsCardId);closeModal('sportsRandomDialog');if(picked)openCard(picked);});
       $('clearFiltersBtn').addEventListener('click',clearFilters);$('addCardBtn').addEventListener('click',()=>openCard());$('emptyAddBtn').addEventListener('click',()=>openCard());$('cardForm').addEventListener('submit',submitCard);$('cardGrid').addEventListener('click',cardAction);
       $('addPlayerBtn').addEventListener('click',()=>{
         const row=addPlayerRow();

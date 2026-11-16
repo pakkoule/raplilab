@@ -1177,12 +1177,14 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
             <button type="button" role="tab" aria-selected="true" class="tab active" data-view="own">OWN <b id="tabOwnCount">0</b></button>
             <button type="button" role="tab" aria-selected="false" class="tab" data-view="wishlist">WISHLIST <b id="tabWishCount">0</b></button>
             <button type="button" role="tab" aria-selected="false" class="tab" data-view="stats">STATISTIQUES</button>
+            <button type="button" role="tab" aria-selected="false" class="tab" data-view="rainbow">🌈 RAINBOW <b id="tabRainbowCount">0</b></button>
           </div>
         </div>
         <div id="collectionPanel">
         <div class="sports-catalogue-controls">
           <div class="nav-actions" role="group" aria-label="Actions sur les cartes">
             <button id="logosBtn" type="button" class="button button-soft sports-icon-action rapli-personalize-action" aria-label="Gérer les logos" title="Gérer les logos"><svg class="rapli-personalize-gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M10.3 2.4h3.4l.5 1.9 1.7.7 1.7-1 2.4 2.4-1 1.7.7 1.7 1.9.5v3.4l-1.9.5-.7 1.7 1 1.7-2.4 2.4-1.7-1-1.7.7-.5 1.9h-3.4l-.5-1.9-1.7-.7-1.7 1-2.4-2.4 1-1.7-.7-1.7-1.9-.5v-3.4l1.9-.5.7-1.7-1-1.7 2.4-2.4 1.7 1 1.7-.7z"/></svg></button>
+            <button id="sportsRandomBtn" type="button" class="button button-soft sports-icon-action" aria-label="Découvrir une carte au hasard" title="Carte aléatoire">⚄</button>
             <button id="addCardBtn" type="button" class="button button-primary sports-icon-action" aria-label="Ajouter une carte" title="Ajouter une carte"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
           </div>
         <details class="rapli-collapsible-filters" id="sportsCollapsibleFilters"><summary>☷ FILTRES ET TRI <span>Ouvrir / masquer les filtres</span></summary>
@@ -1192,6 +1194,7 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
           <div class="field"><label class="field-label" for="filterTeam">ÉQUIPE</label><select class="select" id="filterTeam"><option value="">Toutes les équipes</option></select></div>
           <div class="field"><label class="field-label" for="filterTag">VARIATION / TAG</label><select class="select" id="filterTag"><option value="">Toutes les variations</option></select></div>
           <div class="field filter-sport"><label class="field-label" for="filterSport">SPORT</label><select class="select" id="filterSport"><option value="">Tous les sports</option></select></div>
+          <div class="field filter-dream" id="filterDreamWrap" hidden><span class="field-label">WISHLIST</span><label class="check-filter"><input id="filterDream" class="custom" type="checkbox"><span class="box-check"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></span> ✨ Dans mes rêves</label></div>
           <div class="field filter-number"><span class="field-label">NUMÉROTATION</span><label class="check-filter"><input id="filterNumbered" class="custom" type="checkbox"><span class="box-check"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></span> Numérotées</label></div>
           <div class="feature-filter-row" role="group" aria-label="Filtres Auto et Patch">
             <div class="field"><label class="field-label" for="filterAuto">AUTO</label><select class="select" id="filterAuto">
@@ -1232,7 +1235,11 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
         <div id="sportsPaginationBottom" class="sports-pagination-host" aria-label="Pagination inférieure"></div>
         <div id="emptyState" class="empty hidden"><div class="empty-mark" id="emptyIcon"></div><h3 id="emptyTitle">Aucune carte pour le moment</h3><p id="emptyCopy">Ta collection commence ici.</p><button type="button" class="button button-primary" id="emptyAddBtn">Ajouter une carte</button></div>
         </div>
-        <div id="statsPanel" class="stats-panel" role="tabpanel" aria-label="Statistiques de la collection" hidden>
+        <section id="rainbowPanel" class="sports-rainbow-panel" role="tabpanel" aria-label="Suivi des Rainbow de cartes sportives" hidden>
+        <div class="sports-rainbow-head"><div><span class="sports-rainbow-kicker">RAPLI SPORTS / PARALLÈLES</span><h2>MES RAINBOWS 🌈</h2><p>Crée une checklist des parallèles d’une même carte de base. Seules les variantes réellement possédées (OWN) comptent dans le pourcentage.</p></div><button id="newRainbowBtn" class="button button-primary" type="button">＋ CRÉER UN RAINBOW</button></div>
+        <div id="rainbowOverview" aria-live="polite"></div><div id="rainbowList" class="sports-rainbow-list"></div>
+      </section>
+      <div id="statsPanel" class="stats-panel" role="tabpanel" aria-label="Statistiques de la collection" hidden>
           <div class="stats-export-row"><div class="stats-overview-heading">VUE D’ENSEMBLE · UNIQUEMENT LES CARTES OWN</div>
           <button id="statsExportPngBtn" class="stats-png-button" type="button" disabled aria-label="Exporter toutes les statistiques OWN au format PNG">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M4 17v4h16v-4"/></svg> EXPORT PNG
@@ -1272,6 +1279,7 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
             <div class="input-group"><label for="cardTeam">Équipe</label><select id="cardTeamPicker" class="select saved-value-picker" aria-label="Choisir une équipe déjà enregistrée"><option value="">Choisir une équipe enregistrée…</option></select><input id="cardTeam" class="input" name="team" list="teamsList" maxlength="100" placeholder="Ou saisir une nouvelle équipe"><datalist id="teamsList"></datalist></div>
             <div class="input-group"><label for="cardReference">Référence</label><input id="cardReference" class="input" name="reference" maxlength="180" placeholder="2025-26 Topps Chrome #…"></div>
             <div class="input-group"><label for="tagField">Variations / tags</label><select id="tagPicker" class="select saved-value-picker" aria-label="Ajouter un tag déjà enregistré"><option value="">Ajouter un tag existant…</option></select><div id="chipEditor" class="chip-editor"><div id="editChips" style="display:contents"></div><input id="tagField" class="tag-input" placeholder="Chrome, Refractor…" maxlength="60" autocomplete="off"></div><div class="field-hint">Sélectionne un tag existant, ou saisis-en un nouveau puis appuie sur Entrée.</div></div>
+            <div class="input-group sports-grading"><label class="sports-grade-toggle"><input id="cardGraded" type="checkbox"> 🏅 CARTE GRADÉE</label><div id="cardGradeFields" class="sports-grade-fields hidden"><label for="cardGradeOrg">Organisme<select id="cardGradeOrg" class="select"><option value="">Non précisé</option><option value="PSA">PSA</option><option value="BGS">BGS / Beckett</option><option value="SGC">SGC</option><option value="CGC">CGC</option><option value="Autre">Autre</option></select></label><label for="cardGradeScore">Note du grading<input id="cardGradeScore" class="input" type="text" maxlength="4" inputmode="decimal" placeholder="10 ou 9.5"></label></div><div class="field-hint">Notation facultative de 0,5 à 10 · séparateur point ou virgule.</div></div>
             <div class="number-control"><div class="number-head"><label for="cardNumbered"><input id="cardNumbered" class="custom" type="checkbox"><span class="box-check"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></span> CARTE NUMÉROTÉE</label><span class="field-hint">Ex. 12 / 99</span></div><div id="serialFields" class="number-row hidden"><div class="input-group"><label for="cardSerial">Numéro de la carte</label><input id="cardSerial" class="input" maxlength="8" inputmode="numeric" pattern="[0-9]*" placeholder="12"></div><span class="slash">/</span><div class="input-group"><label for="cardPrintRun">Tirage total</label><input id="cardPrintRun" class="input" maxlength="8" inputmode="numeric" pattern="[0-9]*" placeholder="99"></div></div></div><div class="rookie-control"><label for="cardRookie"><input id="cardRookie" class="custom" type="checkbox"><span class="box-check"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></span> ROOKIE CARD (RC)</label><span class="field-hint">Logo personnalisé selon le sport, sinon RC</span></div>
           </div>
         </div>
@@ -1341,9 +1349,22 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
       </div>
     </div>
   </dialog>
+  <dialog id="rainbowDialog" class="modal" aria-labelledby="rainbowDialogTitle">
+    <form id="rainbowForm"><div class="modal-header"><div><span class="modal-kicker">RAPLI SPORTS / PARALLÈLES</span><h2 id="rainbowDialogTitle" class="modal-title">Créer un Rainbow</h2></div><button type="button" class="close-modal" data-close="rainbowDialog" aria-label="Fermer">×</button></div>
+    <div class="modal-body"><div class="sports-rainbow-form">
+      <label class="input-group">Nom du Rainbow *<input id="rainbowName" class="input" maxlength="160" required placeholder="2025–26 Topps Chrome · Tyrese Maxey #…"></label>
+      <div class="sports-rainbow-form-cols"><label class="input-group">Athlète<input id="rainbowAthlete" class="input" maxlength="120" list="rainbowAthleteList" placeholder="Tyrese Maxey"><datalist id="rainbowAthleteList"></datalist></label><label class="input-group">Marque<input id="rainbowBrand" class="input" maxlength="90" list="brandsList" placeholder="Topps"></label></div>
+      <label class="input-group">Référence de la carte de base<input id="rainbowBaseRef" class="input" maxlength="180" placeholder="Ex. #23 · 2025–26 Topps Chrome"></label>
+      <label class="input-group">Checklist des parallèles *<textarea id="rainbowVariants" class="input" rows="7" required placeholder="Base&#10;Refractor&#10;Purple Refractor&#10;Gold Refractor&#10;Superfractor 1/1"></textarea><span class="field-hint">Une variante par ligne, maximum 80. Le 1/1 n'est compté que si tu l'ajoutes à cette checklist.</span></label>
+      <div class="sports-rainbow-bind-head"><strong>ASSOCIER LES CARTES AUX PARALLÈLES</strong><p>Lie chaque variante à une fiche OWN ou Wishlist. Sans association, elle reste manquante.</p><label class="input-group">Chercher parmi les cartes<input id="rainbowCardSearch" class="input" type="search" placeholder="Joueur, variation, référence…"></label></div>
+      <div id="rainbowVariantLinks" class="sports-rainbow-bind-list"></div>
+    </div><div class="modal-footer"><button type="button" class="button button-ghost" data-close="rainbowDialog">Annuler</button><button id="saveRainbowBtn" class="button button-primary" type="submit">Enregistrer le Rainbow</button></div></div></form>
+  </dialog>
+  <dialog id="sportsRandomDialog" class="modal small" aria-labelledby="sportsRandomTitle"><div class="modal-header"><div><span class="modal-kicker">RAPLI SPORTS / SÉLECTION ALÉATOIRE</span><h2 id="sportsRandomTitle" class="modal-title">Une carte au hasard</h2></div><button type="button" class="close-modal" data-close="sportsRandomDialog" aria-label="Fermer">×</button></div><div class="modal-body"><div id="sportsRandomBody"></div><div class="modal-footer"><button id="sportsRandomAgain" class="button button-soft" type="button">⚄ UNE AUTRE CARTE</button><button id="sportsRandomEdit" class="button button-primary" type="button">MODIFIER</button></div></div></dialog>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <script src="collection-stats.js"></script>
   <script src="stats-visuals.js"></script>
+  <script src="rainbow.js"></script>
   <script>
     (() => {
       'use strict';

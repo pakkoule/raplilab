@@ -1341,9 +1341,26 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
 }
 .sports-rainbow-top h3{color:#1e3855}
 .sports-rainbow-meta{color:#4b637b}
+/* Keep the % compact and baseline-aligned without losing the premium foil. */
 .sports-rainbow-percent{
-  background:linear-gradient(90deg,#17609c,#147e67 35%,#99612e 70%,#914f95);
-  -webkit-background-clip:text;background-clip:text;color:transparent;
+  display:inline-flex;align-items:baseline;justify-content:flex-end;gap:2px;
+  flex:0 0 auto;white-space:nowrap;
+  font:900 28px/1 Poppins,system-ui,sans-serif;
+  font-variant-numeric:tabular-nums;letter-spacing:-.035em;
+  background:none;color:#17609c;
+}
+.sports-rainbow-percent-value,
+.sports-rainbow-percent-symbol{
+  display:inline-block;line-height:1;
+  background:linear-gradient(105deg,#17609c,#147e67 35%,#99612e 70%,#914f95);
+  -webkit-background-clip:text;background-clip:text;
+  color:transparent;-webkit-text-fill-color:transparent;
+}
+.sports-rainbow-percent-symbol{
+  font-size:.55em;letter-spacing:0;margin-left:1px;
+}
+@media(max-width:470px){
+  .sports-rainbow-percent{font-size:24px}
 }
 .sports-rainbow-track{background:rgba(52,87,109,.19)}
 .sports-rainbow-counts{color:#38526b}
@@ -2848,7 +2865,9 @@ html:not([data-rapli-role="editor"]) .move-card{display:none!important}
               '<span class="sr-only">'+(entry.status==='own'?'Possédée':entry.status==='wishlist'?'Wishlist':'Manquante')+'</span></div>';
           }).join('');
           return '<article class="sports-rainbow-group"><div class="sports-rainbow-cover-row">'+cover+'<div class="sports-rainbow-summary"><div class="sports-rainbow-top"><h3>'+safeText(group.name||'Rainbow sans nom')+'</h3>'+
-            '<span class="sports-rainbow-percent">'+group.percent+' %</span></div>'+
+            '<span class="sports-rainbow-percent" aria-label="'+group.percent+' pour cent">'+
+              '<span class="sports-rainbow-percent-value">'+group.percent+'</span>'+
+              '<span class="sports-rainbow-percent-symbol" aria-hidden="true">%</span></span></div>'+
             '<p class="sports-rainbow-meta">'+safeText(details||'Carte de base non renseignée')+'</p>'+
             '<div class="sports-rainbow-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+group.percent+'" aria-label="Complétion de '+safeText(group.name)+'"><span style="width:'+group.percent+'%"></span></div>'+
             '<div class="sports-rainbow-counts" role="group" aria-label="Statistiques du Rainbow">'+

@@ -386,6 +386,8 @@ body[data-active="regatta"] .portal-header{background:linear-gradient(120deg,#10
 }
 
 /* Rapli Lab single-workspace presentation: Regatta stays in DOM and cloud sync. */
+/* Removing the header must not remove the backing tabs used by cloud sync. */
+.portal-hidden-navigation{display:none!important}
 .portal-nav-strip{justify-content:center;overflow:visible}
 .portal-nav-strip .product-tabs[hidden]{display:none!important}
 .portal-header{padding:7px 12px 8px;min-height:0}
@@ -438,12 +440,9 @@ body[data-active="regatta"] .portal-header{background:linear-gradient(120deg,#10
 </head>
 <body data-active="sports">
   <div class="portal">
-    <header class="portal-header">
-      <div class="portal-nav-strip">
-        <div class="portal-brand">
-          <img src="assets/rapli-lab-logo.png" alt="Rapli Lab" width="220" height="131" draggable="false">
-        </div>
-        <nav class="product-tabs" role="tablist" aria-label="Choisir le projet Rapli" hidden aria-hidden="true">
+    <!-- Selector retained for existing module state/cloud logic, but no visible site header. -->
+    <div class="portal-hidden-navigation" hidden aria-hidden="true">
+      <nav class="product-tabs" role="tablist" aria-label="Choisir le projet Rapli" hidden aria-hidden="true">
           <button type="button" id="tab-sports" class="product-tab" data-product="sports" role="tab" aria-selected="true" aria-controls="panel-sports" tabindex="0" title="Rapli Sports — collection de cartes">
             <img src="sports/assets/logo.png" alt="Rapli Sports" draggable="false">
           </button>
@@ -451,9 +450,7 @@ body[data-active="regatta"] .portal-header{background:linear-gradient(120deg,#10
             <img src="regatta/assets/logo.webp" alt="Rapli Regatta" draggable="false">
           </button>
         </nav>
-
-      </div>
-    </header>
+    </div>
     <dialog id="global-cloud-manager" aria-labelledby="global-cloud-manager-title">
       <div class="global-manager-head">
         <div><h2 id="global-cloud-manager-title">Sauvegardes RapliLab</h2><small>Sports · Regatta — une session Supabase commune</small></div>
@@ -488,7 +485,7 @@ body[data-active="regatta"] .portal-header{background:linear-gradient(120deg,#10
       </div>
     </dialog>
     <div class="frame-wrap">
-      <section id="panel-sports" role="tabpanel" aria-labelledby="tab-sports">
+      <section id="panel-sports" role="tabpanel" aria-label="Rapli Sports">
         <iframe id="frame-sports" class="app-frame" data-src="sports/index.html" title="Rapli Sports — cartes de sport" loading="eager"></iframe>
       </section>
       <section id="panel-regatta" role="tabpanel" aria-labelledby="tab-regatta" hidden>

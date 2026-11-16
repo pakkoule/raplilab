@@ -41,7 +41,7 @@
   }
   async function sendMagicLink(){
     const sdk=await supabase();
-    const redirectTo=window.location.origin+'/';
+    const redirectTo='https://raplilab.netlify.app/';
     const {error}=await sdk.auth.signInWithOtp({
       email:ADMIN_EMAIL,
       options:{emailRedirectTo:redirectTo,shouldCreateUser:true}

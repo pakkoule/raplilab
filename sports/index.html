@@ -530,8 +530,7 @@ body::before{display:none!important}
 
 /* Hidden wishlist-only control must stay hidden across author CSS layers. */
 #wishlistViews[hidden]{display:none!important}
-.wishlist-views{margin-bottom:12px;flex-wrap:wrap}
-.wishlist-views .sports-gallery-option{min-height:44px}
+.wishlist-views{display:contents}
 #dreamlistCount{display:inline-block;margin-left:5px;padding:1px 6px;border-radius:10px;background:rgba(113,160,151,.16);font-variant-numeric:tabular-nums}
 </style>
 <style id="rapli-cloud-module-controls">
@@ -1244,11 +1243,6 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
           </div>
         </div>
         <div id="collectionPanel">
-        <div id="wishlistViews" class="sports-gallery-switch wishlist-views" role="group" aria-label="Vue de la Wishlist" hidden>
-          <span class="sports-gallery-title">WISHLIST</span>
-          <button type="button" class="sports-gallery-option" data-wishlist-dream="false" aria-pressed="true">Toutes</button>
-          <button type="button" class="sports-gallery-option" data-wishlist-dream="true" aria-pressed="false">✨ Dreamlist <span id="dreamlistCount">0</span></button>
-        </div>
         <div class="sports-catalogue-controls">
           <div class="nav-actions" role="group" aria-label="Actions sur les cartes">
             <button id="logosBtn" type="button" class="button button-soft sports-icon-action rapli-personalize-action" aria-label="Gérer les logos" title="Gérer les logos"><svg class="rapli-personalize-gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M10.3 2.4h3.4l.5 1.9 1.7.7 1.7-1 2.4 2.4-1 1.7.7 1.7 1.9.5v3.4l-1.9.5-.7 1.7 1 1.7-2.4 2.4-1.7-1-1.7.7-.5 1.9h-3.4l-.5-1.9-1.7-.7-1.7 1-2.4-2.4 1-1.7-.7-1.7-1.9-.5v-3.4l1.9-.5.7-1.7-1-1.7 2.4-2.4 1.7 1 1.7-.7z"/></svg></button>
@@ -1286,6 +1280,10 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
         </div>
         <div id="sportsGalleryToolbar" class="sports-gallery-switch" role="group" aria-label="Mode de consultation des cartes">
           <span class="sports-gallery-title">AFFICHAGE</span>
+        <div id="wishlistViews" class="wishlist-views" role="group" aria-label="Vue de la Wishlist" hidden>
+          <button type="button" class="sports-gallery-option" data-wishlist-dream="false" aria-pressed="true">Toutes</button>
+          <button type="button" class="sports-gallery-option" data-wishlist-dream="true" aria-pressed="false">✨ Dreamlist <span id="dreamlistCount">0</span></button>
+        </div>
           <button type="button" class="sports-gallery-option" data-sports-layout="details" aria-pressed="true">Fiches</button>
           <button type="button" class="sports-gallery-option" data-sports-layout="cards" aria-pressed="false">Vignettes</button>
           <button type="button" class="sports-gallery-option" data-sports-layout="brand" aria-pressed="false">Par marque</button>

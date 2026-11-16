@@ -1343,8 +1343,11 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
 }
 .sports-catalogue-search .input.with-icon::placeholder{color:#708da1;opacity:1}
 .sports-catalogue-search .input.with-icon:focus{border-color:#58baa8;box-shadow:0 0 0 3px rgba(90,202,173,.14)}
-/* Keep the filter toggle compact while search occupies the flexible column. */
-.sports-catalogue-controls{grid-template-columns:auto minmax(0,1fr) 125px;column-gap:9px}
+/* Compact Filters goes between action buttons and the flexible search field. */
+.sports-catalogue-controls{grid-template-columns:auto 125px minmax(0,1fr);column-gap:9px}
+.sports-catalogue-controls>.nav-actions{grid-column:1;grid-row:1}
+.sports-catalogue-controls>.rapli-collapsible-filters:not([open]){grid-column:2;grid-row:1}
+.sports-catalogue-controls>.sports-catalogue-search{grid-column:3;grid-row:1;min-width:0}
 .sports-catalogue-controls>.sports-catalogue-search{min-width:0}
 .sports-catalogue-controls>.rapli-collapsible-filters:not([open]){width:125px;max-width:125px;min-width:0;justify-self:end}
 .sports-catalogue-controls .rapli-collapsible-filters>summary{
@@ -1369,15 +1372,22 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
   border-color:#7bafbf;
   box-shadow:inset 0 1px 0 #fff,0 3px 10px rgba(44,74,116,.16);
 }
+/* The mobile controls retain their reading order, then show a full-width search. */
 @media(max-width:680px){
  .sports-catalogue-controls{grid-template-columns:auto minmax(0,1fr);gap:7px}
- .sports-catalogue-controls>.rapli-collapsible-filters:not([open]){width:125px;max-width:125px}
- .sports-catalogue-controls>.sports-catalogue-search{grid-column:1/-1;grid-row:1}
- .sports-catalogue-controls>.nav-actions{grid-column:1;grid-row:2}
- .sports-catalogue-controls>.rapli-collapsible-filters:not([open]){grid-column:2;grid-row:2}
+ .sports-catalogue-controls>.nav-actions{grid-column:1;grid-row:1}
+ .sports-catalogue-controls>.rapli-collapsible-filters:not([open]){grid-column:2;grid-row:1;width:125px;max-width:125px;justify-self:start}
+ .sports-catalogue-controls>.sports-catalogue-search{grid-column:1/-1;grid-row:2}
  .sports-catalogue-controls>.rapli-collapsible-filters[open]{grid-column:1/-1;grid-row:3}
  .sports-catalogue-search .input.with-icon{height:42px;min-height:42px;font-size:16px}
 }
+/* Dice with five clear pips instead of a font-dependent Unicode glyph. */
+.sports-catalogue-controls #sportsRandomBtn .sports-random-dice{width:21px;height:21px;display:block;overflow:visible;transition:transform .2s ease,filter .2s ease}
+.sports-catalogue-controls #sportsRandomBtn{color:#e2fff5;border-color:#478f9a;background:linear-gradient(140deg,#0d4964,#116376);box-shadow:inset 0 1px 0 #ffffff22}
+.sports-catalogue-controls #sportsRandomBtn:hover{color:#fff;background:linear-gradient(140deg,#146781,#137f89);box-shadow:0 3px 12px #157b843b}
+.sports-catalogue-controls #sportsRandomBtn:hover .sports-random-dice{transform:rotate(-12deg) scale(1.07);filter:drop-shadow(0 0 3px #b9ffeb55)}
+.sports-catalogue-controls #sportsRandomBtn:focus-visible{outline:2px solid #74d8c6;outline-offset:3px}
+@media(prefers-reduced-motion:reduce){.sports-catalogue-controls #sportsRandomBtn .sports-random-dice{transition:none}.sports-catalogue-controls #sportsRandomBtn:hover .sports-random-dice{transform:none}}
 </style>
 </head>
 <body>
@@ -1397,10 +1407,9 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
         <div class="sports-catalogue-controls">
           <div class="nav-actions" role="group" aria-label="Actions sur les cartes">
             <button id="logosBtn" type="button" class="button button-soft sports-icon-action rapli-personalize-action" aria-label="Gérer les logos" title="Gérer les logos"><svg class="rapli-personalize-gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M10.3 2.4h3.4l.5 1.9 1.7.7 1.7-1 2.4 2.4-1 1.7.7 1.7 1.9.5v3.4l-1.9.5-.7 1.7 1 1.7-2.4 2.4-1.7-1-1.7.7-.5 1.9h-3.4l-.5-1.9-1.7-.7-1.7 1-2.4-2.4 1-1.7-.7-1.7-1.9-.5v-3.4l1.9-.5.7-1.7-1-1.7 2.4-2.4 1.7 1 1.7-.7z"/></svg></button>
-            <button id="sportsRandomBtn" type="button" class="button button-soft sports-icon-action" aria-label="Découvrir une carte au hasard" title="Carte aléatoire">⚄</button>
+            <button id="sportsRandomBtn" type="button" class="button button-soft sports-icon-action" aria-label="Découvrir une carte au hasard" title="Tirer une carte au hasard"><svg class="sports-random-dice" viewBox="0 0 24 24" role="img" aria-hidden="true" focusable="false"><rect x="3" y="3" width="18" height="18" rx="4" fill="none" stroke="currentColor" stroke-width="1.9"/><circle cx="8" cy="8" r="1.45" fill="currentColor"/><circle cx="16" cy="8" r="1.45" fill="currentColor"/><circle cx="12" cy="12" r="1.45" fill="currentColor"/><circle cx="8" cy="16" r="1.45" fill="currentColor"/><circle cx="16" cy="16" r="1.45" fill="currentColor"/></svg></button>
             <button id="addCardBtn" type="button" class="button button-primary sports-icon-action" aria-label="Ajouter une carte" title="Ajouter une carte"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
           </div>
-        <div class="field search-field sports-catalogue-search"><label class="field-label" for="filterSearch">RECHERCHE</label><div class="input-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input class="input with-icon" id="filterSearch" type="search" autocomplete="off" placeholder="Joueur, référence, marque, sport, tag, /75…" aria-label="Rechercher dans toutes les informations des cartes"></div></div>
         <details class="rapli-collapsible-filters" id="sportsCollapsibleFilters"><summary aria-label="Filtres et tri" title="Filtres et tri">☷ FILTRES <span>Ouvrir / masquer les filtres</span></summary>
         <div class="filters">
 
@@ -1429,6 +1438,7 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
         </div>
         <div class="toolbar-foot"><span class="results-label" id="resultsLabel">0 carte</span><div class="results-right"><button id="clearFiltersBtn" type="button" class="link-btn">Effacer les filtres</button><select id="sortSelect" class="sorter" aria-label="Trier les cartes"><option value="recent">Plus récentes</option><option value="name">Joueur A – Z</option><option value="brand">Marque A – Z</option><option value="team">Équipe A – Z</option></select></div></div>
         </details>
+        <div class="field search-field sports-catalogue-search"><label class="field-label" for="filterSearch">RECHERCHE</label><div class="input-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input class="input with-icon" id="filterSearch" type="search" autocomplete="off" placeholder="Joueur, référence, marque, sport, tag, /75…" aria-label="Rechercher dans toutes les informations des cartes"></div></div>
         </div>
         <div id="sportsGalleryToolbar" class="sports-gallery-switch" role="group" aria-label="Mode de consultation des cartes">
           <span class="sports-gallery-title">AFFICHAGE</span>

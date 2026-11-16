@@ -24,7 +24,14 @@
      await access.sendMagicLink();
      message.textContent='Lien envoyé à rapharcadium@pm.me. Ouvre-le sur cet appareil.';
    }catch(err){
-     message.textContent='Connexion indisponible : '+(err?.message||'réessaie plus tard');
+     const code=String(err?.code||'').toLowerCase();
+     const detail=String(err?.message||'').toLowerCase();
+     const quota=err?.status===429||code==='over_email_send_rate_limit'||detail.includes('email rate limit exceeded');
+     if(quota){
+       message.textContent='Limite d’e-mails Supabase atteinte. Vérifie le dernier lien reçu ou réessaie après renouvellement du quota. Ne multiplie pas les demandes.';
+     }else{
+       message.textContent='Connexion indisponible : '+(err?.message||'réessaie plus tard');
+     }
    }finally{login.disabled=false;}
  });
  logout.addEventListener('click',async()=>{

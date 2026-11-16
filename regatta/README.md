@@ -108,3 +108,12 @@ Module intégré à la PR #1 de RapliLab, non fusionnée.
 - Cas d'export .ics validés : été français, bascules de mars/octobre, Guadeloupe, course sans heure, rejet d'une heure inexistante.
 - Reste à tester manuellement : rendu et navigation dans PALMARÈS sur PC/iPhone Safari, import et affichage d'un .ics dans Apple Calendrier, synchronisation PC/iPhone avec une fiche comportant un fuseau différent.
 - Modifications uniquement dans la PR #1, toujours en brouillon ; aucune fusion ni mise en production demandée.
+
+
+## Évolutions sélectionnées — #14, #34 et #79 (16 novembre 2026)
+
+- **#14 Drapeau de départ** : badge « 🏁 DÉPART AUJOURD’HUI » lorsque la date de départ correspond à la date courante dans le **fuseau de la course**, pour les courses normales et les dernières tentatives de record.
+- **#34 Affichage compact** : nouveau bouton ▦ de bascule entre fiches normales et grille compacte (trois colonnes sur écran large, deux colonnes selon la largeur). Le réglage est stocké localement sur l’appareil, les données et actions de chaque fiche sont conservées.
+- **#79 Type de parcours** : champ facultatif parmi Tour du monde, Transatlantique, Côtier, Course à étapes, Record de distance et Autre parcours. Stockage dans la fiche existante, libellé visible sur la tuile et texte pris en compte dans la recherche.
+- Aucun changement de barème VSR, d’historique de notes, de classement ou de politique Supabase.
+- Tests de syntaxe et présence des contrôles réalisés ; mise en page PC/iPhone et synchronisation restent à valider sur la Deploy Preview.

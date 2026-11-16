@@ -17,6 +17,19 @@
   }
   return out;
  }
+ function variantNumbering(raw){
+  const label=trim(raw,90);
+  // Explicit serial suffixes are only presentation data; keep the original
+  // checklist label unchanged for existing links and persisted Rainbow groups.
+  const one=label.match(/^(.*?)\s+1\s*\/\s*1\s*$/i);
+  if(one&&one[1].trim())return {title:one[1].trim(),badge:'1/1',numbered:true};
+  const limited=label.match(/^(.*?)\s*\/\s*([1-9][0-9]*)\s*$/);
+  if(limited&&limited[1].trim())return {title:limited[1].trim(),badge:'/'+limited[2],numbered:true};
+  const nonNumbered=label.match(/^(.*?)\s+(?:\/\s*)?NN\s*$/i);
+  if(nonNumbered&&nonNumbered[1].trim())return {title:nonNumbered[1].trim(),badge:'NN',numbered:false};
+  // A parallel without an explicit print run is presented as NN by default.
+  return {title:label,badge:'NN',numbered:false};
+ }
  const MAX_REFERENCES=30;
  function referenceLines(raw){
   const values=Array.isArray(raw)?raw:String(raw||'').split(/\r?\n/);
@@ -78,5 +91,5 @@
   return {...data,entries,owned,wishlist,missing,total:entries.length,
    percent:entries.length?Math.round(owned/entries.length*100):0};
  }
- root.RapliSportsRainbow=Object.freeze({MAX_VARIANTS,MAX_REFERENCES,norm,variantLines,referenceLines,cleanGroup,progress});
+ root.RapliSportsRainbow=Object.freeze({MAX_VARIANTS,MAX_REFERENCES,norm,variantLines,variantNumbering,referenceLines,cleanGroup,progress});
 })(window);

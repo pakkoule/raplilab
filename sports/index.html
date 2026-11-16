@@ -1341,26 +1341,52 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
 }
 .sports-rainbow-top h3{color:#1e3855}
 .sports-rainbow-meta{color:#4b637b}
-/* Keep the % compact and baseline-aligned without losing the premium foil. */
+/* Topps Inception-inspired percentage: gold foil, deep black ink,
+   with a restrained multicolour paint-burst contour. */
 .sports-rainbow-percent{
   display:inline-flex;align-items:baseline;justify-content:flex-end;gap:2px;
   flex:0 0 auto;white-space:nowrap;
-  font:900 28px/1 Poppins,system-ui,sans-serif;
-  font-variant-numeric:tabular-nums;letter-spacing:-.035em;
-  background:none;color:#17609c;
+  font:900 30px/1 Poppins,system-ui,sans-serif;
+  font-variant-numeric:tabular-nums;letter-spacing:-.04em;
+  background:none;color:#d5ad4b;
 }
 .sports-rainbow-percent-value,
 .sports-rainbow-percent-symbol{
-  display:inline-block;line-height:1;
-  background:linear-gradient(105deg,#17609c,#147e67 35%,#99612e 70%,#914f95);
+  position:relative;isolation:isolate;display:inline-block;line-height:1;
+  color:#d5ad4b;
+  background:linear-gradient(180deg,#fff2b5 0%,#e7c35b 29%,#9c6d20 67%,#f5d579 100%);
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;
+  -webkit-text-stroke:.85px #141316;
+  text-shadow:0 2px 2px rgba(12,12,18,.16);
+  filter:drop-shadow(0 1px 1px rgba(0,0,0,.22));
+}
+.sports-rainbow-percent-value::before,
+.sports-rainbow-percent-symbol::before{
+  content:attr(data-text);position:absolute;inset:0;z-index:-1;
+  color:#111116;-webkit-text-fill-color:#111116;
+  -webkit-text-stroke:2.2px #111116;
+  text-shadow:0 1px 0 #07070a;
+}
+.sports-rainbow-percent-value::after,
+.sports-rainbow-percent-symbol::after{
+  content:attr(data-text);position:absolute;inset:0;z-index:-2;
+  background:linear-gradient(100deg,#00baff 4%,#1ddc88 24%,#ffce43 43%,#ff7144 60%,#ff48a9 81%,#7459ed 100%);
   -webkit-background-clip:text;background-clip:text;
   color:transparent;-webkit-text-fill-color:transparent;
+  -webkit-text-stroke:2.8px transparent;
+  filter:blur(.35px) saturate(1.35)
+    drop-shadow(1px 0 #00baff) drop-shadow(-1px 0 #ff4b9b);
+  transform:translate(1px,.5px);
+  opacity:.9;
 }
 .sports-rainbow-percent-symbol{
   font-size:.55em;letter-spacing:0;margin-left:1px;
 }
 @media(max-width:470px){
-  .sports-rainbow-percent{font-size:24px}
+  .sports-rainbow-percent{font-size:25px}
+  .sports-rainbow-percent-value::after,
+  .sports-rainbow-percent-symbol::after{filter:blur(.25px) saturate(1.2)}
 }
 .sports-rainbow-track{background:rgba(52,87,109,.19)}
 .sports-rainbow-counts{color:#38526b}
@@ -2866,8 +2892,8 @@ html:not([data-rapli-role="editor"]) .move-card{display:none!important}
           }).join('');
           return '<article class="sports-rainbow-group"><div class="sports-rainbow-cover-row">'+cover+'<div class="sports-rainbow-summary"><div class="sports-rainbow-top"><h3>'+safeText(group.name||'Rainbow sans nom')+'</h3>'+
             '<span class="sports-rainbow-percent" aria-label="'+group.percent+' pour cent">'+
-              '<span class="sports-rainbow-percent-value">'+group.percent+'</span>'+
-              '<span class="sports-rainbow-percent-symbol" aria-hidden="true">%</span></span></div>'+
+              '<span class="sports-rainbow-percent-value" data-text="'+group.percent+'">'+group.percent+'</span>'+
+              '<span class="sports-rainbow-percent-symbol" data-text="%" aria-hidden="true">%</span></span></div>'+
             '<p class="sports-rainbow-meta">'+safeText(details||'Carte de base non renseignée')+'</p>'+
             '<div class="sports-rainbow-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+group.percent+'" aria-label="Complétion de '+safeText(group.name)+'"><span style="width:'+group.percent+'%"></span></div>'+
             '<div class="sports-rainbow-counts" role="group" aria-label="Statistiques du Rainbow">'+

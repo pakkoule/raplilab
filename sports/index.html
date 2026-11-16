@@ -535,6 +535,10 @@ button.sports-rainbow-cover{cursor:pointer}
 .sports-rainbow-bind-list{display:grid;gap:7px;max-height:330px;overflow-y:auto}
 .sports-rainbow-bind{display:grid;grid-template-columns:minmax(100px,1fr) minmax(170px,2fr);align-items:center;gap:8px;background:#152742;border:1px solid #3d5677;padding:9px;border-radius:9px}
 .sports-rainbow-bind label{font-size:11px;font-weight:800;color:#d9e6fa;overflow-wrap:anywhere}
+.sports-rainbow-bind-name{min-width:0;color:#d9e6fa;font-size:11px;overflow-wrap:anywhere}
+.sports-rainbow-bind .sports-rainbow-base-choice{display:flex;align-items:center;gap:7px;min-height:44px;font-size:10px;cursor:pointer}
+.sports-rainbow-base-choice input{flex:0 0 17px;width:17px;height:17px;margin:0;accent-color:#76e8b7}
+.sports-rainbow-base-choice:focus-within{outline:2px solid #76e8b7;outline-offset:2px;border-radius:4px}
 .sports-rainbow-bind select{width:100%;padding:7px;font-size:11px}
 .sports-grade-toggle{display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:900;color:#dbeafc}
 .sports-grade-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:8px 0}
@@ -1452,7 +1456,7 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
       <div class="sports-rainbow-form-cols"><label class="input-group">Athlète<input id="rainbowAthlete" class="input" maxlength="120" list="rainbowAthleteList" placeholder="Tyrese Maxey"><datalist id="rainbowAthleteList"></datalist></label><label class="input-group">Marque<input id="rainbowBrand" class="input" maxlength="90" list="brandsList" placeholder="Topps"></label></div>
       <label class="input-group">Référence de la carte de base<input id="rainbowBaseRef" class="input" maxlength="180" placeholder="Ex. #23 · 2025–26 Topps Chrome"></label>
       <label class="input-group">Checklist des parallèles *<textarea id="rainbowVariants" class="input" rows="7" required placeholder="Base&#10;Refractor&#10;Purple Refractor&#10;Gold Refractor&#10;Superfractor 1/1"></textarea><span class="field-hint">Une variante par ligne, maximum 80. Le 1/1 n'est compté que si tu l'ajoutes à cette checklist.</span></label>
-      <div class="sports-rainbow-bind-head"><strong>ASSOCIER LES CARTES AUX PARALLÈLES</strong><p>Lie chaque variante à une fiche OWN ou Wishlist. La photo de la variante « Base » illustre la tuile. Sans association, la variante reste manquante.</p><label class="input-group">Chercher parmi les cartes<input id="rainbowCardSearch" class="input" type="search" placeholder="Joueur, variation, référence…"></label></div>
+      <div class="sports-rainbow-bind-head"><strong>ASSOCIER LES CARTES AUX PARALLÈLES</strong><p>Lie chaque variante à une fiche OWN ou Wishlist. Coche « Carte de base » à côté de la variation qui doit illustrer la tuile. Une seule sélection par Rainbow. Sans association, la variante reste manquante.</p><label class="input-group">Chercher parmi les cartes<input id="rainbowCardSearch" class="input" type="search" placeholder="Joueur, variation, référence…"></label></div>
       <div id="rainbowVariantLinks" class="sports-rainbow-bind-list"></div>
     </div><div class="modal-footer"><button type="button" class="button button-ghost" data-close="rainbowDialog">Annuler</button><button id="saveRainbowBtn" class="button button-primary" type="submit">Enregistrer le Rainbow</button></div></div></form>
   </dialog>
@@ -1481,7 +1485,7 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
       let db=null, cards=[], logos=[], currentView='own', currentTags=[], currentPhoto='', editingId=null, logoType='brand', pendingLogoPhoto='', toastTimer=null;
       let sportsGalleryLayout='details',sportsGallerySelected=null,sportsGalleryPage=1;
       const rainbowEngine=window.RapliSportsRainbow;
-      let rainbowEditingId=null,rainbowAssignments=new Map(),randomSportsCardId=null;
+      let rainbowEditingId=null,rainbowAssignments=new Map(),rainbowBaseVariant='',randomSportsCardId=null;
       const SPORTS_GALLERY_PAGE_SIZE=30;
       const collator=new Intl.Collator('fr',{sensitivity:'base',numeric:true});
 
@@ -2367,7 +2371,7 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
           (source?'<img src="'+safeText(source)+'" alt="" loading="lazy" decoding="async">':ico('layers'))+'</span>';
       }
       function rainbowBaseEntry(group){
-        return group.entries.find(entry=>['base','base card','carte de base'].includes(normalize(entry.label)));
+        return group.entries.find(entry=>entry.isBase===true);
       }
       function renderRainbows(){
         const expanded=new Set([...$('rainbowList').querySelectorAll('details[data-rainbow-disclosure][open]')].map(el=>el.dataset.rainbowDisclosure));
@@ -2410,6 +2414,7 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
       }
       function renderRainbowLinks(){
         const names=rainbowEngine.variantLines($('rainbowVariants').value);
+        if(!names.some(label=>normalize(label)===rainbowBaseVariant))rainbowBaseVariant='';
         const brand=normalize($('rainbowBrand').value),athlete=normalize($('rainbowAthlete').value);
         const search=normalize($('rainbowCardSearch').value);
         let matches=cards.filter(card=>{
@@ -2430,13 +2435,14 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
               return '<option value="'+safeText(card.id)+'"'+(card.id===linked?' selected':'')+'>'+safeText(status+' · '+full)+'</option>';
             })];
           if(linked&&!chosen)options.push('<option value="'+safeText(linked)+'" selected>⚠ Fiche associée supprimée</option>');
-          return '<div class="sports-rainbow-bind"><label>'+safeText(label)+'</label>'+
+          return '<div class="sports-rainbow-bind"><div class="sports-rainbow-bind-name"><strong>'+safeText(label)+'</strong><label class="sports-rainbow-base-choice"><input type="radio" name="rainbowBaseVariant" data-rainbow-base value="'+safeText(key)+'"'+(key===rainbowBaseVariant?' checked':'')+' aria-label="Utiliser '+safeText(label)+' comme carte de base"> Carte de base</label></div>'+ 
             '<select class="select" data-rainbow-variant-select="'+safeText(key)+'" aria-label="Carte associée à '+safeText(label)+'">'+options.join('')+'</select></div>';
         }).join(''):'<div class="sports-rainbow-empty">Ajoute une ou plusieurs variantes dans la checklist pour pouvoir les associer.</div>';
       }
       function openRainbow(group=null){
         const clean=group?rainbowEngine.cleanGroup(group):null;
         rainbowEditingId=clean?.id||null;
+        rainbowBaseVariant=normalize(clean?.variants.find(v=>v.isBase)?.label||'');
         rainbowAssignments=new Map((clean?.variants||[]).map(v=>[normalize(v.label),v.cardId]));
         $('rainbowForm').reset();
         $('rainbowDialogTitle').textContent=clean?'Modifier le Rainbow':'Créer un Rainbow';
@@ -2465,7 +2471,7 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
           id:prior?.id||'rainbow:'+uid(),name,
           brand:$('rainbowBrand').value,athlete:$('rainbowAthlete').value,
           baseReference:$('rainbowBaseRef').value,
-          variants:variants.map(label=>({label,cardId:rainbowAssignments.get(normalize(label))||''})),
+          variants:variants.map(label=>({label,cardId:rainbowAssignments.get(normalize(label))||'',isBase:normalize(label)===rainbowBaseVariant})),
           createdAt:prior?.createdAt||Date.now(),updatedAt:Date.now()
         });
         const button=$('saveRainbowBtn');button.disabled=true;
@@ -2678,6 +2684,7 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
       $('rainbowCardSearch').addEventListener('input',()=>{readRainbowAssigned();renderRainbowLinks();});
       for(const id of ['rainbowAthlete','rainbowBrand'])$(id).addEventListener('input',()=>{readRainbowAssigned();renderRainbowLinks();});
       $('rainbowVariantLinks').addEventListener('change',event=>{
+        if(event.target.matches('[data-rainbow-base]'))rainbowBaseVariant=event.target.value;
         const selected=event.target.closest('[data-rainbow-variant-select]');
         if(selected)rainbowAssignments.set(selected.dataset.rainbowVariantSelect,selected.value);
       });

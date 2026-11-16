@@ -24,9 +24,14 @@
    const label=trim(typeof item==='string'?item:item?.label,90),key=norm(label);
    if(!key||seen.has(key))continue;
    seen.add(key);
-   variants.push({label,cardId:trim(item?.cardId,180)});
+   variants.push({label,cardId:trim(item?.cardId,180),isBase:item?.isBase===true});
    if(variants.length>=MAX_VARIANTS)break;
   }
+  // Keep one explicit cover; old Rainbows retain their named Base variant.
+  const explicit=(Array.isArray(raw.variants)?raw.variants:[]).some(item=>item&&typeof item==='object'&&Object.prototype.hasOwnProperty.call(item,'isBase'));
+  const selected=variants.findIndex(v=>v.isBase);
+  const baseIndex=explicit?selected:variants.findIndex(v=>['base','base card','carte de base'].includes(norm(v.label)));
+  variants.forEach((v,index)=>{v.isBase=index===baseIndex;});
   return {
    id:trim(raw.id,180),type:'rainbow',name:trim(raw.name,160),
    brand:trim(raw.brand,90),athlete:trim(raw.athlete,120),

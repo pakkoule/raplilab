@@ -1970,20 +1970,41 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
 #cardGrid.is-gallery-layout .is-group-gallery .sports-gallery-group{
   padding:5px;text-align:left;
 }
+/* Chrome Silver Refractor — satin metal with soft prismatic highlights.
+   The bottom fades into the same cool pearl used by the caption, no visible seam. */
 #cardGrid.is-gallery-layout .is-group-gallery .sports-gallery-group-picture{
-  position:relative;display:grid;place-items:center;aspect-ratio:1.65/1;
+  position:relative;isolation:isolate;display:grid;place-items:center;aspect-ratio:1.65/1;
   border-radius:11px 11px 0 0;padding:clamp(10px,1.6vw,18px);
   box-shadow:none;
   background:
-    radial-gradient(ellipse at 50% 36%,rgba(255,255,255,.12),transparent 63%),
-    linear-gradient(180deg,#1b344a 0%,#162a3f 40%,#38556b 67%,#91abb5 85%,#e8eff0 100%);
+    radial-gradient(circle at 18% 22%,rgba(255,255,255,.96) 0%,transparent 22%),
+    radial-gradient(circle at 82% 27%,rgba(194,226,255,.48) 0%,transparent 22%),
+    radial-gradient(circle at 35% 76%,rgba(255,240,204,.31) 0%,transparent 28%),
+    linear-gradient(151deg,#fafdff 0%,#d9e1e7 13%,#aebdc8 28%,#f9fbfc 42%,#becbd5 57%,#f3f6f7 70%,#aabcc8 81%,#f7f9fa 93%,#e8eff0 100%);
+}
+#cardGrid.is-gallery-layout .is-group-gallery .sports-gallery-group-picture::before{
+  content:"";position:absolute;inset:0;z-index:0;
+  border-radius:inherit;pointer-events:none;opacity:.66;
+  background:linear-gradient(115deg,
+    transparent 0%,rgba(255,255,255,.06) 16%,rgba(255,255,255,.45) 29%,
+    rgba(182,218,255,.16) 36%,rgba(252,198,225,.14) 45%,
+    rgba(255,255,255,.08) 53%,rgba(251,235,170,.14) 63%,
+    rgba(192,245,224,.12) 73%,rgba(255,255,255,.36) 85%,transparent 100%);
+  mix-blend-mode:screen;
 }
 #cardGrid.is-gallery-layout .is-group-gallery .sports-gallery-group-picture::after{
-  content:none;display:none;
+  content:"";display:block;position:absolute;inset:0;z-index:2;
+  border-radius:inherit;pointer-events:none;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.6),inset 0 0 28px rgba(255,255,255,.16);
 }
 #cardGrid.is-gallery-layout .is-group-gallery .sports-gallery-group-picture img{
+  position:relative;z-index:1;
   max-width:85%;max-height:84%;width:100%;height:100%;object-fit:contain;
-  filter:drop-shadow(0 7px 12px rgba(0,0,0,.3));
+  filter:drop-shadow(0 1px 1px rgba(14,35,49,.36)) drop-shadow(0 7px 12px rgba(0,0,0,.24));
+}
+#cardGrid.is-gallery-layout .is-group-gallery .sports-gallery-group-picture .sports-gallery-initials,
+#cardGrid.is-gallery-layout .is-group-gallery .sports-gallery-group-picture .sports-gallery-group-symbol{
+  position:relative;z-index:1;
 }
 #cardGrid.is-gallery-layout .is-group-gallery .sports-gallery-group[data-group-type=athlete] .sports-gallery-group-picture img{
   width:78%;height:100%;object-fit:cover;border-radius:8px;
@@ -2014,7 +2035,7 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
   color:#28576b;font:900 12px/1 Poppins,system-ui,sans-serif;
 }
 #cardGrid.is-gallery-layout .sports-gallery-group-symbol{
-  color:#e5f6f1;text-shadow:0 2px 8px rgba(9,26,41,.6);
+  color:#263f53;text-shadow:0 1px 0 rgba(255,255,255,.88),0 2px 9px rgba(18,43,57,.24);
 }
 #cardGrid.is-gallery-layout .sports-gallery-initials{
   background:linear-gradient(135deg,#2a7b87,#143e59);color:#eefdf8;

@@ -498,6 +498,32 @@ body::before{display:none!important}
 .sports-rainbow-actions{display:flex;flex-wrap:wrap;gap:8px}
 .sports-rainbow-actions .button{font-size:10px}
 .sports-rainbow-empty{text-align:center;border:1px dashed #59728b;color:#b5c7dd;border-radius:10px;padding:35px 18px;line-height:1.6}
+
+/* Compact Rainbow covers and native, keyboard-accessible disclosure. */
+.sports-rainbow-cover-row{display:grid;grid-template-columns:96px minmax(0,1fr);gap:13px;align-items:start}
+.sports-rainbow-cover{display:flex;align-items:center;justify-content:center;width:96px;height:134px;padding:5px;border:1px solid #3b5777;border-radius:9px;background:#101e32;overflow:hidden}
+button.sports-rainbow-cover{cursor:pointer}
+.sports-rainbow-cover img{display:block;width:100%;height:100%;object-fit:contain}
+.sports-rainbow-cover-placeholder{color:#9bb2cf;font-size:10px;line-height:1.5;text-align:center}
+.sports-rainbow-summary{min-width:0}
+.sports-rainbow-variation-icon{display:flex;align-items:center;justify-content:center;flex:0 0 30px;width:30px;height:34px}
+.sports-rainbow-variation-icon img{display:block;max-width:100%;max-height:100%;object-fit:contain}
+.sports-rainbow-variation-icon svg{width:20px;height:20px;opacity:.6}
+.sports-rainbow-disclosure{margin:12px 0;border-top:1px solid #38516c}
+.sports-rainbow-disclosure summary{display:flex;align-items:center;gap:8px;min-height:44px;padding:9px 0;list-style:none;cursor:pointer;color:#c3d5eb;font-size:11px;font-weight:800}
+.sports-rainbow-disclosure summary::-webkit-details-marker{display:none}
+.sports-rainbow-disclosure summary::before{content:'›';display:inline-block;font-size:22px;line-height:1;transform:rotate(0deg)}
+.sports-rainbow-disclosure[open] summary::before{transform:rotate(90deg)}
+.sports-rainbow-disclosure summary:focus-visible,button.sports-rainbow-cover:focus-visible{outline:2px solid #96efbc;outline-offset:3px;border-radius:5px}
+.sports-rainbow-disclosure .sports-rainbow-variants{margin:0 0 8px}
+.sports-rainbow-variant strong{min-width:0;overflow-wrap:anywhere}
+@media(max-width:470px){
+ .sports-rainbow-cover-row{grid-template-columns:76px minmax(0,1fr);gap:10px}
+ .sports-rainbow-cover{width:76px;height:107px}
+ .sports-rainbow-top{flex-wrap:wrap}
+ .sports-rainbow-percent{font-size:24px}
+}
+
 .sports-rainbow-form{display:grid;gap:13px}
 .sports-rainbow-form .input-group{display:grid;gap:5px;color:#c4d6ec;font-size:11px;font-weight:800}
 .sports-rainbow-form .input{width:100%}
@@ -1426,7 +1452,7 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
       <div class="sports-rainbow-form-cols"><label class="input-group">Athlète<input id="rainbowAthlete" class="input" maxlength="120" list="rainbowAthleteList" placeholder="Tyrese Maxey"><datalist id="rainbowAthleteList"></datalist></label><label class="input-group">Marque<input id="rainbowBrand" class="input" maxlength="90" list="brandsList" placeholder="Topps"></label></div>
       <label class="input-group">Référence de la carte de base<input id="rainbowBaseRef" class="input" maxlength="180" placeholder="Ex. #23 · 2025–26 Topps Chrome"></label>
       <label class="input-group">Checklist des parallèles *<textarea id="rainbowVariants" class="input" rows="7" required placeholder="Base&#10;Refractor&#10;Purple Refractor&#10;Gold Refractor&#10;Superfractor 1/1"></textarea><span class="field-hint">Une variante par ligne, maximum 80. Le 1/1 n'est compté que si tu l'ajoutes à cette checklist.</span></label>
-      <div class="sports-rainbow-bind-head"><strong>ASSOCIER LES CARTES AUX PARALLÈLES</strong><p>Lie chaque variante à une fiche OWN ou Wishlist. Sans association, elle reste manquante.</p><label class="input-group">Chercher parmi les cartes<input id="rainbowCardSearch" class="input" type="search" placeholder="Joueur, variation, référence…"></label></div>
+      <div class="sports-rainbow-bind-head"><strong>ASSOCIER LES CARTES AUX PARALLÈLES</strong><p>Lie chaque variante à une fiche OWN ou Wishlist. La photo de la variante « Base » illustre la tuile. Sans association, la variante reste manquante.</p><label class="input-group">Chercher parmi les cartes<input id="rainbowCardSearch" class="input" type="search" placeholder="Joueur, variation, référence…"></label></div>
       <div id="rainbowVariantLinks" class="sports-rainbow-bind-list"></div>
     </div><div class="modal-footer"><button type="button" class="button button-ghost" data-close="rainbowDialog">Annuler</button><button id="saveRainbowBtn" class="button button-primary" type="submit">Enregistrer le Rainbow</button></div></div></form>
   </dialog>
@@ -2334,7 +2360,17 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
         return logos.filter(row=>row.type==='rainbow').map(rainbowEngine.cleanGroup)
           .filter(row=>row.id).sort((a,b)=>b.updatedAt-a.updatedAt);
       }
+      function rainbowVariationIcon(entry){
+        const logo=logoFor('tag',entry.label);
+        const source=logo||(imgSafe(entry.card?.photo)?entry.card.photo:'');
+        return '<span class="sports-rainbow-variation-icon" aria-hidden="true">'+
+          (source?'<img src="'+safeText(source)+'" alt="" loading="lazy" decoding="async">':ico('layers'))+'</span>';
+      }
+      function rainbowBaseEntry(group){
+        return group.entries.find(entry=>['base','base card','carte de base'].includes(normalize(entry.label)));
+      }
       function renderRainbows(){
+        const expanded=new Set([...$('rainbowList').querySelectorAll('details[data-rainbow-disclosure][open]')].map(el=>el.dataset.rainbowDisclosure));
         const groups=savedRainbows().map(group=>rainbowEngine.progress(group,cards));
         const owned=groups.reduce((sum,g)=>sum+g.owned,0),total=groups.reduce((sum,g)=>sum+g.total,0);
         $('rainbowOverview').innerHTML='<div class="sports-rainbow-overview">'+
@@ -2343,21 +2379,26 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
           '<span><strong>'+(total?Math.round(owned/total*100):0)+' %</strong> complétion globale</span></div>';
         $('rainbowList').innerHTML=groups.length?groups.map(group=>{
           const details=[group.athlete,group.brand,group.baseReference].filter(Boolean).join(' · ');
+          const base=rainbowBaseEntry(group),baseCard=base?.card;
+          const hasBasePhoto=imgSafe(baseCard?.photo);
+          const cover=hasBasePhoto?
+            '<button type="button" class="sports-rainbow-cover" data-rainbow-open-card="'+safeText(baseCard.id)+'" aria-label="Ouvrir la carte Base de '+safeText(group.name)+'"><img src="'+safeText(baseCard.photo)+'" alt="Carte Base — '+safeText(group.name)+'" loading="lazy" decoding="async"></button>':
+            '<div class="sports-rainbow-cover"><span class="sports-rainbow-cover-placeholder">'+(baseCard?'Base<br>sans photo':'Base<br>à associer')+'</span></div>';
           const icons={own:'✓',wishlist:'♡',missing:'○'};
           const variants=group.entries.map(entry=>{
             const clickable=entry.card?'<button type="button" data-rainbow-open-card="'+safeText(entry.card.id)+'" title="Ouvrir la fiche associée">'+safeText(entry.label)+'</button>':
               '<strong>'+safeText(entry.label)+'</strong>';
             return '<div class="sports-rainbow-variant is-'+entry.status+'">'+
-              '<span aria-hidden="true">'+icons[entry.status]+'</span>'+clickable+
+              rainbowVariationIcon(entry)+'<span aria-hidden="true">'+icons[entry.status]+'</span>'+clickable+
               '<span class="sr-only">'+(entry.status==='own'?'Possédée':entry.status==='wishlist'?'Wishlist':'Manquante')+'</span></div>';
           }).join('');
-          return '<article class="sports-rainbow-group"><div class="sports-rainbow-top"><h3>'+safeText(group.name||'Rainbow sans nom')+'</h3>'+
+          return '<article class="sports-rainbow-group"><div class="sports-rainbow-cover-row">'+cover+'<div class="sports-rainbow-summary"><div class="sports-rainbow-top"><h3>'+safeText(group.name||'Rainbow sans nom')+'</h3>'+
             '<span class="sports-rainbow-percent">'+group.percent+' %</span></div>'+
             '<p class="sports-rainbow-meta">'+safeText(details||'Carte de base non renseignée')+'</p>'+
             '<div class="sports-rainbow-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+group.percent+'" aria-label="Complétion de '+safeText(group.name)+'"><span style="width:'+group.percent+'%"></span></div>'+
             '<div class="sports-rainbow-counts"><span>✓ OWN '+group.owned+'</span><span>♡ Wishlist '+group.wishlist+
             '</span><span>○ Manquantes '+group.missing+'</span></div>'+
-            '<div class="sports-rainbow-variants">'+variants+'</div>'+
+            '</div></div><details class="sports-rainbow-disclosure" data-rainbow-disclosure="'+safeText(group.id)+'"'+(expanded.has(group.id)?' open':'')+'><summary>Variations · '+group.total+'</summary><div class="sports-rainbow-variants">'+variants+'</div></details>'+
             '<div class="sports-rainbow-actions"><button type="button" class="button button-soft" data-rainbow-edit="'+safeText(group.id)+'">MODIFIER</button>'+
             '<button type="button" class="button button-ghost" data-rainbow-delete="'+safeText(group.id)+'">SUPPRIMER LE RAINBOW</button></div></article>';
         }).join(''):'<div class="sports-rainbow-empty">Aucun Rainbow créé pour le moment.<p>Définis une checklist des parallèles d’une même carte, puis associe tes fiches OWN et Wishlist pour suivre ta progression.</p></div>';

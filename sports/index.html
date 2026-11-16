@@ -1895,6 +1895,103 @@ html:not([data-rapli-role="editor"]) .move-card{display:none!important}
 #logoList .logo-pin-toggle:focus-visible{outline:2px solid #429e8a;outline-offset:2px}
 html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!important}
 </style>
+
+<style id="rapli-sports-curated-gallery">
+/* Premium showcase for VIGNETTES and grouped gallery views; FICHES unchanged. */
+#cardGrid.is-gallery-layout{margin-top:12px}
+#cardGrid.is-gallery-layout .sports-gallery-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(12px,1.7vw,21px)}
+#cardGrid.is-gallery-layout .sports-gallery-tile{
+  border:1px solid #a8bec7;border-radius:16px;padding:6px;
+  background:linear-gradient(140deg,#e7eeed,#fcfbf6 46%,#e6ebf1)!important;
+  box-shadow:inset 0 1px #fff,0 8px 20px rgba(21,48,67,.13)
+}
+#cardGrid.is-gallery-layout .sports-gallery-card-action{border-radius:10px;overflow:hidden}
+#cardGrid.is-gallery-layout .sports-gallery-media{
+  padding:clamp(9px,1.3vw,16px);border-radius:10px;aspect-ratio:2.7/3.8;
+  background:radial-gradient(ellipse at 50% 40%,#3c5972,#20364b 48%,#101b2e 86%);
+  box-shadow:inset 0 0 0 1px #fff3,inset 0 0 25px #0003
+}
+#cardGrid.is-gallery-layout .sports-gallery-media img{filter:drop-shadow(0 8px 9px #0005)}
+#cardGrid.is-gallery-layout .sports-gallery-caption{
+  position:relative;padding:13px 8px 10px;gap:5px;min-height:76px;background:transparent
+}
+#cardGrid.is-gallery-layout .sports-gallery-caption::before{
+  content:"";position:absolute;left:8px;right:8px;top:5px;height:1px;
+  background:linear-gradient(90deg,#8dbdb3,#d0b577 47%,transparent)
+}
+#cardGrid.is-gallery-layout .sports-gallery-caption strong{
+  color:#16384f;font:800 clamp(11px,1.05vw,14px)/1.32 Poppins,system-ui,sans-serif
+}
+#cardGrid.is-gallery-layout .sports-gallery-caption small{color:#596f80;font-size:9px}
+#cardGrid.is-gallery-layout .sports-gallery-caption .sports-gallery-reference{
+  border:0;background:none;padding:0;color:#718394;font-size:9px
+}
+#cardGrid.is-gallery-layout .sports-gallery-numbering{
+  background:linear-gradient(120deg,#fff9e8,#e9ddba,#fffaf0);border:1px solid #cbb781;color:#705925
+}
+#cardGrid.is-gallery-layout .sports-gallery-tile:hover{border-color:#78b2a7;box-shadow:0 13px 27px rgba(21,51,70,.18)}
+/* Bigger, editorial group covers: logo or athlete first, museum-style name below. */
+#cardGrid.is-gallery-layout .sports-gallery-grid.is-group-gallery{grid-template-columns:repeat(3,minmax(0,1fr))}
+#cardGrid.is-gallery-layout .is-group-gallery .sports-gallery-group{
+  padding:7px;border:1px solid #a9c3c5;border-radius:16px;
+  background:linear-gradient(133deg,#eef6f1,#fcf9ee 49%,#e2edf3);
+  box-shadow:inset 0 1px #fff,0 8px 21px rgba(24,57,76,.13)
+}
+#cardGrid.is-gallery-layout .is-group-gallery .sports-gallery-group-picture{
+  aspect-ratio:1.7/1;position:relative;border-radius:10px;padding:18px;
+  background:radial-gradient(ellipse at 50% 45%,#647f9575,transparent 68%),linear-gradient(132deg,#1c344c,#0d1d30 67%,#2b4258)
+}
+#cardGrid.is-gallery-layout .is-group-gallery .sports-gallery-group-picture::after{
+  content:"";position:absolute;inset:9px;border-radius:6px;border:1px solid #e9fff12b;pointer-events:none
+}
+#cardGrid.is-gallery-layout .is-group-gallery .sports-gallery-group-picture img{
+  width:100%;height:100%;max-width:85%;max-height:84%;object-fit:contain;
+  filter:drop-shadow(0 7px 12px #0006)
+}
+#cardGrid.is-gallery-layout .is-group-gallery .sports-gallery-group[data-group-type=athlete] .sports-gallery-group-picture img{
+  width:78%;height:100%;object-fit:cover;border-radius:8px;border:1px solid #fff5
+}
+#cardGrid.is-gallery-layout .is-group-gallery .sports-gallery-group-info{position:relative;gap:4px;padding:13px 7px 8px}
+#cardGrid.is-gallery-layout .is-group-gallery .sports-gallery-group-info::before{
+  content:"";position:absolute;top:5px;left:7px;width:74px;height:1px;
+  background:linear-gradient(90deg,#82baab,#d1b36d,transparent)
+}
+#cardGrid.is-gallery-layout .is-group-gallery .sports-gallery-group-info strong{
+  color:#17384f;font:700 clamp(19px,2vw,26px)/1.08 'Cormorant Garamond',Georgia,serif
+}
+#cardGrid.is-gallery-layout .sports-gallery-group-kicker{
+  font:800 8px/1.3 Poppins,system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#648780
+}
+#cardGrid.is-gallery-layout .sports-gallery-group-count{
+  display:inline-flex;gap:5px;align-items:baseline;font:750 9px Poppins,system-ui,sans-serif;color:#647d86;text-transform:uppercase
+}
+#cardGrid.is-gallery-layout .sports-gallery-group-count b{font:800 16px 'Cormorant Garamond',Georgia,serif;color:#436e72}
+#cardGrid.is-gallery-layout .is-group-gallery .sports-gallery-group:hover{border-color:#74aea3;box-shadow:0 14px 29px rgba(20,51,71,.18)}
+#cardGrid.is-gallery-layout .sports-gallery-group-symbol{color:#e0f6ef;text-shadow:0 2px 8px #091c2b88}
+#cardGrid.is-gallery-layout .sports-gallery-initials{
+  background:linear-gradient(135deg,#287888,#16384d);border-color:#e9fff077;color:#f0fff9;box-shadow:0 6px 16px #0004
+}
+#cardGrid.is-gallery-layout .sports-gallery-breadcrumb{border-left:3px solid #94c0b2;padding:4px 10px;color:#214a60}
+#cardGrid.is-gallery-layout .sports-gallery-back{background:#edf7f1;border-color:#afd2c5;color:#225367}
+@media(max-width:980px){
+ #cardGrid.is-gallery-layout .sports-gallery-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+ #cardGrid.is-gallery-layout .sports-gallery-grid.is-group-gallery{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:650px){
+ #cardGrid.is-gallery-layout .sports-gallery-grid,
+ #cardGrid.is-gallery-layout .sports-gallery-grid.is-group-gallery{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+ #cardGrid.is-gallery-layout .sports-gallery-tile{padding:4px}
+ #cardGrid.is-gallery-layout .sports-gallery-media{padding:8px}
+ #cardGrid.is-gallery-layout .is-group-gallery .sports-gallery-group{padding:5px}
+ #cardGrid.is-gallery-layout .is-group-gallery .sports-gallery-group-picture{padding:10px;aspect-ratio:1.3/1}
+ #cardGrid.is-gallery-layout .is-group-gallery .sports-gallery-group-info{padding:11px 5px 7px}
+ #cardGrid.is-gallery-layout .is-group-gallery .sports-gallery-group-info strong{font-size:19px}
+}
+@media(prefers-reduced-motion:reduce){
+ #cardGrid.is-gallery-layout .sports-gallery-group,
+ #cardGrid.is-gallery-layout .sports-gallery-tile{transition:none!important;transform:none!important}
+}
+</style>
 </head>
 <body>
   <div class="app-shell">

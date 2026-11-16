@@ -384,6 +384,53 @@ body[data-active="regatta"] .portal-header{background:linear-gradient(120deg,#10
  .portal-nav-strip .product-tabs{grid-column:2;grid-row:1}
  .portal-nav-strip .global-cloud-controls{grid-column:1 / -1;grid-row:2;justify-content:center}
 }
+
+/* Rapli Lab single-workspace presentation: Regatta stays in DOM and cloud sync. */
+.portal-nav-strip{justify-content:center;overflow:visible}
+.portal-nav-strip .product-tabs[hidden]{display:none!important}
+.portal-header{padding:7px 12px 8px;min-height:0}
+.portal-nav-strip .portal-brand{flex:0 0 160px;width:160px;height:57px}
+.portal-nav-strip .portal-brand img{width:100%;height:100%;object-fit:contain}
+/* The footer is inside the portal's flex column, below the scrolling iframe. */
+.portal-footer{
+  position:relative;flex:0 0 auto;display:flex;align-items:center;
+  justify-content:space-between;flex-wrap:wrap;gap:7px 12px;
+  min-height:50px;padding:6px 14px calc(6px + env(safe-area-inset-bottom,0px));
+  border-top:1px solid #d1e0e9;background:linear-gradient(110deg,#f0faf7 0%,#f8fbff 55%,#faf6f1 100%);
+}
+.portal-footer-label{font:800 10px/1.3 Inter,system-ui,sans-serif;letter-spacing:.08em;color:#54748a}
+.portal-footer .global-cloud-controls{display:flex;flex:0 0 auto;align-items:center;gap:6px;margin-left:auto;justify-content:flex-end;padding:0}
+.portal-footer .global-cloud-controls button{
+  width:35px;height:35px;border-radius:10px;border:1px solid #a9c9d4;
+  background:rgba(255,255,255,.86);color:#255a76;
+  box-shadow:inset 0 1px 0 #fff,0 2px 6px rgba(38,75,101,.07);
+}
+.portal-footer .global-cloud-controls button:hover:not(:disabled){
+  background:#e8f9f2;color:#164d66;border-color:#78baa9;
+  transform:translateY(-1px);
+}
+.portal-footer .global-cloud-controls button svg{width:20px;height:20px}
+.portal-footer .global-cloud-controls button:focus-visible{outline:2px solid #319c87;outline-offset:2px}
+.portal-footer #global-cloud-feedback{
+  flex:1 0 100%;order:3;margin:0;padding:8px 38px 8px 12px;
+  border:1px solid #bed9df;border-radius:9px;background:#eaf8f6;
+  font-size:11px;text-align:left;max-height:27dvh;
+}
+.portal-footer #global-cloud-feedback[data-status="error"]{background:#fff0f1;border-color:#e8b6bc}
+@media(max-width:800px){
+  .portal-header{padding:calc(5px + env(safe-area-inset-top,0px)) 8px 6px}
+  .portal-nav-strip{display:flex;justify-content:center}
+  .portal-nav-strip .portal-brand{flex:0 0 128px;width:128px;height:48px}
+  .frame-wrap{padding-bottom:0}
+  .portal-footer{padding-inline:10px}
+}
+@media(max-width:480px){
+  .portal-nav-strip{display:flex;justify-content:center}
+  .portal-nav-strip .portal-brand{flex:0 0 118px;width:118px;height:44px}
+  .portal-footer-label{font-size:9px}
+  .portal-footer .global-cloud-controls button{width:33px;height:33px}
+  .portal-footer .global-cloud-controls button svg{width:19px;height:19px}
+}
 </style>
   
   <link rel="stylesheet" href="shared/ios-input-focus.css">
@@ -396,7 +443,7 @@ body[data-active="regatta"] .portal-header{background:linear-gradient(120deg,#10
         <div class="portal-brand">
           <img src="assets/rapli-lab-logo.png" alt="Rapli Lab" width="220" height="131" draggable="false">
         </div>
-        <nav class="product-tabs" role="tablist" aria-label="Choisir le projet Rapli">
+        <nav class="product-tabs" role="tablist" aria-label="Choisir le projet Rapli" hidden aria-hidden="true">
           <button type="button" id="tab-sports" class="product-tab" data-product="sports" role="tab" aria-selected="true" aria-controls="panel-sports" tabindex="0" title="Rapli Sports — collection de cartes">
             <img src="sports/assets/logo.png" alt="Rapli Sports" draggable="false">
           </button>
@@ -404,20 +451,9 @@ body[data-active="regatta"] .portal-header{background:linear-gradient(120deg,#10
             <img src="regatta/assets/logo.webp" alt="Rapli Regatta" draggable="false">
           </button>
         </nav>
-        <div class="global-cloud-controls" role="group" aria-label="Sauvegardes RapliLab">
-          <button id="global-cloud-manage" type="button" title="Gérer les sauvegardes et associer PC / iPhone" aria-label="Gérer les sauvegardes des deux espaces">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 3.5H17l2.5 2.5v14.5h-15z"/><path d="M8 3.5v6h8v-6M8 20.5v-7h8v7"/></svg>
-          </button>
-          <button id="global-cloud-save" type="button" title="Enregistrer Sports et Regatta dans Supabase" aria-label="Enregistrer les deux espaces dans le cloud">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18h10a4 4 0 0 0 .65-7.95A6.2 6.2 0 0 0 6 8.6 4.7 4.7 0 0 0 7 18Z"/><path d="M12 10v8m-3-3 3 3 3-3"/></svg>
-          </button>
-          <button id="global-cloud-refresh" type="button" title="Actualiser Sports et Regatta depuis Supabase" aria-label="Actualiser les deux espaces depuis le cloud">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14.25-5L3 8.5"/><path d="M3 3.5v5h5"/><path d="M4 13a8 8 0 0 0 14.25 5L21 15.5"/><path d="M21 20.5v-5h-5"/></svg>
-          </button>
-        </div>
+
       </div>
     </header>
-    <div id="global-cloud-feedback" role="status" aria-live="polite" hidden></div>
     <dialog id="global-cloud-manager" aria-labelledby="global-cloud-manager-title">
       <div class="global-manager-head">
         <div><h2 id="global-cloud-manager-title">Sauvegardes RapliLab</h2><small>Sports · Regatta — une session Supabase commune</small></div>
@@ -459,11 +495,28 @@ body[data-active="regatta"] .portal-header{background:linear-gradient(120deg,#10
         <iframe id="frame-regatta" class="app-frame" data-src="regatta/index.html" title="Rapli Regatta — journal de courses" allow="clipboard-read; clipboard-write" loading="lazy"></iframe>
       </section>
     </div>
+    <footer class="portal-footer" aria-label="Sauvegardes Rapli Lab">
+      <span class="portal-footer-label">RAPLI LAB <span aria-hidden="true">·</span> CLOUD</span>
+      <div class="global-cloud-controls" role="group" aria-label="Sauvegardes RapliLab">
+          <button id="global-cloud-manage" type="button" title="Gérer les sauvegardes et associer PC / iPhone" aria-label="Gérer les sauvegardes des deux espaces">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 3.5H17l2.5 2.5v14.5h-15z"/><path d="M8 3.5v6h8v-6M8 20.5v-7h8v7"/></svg>
+          </button>
+          <button id="global-cloud-save" type="button" title="Enregistrer Sports et Regatta dans Supabase" aria-label="Enregistrer les deux espaces dans le cloud">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18h10a4 4 0 0 0 .65-7.95A6.2 6.2 0 0 0 6 8.6 4.7 4.7 0 0 0 7 18Z"/><path d="M12 10v8m-3-3 3 3 3-3"/></svg>
+          </button>
+          <button id="global-cloud-refresh" type="button" title="Actualiser Sports et Regatta depuis Supabase" aria-label="Actualiser les deux espaces depuis le cloud">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14.25-5L3 8.5"/><path d="M3 3.5v5h5"/><path d="M4 13a8 8 0 0 0 14.25 5L21 15.5"/><path d="M21 20.5v-5h-5"/></svg>
+          </button>
+        </div>
+      <div id="global-cloud-feedback" role="status" aria-live="polite" hidden></div>
+    </footer>
   </div>
   <script>
   (() => {
     'use strict';
     const projects=['sports','regatta'];
+    // Regatta remains installed and included in cloud backups; only Sports is visible in the portal.
+    const visibleProjects=['sports'];
     const tabs=Object.fromEntries(projects.map(n=>[n,document.getElementById('tab-'+n)]));
     const panels=Object.fromEntries(projects.map(n=>[n,document.getElementById('panel-'+n)]));
     const frames=Object.fromEntries(projects.map(n=>[n,document.getElementById('frame-'+n)]));
@@ -471,13 +524,13 @@ body[data-active="regatta"] .portal-header{background:linear-gradient(120deg,#10
     let current='sports',cloudBusy=false,requestSequence=0,managerBusy=false;
     const pause=ms=>new Promise(resolve=>setTimeout(resolve,ms));
     const sanitize=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
-    const fromHash=()=>projects.includes(location.hash.slice(1).toLowerCase())?location.hash.slice(1).toLowerCase():'sports';
+    const fromHash=()=>visibleProjects.includes(location.hash.slice(1).toLowerCase())?location.hash.slice(1).toLowerCase():'sports';
     function activity(name,active){
       const frame=frames[name];
       if(frame?.contentWindow&&frame.src)try{frame.contentWindow.postMessage({type:'RAPLI_APP_ACTIVITY',active},location.origin)}catch(_){}
     }
     function select(name,hash=false,focus=false){
-      if(!projects.includes(name))name='sports';
+      if(!visibleProjects.includes(name))name='sports';
       current=name;
       const frame=frames[name];
       if(!frame.src&&frame.dataset.src){frame.src=frame.dataset.src;delete frame.dataset.src;}

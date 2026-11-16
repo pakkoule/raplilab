@@ -13,6 +13,7 @@
   if (!bridge || !['sports','regatta'].includes(bridge.module)) return;
   const MODULE = bridge.module;
   const manualOnly = false;
+  const isEditor=()=>window.RapliAdminAccess?.isEditor?.()===true;
   const el = id => document.getElementById(id);
   let client, userId, ownerId, revision = 0, exists = false, ready = false, busy = false;
   let dirty = false, conflict = false, error = false, hydratedBaseline = null;
@@ -56,7 +57,7 @@
   function paint() {
     const save=el('rapli-module-cloud-save'),refresh=el('rapli-module-cloud-refresh'),status=el('rapli-module-cloud-status');
     const state=busy?'busy':conflict?'conflict':error?'error':dirty?'pending':ready?'synced':'local';
-    [save,refresh].forEach(b=>{if(!b)return;b.dataset.cloudState=state;b.disabled=busy||!bridge.ready;});
+    [save,refresh].forEach(b=>{if(!b)return;b.dataset.cloudState=state;b.disabled=busy||!bridge.ready||(b===save&&!isEditor());});
     if(refresh)refresh.classList.toggle('is-refreshing',busy);
     if(status){status.textContent=message;status.title=message;status.dataset.cloudState=state;}
     if(save)save.title='Enregistrer sur Supabase — '+message;
@@ -83,7 +84,10 @@
     if(userId!==user.id){userId=user.id;ownerId=user.id;revision=0;exists=false;hydratedBaseline=null;}
     const member=await client.from('rapli_archive_members').select('owner_id').eq('member_id',userId).maybeSingle();
     if(member.error)throw member.error;
-    const resolved=member.data?.owner_id||userId;
+    const published=await client.from(TABLE).select('owner_id')
+      .eq('module',MODULE).order('updated_at',{ascending:false}).limit(1).maybeSingle();
+    if(published.error)throw published.error;
+    const resolved=published.data?.owner_id||member.data?.owner_id||userId;
     if(ownerId!==resolved){ownerId=resolved;revision=0;exists=false;hydratedBaseline=null;}
     return ownerId;
   }
@@ -170,6 +174,7 @@
     return true;
   }
   async function saveNow(fromAuto=false) {
+    if(!isEditor()){setStatus('Lecture seule : connexion administrateur nécessaire','ok');return false;}
     if(!bridge.ready){setStatus('Application non initialisée','error');return false;}
     if(bootPromise&&!bootComplete)await bootPromise;
     if(busy)return false;
@@ -236,6 +241,14 @@
         return true; // No remote copy is a successful no-op, never delete local records.
       }
       const serverRev=Number(row.state_revision||0);
+      if(!isEditor()){
+        if(typeof bridge.previewState!=='function')throw Error('Lecture publique indisponible.');
+        const publicState=await transform(row.state,'download');
+        bridge.previewState(publicState);
+        revision=serverRev;exists=true;dirty=false;conflict=false;
+        setStatus('Collection publique à jour ✓','ok');
+        return true;
+      }
       const local=snapshot();
       const acked=getAck();
       if(acked?.revision===serverRev && isLocalClean(local)){
@@ -250,12 +263,12 @@
     }finally{busy=false;paint();}
   }
   function queueSave() {
-    if(manualOnly)return; // Reserved for a future manual-save module.
+    if(!isEditor()||manualOnly)return; // Reserved for a future manual-save module.
     clearTimeout(timer);
     timer=setTimeout(()=>{if(dirty&&!conflict&&!busy)void saveNow(true);},1400);
   }
   function changed() {
-    if(!bridge.ready)return;
+    if(!bridge.ready||!isEditor())return;
     dirty=true;
     if(ready&&!conflict&&!manualOnly)queueSave();
     setStatus(conflict?'Conflit cloud — actualise avant de continuer':'Modifications locales à enregistrer','pending');
@@ -268,6 +281,14 @@
       const row=await remoteRow();
       ready=true;exists=!!row;revision=Number(row?.state_revision||0);
       const local=snapshot(),known=getAck();
+      if(!isEditor()){
+        if(row)await refresh(false);
+        else if(typeof bridge.previewState==='function'){
+          bridge.previewState({records:[],logos:[]});
+          setStatus('Collection publique non disponible','ok');
+        }
+        return;
+      }
       if(row){
         if(known?.revision===revision && known.hash===fingerprint(local)){
           ack(local);dirty=false;setStatus('Cloud synchronisé ✓','ok');

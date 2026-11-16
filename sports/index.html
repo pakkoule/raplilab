@@ -3070,10 +3070,16 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
         const fallback=type==='athlete'?
           '<span class="sports-gallery-initials">'+safeText(initials||'?')+'</span>':
           '<span class="sports-gallery-group-symbol">'+safeText(symbol)+'</span>';
+        const categoryLabel={
+          brand:'MARQUE',team:'TEAM',athlete:'ATHLÈTE',nationality:'PAYS',tag:'TAG',
+          competition:'LIGUE',edition:'ÉDITION',insert:'INSERT',parallel:'PARALLÈLE',
+          sport:'SPORT',grading:'GRADING',autograph:'AUTOGRAPHE',patch:'PATCH'
+        }[type]||'COLLECTION';
         return '<button type="button" class="sports-gallery-group" data-group-type="'+type+'" data-sports-gallery-group="'+safeText(group.key)+'" aria-label="Voir les cartes de '+safeText(group.label)+'">'+
          '<span class="sports-gallery-group-picture">'+(picture?'<img src="'+picture+'" alt="'+(type==='athlete'?'Portrait de ':'Logo de ')+safeText(group.label)+'" loading="lazy" decoding="async">':fallback)+'</span>'+
-         '<span class="sports-gallery-group-info"><strong>'+safeText(group.label)+'</strong>'+
-         '<small>'+group.items.length+' carte'+(group.items.length!==1?'s':'')+'</small></span></button>';
+         '<span class="sports-gallery-group-info"><span class="sports-gallery-group-kicker">'+categoryLabel+'</span>'+
+         '<strong>'+safeText(group.label)+'</strong>'+
+         '<span class="sports-gallery-group-count"><b>'+group.items.length+'</b> carte'+(group.items.length!==1?'s':'')+'</span></span></button>';
       }
       function sportsGalleryPagination(total){
         const pages=Math.ceil(total/SPORTS_GALLERY_PAGE_SIZE);
@@ -3092,11 +3098,11 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
           links+'<button type="button" data-sports-gallery-page="'+(sportsGalleryPage+1)+'"'+(sportsGalleryPage===pages?' disabled':'')+' aria-label="Page suivante">›</button>'+
           '</nav>';
       }
-      function sportsGalleryPageMarkup(items,renderer){
+      function sportsGalleryPageMarkup(items,renderer,grouped=false){
         const pageCount=Math.max(1,Math.ceil(items.length/SPORTS_GALLERY_PAGE_SIZE));
         sportsGalleryPage=Math.max(1,Math.min(sportsGalleryPage,pageCount));
         const first=(sportsGalleryPage-1)*SPORTS_GALLERY_PAGE_SIZE;
-        return '<div class="sports-gallery-grid">'+items.slice(first,first+SPORTS_GALLERY_PAGE_SIZE).map(renderer).join('')+'</div>';
+        return '<div class="sports-gallery-grid'+(grouped?' is-group-gallery':'')+'">'+items.slice(first,first+SPORTS_GALLERY_PAGE_SIZE).map(renderer).join('')+'</div>';
       }
       function sportsGalleryCount(items){
         if(sportsGalleryLayout==='details'||sportsGalleryLayout==='cards')return items.length;
@@ -3119,7 +3125,7 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
             '<div class="sports-gallery-breadcrumb">'+safeText(group.label)+' · '+group.items.length+' carte'+(group.items.length>1?'s':'')+'</div>'+
             sportsGalleryPageMarkup(group.items,sportsGalleryCard);
         }
-        return sportsGalleryPageMarkup(groups,g=>sportsGalleryGroupCard(g,sportsGalleryLayout));
+        return sportsGalleryPageMarkup(groups,g=>sportsGalleryGroupCard(g,sportsGalleryLayout),true);
       }
 
 

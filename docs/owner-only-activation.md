@@ -12,7 +12,7 @@
 - Les données existantes (54 cartes Sports + 83 logos, Regatta séparé à la date de préparation) restent dans les lignes Supabase actuelles, sans migration des enregistrements.
 
 ## Ordre de mise en route obligatoire
-1. Vérifier dans Supabase Auth que l’envoi de liens email est actif et que l’URL du site Rapli Lab (ou la Deploy Preview pour les essais) est autorisée dans **URL Configuration / Redirect URLs**.
+1. Vérifier dans Supabase Auth que l’envoi de liens email est actif et que **https://deploy-preview-1--raplilab.netlify.app/** et **https://raplilab.netlify.app/** sont autorisées dans **Authentication → URL Configuration → Redirect URLs**. Pendant les tests de la PR, ouvrir **https://deploy-preview-1--raplilab.netlify.app/** : le lien e-mail revient à cette preview (et non à la production qui ne possède pas encore la connexion).
 2. Sur le site de test, ouvrir « MODE ÉDITION », entrer l’adresse administrateur et cliquer sur le lien reçu. Vérifier que le footer affiche « Administrateur connecté ».
 3. Après avoir validé la connexion, planifier le déploiement de la version à jour **avec** l’application du script `docs/owner-only-rls.sql` au projet Supabase associé. Ce script est volontairement non appliqué dans cette PR.
 4. Vérifier immédiatement l’accès visiteur depuis une fenêtre privée : voir les cartes, filtres, Rainbow et photos, mais pas de sauvegarde ni d’édition.

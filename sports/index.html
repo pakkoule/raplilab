@@ -1640,6 +1640,42 @@ html:not([data-rapli-role="editor"]) .move-card{display:none!important}
 .sports-gallery-tile.card-foil-silver .sports-gallery-caption,
 .sports-gallery-tile.card-foil-gold .sports-gallery-caption{background:transparent}
 </style>
+
+<style id="rapli-sports-card-name-emphasis">
+/* Give the athlete a clear visual title, then separate the card details.
+   A restrained mint/pearl rule echoes the premium foil without thick text. */
+.cards-grid .card-item .card-athlete .player-name-reference{
+  position:relative;
+  row-gap:4px;
+  padding-bottom:9px;
+  margin-bottom:7px;
+}
+.cards-grid .card-item .card-athlete .player-name-reference::after{
+  content:"";position:absolute;left:0;bottom:0;
+  width:min(92px,48%);height:2px;border-radius:999px;
+  background:linear-gradient(90deg,#2b8194 0%,#9cdbce 45%,#e9eef1 83%,transparent 100%);
+}
+.cards-grid .card-item .card-athlete .player-primary-name{
+  color:#123455;
+  font-weight:900;
+  letter-spacing:-.018em;
+  text-shadow:0 1px 0 rgba(255,255,255,.8),0 1px 2px rgba(29,66,94,.10);
+}
+.cards-grid .card-item .card-athlete .player-traits{
+  margin:5px 0 3px;
+}
+.cards-grid .card-item .identity-row{
+  margin-top:8px;
+}
+@media(max-width:750px){
+  .cards-grid .card-item .card-athlete .player-name-reference{padding-bottom:7px;margin-bottom:5px}
+  .cards-grid .card-item .identity-row{margin-top:6px}
+}
+@media(max-width:410px){
+  .cards-grid .card-item .card-athlete .player-name-reference{padding-bottom:6px;margin-bottom:4px}
+  .cards-grid .card-item .card-athlete .player-name-reference::after{height:1.5px;width:min(70px,44%)}
+}
+</style>
 </head>
 <body>
   <div class="app-shell">
@@ -2240,7 +2276,7 @@ html:not([data-rapli-role="editor"]) .move-card{display:none!important}
         });
         const badges=[...autos,...patchBadges].filter(Boolean);
         const reference=String(card.reference||'').trim();
-        return '<div class="player-name-reference"><h3 class="player">'+safeText(first)+(roster[0]?.nationality?' <span class="sports-flag" title="Pays '+safeText(roster[0].nationality)+'">'+flagFor(roster[0].nationality)+'</span>':'')+more+'</h3>'+
+        return '<div class="player-name-reference"><h3 class="player"><span class="player-primary-name">'+safeText(first)+'</span>'+(roster[0]?.nationality?' <span class="sports-flag" title="Pays '+safeText(roster[0].nationality)+'">'+flagFor(roster[0].nationality)+'</span>':'')+more+'</h3>'+
           (reference?'<span class="card-ref-inline" title="'+safeText(reference)+'">'+safeText(reference)+'</span>':'')+
           '</div>'+(badges.length?'<div class="player-traits">'+badges.join('')+'</div>':'');
       }

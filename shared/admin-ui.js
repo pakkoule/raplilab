@@ -12,6 +12,12 @@
    if(message&&!message.dataset.pending)message.textContent=isEditor?'Administrateur connecté':'Consultation libre';
  }
  login.addEventListener('click',async()=>{
+   const email=prompt('Adresse e-mail administrateur :');
+   if(email===null)return;
+   if(email.trim().toLowerCase()!==access.email){
+     message.textContent='Cette adresse ne dispose pas des droits d’édition.';
+     return;
+   }
    login.disabled=true;message.dataset.pending='true';
    message.textContent='Envoi du lien de connexion…';
    try{

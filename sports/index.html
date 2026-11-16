@@ -2286,6 +2286,113 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
           if(tile.scrollHeight>tile.clientHeight+2)tile.classList.add('is-content-dense');
         }
       }
+
+      // Rainbow groups live in the existing 'logos' store so IndexedDB,
+      // fallback and Supabase all preserve them without a new migration.
+      function savedRainbows(){
+        return logos.filter(row=>row.type==='rainbow').map(rainbowEngine.cleanGroup)
+          .filter(row=>row.id).sort((a,b)=>b.updatedAt-a.updatedAt);
+      }
+      function renderRainbows(){
+        const groups=savedRainbows().map(group=>rainbowEngine.progress(group,cards));
+        const owned=groups.reduce((sum,g)=>sum+g.owned,0),total=groups.reduce((sum,g)=>sum+g.total,0);
+        $('rainbowOverview').innerHTML='<div class="sports-rainbow-overview">'+
+          '<span><strong>'+groups.length+'</strong> Rainbow'+(groups.length!==1?'s':'')+'</span>'+
+          '<span><strong>'+owned+' / '+total+'</strong> parallèles OWN</span>'+
+          '<span><strong>'+(total?Math.round(owned/total*100):0)+' %</strong> complétion globale</span></div>';
+        $('rainbowList').innerHTML=groups.length?groups.map(group=>{
+          const details=[group.athlete,group.brand,group.baseReference].filter(Boolean).join(' · ');
+          const icons={own:'✓',wishlist:'♡',missing:'○'};
+          const variants=group.entries.map(entry=>{
+            const clickable=entry.card?'<button type="button" data-rainbow-open-card="'+safeText(entry.card.id)+'" title="Ouvrir la fiche associée">'+safeText(entry.label)+'</button>':
+              '<strong>'+safeText(entry.label)+'</strong>';
+            return '<div class="sports-rainbow-variant is-'+entry.status+'">'+
+              '<span aria-hidden="true">'+icons[entry.status]+'</span>'+clickable+
+              '<span class="sr-only">'+(entry.status==='own'?'Possédée':entry.status==='wishlist'?'Wishlist':'Manquante')+'</span></div>';
+          }).join('');
+          return '<article class="sports-rainbow-group"><div class="sports-rainbow-top"><h3>'+safeText(group.name||'Rainbow sans nom')+'</h3>'+
+            '<span class="sports-rainbow-percent">'+group.percent+' %</span></div>'+
+            '<p class="sports-rainbow-meta">'+safeText(details||'Carte de base non renseignée')+'</p>'+
+            '<div class="sports-rainbow-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+group.percent+'" aria-label="Complétion de '+safeText(group.name)+'"><span style="width:'+group.percent+'%"></span></div>'+
+            '<div class="sports-rainbow-counts"><span>✓ OWN '+group.owned+'</span><span>♡ Wishlist '+group.wishlist+
+            '</span><span>○ Manquantes '+group.missing+'</span></div>'+
+            '<div class="sports-rainbow-variants">'+variants+'</div>'+
+            '<div class="sports-rainbow-actions"><button type="button" class="button button-soft" data-rainbow-edit="'+safeText(group.id)+'">MODIFIER</button>'+
+            '<button type="button" class="button button-ghost" data-rainbow-delete="'+safeText(group.id)+'">SUPPRIMER LE RAINBOW</button></div></article>';
+        }).join(''):'<div class="sports-rainbow-empty">Aucun Rainbow créé pour le moment.<p>Définis une checklist des parallèles d’une même carte, puis associe tes fiches OWN et Wishlist pour suivre ta progression.</p></div>';
+      }
+      function readRainbowAssigned(){
+        $('rainbowVariantLinks').querySelectorAll('[data-rainbow-variant-select]').forEach(el=>{
+          rainbowAssignments.set(el.dataset.rainbowVariantSelect,el.value);
+        });
+      }
+      function renderRainbowLinks(){
+        const names=rainbowEngine.variantLines($('rainbowVariants').value);
+        const brand=normalize($('rainbowBrand').value),athlete=normalize($('rainbowAthlete').value);
+        const search=normalize($('rainbowCardSearch').value);
+        let matches=cards.filter(card=>{
+          if(brand&&normalize(card.brand)!==brand)return false;
+          if(athlete&&!cardPlayers(card).some(p=>normalize(p.name).includes(athlete)))return false;
+          if(search&&!matchesFuzzy(search,[card.brand,card.player,card.reference,...(card.tags||[])]))return false;
+          return true;
+        }).sort((a,b)=>collator.compare(a.player||'',b.player||''));
+        matches=matches.slice(0,100);
+        $('rainbowVariantLinks').innerHTML=names.length?names.map(label=>{
+          const key=normalize(label),linked=rainbowAssignments.get(key)||'';
+          const chosen=cards.find(card=>card.id===linked);
+          const choices=chosen&&!matches.some(card=>card.id===chosen.id)?[chosen,...matches]:matches;
+          const options=['<option value="">— Non associée / manquante —</option>',
+            ...choices.map(card=>{
+              const status=card.demo?'DÉMO':card.status==='own'?'OWN':'WISHLIST';
+              const full=[card.player,card.reference,(card.tags||[]).join(' / ')].filter(Boolean).join(' · ');
+              return '<option value="'+safeText(card.id)+'"'+(card.id===linked?' selected':'')+'>'+safeText(status+' · '+full)+'</option>';
+            })];
+          if(linked&&!chosen)options.push('<option value="'+safeText(linked)+'" selected>⚠ Fiche associée supprimée</option>');
+          return '<div class="sports-rainbow-bind"><label>'+safeText(label)+'</label>'+
+            '<select class="select" data-rainbow-variant-select="'+safeText(key)+'" aria-label="Carte associée à '+safeText(label)+'">'+options.join('')+'</select></div>';
+        }).join(''):'<div class="sports-rainbow-empty">Ajoute une ou plusieurs variantes dans la checklist pour pouvoir les associer.</div>';
+      }
+      function openRainbow(group=null){
+        const clean=group?rainbowEngine.cleanGroup(group):null;
+        rainbowEditingId=clean?.id||null;
+        rainbowAssignments=new Map((clean?.variants||[]).map(v=>[normalize(v.label),v.cardId]));
+        $('rainbowForm').reset();
+        $('rainbowDialogTitle').textContent=clean?'Modifier le Rainbow':'Créer un Rainbow';
+        $('rainbowName').value=clean?.name||'';
+        $('rainbowAthlete').value=clean?.athlete||'';
+        $('rainbowBrand').value=clean?.brand||'';
+        $('rainbowBaseRef').value=clean?.baseReference||'';
+        $('rainbowVariants').value=(clean?.variants||[]).map(v=>v.label).join('\n');
+        $('rainbowCardSearch').value='';
+        const list=$('rainbowAthleteList');list.replaceChildren();
+        savedPlayers().forEach(name=>list.append(new Option(name,name)));
+        renderRainbowLinks();
+        openModal('rainbowDialog');
+        $('rainbowName').focus({preventScroll:true});
+      }
+      async function submitRainbow(event){
+        event.preventDefault();readRainbowAssigned();
+        const name=$('rainbowName').value.trim(),variants=rainbowEngine.variantLines($('rainbowVariants').value);
+        if(!name){showToast('Indique un nom pour ton Rainbow.');$('rainbowName').focus();return;}
+        if(!variants.length){showToast('Ajoute au moins un parallèle.');$('rainbowVariants').focus();return;}
+        const ids=variants.map(label=>rainbowAssignments.get(normalize(label))||'').filter(Boolean);
+        if(new Set(ids).size!==ids.length){showToast('Une fiche ne peut pas compter pour deux variantes du même Rainbow.');return;}
+        if(!rainbowEditingId&&savedRainbows().length>=1000){showToast('Limite de 1 000 Rainbow atteinte.');return;}
+        const prior=rainbowEditingId?logos.find(row=>row.id===rainbowEditingId&&row.type==='rainbow'):null;
+        const group=rainbowEngine.cleanGroup({
+          id:prior?.id||'rainbow:'+uid(),name,
+          brand:$('rainbowBrand').value,athlete:$('rainbowAthlete').value,
+          baseReference:$('rainbowBaseRef').value,
+          variants:variants.map(label=>({label,cardId:rainbowAssignments.get(normalize(label))||''})),
+          createdAt:prior?.createdAt||Date.now(),updatedAt:Date.now()
+        });
+        const button=$('saveRainbowBtn');button.disabled=true;
+        try{
+          await saveLogo(group);closeModal('rainbowDialog');renderAll();showToast('Rainbow enregistré · '+rainbowEngine.progress(group,cards).percent+' % ✓');
+        }catch(error){console.error(error);showToast('Impossible de sauvegarder le Rainbow.');}
+        finally{button.disabled=false;}
+      }
+
       function renderAll(){
         refreshFilterOptions();
         $('tabOwnCount').textContent=cards.filter(x=>x.status==='own').length;
@@ -2297,9 +2404,14 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
           t.classList.toggle('active',active);
           t.setAttribute('aria-selected',String(active));
         });
-        const showStats=currentView==='stats';
-        $('collectionPanel').hidden=showStats;
+        const showStats=currentView==='stats',showRainbow=currentView==='rainbow';
+        $('collectionPanel').hidden=showStats||showRainbow;
         $('statsPanel').hidden=!showStats;
+        $('rainbowPanel').hidden=!showRainbow;
+        if(showRainbow){
+          $('sportsPaginationTop').replaceChildren();$('sportsPaginationBottom').replaceChildren();
+          renderRainbows();return;
+        }
         
         if(showStats){
           $('sportsPaginationTop').replaceChildren();$('sportsPaginationBottom').replaceChildren();
@@ -2467,6 +2579,27 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
       document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
         currentView=t.dataset.view;sportsGallerySelected=null;sportsGalleryPage=1;renderAll();
       }));
+      $('newRainbowBtn').addEventListener('click',()=>openRainbow());
+      $('rainbowForm').addEventListener('submit',submitRainbow);
+      $('rainbowVariants').addEventListener('input',()=>{readRainbowAssigned();renderRainbowLinks();});
+      $('rainbowCardSearch').addEventListener('input',()=>{readRainbowAssigned();renderRainbowLinks();});
+      for(const id of ['rainbowAthlete','rainbowBrand'])$(id).addEventListener('input',()=>{readRainbowAssigned();renderRainbowLinks();});
+      $('rainbowVariantLinks').addEventListener('change',event=>{
+        const selected=event.target.closest('[data-rainbow-variant-select]');
+        if(selected)rainbowAssignments.set(selected.dataset.rainbowVariantSelect,selected.value);
+      });
+      $('rainbowList').addEventListener('click',async event=>{
+        const open=event.target.closest('[data-rainbow-open-card]');
+        if(open){const linked=cards.find(c=>c.id===open.dataset.rainbowOpenCard);if(linked)openCard(linked);return;}
+        const edit=event.target.closest('[data-rainbow-edit]');
+        if(edit){const group=savedRainbows().find(r=>r.id===edit.dataset.rainbowEdit);if(group)openRainbow(group);return;}
+        const del=event.target.closest('[data-rainbow-delete]');
+        if(!del)return;
+        const group=savedRainbows().find(r=>r.id===del.dataset.rainbowDelete);
+        if(!group||!confirm('Supprimer le Rainbow « '+group.name+' » ? Les cartes associées seront conservées.'))return;
+        try{await removeLogo(group.id);renderAll();showToast('Rainbow supprimé. Toutes les cartes sont conservées.');}
+        catch(error){console.error(error);showToast('Suppression du Rainbow impossible.');}
+      });
       $('sportsGalleryToolbar').addEventListener('click',event=>{
         const option=event.target.closest('[data-sports-layout]');
         if(!option)return;

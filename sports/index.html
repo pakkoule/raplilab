@@ -1388,6 +1388,49 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
 .sports-catalogue-controls #sportsRandomBtn:hover .sports-random-dice{transform:rotate(-12deg) scale(1.07);filter:drop-shadow(0 0 3px #b9ffeb55)}
 .sports-catalogue-controls #sportsRandomBtn:focus-visible{outline:2px solid #74d8c6;outline-offset:3px}
 @media(prefers-reduced-motion:reduce){.sports-catalogue-controls #sportsRandomBtn .sports-random-dice{transition:none}.sports-catalogue-controls #sportsRandomBtn:hover .sports-random-dice{transform:none}}
+/* Premium pearl-foil pagination — restrained by default, richer on the current page. */
+.sports-gallery-pagination button{
+  position:relative;
+  color:#285c73;
+  border:1px solid #b7cddd;
+  border-radius:8px;
+  background:
+    linear-gradient(112deg,rgba(255,255,255,.78) 9%,rgba(255,255,255,.18) 42%,transparent 65%),
+    linear-gradient(117deg,#f1fbf8 0%,#edf5ff 30%,#f6f0fc 58%,#fff8ed 83%,#eaf9f2 100%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 1px 4px rgba(27,73,103,.08);
+  text-shadow:0 1px 0 rgba(255,255,255,.7);
+  transition:border-color .18s ease,box-shadow .18s ease,background-color .18s ease;
+}
+.sports-gallery-pagination button:not(:disabled):not([aria-current="page"]):hover{
+  color:#15566d;
+  border-color:#91bdbd;
+  box-shadow:inset 0 1px 0 #fff,0 3px 9px rgba(30,91,111,.15);
+}
+.sports-gallery-pagination button[aria-current="page"]{
+  color:#153f5a;
+  border-color:#8db7c8;
+  background:
+    linear-gradient(113deg,transparent 8%,rgba(255,255,255,.76) 38%,rgba(255,255,255,.16) 55%,transparent 79%),
+    linear-gradient(112deg,#b9e8dd 0%,#d1eaf6 28%,#dedbf5 48%,#f3dbe9 68%,#f7e7ce 86%,#c7ebe1 100%);
+  box-shadow:inset 0 1px 0 #fff,0 2px 8px rgba(40,92,121,.17);
+  text-shadow:0 1px 0 rgba(255,255,255,.7);
+  transform:none;
+}
+.sports-gallery-pagination button[aria-current="page"]::after{
+  background:#388b8c;
+  width:4px;height:4px;
+}
+.sports-gallery-pagination button:disabled{
+  opacity:.4;
+  box-shadow:none;
+}
+.sports-gallery-pagination button:focus-visible{
+  outline:2px solid #3fae9f;
+  outline-offset:3px;
+}
+@media(prefers-reduced-motion:reduce){
+ .sports-gallery-pagination button{transition:none}
+}
 </style>
 </head>
 <body>

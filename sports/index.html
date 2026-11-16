@@ -1264,6 +1264,33 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
 </style>
 
 <style id="rapli-sports-pr1-nav-rainbow-foil">
+/* Rapli Lab masthead is now part of Sports, flush left beside the collection tabs. */
+.section-nav{
+  display:grid;
+  grid-template-columns:108px minmax(0,1fr);
+  align-items:center;
+  gap:14px;
+  padding:2px 0 8px;
+  margin-bottom:12px;
+}
+.section-nav .sports-lab-brand{
+  display:flex;justify-content:flex-start;align-items:center;
+  width:108px;min-width:0;align-self:center;
+}
+.section-nav .sports-lab-brand img{
+  display:block;width:102px;height:72px;object-fit:contain;object-position:left center;
+}
+.section-nav .tabs{min-width:0;justify-content:center}
+@media(max-width:750px){
+ .section-nav{grid-template-columns:76px minmax(0,1fr);gap:8px;padding-bottom:6px}
+ .section-nav .sports-lab-brand{width:76px}
+ .section-nav .sports-lab-brand img{width:76px;height:58px}
+}
+@media(max-width:520px){
+ .section-nav{grid-template-columns:62px minmax(0,1fr);gap:5px}
+ .section-nav .sports-lab-brand{width:62px}
+ .section-nav .sports-lab-brand img{width:62px;height:50px}
+}
 /* PR #1 — minimal, mint-accented tabs: no heavy dark blocks. */
 .section-nav{justify-content:center}
 .section-nav .tabs{
@@ -1439,6 +1466,7 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
 
       <section aria-label="Gestion des cartes">
         <div class="section-nav">
+          <div class="sports-lab-brand" aria-label="Rapli Lab"><img src="../assets/rapli-lab-logo.png" alt="Rapli Lab" width="102" height="72" loading="eager"></div>
           <div class="tabs" role="tablist" aria-label="Collection">
             <button type="button" role="tab" aria-selected="true" class="tab active" data-view="own">OWN <b id="tabOwnCount">0</b></button>
             <button type="button" role="tab" aria-selected="false" class="tab" data-view="wishlist">WISHLIST <b id="tabWishCount">0</b></button>
@@ -1491,22 +1519,21 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
         </div>
           <button type="button" class="sports-gallery-option" data-sports-layout="details" aria-pressed="true">Fiches</button>
           <button type="button" class="sports-gallery-option" data-sports-layout="cards" aria-pressed="false">Vignettes</button>
-          <button type="button" class="sports-gallery-option" data-sports-layout="brand" aria-pressed="false">Par marque</button>
-          <button type="button" class="sports-gallery-option" data-sports-layout="team" aria-pressed="false">Par équipe</button>
-          <button type="button" class="sports-gallery-option" data-sports-layout="athlete" aria-pressed="false">Par athlète</button>
-          <button type="button" class="sports-gallery-option" data-sports-layout="nationality" aria-pressed="false">Par nationalité</button>
-          <button type="button" class="sports-gallery-option" data-sports-layout="tag" aria-pressed="false">Par tag</button>
-          <button type="button" class="sports-gallery-option" data-sports-layout="competition" aria-pressed="false">Par compétition</button>
-          <button type="button" class="sports-gallery-option" data-sports-layout="edition" aria-pressed="false" title="Tags classés Collection">Par édition</button>
-          <button type="button" class="sports-gallery-option" data-sports-layout="insert" aria-pressed="false">Par insert</button>
-          <button type="button" class="sports-gallery-option" data-sports-layout="parallel" aria-pressed="false">Par parallèle</button>
+          <button type="button" class="sports-gallery-option" data-sports-layout="brand" aria-pressed="false">Marque</button>
+          <button type="button" class="sports-gallery-option" data-sports-layout="team" aria-pressed="false">Team</button>
+          <button type="button" class="sports-gallery-option" data-sports-layout="athlete" aria-pressed="false">Athlète</button>
+          <button type="button" class="sports-gallery-option" data-sports-layout="nationality" aria-pressed="false">Pays</button>
+          <button type="button" class="sports-gallery-option" data-sports-layout="tag" aria-pressed="false">Tag</button>
+          <button type="button" class="sports-gallery-option" data-sports-layout="competition" aria-pressed="false">Ligue</button>
+          <button type="button" class="sports-gallery-option" data-sports-layout="edition" aria-pressed="false" title="Tags classés Collection">Édition</button>
+          <button type="button" class="sports-gallery-option" data-sports-layout="insert" aria-pressed="false">Insert</button>
+          <button type="button" class="sports-gallery-option" data-sports-layout="parallel" aria-pressed="false">Parallèle</button>
           <select id="sportsGalleryOtherViews" class="sports-gallery-option sports-gallery-other" aria-label="Affichages complémentaires">
             <option value="">Autres vues…</option>
-            <option value="sport">Par sport</option>
-            <option value="grading">Par grading</option>
-            <option value="autograph">Par autographe</option>
-            <option value="patch">Par patch</option>
-            <option value="numbering">Par numérotation</option>
+            <option value="sport">Sport</option>
+            <option value="grading">Grading</option>
+            <option value="autograph">Autographe</option>
+            <option value="patch">Patch</option>
           </select>
         </div>
         <div id="demoBanner" class="demo-strip hidden"><span><strong>APERÇU DE DÉMONSTRATION</strong> — Ces cartes sont des exemples modifiables.</span><button class="link-btn" id="clearDemoBtn" type="button">Supprimer les exemples</button></div>
@@ -2357,7 +2384,7 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
 
       // "Par édition" reads the existing Collection checkbox; it does not
       // fabricate or require a new property on every saved card.
-      const SPORTS_MORE_GALLERY_TYPES=Object.freeze(['sport','grading','autograph','patch','numbering']);
+      const SPORTS_MORE_GALLERY_TYPES=Object.freeze(['sport','grading','autograph','patch']);
       const SPORTS_COUNTRY_NAMES=typeof Intl.DisplayNames==='function'?new Intl.DisplayNames(['fr'],{type:'region'}):null;
       function sportsGallerySportIcon(label){
         const value=normalize(label);
@@ -2407,12 +2434,6 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
           const kinds=savedValues(cardPlayers(card).map(p=>p.patch).filter(Boolean));
           return kinds.length?kinds.map(kind=>'Patch '+(PATCH_TYPES[kind]||kind)):['Sans patch'];
         }
-        if(type==='numbering'){
-          if(!card.numbered)return ['Non numérotées'];
-          const run=String(card.printRun??'').trim();
-          if(!/^\d+$/.test(run)||Number(run)<1)return ['Numérotation à compléter'];
-          return [Number(run)===1?'1/1':'/'+Number(run)];
-        }
         if(type==='tag'){
           const tags=savedValues(Array.isArray(card.tags)?card.tags:[]);
           return tags.length?tags:['Sans tag'];
@@ -2442,13 +2463,7 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
             groups.get(key).items.push(card);
           }
         }
-        return [...groups.values()].sort((a,b)=>{
-          if(type==='numbering'){
-            const limit=group=>group.label==='1/1'?1:group.label.startsWith('/')?Number(group.label.slice(1)):Infinity;
-            return limit(a)-limit(b)||collator.compare(a.label,b.label);
-          }
-          return collator.compare(a.label,b.label);
-        });
+        return [...groups.values()].sort((a,b)=>collator.compare(a.label,b.label));
       }
       function sportsGalleryCard(item){
         const photo=imgSafe(item.photo)?'<img src="'+item.photo+'" alt="Photo de '+safeText(item.player||'la carte')+'" loading="lazy" decoding="async">':
@@ -2481,7 +2496,6 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
           type==='grading'?'🏅':
           type==='autograph'?'✍️':
           type==='patch'?'👕':
-          type==='numbering'?(group.label==='Non numérotées'?'#':group.label):
           initials||'★';
         const fallback=type==='athlete'?
           '<span class="sports-gallery-initials">'+safeText(initials||'?')+'</span>':

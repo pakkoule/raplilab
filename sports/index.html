@@ -1458,6 +1458,48 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
 @media(prefers-reduced-motion:reduce){
  .sports-gallery-pagination button{transition:none}
 }
+
+/* PR1: full view selector, restrained metallic borders, stronger photo frame. */
+.sports-gallery-switch{align-items:center;flex-wrap:wrap;gap:5px 6px}
+.sports-gallery-title{letter-spacing:.13em}
+.sports-gallery-switch .sports-gallery-option{text-transform:uppercase;white-space:nowrap;letter-spacing:.015em}
+.sports-gallery-switch .sports-gallery-option[aria-pressed="true"]{
+  border:2px solid transparent;
+  padding:5px 8px;
+  background:
+    linear-gradient(115deg,transparent 12%,rgba(255,255,255,.72) 38%,rgba(255,255,255,.14) 55%,transparent 78%) padding-box,
+    linear-gradient(108deg,#c5eee5 0%,#e2f4fb 23%,#d8dbf2 43%,#f3e2ee 62%,#f8e5c8 80%,#d1f4ec 100%) padding-box,
+    linear-gradient(125deg,#67bdad,#7aabd9 29%,#a39ade 52%,#e4b597 77%,#65c0b0) border-box;
+  box-shadow:inset 0 1px 0 #fff,0 0 0 1px rgba(123,177,183,.36),0 3px 9px rgba(44,74,116,.14);
+}
+.sports-gallery-switch .sports-gallery-option[aria-pressed="true"]:hover{
+  border-color:transparent;
+  box-shadow:inset 0 1px 0 #fff,0 0 0 1px rgba(94,166,181,.48),0 4px 12px rgba(44,74,116,.17);
+}
+/* Selected page retains the foil, loses the dot and gains an iridescent rim. */
+.sports-gallery-pagination button[aria-current="page"]{
+  border:2px solid transparent;
+  padding:4px 7px;
+  background:
+    linear-gradient(113deg,transparent 8%,rgba(255,255,255,.76) 38%,rgba(255,255,255,.16) 55%,transparent 79%) padding-box,
+    linear-gradient(112deg,#b9e8dd 0%,#d1eaf6 28%,#dedbf5 48%,#f3dbe9 68%,#f7e7ce 86%,#c7ebe1 100%) padding-box,
+    linear-gradient(135deg,#6db8a8,#80b2df 30%,#ab91d4 53%,#e2b18f 76%,#5cb5ac) border-box;
+  box-shadow:inset 0 1px 0 #fff,0 0 0 1px rgba(104,168,180,.38),0 2px 8px rgba(40,92,121,.17);
+}
+.sports-gallery-pagination button[aria-current="page"]::after{display:none!important;content:none!important}
+/* +1px on the colorful photo border; inner hairline stays subtle. */
+.cards-grid .card-item .card-photo{border-width:3px}
+.cards-grid .card-item .card-status-badges>.sport-chip{
+  margin:0;display:inline-flex;align-items:center;max-width:100%;
+}
+.cards-grid .card-item .card-status-badges>.sport-chip .sports-sport-symbol{
+  display:inline-flex;align-items:center;line-height:1;font-size:11px;margin-right:4px;
+}
+.sports-gallery-sport .sports-sport-symbol{display:inline-flex;align-items:center;line-height:1;margin-right:4px}
+@media(max-width:750px){
+ .sports-gallery-switch .sports-gallery-option[aria-pressed="true"]{padding:6px 7px}
+ .cards-grid .card-item .card-status-badges>.sport-chip{font-size:8px;padding:3px 5px}
+}
 </style>
 </head>
 <body>

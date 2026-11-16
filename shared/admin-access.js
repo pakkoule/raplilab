@@ -45,7 +45,7 @@
     // only the production host redirects to the official published site.
     // Never redirect the magic link back to localhost.
     const hostname=window.location.hostname.toLowerCase();
-    const isPreview=/^deploy-preview-\\d+--raplilab\\.netlify\\.app$/.test(hostname);
+    const isPreview=/^deploy-preview-\d+--raplilab\.netlify\.app$/.test(hostname);
     const redirectTo=isPreview?window.location.origin+'/':'https://raplilab.netlify.app/';
     const {error}=await sdk.auth.signInWithOtp({
       email:ADMIN_EMAIL,

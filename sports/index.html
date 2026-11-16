@@ -1259,6 +1259,54 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
 }
 </style>
 
+<style id="rapli-sports-pr1-nav-rainbow-foil">
+/* PR #1 — readable pale-mint tabs, centered on the existing light-blue masthead. */
+.section-nav{justify-content:center}
+.section-nav .tabs{width:auto;max-width:100%;margin-inline:auto;justify-content:center;align-items:stretch;flex-wrap:wrap;gap:10px}
+.section-nav .tabs .tab{
+  flex:0 1 auto;min-width:0;justify-content:center;gap:8px;
+  padding:13px 17px;font-size:13px;letter-spacing:.065em;
+  color:#defff3;background:linear-gradient(130deg,rgba(13,45,72,.88),rgba(26,76,95,.88));
+  border:1px solid rgba(176,240,221,.25);border-radius:10px 10px 0 0;
+  text-shadow:0 1px 1px rgba(0,26,44,.55);
+}
+.section-nav .tabs .tab:hover{color:#fff;background:linear-gradient(130deg,#18466c,#21677e)}
+.section-nav .tabs .tab.active{color:#f2fff9;background:linear-gradient(120deg,#1b5273,#195c73);border-color:rgba(183,255,226,.65)}
+.section-nav .tabs .tab b{background:#244967;color:#ecfff8;text-shadow:none}
+.section-nav .tabs .tab.active b{background:#116cb6;color:#fff}
+.section-nav .tabs .tab:focus-visible{outline:2px solid #79ebc1;outline-offset:2px}
+@media(max-width:750px){
+  .section-nav .tabs{width:100%;gap:7px}
+  .section-nav .tabs .tab{padding:11px 9px;gap:5px;font-size:11px;letter-spacing:.025em}
+}
+@media(max-width:520px){
+  .section-nav .tabs{gap:6px}
+  .section-nav .tabs .tab{flex:1 1 calc(50% - 6px);padding:11px 6px;white-space:nowrap}
+  .section-nav .tabs .tab b{font-size:10px;padding:3px 6px}
+}
+/* PR #1 — pastel iridescent foil, with dark readable labels. */
+.sports-rainbow-group{
+  border:1px solid #a9c8d6;border-radius:13px;
+  background:
+    linear-gradient(114deg,transparent 6%,rgba(255,255,255,.52) 35%,rgba(255,255,255,.16) 52%,transparent 77%),
+    linear-gradient(135deg,#def7ef 0%,#e1edff 23%,#f6e7f7 47%,#fff0da 72%,#e6f8ed 100%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.84),0 7px 20px rgba(18,54,84,.10);
+}
+.sports-rainbow-top h3{color:#1e3855}
+.sports-rainbow-meta{color:#4b637b}
+.sports-rainbow-percent{
+  background:linear-gradient(90deg,#17609c,#147e67 35%,#99612e 70%,#914f95);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.sports-rainbow-track{background:rgba(52,87,109,.19)}
+.sports-rainbow-counts{color:#38526b}
+.sports-rainbow-disclosure{border-top-color:rgba(57,90,111,.27)}
+.sports-rainbow-disclosure summary{color:#264a67}
+.sports-rainbow-variant{background:rgba(255,255,255,.72);border-color:#c6d8e6;color:#294660}
+.sports-rainbow-variant.is-own{background:rgba(213,250,232,.85);border-color:#a8d5c1;color:#1a6148}
+.sports-rainbow-variant.is-wishlist{background:rgba(249,234,255,.85);border-color:#d6bde6;color:#6c418a}
+.sports-rainbow-base-badge{background:rgba(232,255,245,.93);border-color:#a4d6c6;color:#1e6e57}
+</style>
 </head>
 <body>
   <div class="app-shell">
@@ -1269,8 +1317,8 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
           <div class="tabs" role="tablist" aria-label="Collection">
             <button type="button" role="tab" aria-selected="true" class="tab active" data-view="own">OWN <b id="tabOwnCount">0</b></button>
             <button type="button" role="tab" aria-selected="false" class="tab" data-view="wishlist">WISHLIST <b id="tabWishCount">0</b></button>
-            <button type="button" role="tab" aria-selected="false" class="tab" data-view="stats">STATISTIQUES</button>
             <button type="button" role="tab" aria-selected="false" class="tab" data-view="rainbow">🌈 RAINBOW <b id="tabRainbowCount">0</b></button>
+            <button type="button" role="tab" aria-selected="false" class="tab" data-view="stats">STATISTIQUES</button>
           </div>
         </div>
         <div id="collectionPanel">

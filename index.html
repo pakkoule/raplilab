@@ -385,6 +385,24 @@ body[data-active="regatta"] .portal-header{background:linear-gradient(120deg,#10
  .portal-nav-strip .global-cloud-controls{grid-column:1 / -1;grid-row:2;justify-content:center}
 }
 
+/* Single editor access: cloud mutations are hidden unless the verified account is connected. */
+.rapli-admin-controls{display:flex;align-items:center;gap:8px;min-width:0;margin-left:auto}
+.rapli-admin-controls button{border:1px solid #a7c9cb;border-radius:8px;padding:8px 12px;background:#edf8f4;color:#24566b;font:800 10px/1.25 Inter,sans-serif;cursor:pointer}
+.rapli-admin-controls button:hover{background:#d9f2e9}
+.rapli-admin-controls button[hidden]{display:none}
+#rapli-admin-message{font:600 10px/1.4 Inter,sans-serif;color:#536c80;max-width:300px}
+html:not([data-rapli-role="editor"]) #global-cloud-save,
+html:not([data-rapli-role="editor"]) #global-cloud-manage{display:none!important}
+html:not([data-rapli-role="editor"]) #global-manager-save,
+html:not([data-rapli-role="editor"]) #global-manager-refresh{display:none!important}
+html[data-rapli-role="editor"] #rapli-admin-login{display:none}
+@media(max-width:600px){
+ .portal-footer{justify-content:center}
+ .portal-footer-label{display:none}
+ .rapli-admin-controls{margin-left:0}
+ #rapli-admin-message{max-width:150px}
+ .portal-footer .global-cloud-controls{margin-left:0}
+}
 /* Rapli Lab single-workspace presentation: Regatta stays in DOM and cloud sync. */
 /* Removing the header must not remove the backing tabs used by cloud sync. */
 .portal-hidden-navigation{display:none!important}
@@ -437,6 +455,8 @@ body[data-active="regatta"] .portal-header{background:linear-gradient(120deg,#10
   
   <link rel="stylesheet" href="shared/ios-input-focus.css">
   <script defer src="shared/ios-input-focus.js"></script>
+  <script defer src="shared/admin-access.js"></script>
+  <script defer src="shared/admin-ui.js"></script>
 </head>
 <body data-active="sports">
   <div class="portal">
@@ -494,6 +514,11 @@ body[data-active="regatta"] .portal-header{background:linear-gradient(120deg,#10
     </div>
     <footer class="portal-footer" aria-label="Sauvegardes Rapli Lab">
       <span class="portal-footer-label">RAPLI LAB <span aria-hidden="true">·</span> CLOUD</span>
+      <div class="rapli-admin-controls" role="group" aria-label="Accès administrateur">
+        <button type="button" id="rapli-admin-login">🔒 MODE ÉDITION</button>
+        <button type="button" id="rapli-admin-logout" hidden>DÉCONNEXION</button>
+        <span id="rapli-admin-message" role="status" aria-live="polite"></span>
+      </div>
       <div class="global-cloud-controls" role="group" aria-label="Sauvegardes RapliLab">
           <button id="global-cloud-manage" type="button" title="Gérer les sauvegardes et associer PC / iPhone" aria-label="Gérer les sauvegardes des deux espaces">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 3.5H17l2.5 2.5v14.5h-15z"/><path d="M8 3.5v6h8v-6M8 20.5v-7h8v7"/></svg>

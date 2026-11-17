@@ -23,13 +23,14 @@ DROP POLICY IF EXISTS "Module owner or linked member read" ON public.rapli_modul
 DROP POLICY IF EXISTS "Module owner or linked member update" ON public.rapli_module_collections;
 DROP POLICY IF EXISTS "Rapli public Sports read" ON public.rapli_module_collections;
 DROP POLICY IF EXISTS "Rapli editor insert" ON public.rapli_module_collections;
+DROP POLICY IF EXISTS "Rapli public Sports anonymous read" ON public.rapli_module_collections;
 DROP POLICY IF EXISTS "Rapli editor update" ON public.rapli_module_collections;
 DROP POLICY IF EXISTS "Rapli editor delete" ON public.rapli_module_collections;
 
 -- Sports: single published collection, public SELECT, confirmed owner-only writes.
 -- Regatta: preserve private legacy owner/paired member reads only.
 CREATE POLICY "Rapli shared Sports read, private Regatta read" ON public.rapli_module_collections
- FOR SELECT TO anon, authenticated
+ FOR SELECT TO authenticated
  USING (
    (module='sports' AND owner_id='91a067ed-796a-45c0-b4b1-c04f3bfbe35e'::uuid)
    OR (module='regatta' AND
@@ -39,6 +40,9 @@ CREATE POLICY "Rapli shared Sports read, private Regatta read" ON public.rapli_m
          AND m.member_id=(select auth.uid())
      )))
  );
+CREATE POLICY "Rapli public Sports anonymous read" ON public.rapli_module_collections
+ FOR SELECT TO anon
+ USING (module='sports' AND owner_id='91a067ed-796a-45c0-b4b1-c04f3bfbe35e'::uuid);
 CREATE POLICY "Rapli shared editor insert" ON public.rapli_module_collections
  FOR INSERT TO authenticated
  WITH CHECK (
@@ -91,11 +95,12 @@ DROP POLICY IF EXISTS "Rapli images appareils modification" ON storage.objects;
 DROP POLICY IF EXISTS "Rapli images personnelles suppression" ON storage.objects;
 DROP POLICY IF EXISTS "Rapli public Sports images" ON storage.objects;
 DROP POLICY IF EXISTS "Rapli editor image insert" ON storage.objects;
+DROP POLICY IF EXISTS "Rapli public Sports anonymous images" ON storage.objects;
 DROP POLICY IF EXISTS "Rapli editor image update" ON storage.objects;
 DROP POLICY IF EXISTS "Rapli editor image delete" ON storage.objects;
 
 CREATE POLICY "Rapli shared Sports images and legacy private images" ON storage.objects
- FOR SELECT TO anon, authenticated
+ FOR SELECT TO authenticated
  USING (
    bucket_id='rapli-archives-private' AND (
      name LIKE '91a067ed-796a-45c0-b4b1-c04f3bfbe35e/sports/%'
@@ -109,6 +114,10 @@ CREATE POLICY "Rapli shared Sports images and legacy private images" ON storage.
      )
    )
  );
+CREATE POLICY "Rapli public Sports anonymous images" ON storage.objects
+ FOR SELECT TO anon
+ USING (bucket_id='rapli-archives-private'
+   AND name LIKE '91a067ed-796a-45c0-b4b1-c04f3bfbe35e/sports/%');
 CREATE POLICY "Rapli shared editor image insert" ON storage.objects
  FOR INSERT TO authenticated
  WITH CHECK (

@@ -1659,7 +1659,19 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
 .sports-gallery-sport .sports-sport-symbol{display:inline-flex;align-items:center;line-height:1;margin-right:4px}
 @media(max-width:750px){
  .sports-gallery-switch .sports-gallery-option[aria-pressed="true"]{padding:6px 7px}
- .cards-grid .card-item .card-status-badges>.sport-chip{font-size:8px;padding:3px 5px}
+ .cards-grid .card-item .card-status-badges>.sport-chip{font-size:8px;padding:2px 5px}
+}
+/* Align sport label with grading and serial numbering, including on iPhone. */
+.cards-grid .card-item .card-status-badges>.sport-chip{
+  box-sizing:border-box;flex:0 1 auto;
+  height:34px;min-height:34px;max-height:34px;
+  padding:2px 8px;justify-content:center;align-items:center;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.1;
+}
+@media(max-width:750px){
+  .cards-grid .card-item .card-status-badges>.sport-chip{
+    height:32px;min-height:32px;max-height:32px;padding:2px 5px;
+  }
 }
 </style>
 <style id="rapli-sports-editor-lock">

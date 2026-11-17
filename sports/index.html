@@ -553,7 +553,14 @@ button.sports-rainbow-cover{cursor:pointer}
 .sports-new-flag{position:absolute;top:8px;left:8px;z-index:5;background:#123e3a;color:#baffdc;border:1px solid #5bd09d;border-radius:5px;font-size:8px;font-weight:900;padding:4px 6px;box-shadow:0 3px 10px #0008}
 .sports-gallery-new{position:absolute;top:8px;right:8px;z-index:5;background:#124b39;color:#b6ffda;border:1px solid #51d69e;border-radius:5px;font-size:8px;font-weight:900;padding:4px 6px}
 /* Grading now uses the two-column, pearl-white .grading-plate component. */
-.sports-flag{margin-left:4px;white-space:nowrap}
+.sports-flag{display:inline-flex;align-items:center;vertical-align:middle;margin-left:4px}
+.sports-country-badge{display:inline-flex;align-items:center;justify-content:center;flex:none;vertical-align:middle;
+ width:23px;height:18px;box-sizing:border-box;padding:1px 2px;border-radius:4px;border:1px solid #9cc7cb;
+ background:linear-gradient(115deg,#e8faf5,#f6f9fd 55%,#ebf1fc);
+ color:#28546c;font:900 9px/1 Poppins,system-ui,sans-serif;box-shadow:inset 0 1px 0 #fff}
+.sports-country-badge img{display:block;width:100%;height:100%;object-fit:contain}
+.sports-player-country select,.sports-player-country .input{width:100%;max-width:280px}
+.player-extra-names .sports-country-badge{margin:0 4px 0 2px}
 .sports-random-photo{width:100%;max-height:315px;object-fit:contain;border-radius:9px;background:#14243c}
 .sports-random-meta{display:grid;gap:7px;margin:12px 0;color:#c0d5ef;font-size:11px}
 .sports-random-meta strong{font-size:17px;color:white}
@@ -2516,7 +2523,6 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
     </main>
     <footer class="footer"><span>© RAPLI SPORTS · PERSONAL COLLECTION</span><span>SYNCHRONISATION GLOBALE RAPLILAB</span></footer>
   </div>
-  <datalist id="sportsCountryCodes"><option value="FR"><option value="US"><option value="GB"><option value="ES"><option value="DE"><option value="IT"><option value="PT"><option value="BE"><option value="NL"><option value="CH"><option value="BR"><option value="AR"><option value="UY"><option value="CA"><option value="AU"><option value="NZ"><option value="JP"><option value="CN"><option value="KR"><option value="RS"><option value="HR"><option value="PL"><option value="NO"><option value="SE"><option value="DK"><option value="FI"><option value="MA"><option value="DZ"><option value="TN"><option value="SN"><option value="NG"><option value="ZA"><option value="EG"><option value="MX"><option value="CO"><option value="IE"><option value="GR"><option value="TR"><option value="IN"></datalist>
   <dialog id="cardDialog" class="modal" aria-labelledby="cardDialogTitle">
     <form id="cardForm" novalidate>
       <div class="modal-header"><div><span class="modal-kicker">RAPLI SPORTS / FICHE COLLECTION</span><h2 id="cardDialogTitle" class="modal-title">Ajouter une carte</h2></div><button type="button" class="close-modal" data-close="cardDialog" aria-label="Fermer">×</button></div>
@@ -2698,9 +2704,35 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
       let playerInputSequence=0;
       const AUTO_TYPES={stickers:'Stickers','on-card':'On Card'};
       const PATCH_TYPES={'game-worn':'Game Worn','not-affiliated':'Not Affiliated'};
-      const NATIONALITIES=['FR','US','GB','ES','DE','IT','PT','BE','NL','CH','BR','AR','UY','CA','AU','NZ','JP','CN','KR','RS','HR','PL','NO','SE','DK','FI','MA','DZ','TN','SN','NG','ZA','EG','MX','CO','IE','GR','TR','IN'];
-      const COUNTRY_CODE=value=>{const v=String(value||'').trim().toUpperCase();return /^[A-Z]{2}$/.test(v)?v:'';};
-      function flagFor(code){const value=COUNTRY_CODE(code);return value?[...value].map(ch=>String.fromCodePoint(127397+ch.charCodeAt(0))).join(''):'';}
+      // User-defined country tags; legacy FR and emoji-suffixed country labels stay readable.
+      const COUNTRY_DISPLAY_NAMES=typeof Intl.DisplayNames==='function'?new Intl.DisplayNames(['fr'],{type:'region'}):null;
+      const COUNTRY_CODE_FALLBACK={FR:'France',US:'États-Unis',GB:'Royaume-Uni',ES:'Espagne',DE:'Allemagne',IT:'Italie',PT:'Portugal',BE:'Belgique',CH:'Suisse',BR:'Brésil',CA:'Canada',AU:'Australie'};
+      function countryTagLabel(value){
+        const raw=String(value??'').replace(/[\u{1F1E6}-\u{1F1FF}]{2}/gu,'').trim().slice(0,100);
+        if(/^[A-Za-z]{2}$/.test(raw)){
+          const code=raw.toUpperCase();
+          return COUNTRY_DISPLAY_NAMES?.of(code)||COUNTRY_CODE_FALLBACK[code]||code;
+        }
+        return raw;
+      }
+      function countryTagKey(value){return normalize(countryTagLabel(value))}
+      function savedCountryTags(){
+        return savedValues(cards.flatMap(card=>cardPlayers(card).map(player=>countryTagLabel(player.nationality)))
+          .concat(logos.filter(row=>row.type==='nationality').map(row=>countryTagLabel(row.name))));
+      }
+      function countryLogoProfile(name){
+        const key=countryTagKey(name);
+        return key?logos.find(row=>row.type==='nationality'&&countryTagKey(row.name)===key):null;
+      }
+      function countryCatalogueBadge(value){
+        const name=countryTagLabel(value);
+        if(!name)return '';
+        const profile=countryLogoProfile(name);
+        const image=Object.prototype.hasOwnProperty.call(profile||{},'catalogImage')?profile.catalogImage:profile?.image;
+        const initials=name.split(/\s+/).map(part=>part[0]).join('').slice(0,2).toUpperCase()||'P';
+        return '<span class="sports-country-badge" title="Pays : '+safeText(name)+'" aria-label="Pays : '+safeText(name)+'">'+
+          (imgSafe(image)?'<img src="'+image+'" alt="">':safeText(initials))+'</span>';
+      }
       const recentCard=c=>{const ts=Number(c?.createdAt)||Date.parse(c?.createdAt||'');return !c?.demo&&Number.isFinite(ts)&&ts>0&&Date.now()>=ts&&Date.now()-ts<7*86400000;};
       const gradeLabel=c=>c?.graded?([c.gradeOrg,c.gradeScore].filter(Boolean).join(' ')||'GRADÉE'):'';
       const gradingScore=value=>{const s=String(value??'').trim().replace(',','.');if(!s)return '';if(!/^\d{1,2}(?:\.\d)?$/.test(s))return null;const n=Number(s);return n>=0.5&&n<=10?String(n):null;};
@@ -2710,7 +2742,7 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
           name:String(item.name??'').trim().slice(0,120),
           auto:Object.prototype.hasOwnProperty.call(AUTO_TYPES,item.auto)?item.auto:'',
           patch:Object.prototype.hasOwnProperty.call(PATCH_TYPES,item.patch)?item.patch:'',
-          nationality:COUNTRY_CODE(item.nationality)
+          nationality:String(item.nationality??'').trim().slice(0,100)
         };
       }
       function cardPlayers(card){
@@ -2805,7 +2837,12 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
           (index?'<button type="button" class="player-entry-remove" data-remove-player aria-label="Retirer ce joueur" title="Retirer ce joueur">×</button>':'')+'</div>'+
           playerPickerMarkup()+
           '<input id="'+id+'" class="input player-name-input" name="playerName[]" type="text" maxlength="120" autocomplete="off" placeholder="Nom du joueur"'+(index===0?' required':'')+' value="'+safeText(p.name)+'">'+
-          '<label class="sports-player-country">🌐 NATIONALITÉ (CODE ISO À 2 LETTRES)<input class="input player-nationality" data-player-nationality maxlength="2" list="sportsCountryCodes" placeholder="FR, US, GB…" value="'+safeText(p.nationality)+'"></label>'+
+          '<label class="sports-player-country">PAYS · TAG'+
+            '<select class="select saved-value-picker player-country-picker" data-player-country-picker aria-label="Choisir un pays enregistré">'+
+              '<option value="">Choisir un pays enregistré…</option>'+
+              savedCountryTags().map(name=>'<option value="'+safeText(name)+'">'+safeText(name)+'</option>').join('')+
+            '</select>'+
+            '<input class="input player-nationality" data-player-nationality maxlength="100" placeholder="Ou saisir un nouveau pays (France, États-Unis…)" value="'+safeText(countryTagLabel(p.nationality))+'"></label>'+
           '<div class="player-feature-groups">'+
             '<div class="player-feature-group"><label class="player-feature-master"><input type="checkbox" data-player-toggle="auto"'+(autoOn?' checked':'')+'> AUTO</label>'+
               '<div class="player-feature-choice" data-player-choices="auto"'+(autoOn?'':' hidden')+'>'+
@@ -2854,8 +2891,7 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
           if(!name){showToast('Renseigne le nom du joueur '+(i+1)+'.');nameInput.focus();return null;}
           if(autoOn&&!auto){showToast('Choisis Stickers ou On Card pour '+name+'.');row.querySelector('[data-player-type="auto"]').focus();return null;}
           if(patchOn&&!patch){showToast('Choisis Game Worn ou Not Affiliated pour '+name+'.');row.querySelector('[data-player-type="patch"]').focus();return null;}
-          const nationality=COUNTRY_CODE(row.querySelector('[data-player-nationality]').value);
-          if(row.querySelector('[data-player-nationality]').value.trim()&&!nationality){showToast('Code pays invalide : deux lettres (FR, US, GB…).');row.querySelector('[data-player-nationality]').focus();return null;}
+          const nationality=countryTagLabel(row.querySelector('[data-player-nationality]').value);
           roster.push(normalizedPlayer({name,auto,patch,nationality}));
         }
         return roster;
@@ -4316,6 +4352,11 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
         if(!entry)return;
         if(input.matches('[data-player-picker]')){
           if(input.value)entry.querySelector('.player-name-input').value=input.value;
+          input.value='';
+          return;
+        }
+        if(input.matches('[data-player-country-picker]')){
+          if(input.value)entry.querySelector('[data-player-nationality]').value=countryTagLabel(input.value);
           input.value='';
           return;
         }

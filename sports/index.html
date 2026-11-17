@@ -2390,22 +2390,25 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
 .country-icon-preview img{display:block;width:100%;height:100%;min-width:100%;min-height:100%;
   max-width:none;max-height:none;object-fit:cover;object-position:center}
 .country-icon-preview.is-catalogue{width:min(100%,132px);height:auto;aspect-ratio:1/1;border-radius:10px}
-/* Large square flag in PAYS group view; small rectangle belongs to each card tile. */
+/* PAYS gallery flags are edge-to-edge inside the existing iridescent tile border.
+   The caption remains legible over the gallery's dark bottom gradient. */
+#cardGrid.is-gallery-layout .is-group-gallery .sports-gallery-group[data-group-type="nationality"] .sports-gallery-group-picture{
+  padding:0!important;overflow:hidden;border-radius:11px;
+}
 #cardGrid.is-gallery-layout .is-group-gallery .sports-gallery-group[data-group-type="nationality"] .sports-gallery-group-picture img{
-  position:absolute!important;top:9%!important;left:11%!important;right:auto!important;bottom:auto!important;
-  display:block;width:78%!important;height:78%!important;
+  position:absolute!important;inset:0!important;
+  display:block;width:100%!important;height:100%!important;
   max-width:none!important;max-height:none!important;margin:0!important;padding:0!important;
   object-fit:cover!important;object-position:center!important;
-  border:1px solid rgba(255,255,255,.8)!important;border-radius:10px!important;
-  box-shadow:0 4px 12px rgba(18,42,65,.26)!important;
+  border:0!important;border-radius:inherit!important;box-shadow:none!important;
   filter:none!important;
 }
 #cardGrid.is-gallery-layout .is-group-gallery .sports-gallery-group[data-group-type="nationality"] .sports-gallery-group-picture .sports-gallery-initials{
-  position:absolute!important;top:9%!important;left:11%!important;right:auto!important;bottom:auto!important;
-  display:grid;place-items:center;width:78%!important;height:78%!important;max-width:none;
-  box-sizing:border-box;margin:0!important;padding:0;border-radius:10px;
+  position:absolute!important;inset:0!important;
+  display:grid;place-items:center;width:100%!important;height:100%!important;max-width:none;
+  box-sizing:border-box;margin:0!important;padding:0!important;border-radius:inherit;
   background:linear-gradient(115deg,#f8fcfd,#c8e2eb 55%,#f6f9fa);
-  border:1px solid rgba(255,255,255,.85);box-shadow:0 4px 12px rgba(18,42,65,.22);
+  border:0!important;box-shadow:none!important;
   color:#24546a;font:900 clamp(13px,2.5vw,28px)/1 Poppins,system-ui,sans-serif;
 }
 .country-icon-file{position:relative;display:grid;place-items:center;min-height:36px;padding:6px 10px;

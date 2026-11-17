@@ -555,10 +555,12 @@ button.sports-rainbow-cover{cursor:pointer}
 /* Grading now uses the two-column, pearl-white .grading-plate component. */
 .sports-flag{display:inline-flex;align-items:center;vertical-align:middle;margin-left:4px}
 .sports-country-badge{display:inline-flex;align-items:center;justify-content:center;flex:none;vertical-align:middle;
- width:23px;height:18px;box-sizing:border-box;padding:1px 2px;border-radius:4px;border:1px solid #9cc7cb;
+ width:38px;height:38px;box-sizing:border-box;padding:0;overflow:hidden;border-radius:7px;border:1px solid #9cc7cb;
  background:linear-gradient(115deg,#e8faf5,#f6f9fd 55%,#ebf1fc);
- color:#28546c;font:900 9px/1 Poppins,system-ui,sans-serif;box-shadow:inset 0 1px 0 #fff}
-.sports-country-badge img{display:block;width:100%;height:100%;object-fit:contain}
+ color:#28546c;font:900 12px/1 Poppins,system-ui,sans-serif;box-shadow:inset 0 1px 0 #fff,0 1px 3px #19395425}
+.sports-country-badge img{display:block;width:100%;height:100%;max-width:none;max-height:none;
+ object-fit:cover;object-position:center}
+@media(max-width:550px){.sports-country-badge{width:32px;height:32px;font-size:10px}}
 .sports-player-country select,.sports-player-country .input{width:100%;max-width:280px}
 .player-extra-names .sports-country-badge{margin:0 4px 0 2px}
 .sports-random-photo{width:100%;max-height:315px;object-fit:contain;border-radius:9px;background:#14243c}
@@ -2380,10 +2382,32 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
   background:linear-gradient(115deg,#f7fdfa,#eff5fe 65%,#fcf9fd)}
 .country-icon-editor{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .country-icon-editor>label{display:grid;justify-items:center;gap:8px;color:#2e5872;font:850 10px Poppins,system-ui,sans-serif;text-align:center}
-.country-icon-preview{display:grid;place-items:center;width:min(100%,126px);height:100px;border:1px solid #aacada;
-  border-radius:10px;background:linear-gradient(125deg,#edf8f8,#dbe5ee,#fff);color:#37637b;font:900 18px Poppins,sans-serif}
-.country-icon-preview img{display:block;width:100%;height:100%;object-fit:contain}
-.country-icon-preview.is-catalogue{width:74px;height:48px}
+/* The tile flag is a small 3:2 rectangle; the catalogue flag is a larger 1:1 square. */
+.country-icon-preview{display:grid;place-items:center;width:min(100%,112px);height:auto;aspect-ratio:3/2;
+  box-sizing:border-box;overflow:hidden;padding:0;border:1px solid #aacada;
+  border-radius:8px;background:linear-gradient(125deg,#edf8f8,#dbe5ee,#fff);
+  color:#37637b;font:900 18px Poppins,sans-serif}
+.country-icon-preview img{display:block;width:100%;height:100%;min-width:100%;min-height:100%;
+  max-width:none;max-height:none;object-fit:cover;object-position:center}
+.country-icon-preview.is-catalogue{width:min(100%,132px);height:auto;aspect-ratio:1/1;border-radius:10px}
+/* Small rectangular flag centered within each square PAYS gallery tile. */
+#cardGrid.is-gallery-layout .is-group-gallery .sports-gallery-group[data-group-type="nationality"] .sports-gallery-group-picture img{
+  position:absolute!important;top:15%!important;left:14%!important;right:auto!important;bottom:auto!important;
+  display:block;width:72%!important;height:48%!important;
+  max-width:none!important;max-height:none!important;margin:0!important;padding:0!important;
+  object-fit:cover!important;object-position:center!important;
+  border:1px solid rgba(255,255,255,.8)!important;border-radius:7px!important;
+  box-shadow:0 4px 12px rgba(18,42,65,.26)!important;
+  filter:none!important;
+}
+#cardGrid.is-gallery-layout .is-group-gallery .sports-gallery-group[data-group-type="nationality"] .sports-gallery-group-picture .sports-gallery-initials{
+  position:absolute!important;top:15%!important;left:14%!important;right:auto!important;bottom:auto!important;
+  display:grid;place-items:center;width:72%!important;height:48%!important;max-width:none;
+  box-sizing:border-box;margin:0!important;padding:0;border-radius:7px;
+  background:linear-gradient(115deg,#f8fcfd,#c8e2eb 55%,#f6f9fa);
+  border:1px solid rgba(255,255,255,.85);box-shadow:0 4px 12px rgba(18,42,65,.22);
+  color:#24546a;font:900 clamp(13px,2.5vw,28px)/1 Poppins,system-ui,sans-serif;
+}
 .country-icon-file{position:relative;display:grid;place-items:center;min-height:36px;padding:6px 10px;
   border:1px solid #8db9c5;border-radius:8px;background:#fff;color:#235a73;cursor:pointer}
 .country-icon-file input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
@@ -2615,7 +2639,7 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
             <button id="countryCatalogClear" type="button" class="grading-edit-button">Retirer l’icône</button>
           </label>
         </div>
-        <p class="logo-help">Les deux visuels sont indépendants. PNG transparent recommandé. Une icône absente est remplacée par les initiales du pays, jamais par un emoji.</p>
+        <p class="logo-help">Tuile : petit drapeau rectangulaire (3:2). Catalogue : grand drapeau carré (1:1). Les deux images sont indépendantes et remplissent leur cadre, avec recadrage centré si nécessaire. Une image absente affiche les initiales.</p>
       </section>
       <section id="gradingStylePanel" class="grading-style-settings" aria-label="Personnaliser la bordure de grading" hidden>
         <div class="grading-style-colors">
@@ -4499,11 +4523,50 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
         if(logoType==='athlete')updateCropButton();
       });
       for(const id of ['gradingEdgeStart','gradingEdgeEnd'])$(id).addEventListener('input',()=>syncGradingEditor());
-      for(const [inputId,key,limit] of [['countryTileFile','tileImage',620],['countryCatalogFile','catalogImage',200]]){
+      /* Normalize uploaded flags to their destination shape. Trim transparent PNG
+         padding and use centered cover, so tiny artwork never floats in a large frame. */
+      async function readCountryFlag(file,max,ratio){
+        if(!file||!['image/png','image/jpeg','image/webp'].includes(file.type))
+          throw Error('Utilise une image PNG, JPG ou WEBP.');
+        if(file.size>32*1024*1024)throw Error('Image trop volumineuse (maximum 32 Mo).');
+        const bitmap=await createImageBitmap(file);
+        try{
+          const probe=document.createElement('canvas');
+          const scale=Math.min(1,512/Math.max(bitmap.width,bitmap.height));
+          probe.width=Math.max(1,Math.round(bitmap.width*scale));
+          probe.height=Math.max(1,Math.round(bitmap.height*scale));
+          const probeCtx=probe.getContext('2d',{willReadFrequently:true});
+          probeCtx.drawImage(bitmap,0,0,probe.width,probe.height);
+          const {data}=probeCtx.getImageData(0,0,probe.width,probe.height);
+          let minX=probe.width,minY=probe.height,maxX=-1,maxY=-1;
+          for(let y=0;y<probe.height;y++){
+            for(let x=0;x<probe.width;x++){
+              if(data[(y*probe.width+x)*4+3]>12){
+                minX=Math.min(minX,x);minY=Math.min(minY,y);
+                maxX=Math.max(maxX,x);maxY=Math.max(maxY,y);
+              }
+            }
+          }
+          if(maxX<minX){minX=0;minY=0;maxX=probe.width-1;maxY=probe.height-1;}
+          let sx=minX*bitmap.width/probe.width,sy=minY*bitmap.height/probe.height;
+          let sw=(maxX-minX+1)*bitmap.width/probe.width;
+          let sh=(maxY-minY+1)*bitmap.height/probe.height;
+          if(sw/sh>ratio){const w=sh*ratio;sx+=(sw-w)/2;sw=w;}
+          else{const h=sw/ratio;sy+=(sh-h)/2;sh=h;}
+          const canvas=document.createElement('canvas');
+          canvas.width=Math.round(max);
+          canvas.height=Math.round(max/ratio);
+          const ctx=canvas.getContext('2d',{alpha:true});
+          ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
+          ctx.drawImage(bitmap,sx,sy,sw,sh,0,0,canvas.width,canvas.height);
+          return canvas.toDataURL('image/png');
+        }finally{bitmap.close?.();}
+      }
+      for(const [inputId,key,limit,ratio] of [['countryTileFile','tileImage',450,3/2],['countryCatalogFile','catalogImage',300,1]]){
         $(inputId).addEventListener('change',async event=>{
           const file=event.target.files[0];if(!file||logoType!=='nationality')return;
           try{
-            const image=await readPhoto(file,limit,.92,'logo');
+            const image=await readCountryFlag(file,limit,ratio);
             if(logoType!=='nationality')return;
             countryDraft[key]=image;
             syncCountryIconEditor();

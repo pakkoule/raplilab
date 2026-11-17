@@ -2234,12 +2234,13 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
   width:calc(100% - 14px)!important;height:calc(100% - 33px)!important;
   object-fit:contain!important;
 }
-/* Portraits expand downward to meet the inner border while keeping their face visible. */
+/* Keep every portrait fully visible from hairline to lower edge.
+   The previous 113% scale clipped heads and shoulders inside square tiles. */
 #cardGrid.is-gallery-layout .is-group-gallery .sports-gallery-group[data-group-type="athlete"] .sports-gallery-group-picture img{
   top:0!important;left:0!important;right:0!important;bottom:0!important;
   width:100%!important;height:100%!important;
   object-fit:contain!important;object-position:center bottom!important;
-  transform:translateY(3%) scale(1.13);transform-origin:center bottom;
+  transform:none!important;transform-origin:center center;
 }
 #cardGrid.is-gallery-layout .is-group-gallery .sports-gallery-group .sports-gallery-group-picture .sports-gallery-group-symbol,
 #cardGrid.is-gallery-layout .is-group-gallery .sports-gallery-group .sports-gallery-group-picture .sports-gallery-initials{
@@ -2248,9 +2249,6 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
 @media(max-width:520px){
   #cardGrid.is-gallery-layout .is-group-gallery .sports-gallery-group .sports-gallery-group-title{
     bottom:6px;left:4px;right:4px;font-size:clamp(9px,2.8vw,13px);
-  }
-  #cardGrid.is-gallery-layout .is-group-gallery .sports-gallery-group[data-group-type="athlete"] .sports-gallery-group-picture img{
-    transform:translateY(3%) scale(1.10);
   }
 }
 /* Compact header: keep all four collection tabs on one line. */

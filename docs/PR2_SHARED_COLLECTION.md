@@ -37,3 +37,13 @@ Le site actuel et les données Supabase ne sont **pas modifiés** par la prépar
 - Si les politiques de sécurité ne sont pas activées, masquer les boutons d'édition ne constitue pas une protection côté serveur.
 - Les autres documents `docs/owner-only-*.sql` concernent la PR #1 ; **ne pas les appliquer** à la place du script PR #2, car ils pointent vers l'ancienne collection.
 - Ce changement ne supprime pas les données historiques, le bucket ni l'ancienne collection de secours.
+
+## Extension Regatta — 17 novembre 2026
+
+- La collection **Regatta la plus récemment sauvegardée** est `(module=regatta, owner_id=91a067ed-796a-45c0-b4b1-c04f3bfbe35e)`, révision 1, sauvegardée le **16 novembre 2026 à 15:44:55 UTC** : **4 courses, 1 objet de réglages, 8 références d'images**.
+- L'ancienne ligne Regatta `owner_id=49965cdc-d361-4515-ae53-d9a5bead243e`, révision 54, reste intacte comme archive. Aucun fusionnement ni suppression de ses dix fichiers Storage.
+- **Sports et Regatta sont maintenant accessibles depuis leurs menus Profil**, par navigation `#sports` / `#regatta` dans Rapli Lab ; le compte administrateur utilise la même connexion. Le bandeau Cloud ne revient pas.
+- Le fichier `shared/shared-collection.js` charge automatiquement Regatta depuis la ligne choisie, en lecture publique ou édition. Les modifications intentionnelles sont enregistrées avec vérification de révision. La base IndexedDB historique de Regatta est laissée intacte, et l'état distant affiché en mémoire évite une restauration destructive au chargement.
+- Les règles Supabase permettant la lecture publique des 4 courses et des 8 images, ainsi que l'upload admin dans le dossier Regatta canonique, ont été **activées** par la migration `rapli_pr2_publish_regatta_shared`. Les contrôles SQL `SET LOCAL ROLE anon` et `authenticated` ont confirmé les deux lignes publiques (Sports et Regatta) et les huit images Regatta, sans exposer l'ancienne collection.
+- Avant fusion, tester dans la Preview : consultation libre de Regatta (4 courses + images), navigation de retour vers Sports, connexion administrateur, création puis suppression d'une course test, sauvegarde automatique visible après actualisation dans une fenêtre privée, absence d'accès Regatta historique et gestion des conflits/connexion hors ligne.
+- **Ne pas réappliquer** la migration initiale `docs/pr2-shared-sports-rls.sql` telle quelle sur la base actuelle : les permissions Supabase ont évolué depuis ce script initial. Toute nouvelle migration doit préserver les politiques Regatta publiées en supplément.

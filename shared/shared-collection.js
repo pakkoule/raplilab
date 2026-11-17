@@ -1,11 +1,12 @@
-/* Rapli Lab — collection Sports commune.
+/* Rapli Lab — collections Sports et Regatta communes.
  * Supabase reste le stockage central; aucun appairage ni bouton Cloud.
  * Les visiteurs lisent, seul l'éditeur vérifié peut enregistrer (RLS côté serveur).
  * Ne jamais écrire dans une autre collection que la référence sélectionnée. */
 (() => {
   'use strict';
   const bridge = window.RapliModuleBridge;
-  if (!bridge || bridge.module !== 'sports') return;
+  if (!bridge || !['sports','regatta'].includes(bridge.module)) return;
+  const MODULE = bridge.module;
 
   const SUPABASE_URL = 'https://widiyulvmthbaypdxhbw.supabase.co';
   const PUBLIC_KEY = 'sb_publishable_aietige1gJ1QfPZ6HaHiVA_zwqcJYyF';
@@ -13,7 +14,7 @@
   const TABLE = 'rapli_module_collections';
   const BUCKET = 'rapli-archives-private';
   const IMAGE_PREFIX = 'rapli-private://';
-  const ACK_KEY = 'rapli-cloud-sports-ack-v1'; // Reuse previous acknowledgement to protect unsent offline edits.
+  const ACK_KEY = 'rapli-cloud-' + MODULE + '-ack-v1'; // Reuse the old local sync marker.
   const MAX_IMAGE = 10 * 1024 * 1024;
 
   let client = null, revision = null, initialized = false, dirty = false;
@@ -57,13 +58,13 @@
     }
   }
   function status(message, level = 'ok') {
-    const element = document.getElementById('rapli-shared-status-sports');
+    const element = document.getElementById('rapli-shared-status-' + MODULE);
     if (element) {
       element.textContent = message;
       element.dataset.status = level;
     }
     if (window.parent !== window)
-      window.parent.postMessage({type: 'RAPLI_SHARED_STATUS', module: 'sports', message, level}, location.origin);
+      window.parent.postMessage({type: 'RAPLI_SHARED_STATUS', module: MODULE, message, level}, location.origin);
   }
   async function supabase() {
     if (!client) {
@@ -77,7 +78,7 @@
   async function remoteRow() {
     const sdk = await supabase();
     const {data, error} = await sdk.from(TABLE).select('state,state_revision,updated_at')
-      .eq('owner_id', OWNER_ID).eq('module', 'sports').maybeSingle();
+      .eq('owner_id', OWNER_ID).eq('module', MODULE).maybeSingle();
     if (error) throw error;
     if (!data) throw Error('Collection commune non accessible. Vérifie les règles de lecture Supabase.');
     if (!data.state || !Array.isArray(data.state.records) || !Array.isArray(data.state.logos))
@@ -99,7 +100,7 @@
     if (!ext) throw Error('Format image non pris en charge.');
     const digest = await crypto.subtle.digest('SHA-256', await blob.arrayBuffer());
     const hex = [...new Uint8Array(digest)].map(x => x.toString(16).padStart(2, '0')).join('');
-    const path = OWNER_ID + '/sports/' + hex + '.' + ext;
+    const path = OWNER_ID + '/' + MODULE + '/' + hex + '.' + ext;
     const result = await (await supabase()).storage.from(BUCKET).upload(path, blob, {contentType:mime, upsert:true});
     if (result.error) throw result.error;
     const ref = IMAGE_PREFIX + path;
@@ -113,7 +114,8 @@
       if (direction === 'download' && isReference(value)) {
         if (downloaded.has(value)) return downloaded.get(value);
         const path = value.slice(IMAGE_PREFIX.length);
-        if (!/^91a067ed-796a-45c0-b4b1-c04f3bfbe35e\/sports\/[a-f0-9]{64}\.(png|jpg|webp|gif)$/.test(path))
+        const prefix = OWNER_ID + '/' + MODULE + '/';
+        if (!path.startsWith(prefix) || !/^[a-f0-9]{64}\.(png|jpg|webp|gif)$/.test(path.slice(prefix.length)))
           throw Error('Référence image en dehors de la collection commune.');
         const {data, error} = await (await supabase()).storage.from(BUCKET).download(path);
         if (error) throw error;
@@ -152,8 +154,8 @@
       const row = await remoteRow();
       const current = Number(row.state_revision || 0);
       if (initialized && current === revision) return;
-      // The previous Cloud client could have unsent local edits: never overwrite them.
-      if (!initialized && isEditor()) {
+      // Sports still checks pending local edits; Regatta retains its old IndexedDB untouched.
+      if (MODULE === 'sports' && !initialized && isEditor()) {
         const baseline = knownBaseline();
         const local = snapshot();
         // A first-time editor on a different device may have unsent local records.
@@ -166,7 +168,9 @@
       }
       status(initialized ? 'Actualisation de la collection…' : 'Chargement de la collection…', 'pending');
       const state = await transfer(row.state, 'download');
-      if (isEditor()) await bridge.replaceState(state);
+      // Keep historical Regatta IndexedDB untouched; use the published version in memory.
+      if (MODULE === 'regatta') bridge.previewState(state);
+      else if (isEditor()) await bridge.replaceState(state);
       else bridge.previewState(state);
       revision = current;
       initialized = true;
@@ -198,7 +202,7 @@
       const serialized = await transfer(state, 'upload');
       const {data, error} = await (await supabase()).from(TABLE)
         .update({state:serialized, state_revision:baseRevision + 1, updated_at:new Date().toISOString()})
-        .eq('owner_id', OWNER_ID).eq('module', 'sports').eq('state_revision', baseRevision)
+        .eq('owner_id', OWNER_ID).eq('module', MODULE).eq('state_revision', baseRevision)
         .select('state_revision').maybeSingle();
       if (error) throw error;
       if (!data) { blockOnConflict(); return; }
@@ -233,11 +237,11 @@
       await refresh();
       // Realtime improves latency; polling and focus events remain a fallback
       // until the publication is enabled by the separate, reviewed RLS migration.
-      client.channel('rapli-sports-public-v2')
+      client.channel('rapli-' + MODULE + '-public-v2')
         .on('postgres_changes', {
           event:'UPDATE', schema:'public', table:TABLE, filter:'owner_id=eq.' + OWNER_ID
         }, payload => {
-          if (payload.new?.module === 'sports') scheduleRefresh();
+          if (payload.new?.module === MODULE) scheduleRefresh();
         }).subscribe();
       setInterval(() => { void refresh(); }, 20000);
     })().catch(error => {

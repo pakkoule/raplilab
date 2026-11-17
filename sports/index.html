@@ -2330,6 +2330,43 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
 @media(prefers-reduced-motion:reduce){
   #cardGrid.is-gallery-layout .sports-gallery-athlete-foil{transition:none}
 }
+
+</style>
+<style id="rapli-sports-toolbar-mint-blue-coral">
+/* One coherent gradient progression across Settings → Random → Add.
+   All three controls retain identical geometry on desktop and mobile. */
+.sports-catalogue-controls>.nav-actions :is(#logosBtn,#sportsRandomBtn,#addCardBtn){
+  color:#fff!important;
+  border:1px solid rgba(255,255,255,.35)!important;
+  border-radius:11px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.28),0 3px 9px rgba(21,49,80,.19)!important;
+  text-shadow:0 1px 2px rgba(0,0,0,.14);
+  transition:transform .18s ease,filter .18s ease,box-shadow .18s ease;
+}
+.sports-catalogue-controls>.nav-actions #logosBtn{
+  background:linear-gradient(120deg,#2dbb9c 0%,#24a8a9 56%,#168bb5 100%)!important;
+}
+.sports-catalogue-controls>.nav-actions #sportsRandomBtn{
+  background:linear-gradient(120deg,#168bb5 0%,#287cc4 52%,#3567cf 100%)!important;
+}
+.sports-catalogue-controls>.nav-actions #addCardBtn{
+  background:linear-gradient(120deg,#3567cf 0%,#8461a9 42%,#ed5e54 100%)!important;
+}
+.sports-catalogue-controls>.nav-actions :is(#logosBtn,#sportsRandomBtn,#addCardBtn):hover:not(:disabled){
+  filter:brightness(1.09);
+  transform:translateY(-1px);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.34),0 5px 13px rgba(21,49,80,.23)!important;
+}
+.sports-catalogue-controls>.nav-actions :is(#logosBtn,#sportsRandomBtn,#addCardBtn):focus-visible{
+  outline:2px solid #d9fef6;outline-offset:3px;
+}
+@media(max-width:530px){
+  .sports-catalogue-controls>.nav-actions :is(#logosBtn,#sportsRandomBtn,#addCardBtn){border-radius:9px}
+}
+@media(prefers-reduced-motion:reduce){
+  .sports-catalogue-controls>.nav-actions :is(#logosBtn,#sportsRandomBtn,#addCardBtn){transition:none}
+  .sports-catalogue-controls>.nav-actions :is(#logosBtn,#sportsRandomBtn,#addCardBtn):hover:not(:disabled){transform:none}
+}
 </style>
 </head>
 <body>

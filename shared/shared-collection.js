@@ -20,28 +20,7 @@
   let client = null, revision = null, initialized = false, dirty = false;
   let busy = false, blocked = false, bootPromise = null, saveTimer = null;
   let refreshTimer = null, retryTimer = null;
-  const uploaded = new Map(), downloaded = new Map(), imageTasks = new Map();
-  // Limit simultaneous image transfers instead of downloading images sequentially.
-  // A small pool avoids flooding mobile connections while speeding up first load.
-  const IMAGE_CONCURRENCY = 10;
-  let activeImageDownloads = 0;
-  const imageDownloadQueue = [];
-  function runImageQueue() {
-    while (activeImageDownloads < IMAGE_CONCURRENCY && imageDownloadQueue.length) {
-      const task = imageDownloadQueue.shift();
-      activeImageDownloads++;
-      Promise.resolve().then(task.work).then(task.resolve, task.reject).finally(() => {
-        activeImageDownloads--;
-        runImageQueue();
-      });
-    }
-  }
-  function imageDownload(work) {
-    return new Promise((resolve, reject) => {
-      imageDownloadQueue.push({work, resolve, reject});
-      runImageQueue();
-    });
-  }
+  const uploaded = new Map(), downloaded = new Map();
 
   const isEditor = () => window.RapliAdminAccess?.isEditor?.() === true;
   const canEdit = () => isEditor() && initialized && !blocked && !busyLoading;
@@ -129,42 +108,37 @@
     downloaded.set(ref, value);
     return ref;
   }
-  async function downloadImage(value) {
-    if (downloaded.has(value)) return downloaded.get(value);
-    if (imageTasks.has(value)) return imageTasks.get(value);
-    const promise = imageDownload(async () => {
-      const path = value.slice(IMAGE_PREFIX.length);
-      const prefix = OWNER_ID + '/' + MODULE + '/';
-      if (!path.startsWith(prefix) ||
-          !/^[a-f0-9]{64}\\.(png|jpg|webp|gif)$/.test(path.slice(prefix.length)))
-        throw Error('Référence image en dehors de la collection commune.');
-      const {data, error} = await (await supabase()).storage.from(BUCKET).download(path);
-      if (error) throw error;
-      const dataUri = await new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(String(reader.result || ''));
-        reader.onerror = () => reject(reader.error || Error('Image illisible.'));
-        reader.readAsDataURL(data);
-      });
-      downloaded.set(value, dataUri);
-      return dataUri;
-    });
-    imageTasks.set(value, promise);
-    try { return await promise; }
-    finally { imageTasks.delete(value); }
-  }
   async function transfer(value, direction) {
     if (typeof value === 'string') {
       if (direction === 'upload' && isImage(value)) return uploadImage(value);
-      if (direction === 'download' && isReference(value)) return downloadImage(value);
+      if (direction === 'download' && isReference(value)) {
+        if (downloaded.has(value)) return downloaded.get(value);
+        const path = value.slice(IMAGE_PREFIX.length);
+        const prefix = OWNER_ID + '/' + MODULE + '/';
+        if (!path.startsWith(prefix) || !/^[a-f0-9]{64}\.(png|jpg|webp|gif)$/.test(path.slice(prefix.length)))
+          throw Error('Référence image en dehors de la collection commune.');
+        const {data, error} = await (await supabase()).storage.from(BUCKET).download(path);
+        if (error) throw error;
+        const dataUri = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(String(reader.result || ''));
+          reader.onerror = () => reject(reader.error || Error('Image illisible.'));
+          reader.readAsDataURL(data);
+        });
+        downloaded.set(value, dataUri);
+        return dataUri;
+      }
       return value;
     }
-    if (Array.isArray(value))
-      return Promise.all(value.map(item => transfer(item, direction)));
+    if (Array.isArray(value)) {
+      const result = [];
+      for (const item of value) result.push(await transfer(item, direction));
+      return result;
+    }
     if (value && typeof value === 'object') {
-      const entries = await Promise.all(Object.entries(value).map(async ([key, item]) =>
-        [key, await transfer(item, direction)]));
-      return Object.fromEntries(entries);
+      const result = {};
+      for (const [key, item] of Object.entries(value)) result[key] = await transfer(item, direction);
+      return result;
     }
     return value;
   }
@@ -193,8 +167,6 @@
         }
       }
       status(initialized ? 'Actualisation de la collection…' : 'Chargement de la collection…', 'pending');
-      // Fetch image references in parallel with a bounded pool; no data is
-      // replaced locally until the complete validated snapshot is ready.
       const state = await transfer(row.state, 'download');
       // Keep historical Regatta IndexedDB untouched; use the published version in memory.
       if (MODULE === 'regatta') bridge.previewState(state);

@@ -4,35 +4,30 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#0d2039">
-  <meta name="description" content="Rapli Archives, Rapli Stickers Lab et Rapli Tools, réunis dans un même espace personnel.">
-  <title>RAPLI TRIO V3.0 — Archives, Stickers Lab & Tools</title>
-  <link rel="icon" type="image/webp" href="assets/archives-logo.webp">
+  <meta name="description" content="Rapli Sports et Rapli Regatta réunis dans un même espace personnel.">
+  <title>Rapli Lab</title>
+  <link rel="icon" type="image/x-icon" sizes="16x16 32x32" href="/assets/rapli-archives-favicon.ico">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=20261117">
+  <link rel="manifest" href="/site.webmanifest">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Rapli Lab">
   <style>
 
 :root{font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;--frame-max:1360px;--accent:#4d9af6;--frame-bg:#e7eff8;--frame-border:#b9cee5;color-scheme:light}
 *,*::before,*::after{box-sizing:border-box}
 html,body{margin:0;min-height:100%;}
 body{background:radial-gradient(ellipse 880px 340px at 50% 0%,rgba(94,155,225,.13),transparent 75%),var(--frame-bg);color:#142036;transition:background-color .25s ease}
-body[data-active="stickers"]{--accent:#7fe2b8;--frame-bg:#e8f3ef;--frame-border:#aecfc4}
-body[data-active="tools"]{--accent:#ff951e;--frame-bg:#e5e8eb;--frame-border:#bcc2c9}
 .portal{width:min(calc(100% - 48px),var(--frame-max));margin:20px auto 28px;border:1px solid var(--frame-border);border-radius:20px;overflow:hidden;background:#fff;box-shadow:0 18px 60px rgba(18,46,85,.13),0 1px 5px rgba(18,46,85,.05)}
 .portal-header{position:relative;display:flex;align-items:center;justify-content:center;min-height:72px;padding:5px 12px 8px;background:linear-gradient(120deg,#09182c,#102e56 54%,#09182c);border-bottom:3px solid var(--accent)}
-body[data-active="stickers"] .portal-header{background:linear-gradient(120deg,#0a2534,#153c49 50%,#162638)}
-body[data-active="tools"] .portal-header{background:linear-gradient(120deg,#2f373e,#495159 50%,#2f373e)}
 .portal-header::before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,transparent 23%,rgba(255,255,255,.045) 52%,transparent 83%)}
-.product-tabs{position:relative;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:min(100%,656px);gap:9px;align-items:center;justify-content:center}
+.product-tabs{position:relative;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:min(100%,656px);gap:9px;align-items:center;justify-content:center}
 .product-tab{position:relative;display:flex;align-items:center;justify-content:center;min-width:0;width:100%;height:54px;padding:3px 8px;background:rgba(255,255,255,.055);border:1px solid rgba(226,239,251,.23);border-radius:11px;cursor:pointer;transition:transform .16s ease,border-color .16s ease,background-color .16s ease,box-shadow .16s ease}
 .product-tab:hover{background:rgba(255,255,255,.13);transform:translateY(-1px)}
 .product-tab:focus-visible{outline:3px solid #fff;outline-offset:2px}
 .product-tab[aria-selected="true"]{border-color:var(--accent);background:rgba(255,255,255,.12);box-shadow:inset 0 0 0 1px var(--accent),0 4px 18px rgba(0,0,0,.17)}
 .product-tab[aria-selected="true"]::after{content:"";position:absolute;left:35%;right:35%;bottom:-10px;height:3px;border-radius:4px;background:var(--accent)}
 .product-tab img{display:block;max-width:100%;height:auto;max-height:46px;object-fit:contain;pointer-events:none}
-.product-tab[data-product="archives"] img{max-width:93px;max-height:45px}
-.product-tab[data-product="stickers"] img{max-width:182px;max-height:46px}
-.product-tab[data-product="tools"] img{max-width:172px;max-height:46px}
-.product-tab[data-product="stickers"]{background-color:rgba(16,30,40,.35)}
-.product-tab[data-product="stickers"][aria-selected="true"]{background-color:rgba(48,104,104,.27)}
-.product-tab[data-product="tools"][aria-selected="true"]{background-color:rgba(255,137,9,.12)}
 .frame-wrap{width:100%;min-width:0;background:#fff}
 .app-frame{display:block;width:100%;height:calc(100dvh - 123px);min-height:560px;border:0;background:#fff}
 .app-frame[hidden]{display:none!important}
@@ -43,9 +38,6 @@ body[data-active="tools"] .portal-header{background:linear-gradient(120deg,#2f37
   .product-tabs{gap:7px;width:min(100%,625px)}
   .product-tab{height:48px;border-radius:10px;padding:3px 6px}
   .product-tab img{max-height:41px}
-  .product-tab[data-product="archives"] img{max-width:76px;max-height:40px}
-  .product-tab[data-product="stickers"] img{max-width:175px;max-height:41px}
-  .product-tab[data-product="tools"] img{max-width:168px;max-height:41px}
   .product-tab[aria-selected="true"]::after{bottom:-9px}
   .app-frame{height:calc(100dvh - 60px);min-height:0}
 }
@@ -53,9 +45,6 @@ body[data-active="tools"] .portal-header{background:linear-gradient(120deg,#2f37
   .portal-header{min-height:54px;padding:3px 6px 6px}
   .product-tabs{gap:5px}
   .product-tab{height:44px;border-radius:8px;padding:3px 4px}
-  .product-tab[data-product="archives"] img{max-width:68px;max-height:35px}
-  .product-tab[data-product="stickers"] img{max-width:146px;max-height:36px}
-  .product-tab[data-product="tools"] img{max-width:146px;max-height:36px}
   .app-frame{height:calc(100dvh - 54px)}
 }
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
@@ -70,82 +59,689 @@ body[data-active="tools"] .portal-header{background:linear-gradient(120deg,#2f37
 .product-tab:focus-visible{outline:2px solid #fff;outline-offset:4px}
 @media(max-width:800px){.product-tab[aria-selected="true"]::after{bottom:-7px}}
 @media(max-width:420px){.product-tab[aria-selected="true"]::after{left:9px;right:9px;bottom:-7px}.product-tab[aria-selected="true"]::before{top:5px;right:5px;width:6px;height:6px}}
+
+/* RAPLI LAB — identité des espaces conservés. */
+body[data-active="sports"]{--accent:#277de7;--frame-bg:#e9f1fc;--frame-border:#b3cde9}
+body[data-active="sports"] .portal-header{background:linear-gradient(115deg,#0b2344,#123d73 52%,#0b2344)}
+.product-tabs{grid-template-columns:repeat(2,minmax(0,1fr));width:min(100%,720px);gap:8px}
+.product-tab{min-width:0;padding:4px 7px;height:56px}
+@media(max-width:800px){
+ .portal-header{min-height:60px;padding:5px 8px 8px}
+ .product-tabs{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+ .product-tab{height:46px}
+ .app-frame{height:calc(100dvh - 71px);min-height:0}
+}
+@media(max-width:420px){
+ .portal-header{min-height:54px;padding:4px 6px 7px}
+ .product-tab{height:43px;padding:3px}
+ .app-frame{height:calc(100dvh - 64px)}
+}
+
+/* RAPLI LAB — one site-wide Cloud Save / Refresh pair for every workspace */
+.portal-header{gap:12px}
+.product-tabs{flex:1 1 auto;min-width:0;max-width:1110px}
+.global-cloud-controls{
+  display:flex;flex:0 0 auto;align-items:center;justify-content:center;
+  gap:6px;position:relative;z-index:2;
+}
+.global-cloud-controls button{
+  display:grid;place-items:center;width:42px;height:42px;
+  border-radius:11px;border:1px solid #7894b4;
+  background:rgba(250,253,255,.12);color:#e7f2ff;
+  cursor:pointer;transition:background .16s,border-color .16s,transform .16s;
+}
+.global-cloud-controls button:hover:not(:disabled){background:rgba(222,240,255,.25);border-color:#c3dcf8;transform:translateY(-1px)}
+.global-cloud-controls button:focus-visible{outline:2px solid #fff;outline-offset:3px}
+.global-cloud-controls button:disabled{cursor:wait;opacity:.6}
+.global-cloud-controls button svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.global-cloud-controls button.is-busy svg{animation:rapli-global-spin 1s linear infinite}
+@keyframes rapli-global-spin{to{transform:rotate(360deg)}}
+.global-cloud-controls .cloud-controls-caption{font:700 9px/1.3 Inter,system-ui,sans-serif;color:#d0e3f5;max-width:93px;overflow-wrap:anywhere}
+#global-cloud-feedback{
+  background:#eaf4ff;border-bottom:1px solid #b8d4f1;
+  color:#173b5c;font:700 12px/1.5 Inter,system-ui,sans-serif;
+  padding:8px 18px;text-align:center;position:relative;z-index:2;
+}
+#global-cloud-feedback[hidden]{display:none}
+#global-cloud-feedback[data-status="error"]{background:#fff0f1;color:#963440;border-color:#e8b6bc}
+#global-cloud-feedback details{margin:4px auto 0;max-width:720px;text-align:left;font-weight:500}
+#global-cloud-feedback details summary{cursor:pointer;font-weight:700}
+#global-cloud-feedback ul{margin:5px 0 4px;padding-left:20px}
+#global-cloud-feedback:has(.global-cloud-dismiss){padding-left:50px;padding-right:50px}
+#global-cloud-feedback .global-cloud-dismiss{
+ position:absolute;top:50%;right:12px;transform:translateY(-50%);
+ display:grid;place-items:center;width:30px;height:30px;border:1px solid #a9c6e4;
+ border-radius:8px;background:rgba(255,255,255,.75);color:inherit;
+ font:700 19px/1 Inter,system-ui,sans-serif;cursor:pointer;
+}
+#global-cloud-feedback .global-cloud-dismiss:hover{background:#fff;border-color:#729fcb}
+#global-cloud-feedback .global-cloud-dismiss:focus-visible{outline:2px solid currentColor;outline-offset:2px}
+@media(max-width:420px){
+ #global-cloud-feedback:has(.global-cloud-dismiss){padding-left:38px;padding-right:38px}
+ #global-cloud-feedback .global-cloud-dismiss{right:5px;width:28px;height:28px}
+}
+@media(max-width:1120px){
+ .portal-header{flex-wrap:wrap;gap:7px}
+ .product-tabs{flex:1 1 100%;max-width:100%}
+ .global-cloud-controls{flex:1 1 100%;justify-content:center}
+ .global-cloud-controls button{width:36px;height:36px}
+ .global-cloud-controls button svg{width:21px;height:21px}
+ .global-cloud-controls .cloud-controls-caption{max-width:none}
+ .app-frame{height:calc(100dvh - 163px);min-height:0}
+}
+@media(max-width:800px){
+ .portal-header{padding:6px 8px 9px}
+ .app-frame{height:calc(100dvh - 166px)}
+}
+@media(max-width:420px){
+ .portal-header{padding:5px 6px 8px;gap:6px}
+ .global-cloud-controls button{width:34px;height:34px;border-radius:9px}
+ .global-cloud-controls .cloud-controls-caption{font-size:8px}
+ .app-frame{height:calc(100dvh - 161px)}
+ #global-cloud-feedback{font-size:11px;padding:7px 10px}
+}
+@media(prefers-reduced-motion:reduce){.global-cloud-controls button.is-busy svg{animation:none}}
+
+
+/* RapliLab workspaces — espaces actifs. */
+body[data-active="regatta"]{--accent:#03bac8;--frame-bg:#ebf7f6;--frame-border:#bedede}
+body[data-active="regatta"] .portal-header{background:linear-gradient(120deg,#102c3f,#006174 53%,#112a40)}
+.product-tab[data-product="regatta"][aria-selected="true"]{background-color:rgba(0,200,212,.16)!important}
+@media(min-width:801px){.product-tabs{grid-template-columns:repeat(2,minmax(0,1fr));width:min(100%,1018px)}}
+/* Mobile: both workspaces stay accessible and compact. */
+@media(max-width:800px){
+  .portal-header{min-height:0}
+  .product-tabs{
+    display:flex;flex-wrap:nowrap;justify-content:flex-start;align-items:center;
+    flex:1 1 100%;width:100%;max-width:100%;min-width:0;
+    overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;
+    -webkit-overflow-scrolling:touch;touch-action:pan-x;
+    scroll-snap-type:x proximity;scrollbar-width:thin;
+    scrollbar-color:rgba(230,235,241,.48) transparent;
+    gap:7px;padding:0 2px 7px;
+  }
+  .product-tab{flex:0 0 clamp(86px,21vw,112px);width:auto;scroll-snap-align:start}
+  .product-tab[aria-selected="true"]::after{bottom:1px}
+  .app-frame{height:calc(100dvh - 118px)}
+}
+@media(max-width:420px){
+  .product-tabs{gap:6px;padding-bottom:6px}
+  .product-tab{flex-basis:92px}
+  .app-frame{height:calc(100dvh - 111px)}
+}
+
+/* RAPLI LAB — CHROME ARCHIVES MOSAIC + PREMIUM SPECTRUM.
+   Desktop side gutters only; the portal remains above this background. */
+@media(min-width:1100px){
+  body{
+    --side-logo:url("/assets/rapli-archives-mosaic-chrome.webp?v=20261117-hd");
+    background:#050608;isolation:isolate;
+  }
+  body::before,body::after{
+    content:"";display:block;position:fixed;inset:0;z-index:0;pointer-events:none;
+  }
+  /* Mint > royal blue > orange red > black > red > white > electric blue > black. */
+  body::before{
+    background-image:
+      radial-gradient(circle at 19% 31%,rgba(255,255,255,.07) 0 .45px,transparent .8px),
+      radial-gradient(circle at 73% 62%,rgba(0,0,0,.10) 0 .55px,transparent .9px),
+      linear-gradient(180deg,rgba(3,5,9,.20) 0%,rgba(3,5,9,.06) 26%,rgba(3,5,9,.55) 65%,#050608 100%),
+      linear-gradient(112deg,#68e6c7 0%,#2774dd 15%,#f36638 29%,#07080a 42%,#cb213b 55%,#f3f5f8 69%,#1682ff 84%,#050608 100%);
+    background-size:7px 9px,11px 13px,cover,cover;
+    background-blend-mode:soft-light,soft-light,normal,normal;
+  }
+  body::after{
+    background-image:var(--side-logo);
+    background-repeat:repeat;
+    background-position:center 36px;
+    background-size:clamp(350px,29vw,500px) auto;
+    filter:grayscale(1);
+    opacity:.08;
+    -webkit-mask-image:linear-gradient(180deg,#000 0%,rgba(0,0,0,.92) 22%,rgba(0,0,0,.58) 65%,rgba(0,0,0,.07) 100%);
+    mask-image:linear-gradient(180deg,#000 0%,rgba(0,0,0,.92) 22%,rgba(0,0,0,.58) 65%,rgba(0,0,0,.07) 100%);
+  }
+  .portal{position:relative;z-index:1}
+}
+/* Keep the lightweight mobile/tablet background. */
+
+/* RAPLI LAB — Global cloud actions directly after the last tab.
+   One continuous, horizontally swipeable strip on narrow screens. */
+.portal-header{display:flex;flex-wrap:nowrap;justify-content:center;min-height:72px;padding:7px 12px 9px;gap:0}
+.portal-nav-strip{position:relative;display:flex;align-items:center;justify-content:center;gap:12px;width:100%;max-width:1160px;min-width:0}
+.portal-nav-strip .product-tabs{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+  flex:1 1 auto;width:100%;max-width:1018px;min-width:0;gap:7px;
+}
+.portal-nav-strip .global-cloud-controls{
+  display:flex;flex:0 0 auto;align-items:center;justify-content:flex-end;gap:6px;
+}
+@media(max-width:1120px){
+  .portal-header{min-height:0;padding:7px 8px 8px;flex-wrap:nowrap;gap:0}
+  .portal-nav-strip{
+    justify-content:flex-start;overflow-x:auto;overflow-y:hidden;
+    overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;
+    touch-action:pan-x;scroll-snap-type:x proximity;scrollbar-width:thin;
+    scrollbar-color:rgba(230,235,241,.48) transparent;
+  }
+  .portal-nav-strip .product-tabs{
+    display:flex;flex:0 0 auto;align-items:center;justify-content:flex-start;
+    width:max-content;max-width:none;min-width:0;gap:7px;
+    padding:0 2px 7px;overflow:visible;
+  }
+  .portal-nav-strip .product-tab{
+    flex:0 0 100px;width:100px;height:46px;scroll-snap-align:start;
+  }
+  .portal-nav-strip .product-tab[aria-selected="true"]::after{bottom:1px}
+  .portal-nav-strip .global-cloud-controls{
+    flex:0 0 auto;justify-content:flex-start;align-self:center;
+    padding:0 5px 7px 0;scroll-snap-align:end;
+  }
+  .portal-nav-strip .global-cloud-controls button{width:36px;height:36px}
+  .app-frame{height:calc(100dvh - 71px);min-height:0}
+}
+@media(max-width:420px){
+  .portal-header{padding:5px 6px 7px;gap:0}
+  .portal-nav-strip .product-tabs{gap:6px;padding-bottom:6px}
+  .portal-nav-strip .product-tab{flex-basis:92px;width:92px;height:43px}
+  .portal-nav-strip .global-cloud-controls{padding-bottom:6px}
+  .portal-nav-strip .global-cloud-controls button{width:34px;height:34px}
+  .app-frame{height:calc(100dvh - 64px)}
+}
+
+
+/* Shared diskette: device pairing and whole-site backup manager */
+#global-cloud-manager{width:min(92vw,560px);max-height:min(89dvh,760px);padding:0;
+ border:1px solid #b8c7d7;border-radius:17px;background:#fbfdff;color:#1b3650;
+ box-shadow:0 22px 72px rgba(5,20,40,.38);overflow-y:auto}
+#global-cloud-manager::backdrop{background:rgba(5,17,35,.58);backdrop-filter:blur(3px)}
+.global-manager-head{position:sticky;top:0;z-index:1;background:#16395e;color:#fff;
+ display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 18px;border-radius:16px 16px 0 0}
+.global-manager-head h2{margin:0;font-size:18px;font-weight:850;line-height:1.25}
+.global-manager-head small{display:block;margin-top:3px;font-size:10px;color:#c1d9ed}
+#global-manager-close{display:grid;place-items:center;width:32px;height:32px;flex:none;border-radius:9px;
+ border:1px solid #7295b5;background:#ffffff19;color:#fff;cursor:pointer;font:800 23px/1 system-ui}
+.global-manager-content{padding:18px;display:grid;gap:14px}
+.global-manager-content p{font:500 12px/1.6 Inter,system-ui,sans-serif;margin:0;color:#496378}
+.global-manager-content h3{margin:0 0 7px;font:850 13px/1.25 Inter,system-ui,sans-serif;color:#1c3c5c}
+.global-manager-box{border:1px solid #d3e1ec;border-radius:12px;padding:13px;background:white}
+.global-manager-buttons{display:flex;flex-wrap:wrap;gap:8px;margin-top:9px}
+.global-manager-buttons button,#global-manager-enable{border-radius:9px;border:1px solid #a9c4de;
+ background:#edf5fc;color:#174d7c;padding:9px 12px;font:800 11px/1.3 Inter,system-ui,sans-serif;cursor:pointer}
+.global-manager-buttons button.primary,#global-manager-enable{background:#153f68;color:#fff;border-color:#153f68}
+.global-manager-buttons button:hover:not(:disabled),#global-manager-enable:hover:not(:disabled){filter:brightness(.95)}
+.global-manager-buttons button:disabled,#global-manager-enable:disabled{opacity:.55;cursor:wait}
+.global-manager-buttons label{font:750 11px Inter,system-ui,sans-serif;display:grid;gap:5px;flex:1 1 175px;min-width:0}
+#global-pair-input{box-sizing:border-box;min-width:0;width:100%;height:39px;border-radius:9px;
+ border:1px solid #aec4d8;padding:7px 11px;font:700 16px/1.2 Inter,system-ui,sans-serif}
+#global-pair-output{display:block;font:850 16px/1.4 ui-monospace,monospace;letter-spacing:.08em;
+ color:#174d7c;overflow-wrap:anywhere;margin-top:7px}
+#global-pair-output:empty{display:none}
+#global-manager-state,#global-manager-feedback{padding:8px 10px!important;border-radius:8px;
+ background:#eef5fb;border:1px solid #d2e4f1;color:#17496e!important;line-height:1.45!important}
+#global-manager-feedback[data-error=true]{background:#fff1f2;border-color:#e6bbc1;color:#93363f!important}
+#global-manager-enable[hidden],#global-pair-create[hidden]{display:none!important}
+#global-manager-conflict{border-color:#e8c8a2;background:#fff8ef}
+#global-manager-conflict h3{color:#8d551e}
+.global-manager-backup-dates{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:11px 0}
+.global-manager-date{min-width:0;padding:10px;border:1px solid #d2e0ec;border-radius:9px;background:#fff}
+.global-manager-date strong{display:block;margin-bottom:5px;font:800 11px/1.35 Inter,system-ui,sans-serif;color:#244b67}
+.global-manager-date output{display:block;font:750 12px/1.45 Inter,system-ui,sans-serif;color:#163f61;overflow-wrap:anywhere}
+.global-manager-date small{display:block;margin-top:5px;font:500 10px/1.5 Inter,system-ui,sans-serif;color:#617487}
+#global-manager-conflict .global-manager-export{background:#fff;border-color:#7dadd0;color:#154b73}
+#global-manager-dates-warning[data-warning=true]{color:#983f31!important;font-weight:700!important}
+@media(max-width:420px){.global-manager-backup-dates{grid-template-columns:1fr}}
+@media(max-width:800px){
+ .portal-nav-strip{overflow-x:visible;overflow-y:visible;touch-action:auto;gap:6px}
+ .portal-nav-strip .product-tabs{flex:1 1 auto;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+   width:100%;max-width:none;min-width:0;padding:0;gap:5px}
+ .portal-nav-strip .product-tab{flex:none;width:100%;min-width:0;height:43px;padding:3px}
+ .portal-nav-strip .global-cloud-controls{flex:0 0 auto;padding:0;align-self:center;gap:4px}
+ .portal-nav-strip .global-cloud-controls button{width:33px;height:33px;border-radius:9px}
+ .portal-nav-strip .global-cloud-controls button svg{width:20px;height:20px}
+}
+@media(max-width:390px){
+ .portal-nav-strip{gap:4px}
+ .portal-nav-strip .product-tabs{gap:4px}
+ .portal-nav-strip .global-cloud-controls{gap:3px}
+ .portal-nav-strip .global-cloud-controls button{width:29px;height:31px}
+ .portal-nav-strip .global-cloud-controls button svg{width:18px;height:18px}
+ .global-manager-content{padding:12px}
+}
+
+/* Site brand: fixed at the start of the navigation without creating an extra row. */
+.portal-nav-strip .portal-brand{
+  position:relative;z-index:2;display:flex;align-items:center;justify-content:center;
+  flex:0 0 102px;width:102px;height:56px;min-width:0;
+}
+.portal-nav-strip .portal-brand img{
+  display:block;width:100%;height:100%;object-fit:contain;object-position:center;
+}
+@media(max-width:1120px){
+  .portal-nav-strip .portal-brand{flex-basis:96px;width:96px;height:48px}
+}
+@media(max-width:800px){
+  .portal-nav-strip .portal-brand{flex-basis:62px;width:62px;height:40px}
+  .portal-nav-strip{gap:5px}
+}
+@media(max-width:420px){
+  .portal-nav-strip .portal-brand{flex-basis:54px;width:54px;height:35px}
+}
+@media(max-width:360px){
+  .portal-nav-strip .portal-brand{flex-basis:44px;width:44px;height:30px}
+}
+/* Responsive portal: let the header and feedback determine the remaining height. */
+.portal{display:flex;flex-direction:column;height:calc(100vh - 48px);height:calc(100dvh - 48px);min-height:0}
+.portal-header{flex:0 0 auto;padding:8px 12px 10px}
+#global-cloud-feedback{flex:0 0 auto;max-height:35vh;overflow-y:auto;overflow-wrap:anywhere}
+.frame-wrap{flex:1 1 0;min-height:0}
+.frame-wrap>section{height:100%;min-height:0}
+.frame-wrap .app-frame{height:100%;min-height:0}
+.portal-nav-strip{overflow:visible;gap:12px;touch-action:auto}
+.portal-nav-strip .product-tabs{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+ flex:1 1 0;width:auto;max-width:none;min-width:0;gap:8px;padding:0;
+ overflow:visible;touch-action:auto;
+}
+.portal-nav-strip .product-tab{
+ width:100%;min-width:0;height:56px;padding:5px 12px;
+ opacity:1;filter:none;transform:none;border-radius:11px;
+ background:linear-gradient(125deg,rgba(174,232,211,.17),rgba(235,222,195,.11))!important;
+ background-clip:padding-box;
+}
+.portal-nav-strip .product-tab[aria-selected="true"]{
+ background:linear-gradient(125deg,rgba(174,232,211,.29),rgba(235,222,195,.22))!important;
+ box-shadow:inset 0 0 0 1px rgba(255,255,255,.16),0 3px 10px rgba(0,0,0,.13);
+}
+.portal-nav-strip .product-tab[aria-selected="true"]::after{
+ bottom:2px;left:24%;right:24%;height:2px;box-shadow:none;
+}
+.portal-nav-strip .product-tab[aria-selected="true"]::before{display:none}
+.portal-nav-strip .product-tab img{width:100%;height:100%;max-height:44px;object-fit:contain}
+.portal-nav-strip .global-cloud-controls{flex:0 0 auto;gap:4px;padding:0}
+.portal-nav-strip .global-cloud-controls button{width:44px;height:44px}
+@media(hover:hover) and (pointer:fine){
+ .portal-nav-strip .product-tab:hover{background:linear-gradient(125deg,rgba(174,232,211,.33),rgba(235,222,195,.26))!important}
+}
+@media(max-width:800px){
+ .portal{height:100vh;height:100dvh;min-height:0}
+ .portal-header{padding:calc(6px + env(safe-area-inset-top,0px)) max(6px,env(safe-area-inset-right,0px)) 8px max(6px,env(safe-area-inset-left,0px))}
+ .portal-nav-strip{gap:6px}
+ .portal-nav-strip .portal-brand{flex:0 0 48px;width:48px;height:40px}
+ .portal-nav-strip .product-tabs{gap:6px}
+ .portal-nav-strip .product-tab{height:48px;padding:4px 5px;border-radius:9px}
+ .portal-nav-strip .product-tab img{max-height:38px}
+ .frame-wrap{padding-bottom:env(safe-area-inset-bottom,0px)}
+}
+/* Keep the brands readable and all three cloud actions visible on small phones. */
+@media(max-width:480px){
+ .portal-nav-strip{display:grid;grid-template-columns:48px minmax(0,1fr);gap:6px}
+ .portal-nav-strip .portal-brand{grid-column:1;grid-row:1}
+ .portal-nav-strip .product-tabs{grid-column:2;grid-row:1}
+ .portal-nav-strip .global-cloud-controls{grid-column:1 / -1;grid-row:2;justify-content:center}
+}
+
+/* Single editor access: cloud mutations are hidden unless the verified account is connected. */
+.rapli-admin-controls{display:flex;align-items:center;gap:8px;min-width:0;margin-left:auto}
+.rapli-admin-controls button{border:1px solid #a7c9cb;border-radius:8px;padding:8px 12px;background:#edf8f4;color:#24566b;font:800 10px/1.25 Inter,sans-serif;cursor:pointer}
+.rapli-admin-controls button:hover{background:#d9f2e9}
+.rapli-admin-controls button[hidden]{display:none}
+#rapli-admin-message{font:600 10px/1.4 Inter,sans-serif;color:#536c80;max-width:300px}
+html:not([data-rapli-role="editor"]) #global-cloud-save,
+html:not([data-rapli-role="editor"]) #global-cloud-manage{display:none!important}
+html:not([data-rapli-role="editor"]) #global-manager-save,
+html:not([data-rapli-role="editor"]) #global-manager-refresh{display:none!important}
+html[data-rapli-role="editor"] #rapli-admin-login{display:none}
+@media(max-width:600px){
+ .portal-footer{justify-content:center}
+ .portal-footer-label{display:none}
+ .rapli-admin-controls{margin-left:0}
+ #rapli-admin-message{max-width:150px}
+ .portal-footer .global-cloud-controls{margin-left:0}
+}
+/* Rapli Lab single-workspace presentation: Regatta stays in DOM and cloud sync. */
+/* Removing the header must not remove the backing tabs used by cloud sync. */
+.portal-hidden-navigation{display:none!important}
+.portal-nav-strip{justify-content:center;overflow:visible}
+.portal-nav-strip .product-tabs[hidden]{display:none!important}
+.portal-header{padding:7px 12px 8px;min-height:0}
+.portal-nav-strip .portal-brand{flex:0 0 160px;width:160px;height:57px}
+.portal-nav-strip .portal-brand img{width:100%;height:100%;object-fit:contain}
+/* The footer is inside the portal's flex column, below the scrolling iframe. */
+.portal-footer{
+  position:relative;flex:0 0 auto;display:flex;align-items:center;
+  justify-content:space-between;flex-wrap:wrap;gap:7px 12px;
+  min-height:50px;padding:6px 14px calc(6px + env(safe-area-inset-bottom,0px));
+  border-top:1px solid #d1e0e9;background:linear-gradient(110deg,#f0faf7 0%,#f8fbff 55%,#faf6f1 100%);
+}
+.portal-footer-label{font:800 10px/1.3 Inter,system-ui,sans-serif;letter-spacing:.08em;color:#54748a}
+.portal-footer .global-cloud-controls{display:flex;flex:0 0 auto;align-items:center;gap:6px;margin-left:auto;justify-content:flex-end;padding:0}
+.portal-footer .global-cloud-controls button{
+  width:35px;height:35px;border-radius:10px;border:1px solid #a9c9d4;
+  background:rgba(255,255,255,.86);color:#255a76;
+  box-shadow:inset 0 1px 0 #fff,0 2px 6px rgba(38,75,101,.07);
+}
+.portal-footer .global-cloud-controls button:hover:not(:disabled){
+  background:#e8f9f2;color:#164d66;border-color:#78baa9;
+  transform:translateY(-1px);
+}
+.portal-footer .global-cloud-controls button svg{width:20px;height:20px}
+.portal-footer .global-cloud-controls button:focus-visible{outline:2px solid #319c87;outline-offset:2px}
+.portal-footer #global-cloud-feedback{
+  flex:1 0 100%;order:3;margin:0;padding:8px 38px 8px 12px;
+  border:1px solid #bed9df;border-radius:9px;background:#eaf8f6;
+  font-size:11px;text-align:left;max-height:27dvh;
+}
+.portal-footer #global-cloud-feedback[data-status="error"]{background:#fff0f1;border-color:#e8b6bc}
+@media(max-width:800px){
+  .portal-header{padding:calc(5px + env(safe-area-inset-top,0px)) 8px 6px}
+  .portal-nav-strip{display:flex;justify-content:center}
+  .portal-nav-strip .portal-brand{flex:0 0 128px;width:128px;height:48px}
+  .frame-wrap{padding-bottom:0}
+  .portal-footer{padding-inline:10px}
+}
+@media(max-width:480px){
+  .portal-nav-strip{display:flex;justify-content:center}
+  .portal-nav-strip .portal-brand{flex:0 0 118px;width:118px;height:44px}
+  .portal-footer-label{font-size:9px}
+  .portal-footer .global-cloud-controls button{width:33px;height:33px}
+  .portal-footer .global-cloud-controls button svg{width:19px;height:19px}
+}
 </style>
+  
+  <link rel="stylesheet" href="shared/ios-input-focus.css">
+  <script defer src="shared/ios-input-focus.js"></script>
+  <script defer src="shared/admin-access.js"></script>
+  <script defer src="shared/admin-ui.js"></script>
 </head>
-<body data-active="tools">
+<body data-active="sports">
   <div class="portal">
-    <header class="portal-header">
-      <nav class="product-tabs" role="tablist" aria-label="Choisir le projet Rapli">
-        <button type="button" id="tab-archives" class="product-tab" data-product="archives" role="tab" aria-selected="false" aria-controls="panel-archives" tabindex="-1" title="Rapli Archives">
-          <img src="assets/archives-logo.webp" alt="Rapli Archives" width="100" height="57" draggable="false">
-        </button>
-        <button type="button" id="tab-stickers" class="product-tab" data-product="stickers" role="tab" aria-selected="false" aria-controls="panel-stickers" tabindex="-1" title="Rapli Stickers Lab">
-          <img src="assets/stickers-logo.webp" alt="Rapli Stickers Lab" width="218" height="58" draggable="false">
-        </button>
-        <button type="button" id="tab-tools" class="product-tab" data-product="tools" role="tab" aria-selected="true" aria-controls="panel-tools" tabindex="0" title="Rapli Tools">
-          <img src="assets/tools-logo.webp" alt="Rapli Tools" width="172" height="80" draggable="false">
-        </button>
-      </nav>
-    </header>
+    <!-- Selector retained for existing module state/cloud logic, but no visible site header. -->
+    <div class="portal-hidden-navigation" hidden aria-hidden="true">
+      <nav class="product-tabs" role="tablist" aria-label="Choisir le projet Rapli" hidden aria-hidden="true">
+          <button type="button" id="tab-sports" class="product-tab" data-product="sports" role="tab" aria-selected="true" aria-controls="panel-sports" tabindex="0" title="Rapli Sports — collection de cartes">
+            <img src="sports/assets/logo.png" alt="Rapli Sports" draggable="false">
+          </button>
+          <button type="button" id="tab-regatta" class="product-tab" data-product="regatta" role="tab" aria-selected="false" aria-controls="panel-regatta" tabindex="-1" title="Rapli Regatta — journal de courses">
+            <img src="regatta/assets/logo.webp" alt="Rapli Regatta" draggable="false">
+          </button>
+        </nav>
+    </div>
+    <dialog id="global-cloud-manager" aria-labelledby="global-cloud-manager-title">
+      <div class="global-manager-head">
+        <div><h2 id="global-cloud-manager-title">Sauvegardes RapliLab</h2><small>Sports · Regatta — une session Supabase commune</small></div>
+        <button type="button" id="global-manager-close" aria-label="Fermer le gestionnaire">×</button>
+      </div>
+      <div class="global-manager-content">
+        <p>Les deux collections restent séparées. Toute restauration conserve la vérification des conflits et ne remplace jamais silencieusement les données locales.</p>
+        <section class="global-manager-box" aria-label="Synchronisation">
+          <h3>Sauvegarde globale</h3>
+          <div class="global-manager-buttons">
+            <button type="button" class="primary" id="global-manager-save">Enregistrer les 2 onglets</button>
+            <button type="button" id="global-manager-refresh">Actualiser les 2 onglets</button>
+          </div>
+        </section>
+        <section class="global-manager-box" aria-label="Appairage de deux appareils">
+          <h3>Relier PC et iPhone</h3>
+          <p id="global-manager-state" role="status" aria-live="polite">Lecture de la session…</p>
+          <button type="button" id="global-manager-enable" hidden>Activer Supabase</button>
+          <div class="global-manager-buttons">
+            <button type="button" id="global-pair-create" hidden>Générer un code sur cet appareil</button>
+          </div>
+          <output id="global-pair-output" aria-live="polite"></output>
+          <div class="global-manager-buttons">
+            <label for="global-pair-input">Code reçu de l’autre appareil
+              <input type="text" id="global-pair-input" maxlength="35" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="Code de liaison">
+            </label>
+            <button type="button" class="primary" id="global-pair-redeem">Associer cet appareil</button>
+          </div>
+          <p style="margin-top:9px">Codes à usage unique, valables 10 minutes. Les données locales de Sports et Regatta ne sont jamais remplacées automatiquement lors de la liaison.</p>
+        </section>
+        <p id="global-manager-feedback" role="status" aria-live="polite">Aucune action lancée.</p>
+      </div>
+    </dialog>
     <div class="frame-wrap">
-      <section id="panel-archives" role="tabpanel" aria-labelledby="tab-archives" hidden>
-        <iframe id="frame-archives" class="app-frame" data-src="archives/index.html" title="Rapli Archives — catalogue Dragon Blanc aux Yeux Bleus" allow="clipboard-read; clipboard-write" loading="eager"></iframe>
+      <section id="panel-sports" role="tabpanel" aria-label="Rapli Sports">
+        <iframe id="frame-sports" class="app-frame" data-src="sports/index.html" title="Rapli Sports — cartes de sport" loading="eager"></iframe>
       </section>
-      <section id="panel-stickers" role="tabpanel" aria-labelledby="tab-stickers" hidden>
-        <iframe id="frame-stickers" class="app-frame" data-src="stickers/index.html" title="Rapli Stickers Lab — éditeur de stickers" allow="clipboard-read; clipboard-write" loading="lazy"></iframe>
-      </section>
-      <section id="panel-tools" role="tabpanel" aria-labelledby="tab-tools">
-        <iframe id="frame-tools" class="app-frame" data-src="tools/index.html" title="Rapli Tools — PDF, détourage, upscale et retouche photo" allow="clipboard-read; clipboard-write" loading="lazy"></iframe>
+      <section id="panel-regatta" role="tabpanel" aria-labelledby="tab-regatta" hidden>
+        <iframe id="frame-regatta" class="app-frame" data-src="regatta/index.html" title="Rapli Regatta — journal de courses" allow="clipboard-read; clipboard-write" loading="lazy"></iframe>
       </section>
     </div>
+    <footer class="portal-footer" aria-label="Sauvegardes Rapli Lab">
+      <span class="portal-footer-label">RAPLI LAB <span aria-hidden="true">·</span> CLOUD</span>
+      <div class="rapli-admin-controls" role="group" aria-label="Accès administrateur">
+        <button type="button" id="rapli-admin-login">🔒 MODE ÉDITION</button>
+        <button type="button" id="rapli-admin-logout" hidden>DÉCONNEXION</button>
+        <span id="rapli-admin-message" role="status" aria-live="polite"></span>
+      </div>
+      <div class="global-cloud-controls" role="group" aria-label="Sauvegardes RapliLab">
+          <button id="global-cloud-manage" type="button" title="Gérer les sauvegardes et associer PC / iPhone" aria-label="Gérer les sauvegardes des deux espaces">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 3.5H17l2.5 2.5v14.5h-15z"/><path d="M8 3.5v6h8v-6M8 20.5v-7h8v7"/></svg>
+          </button>
+          <button id="global-cloud-save" type="button" title="Enregistrer Sports et Regatta dans Supabase" aria-label="Enregistrer les deux espaces dans le cloud">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18h10a4 4 0 0 0 .65-7.95A6.2 6.2 0 0 0 6 8.6 4.7 4.7 0 0 0 7 18Z"/><path d="M12 10v8m-3-3 3 3 3-3"/></svg>
+          </button>
+          <button id="global-cloud-refresh" type="button" title="Actualiser Sports et Regatta depuis Supabase" aria-label="Actualiser les deux espaces depuis le cloud">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14.25-5L3 8.5"/><path d="M3 3.5v5h5"/><path d="M4 13a8 8 0 0 0 14.25 5L21 15.5"/><path d="M21 20.5v-5h-5"/></svg>
+          </button>
+        </div>
+      <div id="global-cloud-feedback" role="status" aria-live="polite" hidden></div>
+    </footer>
   </div>
   <script>
   (() => {
     'use strict';
-    const projects=['archives','stickers','tools'];
-    const tabs=Object.fromEntries(projects.map(name=>[name,document.getElementById('tab-'+name)]));
-    const panels=Object.fromEntries(projects.map(name=>[name,document.getElementById('panel-'+name)]));
-    const frames=Object.fromEntries(projects.map(name=>[name,document.getElementById('frame-'+name)]));
-    let current='tools';
-    // Inactive apps can pause noncritical thumbnail/pixel work without losing state.
-    const sendActivity=(project,isActive)=>{const frame=frames[project];if(frame?.contentWindow&&frame?.src)try{frame.contentWindow.postMessage({type:'RAPLI_APP_ACTIVITY',active:isActive},location.origin)}catch(e){}};
-    const fromHash=()=>{const name=location.hash.slice(1).toLowerCase();return projects.includes(name)?name:'tools';};
-    function select(name, updateHash=false, focus=false) {
-      if(!projects.includes(name))name='tools';
-      current=name;
-      // Do not launch the heavyweight editors (and their model libraries) until visited.
+    const projects=['sports','regatta'];
+    // Regatta remains installed and included in cloud backups; only Sports is visible in the portal.
+    const visibleProjects=['sports'];
+    const tabs=Object.fromEntries(projects.map(n=>[n,document.getElementById('tab-'+n)]));
+    const panels=Object.fromEntries(projects.map(n=>[n,document.getElementById('panel-'+n)]));
+    const frames=Object.fromEntries(projects.map(n=>[n,document.getElementById('frame-'+n)]));
+    const names={sports:'Sports',regatta:'Regatta'};
+    let current='sports',cloudBusy=false,requestSequence=0,managerBusy=false;
+    const pause=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+    const sanitize=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
+    const fromHash=()=>visibleProjects.includes(location.hash.slice(1).toLowerCase())?location.hash.slice(1).toLowerCase():'sports';
+    function activity(name,active){
       const frame=frames[name];
-      if(!frame.src && frame.dataset.src){frame.src=frame.dataset.src;delete frame.dataset.src;}
+      if(frame?.contentWindow&&frame.src)try{frame.contentWindow.postMessage({type:'RAPLI_APP_ACTIVITY',active},location.origin)}catch(_){}
+    }
+    function select(name,hash=false,focus=false){
+      if(!visibleProjects.includes(name))name='sports';
+      current=name;
+      const frame=frames[name];
+      if(!frame.src&&frame.dataset.src){frame.src=frame.dataset.src;delete frame.dataset.src;}
       document.body.dataset.active=name;
       for(const project of projects){
         const active=project===name;
         tabs[project].setAttribute('aria-selected',String(active));
         tabs[project].tabIndex=active?0:-1;
-        panels[project].hidden=!active;
-        frames[project].hidden=!active;
-        sendActivity(project,active);
+        panels[project].hidden=!active;frames[project].hidden=!active;
+        activity(project,active);
       }
-      document.title=({archives:'RAPLI — Archives · Dragon Blanc aux Yeux Bleus',stickers:'RAPLI — Stickers Lab',tools:'RAPLI — Tools'})[name];
-      if(updateHash && location.hash !=='#'+name)history.pushState({project:name},'', '#'+name);
+      document.title='Rapli Lab';
+      if(hash&&location.hash!=='#'+name)history.pushState({project:name},'','#'+name);
       if(focus)tabs[name].focus();
     }
     for(const name of projects){
       tabs[name].addEventListener('click',()=>select(name,true));
-      tabs[name].addEventListener('keydown',e=>{
+      tabs[name].addEventListener('keydown',event=>{
         let next;
-        if(e.key==='ArrowRight')next=projects[(projects.indexOf(name)+1)%projects.length];
-        else if(e.key==='ArrowLeft')next=projects[(projects.indexOf(name)+projects.length-1)%projects.length];
-        else if(e.key==='Home')next=projects[0];
-        else if(e.key==='End')next=projects[projects.length-1];
-        if(next){e.preventDefault();select(next,true,true);}
+        if(event.key==='ArrowRight')next=projects[(projects.indexOf(name)+1)%projects.length];
+        if(event.key==='ArrowLeft')next=projects[(projects.indexOf(name)+projects.length-1)%projects.length];
+        if(event.key==='Home')next=projects[0];
+        if(event.key==='End')next=projects[projects.length-1];
+        if(next){event.preventDefault();select(next,true,true);}
+      });
+      frames[name].addEventListener('load',()=>activity(name,name===current));
+    }
+    window.addEventListener('popstate',()=>select(fromHash()));
+    window.addEventListener('hashchange',()=>select(fromHash()));
+    select(fromHash());
+    const save=document.getElementById('global-cloud-save'),refresh=document.getElementById('global-cloud-refresh');
+    const feedback=document.getElementById('global-cloud-feedback');
+    async function readyFrame(name){
+      const frame=frames[name];
+      if(!frame.src&&frame.dataset.src){frame.loading='eager';frame.src=frame.dataset.src;delete frame.dataset.src;}
+      const started=Date.now();
+      while(Date.now()-started<45000){
+        try{if(frame.contentWindow?.RapliModuleBridge?.ready&&frame.contentWindow?.RapliModuleCloud)return frame;}catch(_){}
+        await pause(200);
+      }
+      throw Error('Application '+names[name]+' non initialisée.');
+    }
+    async function oneSync(name,operation){
+      const frame=await readyFrame(name);
+      const id='global-'+Date.now().toString(36)+'-'+(++requestSequence)+'-'+name;
+      return new Promise((resolve,reject)=>{
+        let timeout;
+        const cleanup=()=>{clearTimeout(timeout);window.removeEventListener('message',receive);};
+        function receive(event){
+          const d=event.data;
+          if(event.origin!==location.origin||event.source!==frame.contentWindow||d?.type!=='RAPLI_GLOBAL_SYNC_RESULT'||
+            d.id!==id||d.module!==name||d.operation!==operation)return;
+          cleanup();resolve({success:!!d.success,message:String(d.message||''),conflict:!!d.conflict});
+        }
+        window.addEventListener('message',receive);
+        timeout=setTimeout(()=>{cleanup();reject(Error('Délai de synchronisation dépassé'));},120000);
+        try{frame.contentWindow.postMessage({type:'RAPLI_GLOBAL_SYNC_REQUEST',id,module:name,operation},location.origin);}
+        catch(e){cleanup();reject(e);}
       });
     }
-    addEventListener('popstate',()=>select(fromHash()));
-    addEventListener('hashchange',()=>select(fromHash()));
-    // Re-send state once iframes have finished their first load.
-    for(const name of projects)frames[name].addEventListener('load',()=>sendActivity(name,name===current));
-    select(fromHash());
+    function reportSync(operation,progress,results){
+      const errors=results.filter(x=>!x.success);
+      feedback.hidden=false;feedback.dataset.status=errors.length?'error':'ok';
+      const title=operation==='save'?'Sauvegarde':'Actualisation';
+      if(progress<projects.length){
+        feedback.textContent=title+' globale : '+progress+'/'+projects.length+' espaces vérifiés…';return;
+      }
+      const success=results.length-errors.length;
+      feedback.innerHTML='<strong>'+sanitize(title+' globale · '+success+'/'+projects.length+' espaces vérifiés')+'</strong>'+
+        '<details'+(errors.length?' open':'')+'><summary>'+sanitize(errors.length?errors.length+' espace(s) à vérifier':'Afficher le détail')+'</summary><ul>'+
+        results.map(x=>'<li><strong>'+sanitize(names[x.name])+'</strong> : '+sanitize(x.message)+'</li>').join('')+'</ul></details>'+
+        '<button type="button" class="global-cloud-dismiss" aria-label="Fermer le résultat">×</button>';
+    }
+    async function sync(operation){
+      if(cloudBusy)return [];
+      cloudBusy=true;save.disabled=refresh.disabled=true;
+      const btn=operation==='save'?save:refresh;
+      btn.classList.add('is-busy');btn.setAttribute('aria-busy','true');
+      const results=[];
+      try{
+        reportSync(operation,0,results);
+        for(const name of projects){
+          let outcome;
+          try{outcome=await oneSync(name,operation);}
+          catch(e){outcome={success:false,message:e?.message||'Indisponible'};}
+          results.push({name,...outcome});
+          reportSync(operation,results.length,results);
+        }
+        return results;
+      }finally{
+        cloudBusy=false;save.disabled=refresh.disabled=false;btn.classList.remove('is-busy');btn.removeAttribute('aria-busy');
+      }
+    }
+    save.addEventListener('click',()=>void sync('save'));
+    refresh.addEventListener('click',()=>void sync('refresh'));
+    feedback.addEventListener('click',e=>{if(e.target.closest('.global-cloud-dismiss')&&!cloudBusy)feedback.hidden=true;});
+
+    // Device pairing is shared identity infrastructure, not part of any card catalogue.
+    const SUPABASE_URL='https://widiyulvmthbaypdxhbw.supabase.co';
+    const PUBLIC_KEY='sb_publishable_aietige1gJ1QfPZ6HaHiVA_zwqcJYyF';
+    const manager=document.getElementById('global-cloud-manager');
+    const state=document.getElementById('global-manager-state');
+    const result=document.getElementById('global-manager-feedback');
+    const create=document.getElementById('global-pair-create');
+    const redeem=document.getElementById('global-pair-redeem');
+    const input=document.getElementById('global-pair-input');
+    const codeOutput=document.getElementById('global-pair-output');
+    const managerButtons=['global-manager-enable','global-pair-create','global-pair-redeem','global-manager-save','global-manager-refresh'];
+    let client=null,clientUser=null,clientOwner=null,managerPromise=null;
+    const managerMessage=(message,error=false)=>{result.textContent=message;result.dataset.error=String(error);};
+    function setManagerBusy(busy){
+      managerBusy=busy;
+      for(const id of managerButtons){const el=document.getElementById(id);if(el)el.disabled=busy;}
+    }
+    async function initializeIdentity(){
+      if(!managerPromise)managerPromise=(async()=>{
+        const sdk=await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.83.0/+esm');
+        client=sdk.createClient(SUPABASE_URL,PUBLIC_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}});
+        const session=await client.auth.getSession();
+        if(session.error)throw session.error;
+        let user=session.data.session?.user;
+        if(!user){const signed=await client.auth.signInAnonymously();if(signed.error)throw signed.error;user=signed.data.user;}
+        if(!user?.id)throw Error('Session Supabase indisponible.');
+        clientUser=user.id;
+        const members=await client.from('rapli_archive_members').select('owner_id').eq('member_id',clientUser).maybeSingle();
+        if(members.error)throw members.error;
+        clientOwner=members.data?.owner_id||clientUser;
+      })().catch(error=>{managerPromise=null;throw error;});
+      await managerPromise;
+      const linked=clientUser!==clientOwner;
+      state.textContent=linked?'Appareil associé à la collection partagée':'Appareil principal · connexion Supabase active';
+      create.hidden=linked;
+      document.getElementById('global-manager-enable').hidden=true;
+      return {linked};
+    }
+    async function managerOperation(label,work){
+      if(managerBusy)return;
+      setManagerBusy(true);managerMessage(label);
+      try{await initializeIdentity();await work();}
+      catch(e){managerMessage('Action impossible : '+(e?.message||'connexion Supabase'),true);}
+      finally{setManagerBusy(false);}
+    }
+    document.getElementById('global-cloud-manage').addEventListener('click',()=>{
+      if(!manager.open)manager.showModal();
+      void managerOperation('Connexion à Supabase…',async()=>managerMessage('Session prête.'));
+    });
+    document.getElementById('global-manager-close').addEventListener('click',()=>manager.close());
+    manager.addEventListener('click',e=>{if(e.target===manager)manager.close();});
+    document.getElementById('global-manager-enable').addEventListener('click',()=>void managerOperation('Connexion…',async()=>managerMessage('Session prête.')));
+    create.addEventListener('click',()=>void managerOperation('Création du code…',async()=>{
+      const response=await client.functions.invoke('rapli-archives-pair',{body:{action:'issue'}});
+      if(response.error||!response.data?.code)throw Error(response.data?.error||response.error?.message||'Code indisponible');
+      codeOutput.textContent=response.data.code+' · valable 10 minutes';
+      managerMessage('Entre ce code sur l’autre appareil.');
+    }));
+    redeem.addEventListener('click',()=>void managerOperation('Association…',async()=>{
+      const code=input.value.trim().toUpperCase();
+      if(!code)throw Error('Saisis le code reçu.');
+      if(!confirm('Associer cet appareil à l’autre ? Les données locales de Sports et Regatta ne seront pas remplacées automatiquement.'))return;
+      const response=await client.functions.invoke('rapli-archives-pair',{body:{action:'redeem',code}});
+      if(response.error||!response.data?.linked)throw Error(response.data?.error||response.error?.message||'Code invalide');
+      input.value='';codeOutput.textContent='';
+      managerMessage('Appareil associé ✓ Recharge Rapli Lab pour utiliser la collection partagée.');
+      // Module cloud clients resolve owner at boot; refresh sessions only on explicit reload.
+      state.textContent='Appareil associé ✓ · recharge la page pour activer le lien';
+      create.hidden=true;
+    }));
+    for(const operation of ['save','refresh']){
+      document.getElementById('global-manager-'+operation).addEventListener('click',()=>void managerOperation(
+        operation==='save'?'Enregistrement…':'Actualisation…',async()=>{
+          const rows=await sync(operation);
+          const failures=rows.filter(x=>!x.success);
+          managerMessage((operation==='save'?'Sauvegarde':'Actualisation')+' : '+(rows.length-failures.length)+'/2 espaces'+(failures.length?' · vérifie le rapport':' ✓'),!!failures.length);
+        }));
+    }
+    // Once per authenticated device, erase only obsolete root-level Dragon Blanc
+    // images. Shared Sports/Regatta assets remain under their own folder prefixes.
+    // A failure leaves the local marker unset so a future visit can retry.
+    const retiredStorageMarker='rapli-archives-artwork-purged-20261115-v1';
+    window.addEventListener('load',()=>setTimeout(()=>{
+      void (async()=>{
+        try{
+          if(localStorage.getItem(retiredStorageMarker)==='1')return;
+          await initializeIdentity();
+          const response=await client.functions.invoke('rapli-archives-pair',{body:{action:'purge-retired-archives'}});
+          if(response.error||!response.data?.purged)
+            throw Error(response.data?.error||response.error?.message||'Nettoyage incomplet');
+          localStorage.setItem(retiredStorageMarker,'1');
+        }catch(error){console.warn('Nettoyage des anciens artworks Rapli Archives reporté',error);}
+      })();
+    },1200),{once:true});
   })();
   </script>
+  <script defer src="shared/retired-cleanup.js"></script>
 </body>
 </html>
+

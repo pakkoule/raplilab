@@ -1,0 +1,31 @@
+{
+  "id": "/",
+  "name": "Rapli Lab",
+  "short_name": "Rapli Lab",
+  "description": "Collection Rapli Sports",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#061122",
+  "theme_color": "#061122",
+  "icons": [
+    {
+      "src": "/apple-touch-icon.png?v=20261117",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/rapli-app-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/rapli-app-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

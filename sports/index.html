@@ -1350,6 +1350,21 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
   display:block;width:102px;height:72px;object-fit:contain;object-position:left center;
 }
 .section-nav .tabs{min-width:0;justify-content:center}
+/* Center the four collection tabs relative to the full page, not merely
+   the space to the right of the brand. The matching third column balances
+   the brand column without changing the visual or its position. */
+@media(min-width:900px){
+  .section-nav{
+    grid-template-columns:108px minmax(0,1fr) 108px;
+  }
+  .section-nav .sports-lab-brand{grid-column:1;grid-row:1}
+  .section-nav .tabs{
+    grid-column:2;grid-row:1;
+    justify-self:center;
+    margin-inline:auto;
+    flex-wrap:nowrap;
+  }
+}
 @media(max-width:750px){
  .section-nav{grid-template-columns:76px minmax(0,1fr);gap:8px;padding-bottom:6px}
  .section-nav .sports-lab-brand{width:76px}

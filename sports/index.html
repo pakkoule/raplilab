@@ -3080,7 +3080,7 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
         const first=roster[0]?.name||card.player||'Joueur non renseigné';
         // Other players share one "+" and are separated with "/" on the same line.
         const more=roster.length>1?
-          '<span class="player-extra-names">+ '+roster.slice(1).map(p=>safeText(p.name)+(p.nationality?' '+flagFor(p.nationality):'')).join(' / ')+'</span>':'';
+          '<span class="player-extra-names">+ '+roster.slice(1).map(p=>safeText(p.name)+(p.nationality?' '+countryCatalogueBadge(p.nationality):'')).join(' / ')+'</span>':'';
         const autos=roster.flatMap(p=>{
           if(!p.auto)return [];
           const prefix=roster.length>1?'<strong>'+safeText(p.name)+' ·</strong> ':'';
@@ -3100,7 +3100,7 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
         });
         const badges=[...autos,...patchBadges].filter(Boolean);
         const reference=String(card.reference||'').trim();
-        return '<div class="player-name-reference"><h3 class="player"><span class="player-primary-name">'+safeText(first)+'</span>'+(roster[0]?.nationality?' <span class="sports-flag" title="Pays '+safeText(roster[0].nationality)+'">'+flagFor(roster[0].nationality)+'</span>':'')+more+'</h3>'+
+        return '<div class="player-name-reference"><h3 class="player"><span class="player-primary-name">'+safeText(first)+'</span>'+(roster[0]?.nationality?' <span class="sports-flag">'+countryCatalogueBadge(roster[0].nationality)+'</span>':'')+more+'</h3>'+
           (reference?'<span class="card-ref-inline" title="'+safeText(reference)+'">'+safeText(reference)+'</span>':'')+
           '</div>'+(badges.length?'<div class="player-traits">'+badges.join('')+'</div>':'');
       }
@@ -3126,7 +3126,12 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
         {id:'demo-wemby',status:'wishlist',brand:'Topps',player:'Victor Wembanyama',sport:'Basketball',team:'San Antonio Spurs',reference:'Chrome · #EXEMPLE',tags:['Chrome','Gold'],numbered:true,serial:'07',printRun:'50',photo:'',demo:true,createdAt:ts-11000,updatedAt:ts-11000}
       ]}
       async function initialize(){try{db=await openDb();[cards,logos]=await Promise.all([transactionAll('cards'),transactionAll('logos')]);const initialized=await transactionGet('meta','initialized');if(!initialized){cards=sampleCards();for(const c of cards)await transactionPut('cards',c);await transactionPut('meta',{key:'initialized',value:true})}}catch(e){console.warn('IndexedDB indisponible ; tentative de stockage local',e);db=null;let stored=null;try{stored=localStorage.getItem('rapli-sports-fallback')}catch(_){/* Mode éphémère : accès local bloqué */}if(stored){try{const parsed=JSON.parse(stored);cards=parsed.cards||[];logos=parsed.logos||[]}catch(_){cards=[];logos=[]}}else{cards=sampleCards();try{await saveFallback()}catch(_){}}showToast('Stockage de secours activé. Pense à exporter tes données.')}renderAll()}
-      function logoFor(type,name){if(!name)return '';let o=logos.find(l=>l.type===type&&normalize(l.name)===normalize(name));return o&&imgSafe(o.image)?o.image:''}
+      function logoFor(type,name){
+        if(!name)return '';
+        const o=type==='nationality'?countryLogoProfile(name):
+          logos.find(l=>l.type===type&&normalize(l.name)===normalize(name));
+        return o&&imgSafe(o.image)?o.image:'';
+      }
       const GRADE_EDGE_DEFAULTS=Object.freeze({borderStart:'#7aaeb8',borderEnd:'#c5a9cf'});
       function gradingAppearance(agency){
         const key=normalize(agency);
@@ -3432,7 +3437,7 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
           card.status==='own'?'OWN possédée':'Wishlist recherchée',
           ...players.flatMap(player=>[
             player.name,player.nationality,
-            player.nationality?(SPORTS_COUNTRY_NAMES?.of(player.nationality)||player.nationality):'',
+            player.nationality?countryTagLabel(player.nationality):'',
             player.auto?('Autographe auto '+(AUTO_TYPES[player.auto]||player.auto)):'',
             player.patch?('Patch '+(PATCH_TYPES[player.patch]||player.patch)):''
           ]),
@@ -3479,7 +3484,6 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
 
       // "Par édition" reads the existing Collection checkbox; it does not
       // fabricate or require a new property on every saved card.
-      const SPORTS_COUNTRY_NAMES=typeof Intl.DisplayNames==='function'?new Intl.DisplayNames(['fr'],{type:'region'}):null;
       function sportsGallerySportIcon(label){
         const value=normalize(label);
         if(value==='basketball')return '🏀';
@@ -3510,11 +3514,8 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
         if(type==='team')return [String(card.team||'Sans équipe').trim()||'Sans équipe'];
         if(type==='sport')return [String(card.sport||'Sans sport').trim()||'Sans sport'];
         if(type==='nationality'){
-          const codes=[...new Set(cardPlayers(card).map(p=>COUNTRY_CODE(p.nationality)).filter(Boolean))];
-          return codes.length?codes.map(code=>{
-            const name=SPORTS_COUNTRY_NAMES?.of(code)||code;
-            return name+' '+flagFor(code);
-          }):['Nationalité non renseignée'];
+          const names=savedValues(cardPlayers(card).map(p=>countryTagLabel(p.nationality)).filter(Boolean));
+          return names.length?names:['Pays non renseigné'];
         }
         if(type==='grading'){
           if(!card.graded)return ['Non gradées'];
@@ -3600,14 +3601,14 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
         const portraitProfile=type==='athlete'?logos.find(row=>row.type==='athlete'&&normalize(row.name)===normalize(group.label)):null;
         const portraitStyle=type==='athlete'?' style="'+portraitCropStyle(portraitProfile?.crop)+'"':'';
         const initials=group.label.split(/\s+/).filter(Boolean).slice(0,2).map(x=>x[0]).join('').toUpperCase();
-        const symbol=type==='nationality'?(group.label==='Nationalité non renseignée'?'🌍':group.label.slice(-4)):
+        const symbol=type==='nationality'?countryTagLabel(group.label).split(/\s+/).map(word=>word[0]).join('').slice(0,2).toUpperCase():
           type==='sport'?sportsGallerySportIcon(group.label):
           type==='grading'?'🏅':
           type==='autograph'?'✍️':
           type==='patch'?'👕':
           initials||'★';
-        const fallback=type==='athlete'?
-          '<span class="sports-gallery-initials">'+safeText(initials||'?')+'</span>':
+        const fallback=(type==='athlete'||type==='nationality')?
+          '<span class="sports-gallery-initials">'+safeText(type==='nationality'?(symbol||'P'):(initials||'?'))+'</span>':
           '<span class="sports-gallery-group-symbol">'+safeText(symbol)+'</span>';
         const categoryLabel={
           brand:'MARQUE',team:'TEAM',athlete:'ATHLÈTE',nationality:'PAYS',tag:'TAG',
@@ -4046,7 +4047,7 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
         randomSportsCardId=choice.id;
         const photo=imgSafe(choice.photo)?'<img class="sports-random-photo" src="'+choice.photo+'" alt="Carte de '+safeText(choice.player)+'">':
           '<div class="sports-rainbow-empty">Aucune photo enregistrée</div>';
-        const fullPlayers=cardPlayers(choice).map(p=>safeText(p.name)+(p.nationality?' '+flagFor(p.nationality):'')).join(' · ');
+        const fullPlayers=cardPlayers(choice).map(p=>safeText(p.name)+(p.nationality?' '+countryCatalogueBadge(p.nationality):'')).join(' · ');
         $('sportsRandomBody').innerHTML=photo+'<div class="sports-random-meta"><strong>'+fullPlayers+'</strong>'+
           '<span>'+safeText([choice.brand,choice.team,choice.sport].filter(Boolean).join(' · '))+'</span>'+
           '<small>'+safeText(choice.reference||'Référence non renseignée')+'</small>'+
@@ -4132,12 +4133,12 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
         const styleTab=type==='collector',labelsTab=type==='labels',customTab=styleTab||labelsTab;
         $('logoCreatePanel').hidden=customTab;$('logoList').hidden=customTab;
         $('collectorSettingsPanel').hidden=!styleTab;$('labelSettingsPanel').hidden=!labelsTab;
-        $('logoNameLabel').textContent=type==='rookie'?'Sport concerné':type==='team'?'Nom de l’équipe':type==='athlete'?'Nom de l’athlète':type==='nationality'?'Pays de la collection':type==='sport'?'Nom du sport':type==='grading'?'Organisme de grading':type==='tag'?'Nom du tag':'Nom de la marque';
-        $('logoName').placeholder=type==='rookie'?'Basketball':type==='team'?'Philadelphia 76ers':type==='athlete'?'Tyrese Maxey':type==='nationality'?'France 🇫🇷':type==='sport'?'Basketball':type==='grading'?'PSA, BGS, SGC…':type==='tag'?'Gold Refractor':'Topps';
+        $('logoNameLabel').textContent=type==='rookie'?'Sport concerné':type==='team'?'Nom de l’équipe':type==='athlete'?'Nom de l’athlète':type==='nationality'?'Tag de pays':type==='sport'?'Nom du sport':type==='grading'?'Organisme de grading':type==='tag'?'Nom du tag':'Nom de la marque';
+        $('logoName').placeholder=type==='rookie'?'Basketball':type==='team'?'Philadelphia 76ers':type==='athlete'?'Tyrese Maxey':type==='nationality'?'France':type==='sport'?'Basketball':type==='grading'?'PSA, BGS, SGC…':type==='tag'?'Gold Refractor':'Topps';
         $('logoCreateHelp').textContent=type==='rookie'
           ? 'Importe un logo RC pour un sport. Il remplacera les lettres RC sur toutes ses Rookie Cards.'
           : type==='athlete'?'Ajoute un portrait par athlète : il s’affiche automatiquement dans la galerie Par athlète. Les joueurs présents sur plusieurs cartes partagent le même portrait.'
-          : type==='nationality'?'Choisis un pays de la collection, puis importe son icône. Sans icône personnalisée, le drapeau reste affiché.'
+          : type==='nationality'?'Crée un tag de pays, puis associe deux icônes indépendantes : une pour les tuiles Pays et une pour le catalogue. Les anciens codes pays restent reconnus.'
           : type==='sport'?'Choisis un sport, puis importe son icône. Sans icône personnalisée, le symbole sportif reste affiché.'
           : type==='grading'?'Pour chaque organisme, associe un logo PNG et deux couleurs de bordure dégradée. Le badge reprend la hauteur des numérotations, avec note noire et fond blanc foil. Le logo est facultatif.'
           : type==='tag'?'Classe tes tags et associe-les à une ou plusieurs marques pour adapter les suggestions lors de la saisie d’une carte. Le logo est facultatif.'
@@ -4212,7 +4213,7 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
         const names=logoType==='rookie'
           ? [...document.querySelectorAll('#cardSport option')].map(o=>o.value).concat(cards.map(c=>c.sport))
           : logoType==='athlete'?savedPlayers().concat(logos.filter(x=>x.type==='athlete').map(x=>x.name))
-          : logoType==='nationality'?cards.flatMap(c=>sportsGalleryGroupValues(c,'nationality')).concat(logos.filter(x=>x.type==='nationality').map(x=>x.name))
+          : logoType==='nationality'?savedCountryTags()
           : logoType==='sport'?cards.map(c=>c.sport).concat([...document.querySelectorAll('#cardSport option')].map(o=>o.value),logos.filter(x=>x.type==='sport').map(x=>x.name))
           : logoType==='grading'?['PSA','BGS','SGC','CGC','Autre'].concat(cards.filter(c=>c.graded).map(c=>c.gradeOrg),logos.filter(x=>x.type==='grading').map(x=>x.name))
           : logoType==='tag'?savedTags():logoType==='team'?savedTeams():cards.map(c=>c.brand);

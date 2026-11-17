@@ -155,7 +155,11 @@
       // The previous Cloud client could have unsent local edits: never overwrite them.
       if (!initialized && isEditor()) {
         const baseline = knownBaseline();
-        if (baseline && baseline.hash !== fingerprint(snapshot())) {
+        const local = snapshot();
+        // A first-time editor on a different device may have unsent local records.
+        // Never replace real local data without a matching acknowledged baseline.
+        if ((baseline && baseline.hash !== fingerprint(local)) ||
+            (!baseline && (local.records.some(card => !card.demo) || local.logos.length > 0))) {
           blockOnConflict();
           return;
         }

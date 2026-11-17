@@ -59,7 +59,9 @@
     const {error}=await sdk.auth.signOut();
     if(error)throw error;
     editor=false;ready=true;notify();
-    window.location.assign('/');
+    // Logout must navigate the main portal, never load it nested inside a workspace iframe.
+    if(window.top!==window)window.top.location.assign('/');
+    else window.location.assign('/');
   }
   window.RapliAdminAccess={
     initialize,refresh,sendMagicLink,logout,

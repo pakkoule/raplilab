@@ -2374,6 +2374,22 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
 }
 
 </style>
+<style id="rapli-sports-country-tag-icons">
+#countryIconPanel[hidden]{display:none!important}
+.country-icon-settings{margin:12px 0;padding:12px;border:1px solid #cddfe8;border-radius:12px;
+  background:linear-gradient(115deg,#f7fdfa,#eff5fe 65%,#fcf9fd)}
+.country-icon-editor{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.country-icon-editor>label{display:grid;justify-items:center;gap:8px;color:#2e5872;font:850 10px Poppins,system-ui,sans-serif;text-align:center}
+.country-icon-preview{display:grid;place-items:center;width:min(100%,126px);height:100px;border:1px solid #aacada;
+  border-radius:10px;background:linear-gradient(125deg,#edf8f8,#dbe5ee,#fff);color:#37637b;font:900 18px Poppins,sans-serif}
+.country-icon-preview img{display:block;width:100%;height:100%;object-fit:contain}
+.country-icon-preview.is-catalogue{width:74px;height:48px}
+.country-icon-file{position:relative;display:grid;place-items:center;min-height:36px;padding:6px 10px;
+  border:1px solid #8db9c5;border-radius:8px;background:#fff;color:#235a73;cursor:pointer}
+.country-icon-file input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
+.country-icon-file:focus-within{outline:2px solid #3eb9ab;outline-offset:2px}
+@media(max-width:420px){.country-icon-editor{grid-template-columns:minmax(0,1fr)}}
+</style>
 <style id="rapli-athlete-portrait-crop">
 /* Crop adjustments are display-only: no source PNG is rewritten. */
 #cardGrid.is-gallery-layout .is-group-gallery .sports-gallery-group[data-group-type="athlete"] .sports-gallery-group-picture img{
@@ -2582,6 +2598,25 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
     <div class="modal-body">
       <div class="logo-tabs"><button type="button" class="logo-tab active" data-logo-type="brand">Marques</button><button type="button" class="logo-tab" data-logo-type="team">Équipes</button><button type="button" class="logo-tab" data-logo-type="rookie">Rookie / RC</button><button type="button" class="logo-tab" data-logo-type="athlete">Portraits athlètes</button><button type="button" class="logo-tab" data-logo-type="nationality">Pays</button><button type="button" class="logo-tab" data-logo-type="sport">Sports</button><button type="button" class="logo-tab" data-logo-type="grading">Organismes de grading</button><button type="button" class="logo-tab" data-logo-type="tag">Tags / variations</button><button type="button" class="logo-tab" data-logo-type="labels">Étiquettes</button><button type="button" class="logo-tab" data-logo-type="collector">Style des badges</button></div>
       <div class="logo-create" id="logoCreatePanel"><p class="logo-help" id="logoCreateHelp">Associe une image à une marque ou une équipe : son logo s'affichera automatiquement sur toutes les cartes correspondantes.</p><div class="logo-create-row"><div class="input-group"><label id="logoNameLabel" for="logoName">Nom de la marque</label><select id="logoAthletePicker" class="select saved-value-picker" aria-label="Choisir un athlète déjà présent dans la collection" hidden><option value="">Choisir un athlète enregistré…</option></select><select id="logoTeamPicker" class="select saved-value-picker" aria-label="Choisir une équipe enregistrée" hidden><option value="">Choisir une équipe…</option></select><select id="logoTagPicker" class="select saved-value-picker" aria-label="Choisir un tag enregistré" hidden><option value="">Choisir un tag…</option></select><select id="logoGroupPicker" class="select saved-value-picker" aria-label="Choisir un pays ou un sport" hidden><option value="">Choisir une catégorie…</option></select><input class="input" id="logoName" list="logoNamesList" maxlength="100" placeholder="Topps"><datalist id="logoNamesList"></datalist></div><div class="input-group"><label id="logoImageLabel">Image du logo</label><label class="logo-file" id="logoFileLabel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 16V4m-5 5 5-5 5 5M4 17v4h16v-4"/></svg><span id="logoFileText">Choisir</span><input type="file" id="logoFileInput" accept="image/png,image/jpeg,image/webp"></label></div><button id="cropPortraitBtn" type="button" class="button button-soft" hidden>✂ Recadrer</button><button id="saveLogoBtn" type="button" class="button button-primary">Ajouter</button></div>
+      <section id="countryIconPanel" class="country-icon-settings" hidden>
+        <div class="country-icon-editor">
+          <label>ICÔNE PAYS · TUILE
+            <span class="country-icon-preview" id="countryTilePreview" aria-label="Aperçu de l’icône tuile">—</span>
+            <span class="country-icon-file">Importer pour la tuile
+              <input id="countryTileFile" type="file" accept="image/png,image/jpeg,image/webp">
+            </span>
+            <button id="countryTileClear" type="button" class="grading-edit-button">Retirer l’icône</button>
+          </label>
+          <label>ICÔNE PAYS · CATALOGUE
+            <span class="country-icon-preview is-catalogue" id="countryCatalogPreview" aria-label="Aperçu de l’icône catalogue">—</span>
+            <span class="country-icon-file">Importer pour le catalogue
+              <input id="countryCatalogFile" type="file" accept="image/png,image/jpeg,image/webp">
+            </span>
+            <button id="countryCatalogClear" type="button" class="grading-edit-button">Retirer l’icône</button>
+          </label>
+        </div>
+        <p class="logo-help">Les deux visuels sont indépendants. PNG transparent recommandé. Une icône absente est remplacée par les initiales du pays, jamais par un emoji.</p>
+      </section>
       <section id="gradingStylePanel" class="grading-style-settings" aria-label="Personnaliser la bordure de grading" hidden>
         <div class="grading-style-colors">
           <label for="gradingEdgeStart">Couleur bordure · début<input id="gradingEdgeStart" type="color" value="#7aaeb8"></label>
@@ -2694,6 +2729,7 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
       };
       let db=null, cards=[], logos=[], currentView='own', currentTags=[], currentPhoto='', editingId=null, logoType='brand', pendingLogoPhoto='', toastTimer=null;
       let pendingPortraitCrop={scale:1,x:0,y:0},portraitCropEditing=null,portraitCropPointer=null;
+      let countryDraft={tileImage:null,catalogImage:null};
       let sportsGalleryLayout='details',sportsGallerySelected=null,sportsGalleryPage=1;
       const rainbowEngine=window.RapliSportsRainbow;
       let rainbowEditingId=null,rainbowAssignments=new Map(),rainbowBaseVariant='',randomSportsCardId=null;
@@ -4119,13 +4155,16 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
       }
       function setLogoType(type){
         if(!['brand','team','rookie','athlete','nationality','sport','grading','tag','labels','collector'].includes(type))type='brand';
-        logoType=type;pendingLogoPhoto='';pendingPortraitCrop={...PORTRAIT_CROP_DEFAULT};$('logoName').value='';$('logoFileInput').value='';$('logoFileText').textContent='Choisir';
+        logoType=type;pendingLogoPhoto='';countryDraft={tileImage:null,catalogImage:null};pendingPortraitCrop={...PORTRAIT_CROP_DEFAULT};$('logoName').value='';$('logoFileInput').value='';$('logoFileText').textContent='Choisir';
         $('logoAthletePicker').hidden=type!=='athlete';$('logoAthletePicker').value='';
         $('logoTeamPicker').hidden=type!=='team';$('logoTeamPicker').value='';
         $('logoTagPicker').hidden=type!=='tag';$('logoTagPicker').value='';
         $('logoGroupPicker').hidden=!['nationality','sport','grading'].includes(type);$('logoGroupPicker').value='';
         $('logoGroupPicker').setAttribute('aria-label',type==='nationality'?'Choisir un pays de la collection':type==='grading'?'Choisir un organisme de grading':'Choisir un sport de la collection');
         $('gradingStylePanel').hidden=type!=='grading';
+        $('countryIconPanel').hidden=type!=='nationality';
+        $('logoFileLabel').hidden=type==='nationality';
+        $('logoImageLabel').hidden=type==='nationality';
         $('tagCategoryPanel').hidden=type!=='tag';
         if(type==='tag')renderTagBrandOptions();
         document.querySelectorAll('#tagCategoryPanel [data-tag-category]').forEach(box=>box.checked=false);
@@ -4143,11 +4182,33 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
           : type==='grading'?'Pour chaque organisme, associe un logo PNG et deux couleurs de bordure dégradée. Le badge reprend la hauteur des numérotations, avec note noire et fond blanc foil. Le logo est facultatif.'
           : type==='tag'?'Classe tes tags et associe-les à une ou plusieurs marques pour adapter les suggestions lors de la saisie d’une carte. Le logo est facultatif.'
           : 'Associe un logo à une marque ou une équipe pour l’afficher sur les cartes correspondantes.';
-        $('saveLogoBtn').textContent=type==='rookie'?'Enregistrer le logo RC':type==='athlete'?'Enregistrer le portrait':(['nationality','sport'].includes(type)?'Enregistrer l’icône':type==='grading'?'Enregistrer le style du grading':type==='tag'?'Enregistrer le tag':'Ajouter');
+        $('saveLogoBtn').textContent=type==='rookie'?'Enregistrer le logo RC':type==='athlete'?'Enregistrer le portrait':(type==='nationality'?'Enregistrer le tag pays':type==='sport'?'Enregistrer l’icône':type==='grading'?'Enregistrer le style du grading':type==='tag'?'Enregistrer le tag':'Ajouter');
         document.querySelectorAll('.logo-tab').forEach(b=>b.classList.toggle('active',b.dataset.logoType===type));
         if(styleTab)openCollectorSettings();else if(labelsTab)renderLabelEditors();else renderLogos();
         if(type==='grading')syncGradingEditor(true);
+        if(type==='nationality')syncCountryIconEditor(true);
         updateCropButton();
+      }
+      function syncCountryIconEditor(loadSaved=false){
+        if(logoType!=='nationality')return;
+        const name=countryTagLabel($('logoName').value.trim());
+        const saved=countryLogoProfile(name);
+        if(loadSaved){
+          countryDraft.tileImage=null;countryDraft.catalogImage=null;
+          $('countryTileFile').value='';$('countryCatalogFile').value='';
+        }
+        const preview=(element,image,initials)=>{
+          element.replaceChildren();
+          if(imgSafe(image)){
+            const img=document.createElement('img');img.src=image;img.alt='';element.append(img);
+          }else element.textContent=initials||'P';
+        };
+        const initials=name.split(/\s+/).map(p=>p[0]).join('').slice(0,2).toUpperCase()||'P';
+        const tile=countryDraft.tileImage!==null?countryDraft.tileImage:saved?.image;
+        const catalog=countryDraft.catalogImage!==null?countryDraft.catalogImage:
+          (Object.prototype.hasOwnProperty.call(saved||{},'catalogImage')?saved.catalogImage:saved?.image);
+        preview($('countryTilePreview'),tile,initials);
+        preview($('countryCatalogPreview'),catalog,initials);
       }
       function syncGradingEditor(loadSaved=false){
         if(logoType!=='grading')return;
@@ -4171,7 +4232,20 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
           (logoType==='brand'||logoType==='team'?Number(b.pinned===true)-Number(a.pinned===true):0)||collator.compare(a.name,b.name));
         const panel=$('logoList');
         panel.classList.toggle('is-tag-category-list',logoType==='tag');
-        if(logoType==='grading'){
+        if(logoType==='nationality'){
+          const labels=savedCountryTags();
+          panel.innerHTML=labels.length?labels.map(name=>{
+            const profile=countryLogoProfile(name);
+            return '<div class="logo-entry" data-logo-type="nationality">'+
+              (imgSafe(profile?.image)?'<img class="logo-tiny has-image" src="'+profile.image+'" alt="">':
+              '<span class="logo-tiny" aria-hidden="true">'+safeText(name.slice(0,2).toUpperCase())+'</span>')+
+              '<span class="logo-entry-name">'+safeText(name)+'</span>'+
+              '<span class="sports-country-badge" title="Icône catalogue">'+
+              (imgSafe(profile?.catalogImage)?'<img src="'+profile.catalogImage+'" alt="">':'CAT')+'</span>'+
+              '<button type="button" class="grading-edit-button" data-edit-country="'+safeText(name)+'">Modifier</button>'+
+              (profile?'<button type="button" class="icon-btn delete" data-remove-logo="'+safeText(profile.id)+'" aria-label="Supprimer les icônes de '+safeText(name)+'">'+ico('trash')+'</button>':'')+'</div>';
+          }).join(''):'<div class="blank-tag" style="padding:10px">Ajoute un tag pays pour commencer.</div>';
+        }else if(logoType==='grading'){
           panel.innerHTML=data.length?data.map(item=>
             '<div class="logo-entry grading-logo-entry" data-logo-type="grading">'+
             gradingBadgeMarkup({graded:true,gradeOrg:item.name,gradeScore:'10'})+
@@ -4228,11 +4302,17 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
         if(!name)return showToast(logoType==='rookie'?'Sélectionne un sport.':
           logoType==='athlete'?'Renseigne le nom de l’athlète.':logoType==='nationality'?'Choisis un pays.':logoType==='sport'?'Choisis un sport.':logoType==='grading'?'Choisis un organisme de grading.':logoType==='tag'?'Renseigne le nom du tag.':'Renseigne un nom de marque ou d’équipe.');
         if(['collector','labels'].includes(logoType))return;
-        const existing=logos.find(row=>row.type===logoType&&normalize(row.name)===normalize(name));
-        if(!['tag','grading'].includes(logoType)&&!pendingLogoPhoto)return showToast(logoType==='athlete'?'Sélectionne un portrait.':'Sélectionne une image de logo.');
+        const existing=logoType==='nationality'?countryLogoProfile(name):
+          logos.find(row=>row.type===logoType&&normalize(row.name)===normalize(name));
+        if(!['tag','grading','nationality'].includes(logoType)&&!pendingLogoPhoto)return showToast(logoType==='athlete'?'Sélectionne un portrait.':'Sélectionne une image de logo.');
         const id=existing?.id||logoType+':'+normalize(name);
         const row=logoType==='tag'?
           {...existing,id,type:'tag',name,image:pendingLogoPhoto||existing?.image||'',categories:currentTagCategories(),brands:currentTagBrands()}:
+          logoType==='nationality'?
+          {...existing,id,type:'nationality',name:countryTagLabel(name),
+            image:countryDraft.tileImage!==null?countryDraft.tileImage:(existing?.image||''),
+            catalogImage:countryDraft.catalogImage!==null?countryDraft.catalogImage:
+              (Object.prototype.hasOwnProperty.call(existing||{},'catalogImage')?existing.catalogImage:existing?.image||'')}:
           logoType==='grading'?
           {...existing,id,type:'grading',name,image:pendingLogoPhoto||existing?.image||'',
             borderStart:validCollectorColor($('gradingEdgeStart').value,GRADE_EDGE_DEFAULTS.borderStart),
@@ -4409,14 +4489,34 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
       $('logoGroupPicker').addEventListener('change',event=>{
         if(event.target.value)$('logoName').value=event.target.value;
         if(logoType==='grading')syncGradingEditor(true);
+        if(logoType==='nationality')syncCountryIconEditor(true);
         event.target.value='';
       });
       $('logoName').addEventListener('input',event=>{
         if(logoType==='tag')syncTagCategoryForm(event.target.value.trim());
         if(logoType==='grading')syncGradingEditor(true);
+        if(logoType==='nationality')syncCountryIconEditor(true);
         if(logoType==='athlete')updateCropButton();
       });
       for(const id of ['gradingEdgeStart','gradingEdgeEnd'])$(id).addEventListener('input',()=>syncGradingEditor());
+      for(const [inputId,key,limit] of [['countryTileFile','tileImage',620],['countryCatalogFile','catalogImage',200]]){
+        $(inputId).addEventListener('change',async event=>{
+          const file=event.target.files[0];if(!file||logoType!=='nationality')return;
+          try{
+            const image=await readPhoto(file,limit,.92,'logo');
+            if(logoType!=='nationality')return;
+            countryDraft[key]=image;
+            syncCountryIconEditor();
+            showToast('Icône prête ✓ Enregistre le tag pays.');
+          }catch(error){showToast(error.message||'Icône invalide')}
+        });
+      }
+      $('countryTileClear').addEventListener('click',()=>{
+        countryDraft.tileImage='';syncCountryIconEditor();
+      });
+      $('countryCatalogClear').addEventListener('click',()=>{
+        countryDraft.catalogImage='';syncCountryIconEditor();
+      });
       $('logoFileInput').addEventListener('change',async e=>{
         const file=e.target.files[0];if(!file)return;
         const selectedType=logoType;
@@ -4543,6 +4643,15 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
             renderLogos();refreshSavedPickers();
             showToast(logo.pinned===true?'Logo désépinglé':'Logo épinglé en tête des sélecteurs ★');
           }catch(error){console.error(error);showToast('Impossible de modifier l’épingle du logo.');pin.disabled=false;}
+          return;
+        }
+        const editCountry=e.target.closest('[data-edit-country]');
+        if(editCountry){
+          setLogoType('nationality');
+          $('logoName').value=editCountry.dataset.editCountry;
+          syncCountryIconEditor(true);
+          $('logoName').focus();
+          $('logoCreatePanel').scrollIntoView?.({behavior:'smooth',block:'nearest'});
           return;
         }
         const editGrading=e.target.closest('[data-edit-grading]');

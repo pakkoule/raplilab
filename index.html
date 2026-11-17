@@ -450,8 +450,6 @@ html[data-rapli-role="editor"] #rapli-admin-login{display:none}
   
   <link rel="stylesheet" href="shared/ios-input-focus.css">
   <script defer src="shared/ios-input-focus.js"></script>
-  <script defer src="shared/admin-access.js"></script>
-  <script defer src="shared/admin-ui.js"></script>
 </head>
 <body data-active="sports">
   <div class="portal">
@@ -474,14 +472,7 @@ html[data-rapli-role="editor"] #rapli-admin-login{display:none}
         <iframe id="frame-regatta" class="app-frame" data-src="regatta/index.html" title="Rapli Regatta — journal de courses" allow="clipboard-read; clipboard-write" loading="lazy"></iframe>
       </section>
     </div>
-    <footer class="portal-footer" aria-label="Rapli Lab">
-      <span class="portal-footer-label">RAPLI LAB · COLLECTION PARTAGÉE</span>
-      <div class="rapli-admin-controls" role="group" aria-label="Accès administrateur">
-        <button type="button" id="rapli-admin-login">🔒 MODE ÉDITION</button>
-        <button type="button" id="rapli-admin-logout" hidden>DÉCONNEXION</button>
-        <span id="rapli-admin-message" role="status" aria-live="polite"></span>
-      </div>
-    </footer>
+
   </div>
   <script>
   (() => {

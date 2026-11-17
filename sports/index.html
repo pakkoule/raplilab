@@ -2510,6 +2510,68 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
   .sports-catalogue-controls>#sortSelect{font-size:16px;padding:5px 0;min-height:36px}
 }
 </style>
+
+<style id="rapli-profile-menu-foil">
+/* Premium iridescent foil account menu, inline with sorting on every viewport. */
+.sports-catalogue-controls{
+  grid-template-columns:max-content max-content minmax(0,1fr) minmax(108px,150px) 42px;
+}
+.sports-catalogue-controls>.rapli-profile{grid-column:5;grid-row:1;justify-self:end;align-self:center;position:relative;z-index:55}
+.rapli-profile-toggle{
+  width:42px;height:42px;display:grid;place-items:center;position:relative;
+  border:2px solid transparent;border-radius:12px;cursor:pointer;color:#153f69;
+  background:
+    linear-gradient(112deg,rgba(255,255,255,.62),rgba(255,255,255,.1) 36%,rgba(255,255,255,.55) 55%,rgba(255,255,255,.12)) padding-box,
+    linear-gradient(125deg,#d3f7ec 0%,#c0edeb 18%,#a5c3ed 36%,#e7d2ec 56%,#ffdab6 75%,#d4fff5 100%) padding-box,
+    linear-gradient(125deg,#56cba9 0%,#397fcd 25%,#e66f5d 42%,#24293e 56%,#e8f5f5 72%,#3d8df0 87%,#64d0b4 100%) border-box;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.8),0 2px 9px rgba(18,66,98,.15);
+  transition:transform .15s ease,box-shadow .15s ease;
+}
+.rapli-profile-toggle:before{
+  content:"";position:absolute;inset:1px;pointer-events:none;border-radius:9px;
+  background:linear-gradient(115deg,transparent 15%,rgba(255,255,255,.58) 42%,transparent 62%);
+}
+.rapli-profile-toggle svg{width:22px;height:22px;z-index:1;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.rapli-profile-toggle:hover,.rapli-profile-toggle[aria-expanded="true"]{transform:translateY(-1px);box-shadow:0 5px 14px rgba(22,71,104,.21),inset 0 1px 0 #fff}
+.rapli-profile-toggle:focus-visible,.rapli-profile-menu button:focus-visible,.rapli-profile-menu a:focus-visible{outline:2px solid #207cca;outline-offset:3px}
+.rapli-profile-toggle.is-admin{color:#166456}
+.rapli-profile-toggle.is-admin:after{content:"";position:absolute;top:4px;right:4px;width:7px;height:7px;border-radius:50%;background:#20ab7f;box-shadow:0 0 0 2px #e9fffa;z-index:2}
+.rapli-profile-menu{
+  position:absolute;right:0;top:calc(100% + 9px);width:min(292px,calc(100vw - 28px));
+  box-sizing:border-box;padding:10px;display:grid;gap:5px;
+  border:1px solid #c1d8e0;border-radius:14px;
+  background:linear-gradient(140deg,#f9fffe 0%,#eaf6fb 55%,#f7f2fc 100%);
+  box-shadow:0 14px 34px rgba(18,50,86,.25);color:#17455f;
+  font:700 11px/1.45 Poppins,system-ui,sans-serif;
+}
+.rapli-profile-menu[hidden]{display:none!important}
+.rapli-profile-menu-title{padding:3px 5px 5px;font-weight:900;letter-spacing:.07em;font-size:10px;color:#22506c}
+.rapli-profile-menu button,.rapli-profile-menu a{
+  display:flex;align-items:center;gap:9px;min-height:40px;width:100%;box-sizing:border-box;
+  padding:9px 11px;border:1px solid #d4e5ea;border-radius:9px;background:rgba(255,255,255,.74);
+  font:800 11px/1.3 Poppins,system-ui,sans-serif;color:#174563;text-decoration:none;
+  text-align:left;cursor:pointer;
+}
+.rapli-profile-menu button:hover,.rapli-profile-menu a:hover{background:#ecfaf6;border-color:#91c6bd}
+.rapli-profile-menu button[hidden]{display:none!important}
+.rapli-profile-menu svg{width:18px;height:18px;flex:none;stroke:currentColor;stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.rapli-profile-message{font:600 10px/1.45 Poppins,system-ui,sans-serif;overflow-wrap:anywhere;color:#567484;padding:4px 5px}
+.rapli-profile-message[data-error="true"]{color:#b04755}
+.sports-catalogue-controls>.sports-catalogue-search{grid-column:3}
+.sports-catalogue-controls>#sortSelect{grid-column:4}
+@media(max-width:750px){
+ .sports-catalogue-controls{grid-template-columns:max-content minmax(54px,76px) minmax(0,1fr) 94px 37px;gap:5px}
+ .rapli-profile-toggle{width:37px;height:37px;border-radius:10px}
+ .rapli-profile-toggle svg{width:19px;height:19px}
+}
+@media(max-width:480px){
+ .sports-catalogue-controls{grid-template-columns:max-content minmax(48px,65px) minmax(0,1fr) 78px 34px;gap:4px}
+ .sports-catalogue-controls>#sortSelect{min-width:0;font-size:16px;padding-right:3px}
+ .rapli-profile-toggle{width:34px;height:35px;border-radius:9px}
+ .rapli-profile-toggle svg{width:18px;height:18px}
+}
+@media(prefers-reduced-motion:reduce){.rapli-profile-toggle{transition:none}}
+</style>
 </head>
 <body>
   <div class="app-shell">
@@ -2536,6 +2598,18 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
         <input id="filterDream" type="checkbox" hidden aria-label="Afficher uniquement la Dreamlist">
         <div class="field search-field sports-catalogue-search"><label class="field-label" for="filterSearch">RECHERCHE</label><div class="input-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input class="input with-icon" id="filterSearch" type="search" autocomplete="off" placeholder="Rechercher une carte…" aria-label="Rechercher dans toutes les informations des cartes"></div></div>
         <select id="sortSelect" class="sorter" aria-label="Trier les cartes"><option value="recent">Plus récentes</option><option value="name">Joueur A – Z</option><option value="brand">Marque A – Z</option><option value="team">Équipe A – Z</option></select>
+        <div class="rapli-profile" id="rapliProfile">
+          <button id="rapliProfileToggle" type="button" class="rapli-profile-toggle" aria-label="Ouvrir le menu Profil" title="Profil et applications" aria-haspopup="true" aria-expanded="false" aria-controls="rapliProfileMenu">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5.2 20c.2-4 2.8-6.2 6.8-6.2s6.6 2.2 6.8 6.2"/></svg>
+          </button>
+          <div id="rapliProfileMenu" class="rapli-profile-menu" hidden>
+            <div class="rapli-profile-menu-title">MON PROFIL · RAPLI LAB</div>
+            <button id="rapliProfileLogin" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg><span>Connexion administrateur</span></button>
+            <button id="rapliProfileLogout" type="button" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4H5v16h4M13 8l4 4-4 4M17 12H9"/></svg><span>Se déconnecter</span></button>
+            <a id="rapliProfileRegatta" href="../regatta/" target="_top"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v14M12 4l8 12H12M3 17l9-2 9 2-4 4H7z"/></svg><span>Rejoindre Rapli Regatta</span></a>
+            <div id="rapliProfileMessage" class="rapli-profile-message" role="status" aria-live="polite">Consultation libre</div>
+          </div>
+        </div>
         </div>
         <div id="sportsGalleryToolbar" class="sports-gallery-switch" role="group" aria-label="Mode de consultation des cartes">
           <span class="sports-gallery-title">VUE</span>
@@ -4795,6 +4869,7 @@ function rapliModuleReady(){
     })();
   </script>
 <script src="../shared/admin-access.js" defer></script>
+<script src="../shared/profile-menu.js" defer></script>
 <script src="../shared/shared-collection.js" defer></script>
   <script src="../shared/photo-zoom.js" defer></script>
 </body>

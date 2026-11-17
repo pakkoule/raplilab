@@ -450,6 +450,8 @@ html[data-rapli-role="editor"] #rapli-admin-login{display:none}
   
   <link rel="stylesheet" href="shared/ios-input-focus.css">
   <script defer src="shared/ios-input-focus.js"></script>
+  <!-- Keep session callback handling at the top-level after admin magic-link redirects. -->
+  <script defer src="shared/admin-access.js"></script>
 </head>
 <body data-active="sports">
   <div class="portal">

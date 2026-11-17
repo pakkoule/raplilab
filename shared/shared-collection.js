@@ -382,6 +382,7 @@
       if (error) throw error;
       if (!data) { blockOnConflict(); return; }
       revision = Number(data.state_revision);
+      cacheState({state: serialized, state_revision: revision});
       acknowledge(state);
       dirty = fingerprint(snapshot()) !== hash;
       status(dirty ? 'Modifications en cours…' : 'Enregistré pour tous ✓', dirty ? 'pending' : 'ok');

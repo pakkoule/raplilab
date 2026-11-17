@@ -16,6 +16,8 @@
   const IMAGE_PREFIX = 'rapli-private://';
   const ACK_KEY = 'rapli-cloud-' + MODULE + '-ack-v1'; // Reuse the old local sync marker.
   const MAX_IMAGE = 10 * 1024 * 1024;
+  // Lightweight public collection metadata in localStorage; images belong in IndexedDB.
+  const STATE_CACHE_KEY = 'rapli-shared-public-state-v2-' + MODULE;
 
   let client = null, revision = null, initialized = false, dirty = false;
   let busy = false, blocked = false, bootPromise = null, saveTimer = null;
@@ -24,9 +26,108 @@
   const loader = MODULE === 'sports' ? document.getElementById('rapliSharedLoading') : null;
   const loaderMessage = document.getElementById('rapliSharedLoadingMessage');
   const loaderProgress = document.getElementById('rapliSharedProgress');
+  const loaderProgressFill = document.getElementById('rapliSharedProgressFill');
   const loaderPercent = document.getElementById('rapliSharedPercent');
   const retryButton = document.getElementById('rapliSharedRetry');
-  let imageTotal = 0, imageCompleted = 0;
+  let imageTotal = 0, imageCompleted = 0, cachedVisible = false;
+  const completedImages = new Set();
+  let cacheDbPromise = null, mediaCacheUnavailable = false;
+  function mediaDb() {
+    if (mediaCacheUnavailable || !('indexedDB' in window)) return Promise.resolve(null);
+    if (!cacheDbPromise) cacheDbPromise = new Promise(resolve => {
+      try {
+        const request = indexedDB.open('rapli-shared-public-images-v1', 1);
+        request.onupgradeneeded = () => {
+          if (!request.result.objectStoreNames.contains('images'))
+            request.result.createObjectStore('images');
+        };
+        request.onsuccess = () => {
+          const database = request.result;
+          database.onversionchange = () => { database.close(); cacheDbPromise = null; };
+          resolve(database);
+        };
+        request.onerror = request.onblocked = () => {
+          mediaCacheUnavailable = true;
+          resolve(null);
+        };
+      } catch (_) { mediaCacheUnavailable = true; resolve(null); }
+    });
+    return cacheDbPromise;
+  }
+  function blobAsDataURI(blob) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result || ''));
+      reader.onerror = () => reject(reader.error || Error('Image illisible.'));
+      reader.readAsDataURL(blob);
+    });
+  }
+  async function cachedImage(ref) {
+    const database = await mediaDb();
+    if (!database) return null;
+    try {
+      const blob = await new Promise((resolve, reject) => {
+        const request = database.transaction('images', 'readonly').objectStore('images').get(ref);
+        request.onsuccess = () => resolve(request.result || null);
+        request.onerror = () => reject(request.error);
+      });
+      return blob instanceof Blob ? await blobAsDataURI(blob) : null;
+    } catch (_) { return null; }
+  }
+  async function rememberImage(ref, blob) {
+    const database = await mediaDb();
+    if (!database) return;
+    try {
+      await new Promise((resolve, reject) => {
+        const tx = database.transaction('images', 'readwrite');
+        tx.objectStore('images').put(blob, ref);
+        tx.oncomplete = resolve;
+        tx.onabort = tx.onerror = () => reject(tx.error || Error('Cache image indisponible.'));
+      });
+    } catch (error) {
+      // Browser quotas and private-browsing modes may disallow caching.
+      // The online collection must remain usable when this happens.
+      mediaCacheUnavailable = true;
+      console.info('Rapli : cache images local indisponible ; chargement en ligne maintenu.', error?.name || '');
+    }
+  }
+  function cacheState(row) {
+    try {
+      const payload = {owner: OWNER_ID, module: MODULE, revision: Number(row.state_revision), state: row.state};
+      localStorage.setItem(STATE_CACHE_KEY, JSON.stringify(payload));
+    } catch (_) { /* localStorage full/disabled: remote collection still works */ }
+  }
+  function readStateCache() {
+    try {
+      const cached = JSON.parse(localStorage.getItem(STATE_CACHE_KEY) || 'null');
+      if (cached?.owner !== OWNER_ID || cached?.module !== MODULE ||
+          !Number.isFinite(cached.revision) || !Array.isArray(cached.state?.records) ||
+          !Array.isArray(cached.state?.logos)) return null;
+      return cached;
+    } catch (_) { return null; }
+  }
+  function markImageLoaded(ref) {
+    if (!imageTotal || completedImages.has(ref)) return;
+    completedImages.add(ref);
+    imageCompleted = completedImages.size;
+    showImageProgress();
+  }
+  async function showCachedPreview() {
+    // Display cached PUBLIC data immediately for viewers; never cover local
+    // unsent edits from an administrator or grant editing without server confirmation.
+    if (isEditor() || !bridge.ready) return;
+    const cached = readStateCache();
+    if (!cached) return;
+    try {
+      const state = await transfer(cached.state, 'cached');
+      bridge.previewState(state);
+      cachedVisible = true;
+      loading('Version enregistrée sur cet appareil — vérification en ligne…', 'ready');
+      status('Collection locale affichée · vérification en cours…', 'pending');
+    } catch (error) {
+      console.warn('Rapli : aperçu local indisponible', error);
+    }
+  }
   function loading(message, mode = 'loading') {
     if (!loader) return;
     document.documentElement.dataset.rapliSharedState = mode === 'ready' ? 'ready' : mode;
@@ -34,7 +135,9 @@
     if (loaderMessage && message) loaderMessage.textContent = message;
     if (retryButton) retryButton.hidden = mode !== 'error';
     if (mode === 'loading' && loaderProgress && !imageTotal) {
-      loaderProgress.removeAttribute('value');
+      loaderProgress.dataset.indeterminate = 'true';
+      loaderProgress.removeAttribute('aria-valuenow');
+      if (loaderProgressFill) loaderProgressFill.style.width = '20%';
       if (loaderPercent) loaderPercent.textContent = '';
     }
   }
@@ -50,12 +153,16 @@
   }
   function showImageProgress() {
     if (!loader || !loaderProgress) return;
-    if (!imageTotal) { loaderProgress.removeAttribute('value'); return; }
-    loaderProgress.max = imageTotal;
-    loaderProgress.value = Math.min(imageCompleted, imageTotal);
-    if (loaderPercent)
-      loaderPercent.textContent = imageCompleted + ' / ' + imageTotal + ' images';
-    if (loaderMessage) loaderMessage.textContent = 'Chargement des photos et logos…';
+    loaderProgress.dataset.indeterminate = 'false';
+    const percentage = imageTotal ? Math.round(imageCompleted / imageTotal * 100) : 100;
+    loaderProgress.setAttribute('aria-valuenow', String(percentage));
+    loaderProgress.setAttribute('aria-valuetext', imageTotal ?
+      imageCompleted + ' images chargées sur ' + imageTotal : 'Données chargées');
+    if (loaderProgressFill) loaderProgressFill.style.width = percentage + '%';
+    if (loaderPercent) loaderPercent.textContent = imageTotal ?
+      percentage + '% · ' + imageCompleted + ' / ' + imageTotal + ' images' : '100%';
+    if (loaderMessage) loaderMessage.textContent = imageTotal ?
+      'Chargement des photos et logos…' : 'Finalisation de la collection…';
   }
   if (retryButton) retryButton.addEventListener('click', () => {
     loading('Nouvelle tentative de chargement…');
@@ -146,31 +253,45 @@
     const ref = IMAGE_PREFIX + path;
     uploaded.set(value, ref);
     downloaded.set(ref, value);
+    await rememberImage(ref, blob);
     return ref;
+  }
+  function safeImagePath(value) {
+    const path = value.slice(IMAGE_PREFIX.length);
+    const prefix = OWNER_ID + '/' + MODULE + '/';
+    if (!path.startsWith(prefix) ||
+        !/^[a-f0-9]{64}\.(png|jpg|webp|gif)$/.test(path.slice(prefix.length)))
+      throw Error('Référence image en dehors de la collection commune.');
+    return path;
   }
   async function transfer(value, direction) {
     if (typeof value === 'string') {
       if (direction === 'upload' && isImage(value)) return uploadImage(value);
-      if (direction === 'download' && isReference(value)) {
-        if (downloaded.has(value)) return downloaded.get(value);
-        const path = value.slice(IMAGE_PREFIX.length);
-        const prefix = OWNER_ID + '/' + MODULE + '/';
-        if (!path.startsWith(prefix) || !/^[a-f0-9]{64}\.(png|jpg|webp|gif)$/.test(path.slice(prefix.length)))
-          throw Error('Référence image en dehors de la collection commune.');
+      if ((direction === 'download' || direction === 'cached') && isReference(value)) {
+        const path = safeImagePath(value);
+        if (downloaded.has(value)) {
+          if (direction === 'download') markImageLoaded(value);
+          return downloaded.get(value);
+        }
+        const fromDisk = await cachedImage(value);
+        if (fromDisk) {
+          downloaded.set(value, fromDisk);
+          if (direction === 'download') markImageLoaded(value);
+          return fromDisk;
+        }
+        if (direction === 'cached') return ''; // Missing cache item: leave a placeholder, no network.
         const {data, error} = await (await supabase()).storage.from(BUCKET).download(path);
         if (error) throw error;
-        const dataUri = await new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(String(reader.result || ''));
-          reader.onerror = () => reject(reader.error || Error('Image illisible.'));
-          reader.readAsDataURL(data);
-        });
+        const dataUri = await blobAsDataURI(data);
         downloaded.set(value, dataUri);
-        if (imageTotal) { imageCompleted++; showImageProgress(); }
+        markImageLoaded(value);
+        await rememberImage(value, data);
         return dataUri;
       }
       return value;
     }
+    // Keep the proven sequential transfer order: parallelizing 175 remote requests
+    // previously caused a regression. Disk hits are quick and network misses are safe.
     if (Array.isArray(value)) {
       const result = [];
       for (const item of value) result.push(await transfer(item, direction));
@@ -192,7 +313,7 @@
     if (!bridge.ready || busy || dirty || blocked || busyLoading) return;
     if (document.querySelector('dialog[open]') && initialized) return; // Preserve an open form.
     busyLoading = true;
-    if (!initialized) loading('Connexion à Supabase…');
+    if (!initialized && !cachedVisible) loading('Connexion à Supabase…');
     try {
       const row = await remoteRow();
       const current = Number(row.state_revision || 0);
@@ -213,7 +334,8 @@
       if (!initialized && loader) {
         imageTotal = collectImages(row.state).size;
         imageCompleted = 0;
-        showImageProgress();
+        completedImages.clear();
+        if (!cachedVisible) showImageProgress();
       }
       const state = await transfer(row.state, 'download');
       // Keep historical Regatta IndexedDB untouched; use the published version in memory.
@@ -222,15 +344,18 @@
       else bridge.previewState(state);
       revision = current;
       initialized = true;
+      cacheState(row);
       if (isEditor()) acknowledge(snapshot());
       loading('Collection à jour ✓', 'ready');
       status('Collection à jour ✓');
     } catch (error) {
       console.warn('Rapli Sports : lecture partagée impossible', error);
-      loading('Chargement impossible. Vérifie ta connexion puis réessaie.', 'error');
-      status('Collection indisponible : lecture impossible sur Supabase.', 'error');
-      if (!initialized && !isEditor())
-        bridge.previewState({records:[], logos:[]}); // Never display local demo data as public collection.
+      if (!cachedVisible) loading('Chargement impossible. Vérifie ta connexion puis réessaie.', 'error');
+      status(cachedVisible ?
+        'Collection locale affichée · connexion Supabase indisponible.' :
+        'Collection indisponible : lecture impossible sur Supabase.', 'error');
+      if (!initialized && !cachedVisible && !isEditor())
+        bridge.previewState({records:[], logos:[]});
     } finally {
       busyLoading = false;
     }
@@ -283,6 +408,7 @@
     if (bootPromise) return bootPromise;
     bootPromise = (async () => {
       await window.RapliAdminAccess?.initialize?.();
+      await showCachedPreview();
       await supabase();
       await refresh();
       // Realtime improves latency; polling and focus events remain a fallback
@@ -296,8 +422,9 @@
       setInterval(() => { void refresh(); }, 20000);
     })().catch(error => {
       console.warn('Rapli Sports : initialisation commune impossible', error);
-      loading('Connexion impossible. Réessaie le chargement.', 'error');
-      status('Collection indisponible : connexion à vérifier.', 'error');
+      if (!cachedVisible) loading('Connexion impossible. Réessaie le chargement.', 'error');
+      status(cachedVisible ? 'Collection locale affichée · connexion à vérifier.' :
+        'Collection indisponible : connexion à vérifier.', 'error');
     });
     return bootPromise;
   }

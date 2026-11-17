@@ -28,6 +28,25 @@ html:not([data-rapli-role="editor"]) #save-race,
 html:not([data-rapli-role="editor"]) #delete-race,
 html:not([data-rapli-role="editor"]) #rapli-module-cloud-save{display:none!important}
 </style>
+
+<style id="rapli-regatta-shared-profile">
+.regatta-navigation{display:flex;align-items:center;gap:9px;justify-content:space-between;margin-bottom:10px;position:relative;z-index:70}
+.regatta-sports-back{font:800 11px Poppins,system-ui,sans-serif;color:#1b5e79;text-decoration:none;border:1px solid #a0d2d4;border-radius:9px;padding:10px;background:linear-gradient(110deg,#e8faf1,#ebf3ff)}
+#rapli-shared-status-regatta{font:700 10px/1.4 Poppins,system-ui,sans-serif;color:#507081;overflow-wrap:anywhere}
+#rapli-shared-status-regatta[data-status="error"]{color:#ad3f56}
+.rapli-profile{position:relative;margin-left:auto}
+.rapli-profile-toggle{display:grid;place-items:center;width:42px;height:42px;cursor:pointer;color:#194c71;border:2px solid transparent;border-radius:11px;background:linear-gradient(118deg,#e6fff7,#d2e3f5 39%,#f2d6e6 60%,#ffedda) padding-box,linear-gradient(115deg,#51cdb2,#367ece 26%,#e56a53 44%,#191d30 61%,#f2fbff 78%,#367ddd 90%,#56cdb2) border-box;box-shadow:0 3px 11px #1d526b30}
+.rapli-profile-toggle svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+.rapli-profile-toggle.is-admin{color:#0e8260}
+.rapli-profile-toggle:focus-visible,.rapli-profile-menu a:focus-visible,.rapli-profile-menu button:focus-visible{outline:2px solid #167fbe;outline-offset:2px}
+.rapli-profile-menu{position:absolute;top:calc(100% + 9px);right:0;width:min(285px,calc(100vw - 28px));box-sizing:border-box;padding:10px;border-radius:14px;border:1px solid #b6d8df;background:linear-gradient(130deg,#f7fffe,#edf5ff,#faf4fd);box-shadow:0 14px 30px #173e6240;display:grid;gap:7px;color:#20516c;font:700 11px Poppins,system-ui,sans-serif}
+.rapli-profile-menu[hidden],.rapli-profile-menu button[hidden]{display:none!important}
+.rapli-profile-menu-title{font-weight:900;font-size:10px;padding:4px}
+.rapli-profile-menu button,.rapli-profile-menu a{display:block;width:100%;box-sizing:border-box;min-height:38px;border:1px solid #d1e3e7;border-radius:9px;padding:10px;background:#fff;color:#20516c;font:800 11px Poppins,system-ui,sans-serif;text-decoration:none;text-align:left;cursor:pointer}
+.rapli-profile-message{padding:3px 5px;overflow-wrap:anywhere;font-size:10px;color:#60798a}
+.rapli-profile-message[data-error=true]{color:#af4050}
+@media(max-width:520px){.regatta-navigation{gap:5px}.regatta-sports-back{font-size:9px;padding:8px}#rapli-shared-status-regatta{font-size:9px}.rapli-profile-toggle{width:36px;height:36px}}
+</style>
 </head>
 <body>
 <main class="shell">
@@ -40,6 +59,22 @@ html:not([data-rapli-role="editor"]) #rapli-module-cloud-save{display:none!impor
   </nav>
   <div id="races-panel" role="tabpanel" aria-labelledby="view-races">
   <div class="regatta-catalogue-controls">
+    <div class="regatta-navigation">
+      <a class="regatta-sports-back" href="../#sports" target="_top" aria-label="Retour à Rapli Sports">← RAPLI SPORTS</a>
+      <span id="rapli-shared-status-regatta" role="status" aria-live="polite">Chargement de la collection…</span>
+      <div class="rapli-profile" id="rapliProfile">
+        <button id="rapliProfileToggle" type="button" class="rapli-profile-toggle" aria-label="Ouvrir le menu Profil" title="Profil et applications" aria-haspopup="true" aria-expanded="false" aria-controls="rapliProfileMenu">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5.2 20c.2-4 2.8-6.2 6.8-6.2s6.6 2.2 6.8 6.2"/></svg>
+        </button>
+        <div id="rapliProfileMenu" class="rapli-profile-menu" hidden>
+          <div class="rapli-profile-menu-title">MON PROFIL · RAPLI LAB</div>
+          <button id="rapliProfileLogin" type="button">🔒 Connexion administrateur</button>
+          <button id="rapliProfileLogout" type="button" hidden>Se déconnecter</button>
+          <a id="rapliProfileRegatta" href="../#sports" target="_top">🏀 Rejoindre Rapli Sports</a>
+          <div id="rapliProfileMessage" class="rapli-profile-message" role="status" aria-live="polite">Consultation libre</div>
+        </div>
+      </div>
+    </div>
     <div class="cloud-actions regatta-inline-actions" role="group" aria-label="Actions sur les courses">
       <button type="button" class="btn subtle tiny regatta-icon-action" id="recalculate-scores" aria-label="Recalculer les notes" title="Recalculer les notes">↻</button>
       <button type="button" class="btn subtle tiny regatta-icon-action" id="compact-cards" aria-label="Activer l’affichage compact" title="Affichage compact des courses" aria-pressed="false">▦</button>
@@ -195,6 +230,7 @@ html:not([data-rapli-role="editor"]) #rapli-module-cloud-save{display:none!impor
 <script defer src="app.js"></script>
 <script defer src="../shared/photo-zoom.js"></script>
 <script defer src="../shared/admin-access.js"></script>
-<script defer src="../shared/module-cloud.js"></script>
+<script defer src="../shared/shared-collection.js"></script>
+<script defer src="../shared/profile-menu.js"></script>
 </body>
 </html>

@@ -2565,8 +2565,13 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
  .rapli-profile-toggle svg{width:19px;height:19px}
 }
 @media(max-width:480px){
- .sports-catalogue-controls{grid-template-columns:max-content minmax(48px,65px) minmax(0,1fr) 78px 34px;gap:4px}
- .sports-catalogue-controls>#sortSelect{min-width:0;font-size:16px;padding-right:3px}
+ /* Preserve a usable search and sorting row on narrow iPhones. */
+ .sports-catalogue-controls{grid-template-columns:max-content minmax(0,1fr) 82px 34px;gap:4px}
+ .sports-catalogue-controls>.nav-actions{grid-column:1;grid-row:1}
+ .sports-catalogue-controls>.sports-catalogue-search{grid-column:2;grid-row:1}
+ .sports-catalogue-controls>#sortSelect{grid-column:3;grid-row:1;min-width:0;font-size:16px;padding-right:3px}
+ .sports-catalogue-controls>.rapli-profile{grid-column:4;grid-row:1}
+ .sports-catalogue-controls>.sports-count-foil{grid-column:1/3;grid-row:2;justify-self:start;max-width:170px;padding:6px 10px}
  .rapli-profile-toggle{width:34px;height:35px;border-radius:9px}
  .rapli-profile-toggle svg{width:18px;height:18px}
 }

@@ -450,12 +450,12 @@ html[data-rapli-role="editor"] #rapli-admin-login{display:none}
   
   <link rel="stylesheet" href="shared/ios-input-focus.css">
   <script defer src="shared/ios-input-focus.js"></script>
+  <!-- Keep session callback handling at the top-level after admin magic-link redirects. -->
   <script defer src="shared/admin-access.js"></script>
-  <script defer src="shared/admin-ui.js"></script>
 </head>
 <body data-active="sports">
   <div class="portal">
-    <!-- Selector retained for existing module state/cloud logic, but no visible site header. -->
+    <!-- Projects share one portal; navigation is available from each Profile menu. -->
     <div class="portal-hidden-navigation" hidden aria-hidden="true">
       <nav class="product-tabs" role="tablist" aria-label="Choisir le projet Rapli" hidden aria-hidden="true">
           <button type="button" id="tab-sports" class="product-tab" data-product="sports" role="tab" aria-selected="true" aria-controls="panel-sports" tabindex="0" title="Rapli Sports — collection de cartes">
@@ -466,39 +466,6 @@ html[data-rapli-role="editor"] #rapli-admin-login{display:none}
           </button>
         </nav>
     </div>
-    <dialog id="global-cloud-manager" aria-labelledby="global-cloud-manager-title">
-      <div class="global-manager-head">
-        <div><h2 id="global-cloud-manager-title">Sauvegardes RapliLab</h2><small>Sports · Regatta — une session Supabase commune</small></div>
-        <button type="button" id="global-manager-close" aria-label="Fermer le gestionnaire">×</button>
-      </div>
-      <div class="global-manager-content">
-        <p>Les deux collections restent séparées. Toute restauration conserve la vérification des conflits et ne remplace jamais silencieusement les données locales.</p>
-        <section class="global-manager-box" aria-label="Synchronisation">
-          <h3>Sauvegarde globale</h3>
-          <div class="global-manager-buttons">
-            <button type="button" class="primary" id="global-manager-save">Enregistrer les 2 onglets</button>
-            <button type="button" id="global-manager-refresh">Actualiser les 2 onglets</button>
-          </div>
-        </section>
-        <section class="global-manager-box" aria-label="Appairage de deux appareils">
-          <h3>Relier PC et iPhone</h3>
-          <p id="global-manager-state" role="status" aria-live="polite">Lecture de la session…</p>
-          <button type="button" id="global-manager-enable" hidden>Activer Supabase</button>
-          <div class="global-manager-buttons">
-            <button type="button" id="global-pair-create" hidden>Générer un code sur cet appareil</button>
-          </div>
-          <output id="global-pair-output" aria-live="polite"></output>
-          <div class="global-manager-buttons">
-            <label for="global-pair-input">Code reçu de l’autre appareil
-              <input type="text" id="global-pair-input" maxlength="35" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="Code de liaison">
-            </label>
-            <button type="button" class="primary" id="global-pair-redeem">Associer cet appareil</button>
-          </div>
-          <p style="margin-top:9px">Codes à usage unique, valables 10 minutes. Les données locales de Sports et Regatta ne sont jamais remplacées automatiquement lors de la liaison.</p>
-        </section>
-        <p id="global-manager-feedback" role="status" aria-live="polite">Aucune action lancée.</p>
-      </div>
-    </dialog>
     <div class="frame-wrap">
       <section id="panel-sports" role="tabpanel" aria-label="Rapli Sports">
         <iframe id="frame-sports" class="app-frame" data-src="sports/index.html" title="Rapli Sports — cartes de sport" loading="eager"></iframe>
@@ -507,40 +474,19 @@ html[data-rapli-role="editor"] #rapli-admin-login{display:none}
         <iframe id="frame-regatta" class="app-frame" data-src="regatta/index.html" title="Rapli Regatta — journal de courses" allow="clipboard-read; clipboard-write" loading="lazy"></iframe>
       </section>
     </div>
-    <footer class="portal-footer" aria-label="Sauvegardes Rapli Lab">
-      <span class="portal-footer-label">RAPLI LAB <span aria-hidden="true">·</span> CLOUD</span>
-      <div class="rapli-admin-controls" role="group" aria-label="Accès administrateur">
-        <button type="button" id="rapli-admin-login">🔒 MODE ÉDITION</button>
-        <button type="button" id="rapli-admin-logout" hidden>DÉCONNEXION</button>
-        <span id="rapli-admin-message" role="status" aria-live="polite"></span>
-      </div>
-      <div class="global-cloud-controls" role="group" aria-label="Sauvegardes RapliLab">
-          <button id="global-cloud-manage" type="button" title="Gérer les sauvegardes et associer PC / iPhone" aria-label="Gérer les sauvegardes des deux espaces">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 3.5H17l2.5 2.5v14.5h-15z"/><path d="M8 3.5v6h8v-6M8 20.5v-7h8v7"/></svg>
-          </button>
-          <button id="global-cloud-save" type="button" title="Enregistrer Sports et Regatta dans Supabase" aria-label="Enregistrer les deux espaces dans le cloud">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18h10a4 4 0 0 0 .65-7.95A6.2 6.2 0 0 0 6 8.6 4.7 4.7 0 0 0 7 18Z"/><path d="M12 10v8m-3-3 3 3 3-3"/></svg>
-          </button>
-          <button id="global-cloud-refresh" type="button" title="Actualiser Sports et Regatta depuis Supabase" aria-label="Actualiser les deux espaces depuis le cloud">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14.25-5L3 8.5"/><path d="M3 3.5v5h5"/><path d="M4 13a8 8 0 0 0 14.25 5L21 15.5"/><path d="M21 20.5v-5h-5"/></svg>
-          </button>
-        </div>
-      <div id="global-cloud-feedback" role="status" aria-live="polite" hidden></div>
-    </footer>
+
   </div>
   <script>
   (() => {
     'use strict';
     const projects=['sports','regatta'];
-    // Regatta remains installed and included in cloud backups; only Sports is visible in the portal.
-    const visibleProjects=['sports'];
+    // Both workspaces are available to visitors and verified editors via Profile navigation.
+    const visibleProjects=['sports','regatta'];
     const tabs=Object.fromEntries(projects.map(n=>[n,document.getElementById('tab-'+n)]));
     const panels=Object.fromEntries(projects.map(n=>[n,document.getElementById('panel-'+n)]));
     const frames=Object.fromEntries(projects.map(n=>[n,document.getElementById('frame-'+n)]));
     const names={sports:'Sports',regatta:'Regatta'};
-    let current='sports',cloudBusy=false,requestSequence=0,managerBusy=false;
-    const pause=ms=>new Promise(resolve=>setTimeout(resolve,ms));
-    const sanitize=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
+    let current='sports';
     const fromHash=()=>visibleProjects.includes(location.hash.slice(1).toLowerCase())?location.hash.slice(1).toLowerCase():'sports';
     function activity(name,active){
       const frame=frames[name];
@@ -578,167 +524,7 @@ html[data-rapli-role="editor"] #rapli-admin-login{display:none}
     window.addEventListener('popstate',()=>select(fromHash()));
     window.addEventListener('hashchange',()=>select(fromHash()));
     select(fromHash());
-    const save=document.getElementById('global-cloud-save'),refresh=document.getElementById('global-cloud-refresh');
-    const feedback=document.getElementById('global-cloud-feedback');
-    async function readyFrame(name){
-      const frame=frames[name];
-      if(!frame.src&&frame.dataset.src){frame.loading='eager';frame.src=frame.dataset.src;delete frame.dataset.src;}
-      const started=Date.now();
-      while(Date.now()-started<45000){
-        try{if(frame.contentWindow?.RapliModuleBridge?.ready&&frame.contentWindow?.RapliModuleCloud)return frame;}catch(_){}
-        await pause(200);
-      }
-      throw Error('Application '+names[name]+' non initialisée.');
-    }
-    async function oneSync(name,operation){
-      const frame=await readyFrame(name);
-      const id='global-'+Date.now().toString(36)+'-'+(++requestSequence)+'-'+name;
-      return new Promise((resolve,reject)=>{
-        let timeout;
-        const cleanup=()=>{clearTimeout(timeout);window.removeEventListener('message',receive);};
-        function receive(event){
-          const d=event.data;
-          if(event.origin!==location.origin||event.source!==frame.contentWindow||d?.type!=='RAPLI_GLOBAL_SYNC_RESULT'||
-            d.id!==id||d.module!==name||d.operation!==operation)return;
-          cleanup();resolve({success:!!d.success,message:String(d.message||''),conflict:!!d.conflict});
-        }
-        window.addEventListener('message',receive);
-        timeout=setTimeout(()=>{cleanup();reject(Error('Délai de synchronisation dépassé'));},120000);
-        try{frame.contentWindow.postMessage({type:'RAPLI_GLOBAL_SYNC_REQUEST',id,module:name,operation},location.origin);}
-        catch(e){cleanup();reject(e);}
-      });
-    }
-    function reportSync(operation,progress,results){
-      const errors=results.filter(x=>!x.success);
-      feedback.hidden=false;feedback.dataset.status=errors.length?'error':'ok';
-      const title=operation==='save'?'Sauvegarde':'Actualisation';
-      if(progress<projects.length){
-        feedback.textContent=title+' globale : '+progress+'/'+projects.length+' espaces vérifiés…';return;
-      }
-      const success=results.length-errors.length;
-      feedback.innerHTML='<strong>'+sanitize(title+' globale · '+success+'/'+projects.length+' espaces vérifiés')+'</strong>'+
-        '<details'+(errors.length?' open':'')+'><summary>'+sanitize(errors.length?errors.length+' espace(s) à vérifier':'Afficher le détail')+'</summary><ul>'+
-        results.map(x=>'<li><strong>'+sanitize(names[x.name])+'</strong> : '+sanitize(x.message)+'</li>').join('')+'</ul></details>'+
-        '<button type="button" class="global-cloud-dismiss" aria-label="Fermer le résultat">×</button>';
-    }
-    async function sync(operation){
-      if(cloudBusy)return [];
-      cloudBusy=true;save.disabled=refresh.disabled=true;
-      const btn=operation==='save'?save:refresh;
-      btn.classList.add('is-busy');btn.setAttribute('aria-busy','true');
-      const results=[];
-      try{
-        reportSync(operation,0,results);
-        for(const name of projects){
-          let outcome;
-          try{outcome=await oneSync(name,operation);}
-          catch(e){outcome={success:false,message:e?.message||'Indisponible'};}
-          results.push({name,...outcome});
-          reportSync(operation,results.length,results);
-        }
-        return results;
-      }finally{
-        cloudBusy=false;save.disabled=refresh.disabled=false;btn.classList.remove('is-busy');btn.removeAttribute('aria-busy');
-      }
-    }
-    save.addEventListener('click',()=>void sync('save'));
-    refresh.addEventListener('click',()=>void sync('refresh'));
-    feedback.addEventListener('click',e=>{if(e.target.closest('.global-cloud-dismiss')&&!cloudBusy)feedback.hidden=true;});
 
-    // Device pairing is shared identity infrastructure, not part of any card catalogue.
-    const SUPABASE_URL='https://widiyulvmthbaypdxhbw.supabase.co';
-    const PUBLIC_KEY='sb_publishable_aietige1gJ1QfPZ6HaHiVA_zwqcJYyF';
-    const manager=document.getElementById('global-cloud-manager');
-    const state=document.getElementById('global-manager-state');
-    const result=document.getElementById('global-manager-feedback');
-    const create=document.getElementById('global-pair-create');
-    const redeem=document.getElementById('global-pair-redeem');
-    const input=document.getElementById('global-pair-input');
-    const codeOutput=document.getElementById('global-pair-output');
-    const managerButtons=['global-manager-enable','global-pair-create','global-pair-redeem','global-manager-save','global-manager-refresh'];
-    let client=null,clientUser=null,clientOwner=null,managerPromise=null;
-    const managerMessage=(message,error=false)=>{result.textContent=message;result.dataset.error=String(error);};
-    function setManagerBusy(busy){
-      managerBusy=busy;
-      for(const id of managerButtons){const el=document.getElementById(id);if(el)el.disabled=busy;}
-    }
-    async function initializeIdentity(){
-      if(!managerPromise)managerPromise=(async()=>{
-        const sdk=await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.83.0/+esm');
-        client=sdk.createClient(SUPABASE_URL,PUBLIC_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}});
-        const session=await client.auth.getSession();
-        if(session.error)throw session.error;
-        let user=session.data.session?.user;
-        if(!user){const signed=await client.auth.signInAnonymously();if(signed.error)throw signed.error;user=signed.data.user;}
-        if(!user?.id)throw Error('Session Supabase indisponible.');
-        clientUser=user.id;
-        const members=await client.from('rapli_archive_members').select('owner_id').eq('member_id',clientUser).maybeSingle();
-        if(members.error)throw members.error;
-        clientOwner=members.data?.owner_id||clientUser;
-      })().catch(error=>{managerPromise=null;throw error;});
-      await managerPromise;
-      const linked=clientUser!==clientOwner;
-      state.textContent=linked?'Appareil associé à la collection partagée':'Appareil principal · connexion Supabase active';
-      create.hidden=linked;
-      document.getElementById('global-manager-enable').hidden=true;
-      return {linked};
-    }
-    async function managerOperation(label,work){
-      if(managerBusy)return;
-      setManagerBusy(true);managerMessage(label);
-      try{await initializeIdentity();await work();}
-      catch(e){managerMessage('Action impossible : '+(e?.message||'connexion Supabase'),true);}
-      finally{setManagerBusy(false);}
-    }
-    document.getElementById('global-cloud-manage').addEventListener('click',()=>{
-      if(!manager.open)manager.showModal();
-      void managerOperation('Connexion à Supabase…',async()=>managerMessage('Session prête.'));
-    });
-    document.getElementById('global-manager-close').addEventListener('click',()=>manager.close());
-    manager.addEventListener('click',e=>{if(e.target===manager)manager.close();});
-    document.getElementById('global-manager-enable').addEventListener('click',()=>void managerOperation('Connexion…',async()=>managerMessage('Session prête.')));
-    create.addEventListener('click',()=>void managerOperation('Création du code…',async()=>{
-      const response=await client.functions.invoke('rapli-archives-pair',{body:{action:'issue'}});
-      if(response.error||!response.data?.code)throw Error(response.data?.error||response.error?.message||'Code indisponible');
-      codeOutput.textContent=response.data.code+' · valable 10 minutes';
-      managerMessage('Entre ce code sur l’autre appareil.');
-    }));
-    redeem.addEventListener('click',()=>void managerOperation('Association…',async()=>{
-      const code=input.value.trim().toUpperCase();
-      if(!code)throw Error('Saisis le code reçu.');
-      if(!confirm('Associer cet appareil à l’autre ? Les données locales de Sports et Regatta ne seront pas remplacées automatiquement.'))return;
-      const response=await client.functions.invoke('rapli-archives-pair',{body:{action:'redeem',code}});
-      if(response.error||!response.data?.linked)throw Error(response.data?.error||response.error?.message||'Code invalide');
-      input.value='';codeOutput.textContent='';
-      managerMessage('Appareil associé ✓ Recharge Rapli Lab pour utiliser la collection partagée.');
-      // Module cloud clients resolve owner at boot; refresh sessions only on explicit reload.
-      state.textContent='Appareil associé ✓ · recharge la page pour activer le lien';
-      create.hidden=true;
-    }));
-    for(const operation of ['save','refresh']){
-      document.getElementById('global-manager-'+operation).addEventListener('click',()=>void managerOperation(
-        operation==='save'?'Enregistrement…':'Actualisation…',async()=>{
-          const rows=await sync(operation);
-          const failures=rows.filter(x=>!x.success);
-          managerMessage((operation==='save'?'Sauvegarde':'Actualisation')+' : '+(rows.length-failures.length)+'/2 espaces'+(failures.length?' · vérifie le rapport':' ✓'),!!failures.length);
-        }));
-    }
-    // Once per authenticated device, erase only obsolete root-level Dragon Blanc
-    // images. Shared Sports/Regatta assets remain under their own folder prefixes.
-    // A failure leaves the local marker unset so a future visit can retry.
-    const retiredStorageMarker='rapli-archives-artwork-purged-20261115-v1';
-    window.addEventListener('load',()=>setTimeout(()=>{
-      void (async()=>{
-        try{
-          if(localStorage.getItem(retiredStorageMarker)==='1')return;
-          await initializeIdentity();
-          const response=await client.functions.invoke('rapli-archives-pair',{body:{action:'purge-retired-archives'}});
-          if(response.error||!response.data?.purged)
-            throw Error(response.data?.error||response.error?.message||'Nettoyage incomplet');
-          localStorage.setItem(retiredStorageMarker,'1');
-        }catch(error){console.warn('Nettoyage des anciens artworks Rapli Archives reporté',error);}
-      })();
-    },1200),{once:true});
   })();
   </script>
   <script defer src="shared/retired-cleanup.js"></script>

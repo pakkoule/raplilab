@@ -143,11 +143,14 @@ function colorSettingsState(){
  return settingsAreCustom()?[classSettings]:[];
 }
 function storeClassSettings(input,{notifyCloud=true}={}){
+ if(notifyCloud && !window.RapliSharedCollection?.canEdit?.()){
+  toast('Connexion administrateur et collection chargée nécessaires.',true);return;
+ }
  classSettings=normalizeClassSettings(input);
  try{localStorage.setItem(COLOR_STORAGE_KEY,JSON.stringify(classSettings));}
  catch(e){console.warn('Rapli Regatta: impossible de mémoriser les couleurs localement',e);toast('Sauvegarde locale des couleurs indisponible',true);}
  render();
- if(notifyCloud)window.RapliModuleCloud?.changed?.();
+ if(notifyCloud)window.RapliSharedCollection?.changed?.();
 }
 
 const classTextColor=color=>{
@@ -244,8 +247,8 @@ const done=tx=>new Promise((yes,no)=>{tx.oncomplete=yes;tx.onerror=()=>no(tx.err
 async function openDB(){if(!window.indexedDB)return;const r=indexedDB.open('rapli-regatta-v1',1);r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains('races'))r.result.createObjectStore('races',{keyPath:'id'});};db=await req(r);}
 function backup(){const raw=localStorage.getItem('rapli-regatta-v1');if(raw===null)return [];const stored=JSON.parse(raw);if(!Array.isArray(stored))throw Error('Sauvegarde Regatta invalide');return stored;}
 async function load(){return db?(await req(db.transaction('races').objectStore('races').getAll())).map(normal):backup().map(normal);}
-async function saveRow(row){if(!window.RapliAdminAccess?.isEditor?.())throw Error("Écriture réservée à l’administrateur.");if(storageRecoveryBlocked)throw Error('Stockage des courses inaccessible : enregistrement bloqué.');if(!db){localStorage.setItem('rapli-regatta-v1',JSON.stringify([...rows.filter(x=>x.id!==row.id),row]));return;}const tx=db.transaction('races','readwrite');tx.objectStore('races').put(row);await done(tx);}
-async function deleteRow(id){if(!window.RapliAdminAccess?.isEditor?.())throw Error("Suppression réservée à l’administrateur.");if(storageRecoveryBlocked)throw Error('Stockage des courses inaccessible : suppression bloquée.');if(!db){localStorage.setItem('rapli-regatta-v1',JSON.stringify(rows.filter(x=>x.id!==id)));return;}const tx=db.transaction('races','readwrite');tx.objectStore('races').delete(id);await done(tx);}
+async function saveRow(row){if(!window.RapliSharedCollection?.canEdit?.())throw Error("Collection partagée non prête ou mode édition inactif.");if(storageRecoveryBlocked)throw Error('Stockage des courses inaccessible : enregistrement bloqué.');if(!db){localStorage.setItem('rapli-regatta-v1',JSON.stringify([...rows.filter(x=>x.id!==row.id),row]));return;}const tx=db.transaction('races','readwrite');tx.objectStore('races').put(row);await done(tx);}
+async function deleteRow(id){if(!window.RapliSharedCollection?.canEdit?.())throw Error("Collection partagée non prête ou mode édition inactif.");if(storageRecoveryBlocked)throw Error('Stockage des courses inaccessible : suppression bloquée.');if(!db){localStorage.setItem('rapli-regatta-v1',JSON.stringify(rows.filter(x=>x.id!==id)));return;}const tx=db.transaction('races','readwrite');tx.objectStore('races').delete(id);await done(tx);}
 async function replaceRows(next){if(storageRecoveryBlocked)throw Error('Stockage des courses inaccessible : restauration bloquée.');if(!db){localStorage.setItem('rapli-regatta-v1',JSON.stringify(next));}else{const tx=db.transaction('races','readwrite'),store=tx.objectStore('races');store.clear();next.forEach(x=>store.put(x));await done(tx);}rows=next.map(normal);render();}
 
  function localDateTime(date,time='',zone=timeEngine.DEFAULT){
@@ -811,7 +814,7 @@ async function confirmScoreRecalc(){
  $('score-recalc-confirm').disabled=true;
  try{
   await replaceRows(revised);
-  window.RapliModuleCloud?.changed?.();
+  window.RapliSharedCollection?.changed?.();
   recalcDialog.close();
   toast('Notes recalculées et enregistrées ✓ ('+updates.size+')');
  }catch(error){rows=previous;render();toast('Recalcul impossible : '+(error?.message||error),true);}
@@ -952,7 +955,7 @@ async function saveEditor(e){
  }else{r.attempts=[];r.recordClosed=false;}
  if(r.kind!=='record'&&!old?.scoreSnapshot){const initial=scoreEngine.scoreFor(r,[...rows.filter(x=>x.id!==r.id),r],raceStatus);if(initial.available)r.scoreSnapshot={...initial,signature:scoreEngine.signature(r),calculatedAt:now()};}
  writeBusy=true;$('save-race').disabled=true;
- try{await saveRow(r);rows=[...rows.filter(x=>x.id!==r.id),r];render();window.RapliModuleCloud?.changed?.();closeEditor();toast('Course enregistrée ✓');}
+ try{await saveRow(r);rows=[...rows.filter(x=>x.id!==r.id),r];render();window.RapliSharedCollection?.changed?.();closeEditor();toast('Course enregistrée ✓');}
  catch(err){console.error(err);toast('Impossible de sauvegarder : '+err.message,true);}
  finally{writeBusy=false;$('save-race').disabled=false;}
 }
@@ -967,7 +970,7 @@ async function closeRecord(id){
   await saveRow(closed);
   rows=rows.map(r=>r.id===id?closed:r);
   render();
-  window.RapliModuleCloud?.changed?.();
+  window.RapliSharedCollection?.changed?.();
   toast('Record clôturé ✓ Renseigne maintenant les classements finaux.');
   openEditor(closed);
   const rankSection=$('race-rank').closest('fieldset');
@@ -979,7 +982,7 @@ async function closeRecord(id){
 }
 async function deleteRace(id){
  const r=rows.find(x=>x.id===id);if(!r||!confirm('Supprimer « '+r.name+' » et ses images ?'))return;
- try{await deleteRow(id);rows=rows.filter(x=>x.id!==id);closeEditor();render();window.RapliModuleCloud?.changed?.();toast('Course supprimée ✓');}
+ try{await deleteRow(id);rows=rows.filter(x=>x.id!==id);closeEditor();render();window.RapliSharedCollection?.changed?.();toast('Course supprimée ✓');}
  catch(err){toast('Suppression impossible : '+err.message,true);}
 }
 async function fileData(file,key){
@@ -1338,6 +1341,7 @@ const bridge=window.RapliModuleBridge={module:'regatta',ready:false,
  previewState:data=>{
    if(!Array.isArray(data?.records))throw Error('Collection publique invalide');
    rows=data.records.map(normal);
+   classSettings=normalizeClassSettings(data.logos?.[0]||defaultClassSettings());
    render();
  },
  replaceState:async data=>{

@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="fr">
+<html lang="fr" data-rapli-shared-state="loading">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -2510,6 +2510,142 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
   .sports-catalogue-controls>#sortSelect{font-size:16px;padding:5px 0;min-height:36px}
 }
 </style>
+
+<style id="rapli-profile-menu-foil">
+/* Premium iridescent foil account menu, inline with sorting on every viewport. */
+.sports-catalogue-controls{
+  grid-template-columns:max-content max-content minmax(0,1fr) minmax(108px,150px) 42px;
+}
+.sports-catalogue-controls>.rapli-profile{grid-column:5;grid-row:1;justify-self:end;align-self:center;position:relative;z-index:55}
+.rapli-profile-toggle{
+  width:42px;height:42px;display:grid;place-items:center;position:relative;
+  border:2px solid transparent;border-radius:12px;cursor:pointer;color:#153f69;
+  background:
+    linear-gradient(112deg,rgba(255,255,255,.62),rgba(255,255,255,.1) 36%,rgba(255,255,255,.55) 55%,rgba(255,255,255,.12)) padding-box,
+    linear-gradient(125deg,#d3f7ec 0%,#c0edeb 18%,#a5c3ed 36%,#e7d2ec 56%,#ffdab6 75%,#d4fff5 100%) padding-box,
+    linear-gradient(125deg,#56cba9 0%,#397fcd 25%,#e66f5d 42%,#24293e 56%,#e8f5f5 72%,#3d8df0 87%,#64d0b4 100%) border-box;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.8),0 2px 9px rgba(18,66,98,.15);
+  transition:transform .15s ease,box-shadow .15s ease;
+}
+.rapli-profile-toggle:before{
+  content:"";position:absolute;inset:1px;pointer-events:none;border-radius:9px;
+  background:linear-gradient(115deg,transparent 15%,rgba(255,255,255,.58) 42%,transparent 62%);
+}
+.rapli-profile-toggle svg{width:22px;height:22px;z-index:1;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.rapli-profile-toggle:hover,.rapli-profile-toggle[aria-expanded="true"]{transform:translateY(-1px);box-shadow:0 5px 14px rgba(22,71,104,.21),inset 0 1px 0 #fff}
+.rapli-profile-toggle:focus-visible,.rapli-profile-menu button:focus-visible,.rapli-profile-menu a:focus-visible{outline:2px solid #207cca;outline-offset:3px}
+.rapli-profile-toggle.is-admin{color:#166456}
+.rapli-profile-toggle.is-admin:after{content:"";position:absolute;top:4px;right:4px;width:7px;height:7px;border-radius:50%;background:#20ab7f;box-shadow:0 0 0 2px #e9fffa;z-index:2}
+.rapli-profile-menu{
+  position:absolute;right:0;top:calc(100% + 9px);width:min(292px,calc(100vw - 28px));
+  box-sizing:border-box;padding:10px;display:grid;gap:5px;
+  border:1px solid #c1d8e0;border-radius:14px;
+  background:linear-gradient(140deg,#f9fffe 0%,#eaf6fb 55%,#f7f2fc 100%);
+  box-shadow:0 14px 34px rgba(18,50,86,.25);color:#17455f;
+  font:700 11px/1.45 Poppins,system-ui,sans-serif;
+}
+.rapli-profile-menu[hidden]{display:none!important}
+.rapli-profile-menu-title{padding:3px 5px 5px;font-weight:900;letter-spacing:.07em;font-size:10px;color:#22506c}
+.rapli-profile-menu button,.rapli-profile-menu a{
+  display:flex;align-items:center;gap:9px;min-height:40px;width:100%;box-sizing:border-box;
+  padding:9px 11px;border:1px solid #d4e5ea;border-radius:9px;background:rgba(255,255,255,.74);
+  font:800 11px/1.3 Poppins,system-ui,sans-serif;color:#174563;text-decoration:none;
+  text-align:left;cursor:pointer;
+}
+.rapli-profile-menu button:hover,.rapli-profile-menu a:hover{background:#ecfaf6;border-color:#91c6bd}
+.rapli-profile-menu button[hidden]{display:none!important}
+.rapli-profile-menu svg{width:18px;height:18px;flex:none;stroke:currentColor;stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.rapli-profile-message{font:600 10px/1.45 Poppins,system-ui,sans-serif;overflow-wrap:anywhere;color:#567484;padding:4px 5px}
+.rapli-profile-message[data-error="true"]{color:#b04755}
+.sports-catalogue-controls>.sports-catalogue-search{grid-column:3}
+.sports-catalogue-controls>#sortSelect{grid-column:4}
+@media(max-width:750px){
+ .sports-catalogue-controls{grid-template-columns:max-content minmax(54px,76px) minmax(0,1fr) 94px 37px;gap:5px}
+ .rapli-profile-toggle{width:37px;height:37px;border-radius:10px}
+ .rapli-profile-toggle svg{width:19px;height:19px}
+}
+@media(max-width:480px){
+ /* Preserve a usable search and sorting row on narrow iPhones. */
+ .sports-catalogue-controls{grid-template-columns:max-content minmax(0,1fr) 82px 34px;gap:4px}
+ .sports-catalogue-controls>.nav-actions{grid-column:1;grid-row:1}
+ .sports-catalogue-controls>.sports-catalogue-search{grid-column:2;grid-row:1}
+ .sports-catalogue-controls>#sortSelect{grid-column:3;grid-row:1;min-width:0;font-size:16px;padding-right:3px}
+ .sports-catalogue-controls>.rapli-profile{grid-column:4;grid-row:1}
+ .sports-catalogue-controls>.sports-count-foil{grid-column:1/3;grid-row:2;justify-self:start;max-width:170px;padding:6px 10px}
+ .rapli-profile-toggle{width:34px;height:35px;border-radius:9px}
+ .rapli-profile-toggle svg{width:18px;height:18px}
+}
+@media(prefers-reduced-motion:reduce){.rapli-profile-toggle{transition:none}}
+</style>
+
+<style id="rapli-shared-sports-loader-style">
+/* Show only a real shared collection. Never flash locally seeded demo cards. */
+html:not([data-rapli-shared-state="ready"]) #collectionPanel,
+html:not([data-rapli-shared-state="ready"]) #rainbowPanel,
+html:not([data-rapli-shared-state="ready"]) #statsPanel {
+  display:none!important;
+}
+#rapliSharedLoading {
+  width:min(100%,720px);margin:clamp(28px,6vw,68px) auto 48px;
+  padding:clamp(22px,4vw,38px);text-align:center;
+  border:1px solid rgba(124,190,205,.55);border-radius:20px;
+  background:linear-gradient(135deg,#f7fffd,#e9f3ff 49%,#f7f2fd);
+  box-shadow:0 9px 31px rgba(28,68,99,.11);
+  color:#234862;display:grid;justify-items:center;gap:13px;
+}
+html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important}
+.rapli-shared-loading-symbol {
+  display:grid;place-items:center;width:54px;height:54px;border-radius:16px;
+  background:linear-gradient(140deg,#d8f8ef,#dae8ff 50%,#f7dfeb);
+  border:1px solid #b6d8e1;color:#246d8d;
+}
+.rapli-shared-loading-symbol svg {width:28px;height:28px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#rapliSharedLoading h2 {margin:0;font:900 clamp(16px,2.2vw,21px)/1.3 Poppins,sans-serif;color:#173c59}
+#rapliSharedLoading .rapli-shared-loading-description{font:600 12px/1.5 Poppins,sans-serif;color:#5a758a;margin:0}
+#rapliSharedProgress {
+  position:relative;display:block;
+  width:min(100%,490px);height:17px;border-radius:999px;
+  overflow:hidden;border:1px solid rgba(85,128,158,.38);
+  background:linear-gradient(115deg,#d9e9ea,#e4e7f1 47%,#e9e3ec);
+  box-shadow:inset 0 1px 3px #284a6d30,0 1px 0 #ffffffa8;
+}
+#rapliSharedProgressFill {
+  position:relative;display:block;min-width:0;width:20%;height:100%;
+  border-radius:inherit;
+  background:linear-gradient(95deg,#63d8b9 0%,#279ec8 14%,#2859c8 30%,#fa764c 43%,#101b31 53%,#d94451 65%,#ffffff 72%,#317df0 84%,#64e6c8 100%);
+  background-size:185% 100%;
+  box-shadow:inset 0 2px 2px #ffffff99,inset 0 -2px 2px #182f5740,0 0 11px #4e8dc97a;
+  transition:width .25s ease;
+  animation:rapliFoilShimmer 2.6s linear infinite alternate;
+}
+#rapliSharedProgressFill::after {
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(110deg,transparent 10%,#ffffffb0 45%,transparent 70%);
+  background-size:220% 100%;mix-blend-mode:screen;
+  animation:rapliFoilSheen 2.8s ease-in-out infinite;
+}
+#rapliSharedProgress[data-indeterminate="true"] #rapliSharedProgressFill{
+  width:36%!important;animation:rapliFoilIndeterminate 1.8s ease-in-out infinite;
+}
+@keyframes rapliFoilShimmer{from{background-position:0% 0}to{background-position:100% 0}}
+@keyframes rapliFoilSheen{from{background-position:220% 0}to{background-position:-120% 0}}
+@keyframes rapliFoilIndeterminate{0%{transform:translateX(-110%);background-position:0% 0}100%{transform:translateX(295%);background-position:100% 0}}
+.rapli-shared-load-percent {font:800 12px Poppins,sans-serif;color:#246685;font-variant-numeric:tabular-nums}
+.rapli-shared-load-percent:empty{display:none}
+#rapliSharedLoading[data-status="error"] .rapli-shared-loading-symbol,
+#rapliSharedLoading[data-status="conflict"] .rapli-shared-loading-symbol{color:#a9405c;background:#fff2f2}
+#rapliSharedLoading[data-status="error"] #rapliSharedProgress,
+#rapliSharedLoading[data-status="conflict"] #rapliSharedProgress{display:none}
+#rapliSharedRetry{
+  border:1px solid #96c7c7;border-radius:10px;padding:9px 16px;
+  color:#20546f;background:linear-gradient(120deg,#ebfaf5,#e5effe,#f8e9ed);
+  font:800 11px Poppins,sans-serif;cursor:pointer;
+}
+#rapliSharedRetry:hover{filter:brightness(.97)}
+#rapliSharedRetry[hidden]{display:none!important}
+@media(max-width:600px){#rapliSharedLoading{margin:24px auto 36px;padding:22px 15px}}
+@media(prefers-reduced-motion:reduce){#rapliSharedProgressFill,#rapliSharedProgressFill::after{animation:none;transition:none}}
+</style>
 </head>
 <body>
   <div class="app-shell">
@@ -2525,6 +2661,14 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
             <button type="button" role="tab" aria-selected="false" class="tab" data-view="stats"><span class="sports-stats-tab-full">STATISTIQUES</span><span class="sports-stats-tab-short" aria-hidden="true">STATS</span></button>
           </div>
         </div>
+        <section id="rapliSharedLoading" aria-labelledby="rapliSharedLoadingTitle" aria-live="polite" data-status="loading">
+          <div class="rapli-shared-loading-symbol" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 7.5h14v12H5zM7.5 7.5V5h9v2.5M8 11h8M8 14h8"/></svg></div>
+          <h2 id="rapliSharedLoadingTitle">Chargement de ta collection</h2>
+          <p id="rapliSharedLoadingMessage" class="rapli-shared-loading-description">Connexion à Supabase…</p>
+          <div id="rapliSharedProgress" role="progressbar" aria-label="Progression du chargement des images" aria-valuemin="0" aria-valuemax="100" data-indeterminate="true"><span id="rapliSharedProgressFill"></span></div>
+          <span id="rapliSharedPercent" class="rapli-shared-load-percent"></span>
+          <button id="rapliSharedRetry" type="button" hidden>Réessayer le chargement</button>
+        </section>
         <div id="collectionPanel">
         <div class="sports-catalogue-controls">
           <div class="nav-actions" role="group" aria-label="Actions sur les cartes">
@@ -2536,6 +2680,18 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
         <input id="filterDream" type="checkbox" hidden aria-label="Afficher uniquement la Dreamlist">
         <div class="field search-field sports-catalogue-search"><label class="field-label" for="filterSearch">RECHERCHE</label><div class="input-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input class="input with-icon" id="filterSearch" type="search" autocomplete="off" placeholder="Rechercher une carte…" aria-label="Rechercher dans toutes les informations des cartes"></div></div>
         <select id="sortSelect" class="sorter" aria-label="Trier les cartes"><option value="recent">Plus récentes</option><option value="name">Joueur A – Z</option><option value="brand">Marque A – Z</option><option value="team">Équipe A – Z</option></select>
+        <div class="rapli-profile" id="rapliProfile">
+          <button id="rapliProfileToggle" type="button" class="rapli-profile-toggle" aria-label="Ouvrir le menu Profil" title="Profil et applications" aria-haspopup="true" aria-expanded="false" aria-controls="rapliProfileMenu">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5.2 20c.2-4 2.8-6.2 6.8-6.2s6.6 2.2 6.8 6.2"/></svg>
+          </button>
+          <div id="rapliProfileMenu" class="rapli-profile-menu" hidden>
+            <div class="rapli-profile-menu-title">MON PROFIL · RAPLI LAB</div>
+            <button id="rapliProfileLogin" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg><span>Connexion administrateur</span></button>
+            <button id="rapliProfileLogout" type="button" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4H5v16h4M13 8l4 4-4 4M17 12H9"/></svg><span>Se déconnecter</span></button>
+            <a id="rapliProfileRegatta" href="../#regatta" target="_top"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v14M12 4l8 12H12M3 17l9-2 9 2-4 4H7z"/></svg><span>Rejoindre Rapli Regatta</span></a>
+            <div id="rapliProfileMessage" class="rapli-profile-message" role="status" aria-live="polite">Consultation libre</div>
+          </div>
+        </div>
         </div>
         <div id="sportsGalleryToolbar" class="sports-gallery-switch" role="group" aria-label="Mode de consultation des cartes">
           <span class="sports-gallery-title">VUE</span>
@@ -2582,7 +2738,7 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
         </div>
       </section>
     </main>
-    <footer class="footer"><span>© RAPLI SPORTS · PERSONAL COLLECTION</span><span>SYNCHRONISATION GLOBALE RAPLILAB</span></footer>
+    <footer class="footer"><span>© RAPLI SPORTS · PERSONAL COLLECTION</span><span id="rapli-shared-status-sports" role="status" aria-live="polite">Chargement de la collection…</span></footer>
   </div>
   <dialog id="cardDialog" class="modal" aria-labelledby="cardDialogTitle">
     <form id="cardForm" novalidate>
@@ -2766,7 +2922,7 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
       };
       function ico(key){return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icons[key]||icons.layers}</svg>`}
       $('statIconAll').innerHTML=ico('layers'); $('statIconOwn').innerHTML=ico('check');$('statIconWish').innerHTML=ico('heart');$('statIconNumber').innerHTML=ico('hash');$('emptyIcon').innerHTML=ico('package');
-      const isRapliEditor=()=>window.RapliAdminAccess?.isEditor?.()===true;
+      const isRapliEditor=()=>window.RapliAdminAccess?.isEditor?.()===true && window.RapliSharedCollection?.canEdit?.()===true;
       const requireRapliEditor=()=>{
         if(isRapliEditor())return true;
         showToast('Lecture seule · connecte-toi depuis le footer Rapli Lab pour modifier.');
@@ -3196,17 +3352,17 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
       function transactionGet(store,key){return new Promise((resolve,reject)=>{let r=db.transaction(store,'readonly').objectStore(store).get(key);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
       async function openDb(){return new Promise((resolve,reject)=>{const r=indexedDB.open('rapli-sports-v1',1);r.onupgradeneeded=()=>{const database=r.result;database.createObjectStore('cards',{keyPath:'id'});database.createObjectStore('logos',{keyPath:'id'});database.createObjectStore('meta',{keyPath:'key'})};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);r.onblocked=()=>reject(new Error('Base bloquée'))})}
       async function saveFallback(nextCards=cards,nextLogos=logos){try{localStorage.setItem('rapli-sports-fallback',JSON.stringify({cards:nextCards,logos:nextLogos,initialized:true}))}catch(e){console.warn('Stockage local indisponible',e);showToast('Enregistrement impossible : stockage local indisponible.');throw Error('Stockage local indisponible');}}
-      async function saveCard(record){if(!isRapliEditor())throw Error('Modification réservée à l’administrateur.');const next=cards.filter(x=>x.id!==record.id);next.push(record);if(db)await transactionPut('cards',record);else await saveFallback(next,logos);cards=next;window.RapliModuleCloud?.changed?.()}
-      async function removeCard(id){if(!isRapliEditor())throw Error('Modification réservée à l’administrateur.');const next=cards.filter(x=>x.id!==id);if(db)await transactionDelete('cards',id);else await saveFallback(next,logos);cards=next;window.RapliModuleCloud?.changed?.()}
-      async function saveLogo(record){if(!isRapliEditor())throw Error('Modification réservée à l’administrateur.');const next=logos.filter(x=>x.id!==record.id);next.push(record);if(db)await transactionPut('logos',record);else await saveFallback(cards,next);logos=next;window.RapliModuleCloud?.changed?.()}
-      async function removeLogo(id){if(!isRapliEditor())throw Error('Modification réservée à l’administrateur.');const next=logos.filter(x=>x.id!==id);if(db)await transactionDelete('logos',id);else await saveFallback(cards,next);logos=next;window.RapliModuleCloud?.changed?.()}
+      async function saveCard(record){if(!isRapliEditor())throw Error('Modification réservée à l’administrateur.');const next=cards.filter(x=>x.id!==record.id);next.push(record);if(db)await transactionPut('cards',record);else await saveFallback(next,logos);cards=next;window.RapliSharedCollection?.changed?.()}
+      async function removeCard(id){if(!isRapliEditor())throw Error('Modification réservée à l’administrateur.');const next=cards.filter(x=>x.id!==id);if(db)await transactionDelete('cards',id);else await saveFallback(next,logos);cards=next;window.RapliSharedCollection?.changed?.()}
+      async function saveLogo(record){if(!isRapliEditor())throw Error('Modification réservée à l’administrateur.');const next=logos.filter(x=>x.id!==record.id);next.push(record);if(db)await transactionPut('logos',record);else await saveFallback(cards,next);logos=next;window.RapliSharedCollection?.changed?.()}
+      async function removeLogo(id){if(!isRapliEditor())throw Error('Modification réservée à l’administrateur.');const next=logos.filter(x=>x.id!==id);if(db)await transactionDelete('logos',id);else await saveFallback(cards,next);logos=next;window.RapliSharedCollection?.changed?.()}
       function sampleCards(){let ts=Date.now();return [
         {id:'demo-maxey',status:'wishlist',brand:'Topps',player:'Tyrese Maxey',sport:'Basketball',team:'Philadelphia 76ers',reference:'2025–26 · Chrome · #EXEMPLE',tags:['Chrome','Refractor'],numbered:false,serial:'',printRun:'',photo:'',demo:true,createdAt:ts-15000,updatedAt:ts-15000},
         {id:'demo-embiid',status:'own',brand:'Panini',player:'Joel Embiid',sport:'Basketball',team:'Philadelphia 76ers',reference:'Prizm · #EXEMPLE',tags:['Prizm','Silver'],numbered:true,serial:'12',printRun:'99',photo:'',demo:true,createdAt:ts-13000,updatedAt:ts-13000},
         {id:'demo-maxey-own',status:'own',brand:'Topps',player:'Tyrese Maxey',sport:'Basketball',team:'Philadelphia 76ers',reference:'Chrome · #EXEMPLE',tags:['Chrome','Base'],numbered:false,serial:'',printRun:'',photo:'',demo:true,createdAt:ts-12000,updatedAt:ts-12000},
         {id:'demo-wemby',status:'wishlist',brand:'Topps',player:'Victor Wembanyama',sport:'Basketball',team:'San Antonio Spurs',reference:'Chrome · #EXEMPLE',tags:['Chrome','Gold'],numbered:true,serial:'07',printRun:'50',photo:'',demo:true,createdAt:ts-11000,updatedAt:ts-11000}
       ]}
-      async function initialize(){try{db=await openDb();[cards,logos]=await Promise.all([transactionAll('cards'),transactionAll('logos')]);const initialized=await transactionGet('meta','initialized');if(!initialized){cards=sampleCards();for(const c of cards)await transactionPut('cards',c);await transactionPut('meta',{key:'initialized',value:true})}}catch(e){console.warn('IndexedDB indisponible ; tentative de stockage local',e);db=null;let stored=null;try{stored=localStorage.getItem('rapli-sports-fallback')}catch(_){/* Mode éphémère : accès local bloqué */}if(stored){try{const parsed=JSON.parse(stored);cards=parsed.cards||[];logos=parsed.logos||[]}catch(_){cards=[];logos=[]}}else{cards=sampleCards();try{await saveFallback()}catch(_){}}showToast('Stockage de secours activé. Pense à exporter tes données.')}renderAll()}
+      async function initialize(){try{db=await openDb();[cards,logos]=await Promise.all([transactionAll('cards'),transactionAll('logos')]);const initialized=await transactionGet('meta','initialized');if(!initialized){await transactionPut('meta',{key:'initialized',value:true})}}catch(e){console.warn('IndexedDB indisponible ; tentative de stockage local',e);db=null;let stored=null;try{stored=localStorage.getItem('rapli-sports-fallback')}catch(_){/* Mode éphémère : accès local bloqué */}if(stored){try{const parsed=JSON.parse(stored);cards=parsed.cards||[];logos=parsed.logos||[]}catch(_){cards=[];logos=[]}}else{cards=[];logos=[];try{await saveFallback()}catch(_){}}showToast('Stockage de secours activé. Pense à exporter tes données.')}renderAll()}
       function logoFor(type,name){
         if(!name)return '';
         const o=type==='nationality'?countryLogoProfile(name):
@@ -4795,7 +4951,8 @@ function rapliModuleReady(){
     })();
   </script>
 <script src="../shared/admin-access.js" defer></script>
-<script src="../shared/module-cloud.js" defer></script>
+<script src="../shared/profile-menu.js" defer></script>
+<script src="../shared/shared-collection.js" defer></script>
   <script src="../shared/photo-zoom.js" defer></script>
 </body>
 </html>

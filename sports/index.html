@@ -2582,7 +2582,7 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
         </div>
       </section>
     </main>
-    <footer class="footer"><span>© RAPLI SPORTS · PERSONAL COLLECTION</span><span>SYNCHRONISATION GLOBALE RAPLILAB</span></footer>
+    <footer class="footer"><span>© RAPLI SPORTS · PERSONAL COLLECTION</span><span id="rapli-shared-status-sports" role="status" aria-live="polite">Chargement de la collection…</span></footer>
   </div>
   <dialog id="cardDialog" class="modal" aria-labelledby="cardDialogTitle">
     <form id="cardForm" novalidate>
@@ -2766,7 +2766,7 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
       };
       function ico(key){return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icons[key]||icons.layers}</svg>`}
       $('statIconAll').innerHTML=ico('layers'); $('statIconOwn').innerHTML=ico('check');$('statIconWish').innerHTML=ico('heart');$('statIconNumber').innerHTML=ico('hash');$('emptyIcon').innerHTML=ico('package');
-      const isRapliEditor=()=>window.RapliAdminAccess?.isEditor?.()===true;
+      const isRapliEditor=()=>window.RapliAdminAccess?.isEditor?.()===true && window.RapliSharedCollection?.canEdit?.()===true;
       const requireRapliEditor=()=>{
         if(isRapliEditor())return true;
         showToast('Lecture seule · connecte-toi depuis le footer Rapli Lab pour modifier.');
@@ -3196,10 +3196,10 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
       function transactionGet(store,key){return new Promise((resolve,reject)=>{let r=db.transaction(store,'readonly').objectStore(store).get(key);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
       async function openDb(){return new Promise((resolve,reject)=>{const r=indexedDB.open('rapli-sports-v1',1);r.onupgradeneeded=()=>{const database=r.result;database.createObjectStore('cards',{keyPath:'id'});database.createObjectStore('logos',{keyPath:'id'});database.createObjectStore('meta',{keyPath:'key'})};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);r.onblocked=()=>reject(new Error('Base bloquée'))})}
       async function saveFallback(nextCards=cards,nextLogos=logos){try{localStorage.setItem('rapli-sports-fallback',JSON.stringify({cards:nextCards,logos:nextLogos,initialized:true}))}catch(e){console.warn('Stockage local indisponible',e);showToast('Enregistrement impossible : stockage local indisponible.');throw Error('Stockage local indisponible');}}
-      async function saveCard(record){if(!isRapliEditor())throw Error('Modification réservée à l’administrateur.');const next=cards.filter(x=>x.id!==record.id);next.push(record);if(db)await transactionPut('cards',record);else await saveFallback(next,logos);cards=next;window.RapliModuleCloud?.changed?.()}
-      async function removeCard(id){if(!isRapliEditor())throw Error('Modification réservée à l’administrateur.');const next=cards.filter(x=>x.id!==id);if(db)await transactionDelete('cards',id);else await saveFallback(next,logos);cards=next;window.RapliModuleCloud?.changed?.()}
-      async function saveLogo(record){if(!isRapliEditor())throw Error('Modification réservée à l’administrateur.');const next=logos.filter(x=>x.id!==record.id);next.push(record);if(db)await transactionPut('logos',record);else await saveFallback(cards,next);logos=next;window.RapliModuleCloud?.changed?.()}
-      async function removeLogo(id){if(!isRapliEditor())throw Error('Modification réservée à l’administrateur.');const next=logos.filter(x=>x.id!==id);if(db)await transactionDelete('logos',id);else await saveFallback(cards,next);logos=next;window.RapliModuleCloud?.changed?.()}
+      async function saveCard(record){if(!isRapliEditor())throw Error('Modification réservée à l’administrateur.');const next=cards.filter(x=>x.id!==record.id);next.push(record);if(db)await transactionPut('cards',record);else await saveFallback(next,logos);cards=next;window.RapliSharedCollection?.changed?.()}
+      async function removeCard(id){if(!isRapliEditor())throw Error('Modification réservée à l’administrateur.');const next=cards.filter(x=>x.id!==id);if(db)await transactionDelete('cards',id);else await saveFallback(next,logos);cards=next;window.RapliSharedCollection?.changed?.()}
+      async function saveLogo(record){if(!isRapliEditor())throw Error('Modification réservée à l’administrateur.');const next=logos.filter(x=>x.id!==record.id);next.push(record);if(db)await transactionPut('logos',record);else await saveFallback(cards,next);logos=next;window.RapliSharedCollection?.changed?.()}
+      async function removeLogo(id){if(!isRapliEditor())throw Error('Modification réservée à l’administrateur.');const next=logos.filter(x=>x.id!==id);if(db)await transactionDelete('logos',id);else await saveFallback(cards,next);logos=next;window.RapliSharedCollection?.changed?.()}
       function sampleCards(){let ts=Date.now();return [
         {id:'demo-maxey',status:'wishlist',brand:'Topps',player:'Tyrese Maxey',sport:'Basketball',team:'Philadelphia 76ers',reference:'2025–26 · Chrome · #EXEMPLE',tags:['Chrome','Refractor'],numbered:false,serial:'',printRun:'',photo:'',demo:true,createdAt:ts-15000,updatedAt:ts-15000},
         {id:'demo-embiid',status:'own',brand:'Panini',player:'Joel Embiid',sport:'Basketball',team:'Philadelphia 76ers',reference:'Prizm · #EXEMPLE',tags:['Prizm','Silver'],numbered:true,serial:'12',printRun:'99',photo:'',demo:true,createdAt:ts-13000,updatedAt:ts-13000},
@@ -4795,7 +4795,7 @@ function rapliModuleReady(){
     })();
   </script>
 <script src="../shared/admin-access.js" defer></script>
-<script src="../shared/module-cloud.js" defer></script>
+<script src="../shared/shared-collection.js" defer></script>
   <script src="../shared/photo-zoom.js" defer></script>
 </body>
 </html>

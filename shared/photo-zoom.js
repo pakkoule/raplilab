@@ -24,6 +24,24 @@
     if (scale === MIN) { x = 0; y = 0; }
     sync();
   }
+  // Keep the pixel beneath the mouse pointer fixed while changing the zoom.
+  // The image fills the stage and transforms around its center (see CSS).
+  function setZoomAt(next, clientX, clientY) {
+    const nextScale = clamp(next);
+    if (nextScale === scale) return;
+    if (nextScale === MIN) {
+      x = 0; y = 0;
+    } else {
+      const rect = stage.getBoundingClientRect();
+      const anchorX = clientX - (rect.left + rect.width / 2);
+      const anchorY = clientY - (rect.top + rect.height / 2);
+      const ratio = nextScale / scale;
+      x = anchorX - (anchorX - x) * ratio;
+      y = anchorY - (anchorY - y) * ratio;
+    }
+    scale = nextScale;
+    sync();
+  }
   function createViewer() {
     root = document.createElement('div');
     root.className = 'rapli-zoom-overlay';
@@ -59,7 +77,7 @@
     stage.addEventListener('wheel', event => {
       if (root.hidden) return;
       event.preventDefault();
-      setZoom(scale * Math.exp(-event.deltaY * 0.002));
+      setZoomAt(scale * Math.exp(-event.deltaY * 0.002), event.clientX, event.clientY);
     }, { passive:false });
     stage.addEventListener('pointerdown', event => {
       if (root.hidden) return;

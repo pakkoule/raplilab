@@ -2489,9 +2489,26 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
 @media(max-width:530px){.portrait-crop-dialog .modal-body{padding:12px}.portrait-crop-stage{width:min(100%,320px)}}
 </style>
 <style id="rapli-sports-search-without-filters">
-/* Give the search the space previously occupied by the filter menu. */
-.sports-catalogue-controls{grid-template-columns:max-content minmax(0,1fr)}
-.sports-catalogue-controls>.sports-catalogue-search{grid-column:2;grid-row:1;width:100%;min-width:0}
+/* Actions, live count, flexible search and sorting share one compact row. */
+.sports-catalogue-controls{grid-template-columns:max-content max-content minmax(0,1fr) 150px;align-items:center;gap:10px}
+.sports-catalogue-controls>.sports-count-foil{
+  grid-column:2;grid-row:1;display:block;box-sizing:border-box;max-width:190px;
+  padding:10px 12px;border:2px solid transparent;border-radius:10px;
+  color:#174963;text-align:center;font-size:11px;line-height:1.25;
+  background:
+    linear-gradient(115deg,transparent 12%,rgba(255,255,255,.72) 38%,rgba(255,255,255,.14) 55%,transparent 78%) padding-box,
+    linear-gradient(108deg,#c5eee5 0%,#e2f4fb 23%,#d8dbf2 43%,#f3e2ee 62%,#f8e5c8 80%,#d1f4ec 100%) padding-box,
+    linear-gradient(125deg,#67bdad,#7aabd9 29%,#a39ade 52%,#e4b597 77%,#65c0b0) border-box;
+  box-shadow:inset 0 1px 0 #fff,0 2px 8px rgba(44,74,116,.14);
+}
+.sports-catalogue-controls>.sports-catalogue-search{grid-column:3;grid-row:1;width:100%;min-width:0}
+.sports-catalogue-controls>#sortSelect{grid-column:4;grid-row:1;width:100%;min-width:0;max-width:none;min-height:40px}
+.sports-catalogue-controls>#sortSelect:focus-visible{outline:2px solid #3fae9f;outline-offset:2px;border-radius:8px}
+@media(max-width:750px){
+  .sports-catalogue-controls{grid-template-columns:max-content minmax(54px,76px) minmax(0,1fr) 96px;gap:5px}
+  .sports-catalogue-controls>.sports-count-foil{padding:6px 4px;font-size:9px;overflow-wrap:anywhere}
+  .sports-catalogue-controls>#sortSelect{font-size:16px;padding:5px 0;min-height:36px}
+}
 </style>
 </head>
 <body>
@@ -2515,10 +2532,11 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
             <button id="sportsRandomBtn" type="button" class="button button-soft sports-icon-action" aria-label="Découvrir une carte au hasard" title="Tirer une carte au hasard"><svg class="sports-random-dice" viewBox="0 0 24 24" role="img" aria-hidden="true" focusable="false"><rect x="3" y="3" width="18" height="18" rx="4" fill="none" stroke="currentColor" stroke-width="1.9"/><circle cx="8" cy="8" r="1.45" fill="currentColor"/><circle cx="16" cy="8" r="1.45" fill="currentColor"/><circle cx="12" cy="12" r="1.45" fill="currentColor"/><circle cx="8" cy="16" r="1.45" fill="currentColor"/><circle cx="16" cy="16" r="1.45" fill="currentColor"/></svg></button>
             <button id="addCardBtn" type="button" class="button button-primary sports-icon-action" aria-label="Ajouter une carte" title="Ajouter une carte"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
           </div>
+        <span class="results-label sports-count-foil" id="resultsLabel" aria-live="polite">0 carte</span>
         <input id="filterDream" type="checkbox" hidden aria-label="Afficher uniquement la Dreamlist">
         <div class="field search-field sports-catalogue-search"><label class="field-label" for="filterSearch">RECHERCHE</label><div class="input-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input class="input with-icon" id="filterSearch" type="search" autocomplete="off" placeholder="Rechercher une carte…" aria-label="Rechercher dans toutes les informations des cartes"></div></div>
+        <select id="sortSelect" class="sorter" aria-label="Trier les cartes"><option value="recent">Plus récentes</option><option value="name">Joueur A – Z</option><option value="brand">Marque A – Z</option><option value="team">Équipe A – Z</option></select>
         </div>
-        <div class="toolbar-foot"><span class="results-label" id="resultsLabel">0 carte</span><div class="results-right"><select id="sortSelect" class="sorter" aria-label="Trier les cartes"><option value="recent">Plus récentes</option><option value="name">Joueur A – Z</option><option value="brand">Marque A – Z</option><option value="team">Équipe A – Z</option></select></div></div>
         <div id="sportsGalleryToolbar" class="sports-gallery-switch" role="group" aria-label="Mode de consultation des cartes">
           <span class="sports-gallery-title">VUE</span>
         <div id="wishlistViews" class="wishlist-views" role="group" aria-label="Vue de la Wishlist" hidden>

@@ -455,7 +455,7 @@ html[data-rapli-role="editor"] #rapli-admin-login{display:none}
 </head>
 <body data-active="sports">
   <div class="portal">
-    <!-- Regatta navigation remains hidden, with its historical data unchanged. -->
+    <!-- Projects share one portal; navigation is available from each Profile menu. -->
     <div class="portal-hidden-navigation" hidden aria-hidden="true">
       <nav class="product-tabs" role="tablist" aria-label="Choisir le projet Rapli" hidden aria-hidden="true">
           <button type="button" id="tab-sports" class="product-tab" data-product="sports" role="tab" aria-selected="true" aria-controls="panel-sports" tabindex="0" title="Rapli Sports — collection de cartes">
@@ -480,8 +480,8 @@ html[data-rapli-role="editor"] #rapli-admin-login{display:none}
   (() => {
     'use strict';
     const projects=['sports','regatta'];
-    // Regatta remains installed but hidden; its historical data is unchanged.
-    const visibleProjects=['sports'];
+    // Both workspaces are available to visitors and verified editors via Profile navigation.
+    const visibleProjects=['sports','regatta'];
     const tabs=Object.fromEntries(projects.map(n=>[n,document.getElementById('tab-'+n)]));
     const panels=Object.fromEntries(projects.map(n=>[n,document.getElementById('panel-'+n)]));
     const frames=Object.fromEntries(projects.map(n=>[n,document.getElementById('frame-'+n)]));

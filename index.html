@@ -170,47 +170,39 @@ body[data-active="regatta"] .portal-header{background:linear-gradient(120deg,#10
   .app-frame{height:calc(100dvh - 111px)}
 }
 
-/* RAPLI LAB — PREMIUM LATERAL BRAND ATMOSPHERE (option C)
-   Draw behind the existing portal, without changing its size or iframe behavior. */
-@media (min-width:1100px) {
-  body { --side-theme:#15519b; --side-logo:url("sports/assets/logo.png"); background:#050708; isolation:isolate; }
-  body[data-active="sports"] {--side-theme:#15519b;--side-logo:url("sports/assets/logo.png")}
-  body[data-active="regatta"] {--side-theme:#006d7a;--side-logo:url("regatta/assets/logo.webp")}
-  body::before,body::after {
+/* RAPLI LAB — CHROME ARCHIVES MOSAIC + PREMIUM SPECTRUM.
+   Desktop side gutters only; the portal remains above this background. */
+@media(min-width:1100px){
+  body{
+    --side-logo:url("/assets/rapli-archives-mosaic-chrome.webp");
+    background:#050608;isolation:isolate;
+  }
+  body::before,body::after{
     content:"";display:block;position:fixed;inset:0;z-index:0;pointer-events:none;
   }
-  /* Brand-tinted upper edges, atmospheric middle and near-black bottom. */
-  body::before {
-    background:
-      radial-gradient(ellipse 45% 45% at 0% 5%,color-mix(in srgb,var(--side-theme) 58%,#a6a7a2) 0%,transparent 75%),
-      radial-gradient(ellipse 45% 55% at 100% 12%,color-mix(in srgb,var(--side-theme) 65%,#899598) 0%,transparent 76%),
-      linear-gradient(180deg,color-mix(in srgb,var(--side-theme) 88%,#0a1012) 0%,color-mix(in srgb,var(--side-theme) 55%,#080b10) 34%,#101417 66%,#040506 100%);
+  /* Mint > royal blue > orange red > black > red > white > electric blue > black. */
+  body::before{
+    background-image:
+      radial-gradient(circle at 19% 31%,rgba(255,255,255,.07) 0 .45px,transparent .8px),
+      radial-gradient(circle at 73% 62%,rgba(0,0,0,.10) 0 .55px,transparent .9px),
+      linear-gradient(180deg,rgba(3,5,9,.20) 0%,rgba(3,5,9,.06) 26%,rgba(3,5,9,.55) 65%,#050608 100%),
+      linear-gradient(112deg,#68e6c7 0%,#2774dd 15%,#f36638 29%,#07080a 42%,#cb213b 55%,#f3f5f8 69%,#1682ff 84%,#050608 100%);
+    background-size:7px 9px,11px 13px,cover,cover;
+    background-blend-mode:soft-light,soft-light,normal,normal;
   }
-  /* Monochrome photo texture: retain light/dark image detail and original alpha.
-     Avoid upscaling lightweight navigation logos beyond their useful resolution. */
-  body::after {
-    background-image:var(--side-logo);background-repeat:repeat;
-    background-position:center 36px;background-size:clamp(350px,29vw,500px) auto;
-    filter:grayscale(1);opacity:.05;
-    -webkit-mask-image:linear-gradient(180deg,#000 0%,rgba(0,0,0,.95) 24%,rgba(0,0,0,.65) 67%,rgba(0,0,0,.22) 100%);
-    mask-image:linear-gradient(180deg,#000 0%,rgba(0,0,0,.95) 24%,rgba(0,0,0,.65) 67%,rgba(0,0,0,.22) 100%);
-  }
-  .portal {position:relative;z-index:1}
-}
-/* Mobile and small tablets preserve the original lightweight background. */
-
-/* Rapli Regatta: isolate the logo texture to the side gutters on desktop.
-   The main 1360px portal and the mobile single-row scrolling rail are untouched. */
-@media(min-width:1100px){
-  body[data-active="regatta"]::after{
+  body::after{
     background-image:var(--side-logo);
     background-repeat:repeat;
-    background-size:clamp(235px,20vw,350px) auto;
-    background-position:center 65px;
+    background-position:center 36px;
+    background-size:clamp(350px,29vw,500px) auto;
     filter:grayscale(1);
-    opacity:.09;
+    opacity:.08;
+    -webkit-mask-image:linear-gradient(180deg,#000 0%,rgba(0,0,0,.92) 22%,rgba(0,0,0,.58) 65%,rgba(0,0,0,.07) 100%);
+    mask-image:linear-gradient(180deg,#000 0%,rgba(0,0,0,.92) 22%,rgba(0,0,0,.58) 65%,rgba(0,0,0,.07) 100%);
   }
+  .portal{position:relative;z-index:1}
 }
+/* Keep the lightweight mobile/tablet background. */
 
 /* RAPLI LAB — Global cloud actions directly after the last tab.
    One continuous, horizontally swipeable strip on narrow screens. */

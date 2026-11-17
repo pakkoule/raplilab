@@ -21,6 +21,46 @@
   let busy = false, blocked = false, bootPromise = null, saveTimer = null;
   let refreshTimer = null, retryTimer = null;
   const uploaded = new Map(), downloaded = new Map();
+  const loader = MODULE === 'sports' ? document.getElementById('rapliSharedLoading') : null;
+  const loaderMessage = document.getElementById('rapliSharedLoadingMessage');
+  const loaderProgress = document.getElementById('rapliSharedProgress');
+  const loaderPercent = document.getElementById('rapliSharedPercent');
+  const retryButton = document.getElementById('rapliSharedRetry');
+  let imageTotal = 0, imageCompleted = 0;
+  function loading(message, mode = 'loading') {
+    if (!loader) return;
+    document.documentElement.dataset.rapliSharedState = mode === 'ready' ? 'ready' : mode;
+    loader.dataset.status = mode;
+    if (loaderMessage && message) loaderMessage.textContent = message;
+    if (retryButton) retryButton.hidden = mode !== 'error';
+    if (mode === 'loading' && loaderProgress && !imageTotal) {
+      loaderProgress.removeAttribute('value');
+      if (loaderPercent) loaderPercent.textContent = '';
+    }
+  }
+  function collectImages(node, refs = new Set()) {
+    if (typeof node === 'string') {
+      if (node.startsWith(IMAGE_PREFIX)) refs.add(node);
+    } else if (Array.isArray(node)) {
+      node.forEach(value => collectImages(value, refs));
+    } else if (node && typeof node === 'object') {
+      Object.values(node).forEach(value => collectImages(value, refs));
+    }
+    return refs;
+  }
+  function showImageProgress() {
+    if (!loader || !loaderProgress) return;
+    if (!imageTotal) { loaderProgress.removeAttribute('value'); return; }
+    loaderProgress.max = imageTotal;
+    loaderProgress.value = Math.min(imageCompleted, imageTotal);
+    if (loaderPercent)
+      loaderPercent.textContent = imageCompleted + ' / ' + imageTotal + ' images';
+    if (loaderMessage) loaderMessage.textContent = 'Chargement des photos et logos…';
+  }
+  if (retryButton) retryButton.addEventListener('click', () => {
+    loading('Nouvelle tentative de chargement…');
+    void refresh();
+  });
 
   const isEditor = () => window.RapliAdminAccess?.isEditor?.() === true;
   const canEdit = () => isEditor() && initialized && !blocked && !busyLoading;
@@ -126,6 +166,7 @@
           reader.readAsDataURL(data);
         });
         downloaded.set(value, dataUri);
+        if (imageTotal) { imageCompleted++; showImageProgress(); }
         return dataUri;
       }
       return value;
@@ -144,12 +185,14 @@
   }
   function blockOnConflict() {
     blocked = true;
+    loading('Conflit local détecté. Exporte tes données locales avant de recharger.', 'conflict');
     status('Conflit de versions : exporte tes données locales avant de recharger la page.', 'error');
   }
   async function refresh() {
     if (!bridge.ready || busy || dirty || blocked || busyLoading) return;
     if (document.querySelector('dialog[open]') && initialized) return; // Preserve an open form.
     busyLoading = true;
+    if (!initialized) loading('Connexion à Supabase…');
     try {
       const row = await remoteRow();
       const current = Number(row.state_revision || 0);
@@ -167,6 +210,11 @@
         }
       }
       status(initialized ? 'Actualisation de la collection…' : 'Chargement de la collection…', 'pending');
+      if (!initialized && loader) {
+        imageTotal = collectImages(row.state).size;
+        imageCompleted = 0;
+        showImageProgress();
+      }
       const state = await transfer(row.state, 'download');
       // Keep historical Regatta IndexedDB untouched; use the published version in memory.
       if (MODULE === 'regatta') bridge.previewState(state);
@@ -175,9 +223,11 @@
       revision = current;
       initialized = true;
       if (isEditor()) acknowledge(snapshot());
+      loading('Collection à jour ✓', 'ready');
       status('Collection à jour ✓');
     } catch (error) {
       console.warn('Rapli Sports : lecture partagée impossible', error);
+      loading('Chargement impossible. Vérifie ta connexion puis réessaie.', 'error');
       status('Collection indisponible : lecture impossible sur Supabase.', 'error');
       if (!initialized && !isEditor())
         bridge.previewState({records:[], logos:[]}); // Never display local demo data as public collection.
@@ -246,6 +296,7 @@
       setInterval(() => { void refresh(); }, 20000);
     })().catch(error => {
       console.warn('Rapli Sports : initialisation commune impossible', error);
+      loading('Connexion impossible. Réessaie le chargement.', 'error');
       status('Collection indisponible : connexion à vérifier.', 'error');
     });
     return bootPromise;

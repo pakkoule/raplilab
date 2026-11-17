@@ -2365,6 +2365,57 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
   .sports-catalogue-controls>.nav-actions :is(#logosBtn,#sportsRandomBtn,#addCardBtn){transition:none}
   .sports-catalogue-controls>.nav-actions :is(#logosBtn,#sportsRandomBtn,#addCardBtn):hover:not(:disabled){transform:none}
 }
+
+</style>
+<style id="rapli-athlete-portrait-crop">
+/* Crop adjustments are display-only: no source PNG is rewritten. */
+#cardGrid.is-gallery-layout .is-group-gallery .sports-gallery-group[data-group-type="athlete"] .sports-gallery-group-picture img{
+  top:0!important;left:0!important;right:0!important;bottom:0!important;
+  width:100%!important;height:100%!important;
+  object-fit:contain!important;object-position:center bottom!important;
+  transform:translate(var(--portrait-x,0%),var(--portrait-y,0%)) scale(var(--portrait-scale,1))!important;
+  transform-origin:center center;
+}
+.portrait-crop-dialog .modal-body{display:grid;gap:14px;padding:16px}
+.portrait-crop-stage{
+  position:relative;isolation:isolate;width:min(100%,360px);aspect-ratio:1/1;
+  margin:0 auto;overflow:hidden;touch-action:none;cursor:grab;
+  border-radius:13px;border:2px solid transparent;
+  background:
+    linear-gradient(135deg,#f9fdff,#ccdbe5 34%,#f8fafb 57%,#b8cbd5 85%,#fafcfe) padding-box,
+    linear-gradient(125deg,#69cdbf,#7ca7e8 33%,#d3aee4 64%,#f1c794 83%,#7eced3) border-box;
+  box-shadow:inset 0 1px 0 #fff,0 5px 20px #193b5b30;
+}
+.portrait-crop-stage.is-dragging{cursor:grabbing}
+.portrait-crop-stage img{
+  position:absolute;inset:0;display:block;width:100%;height:100%;
+  object-fit:contain;object-position:center bottom;pointer-events:none;
+  transform:translate(var(--portrait-x,0%),var(--portrait-y,0%)) scale(var(--portrait-scale,1));
+  transform-origin:center center;
+  -webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 78%,rgba(0,0,0,.92) 84%,rgba(0,0,0,.55) 92%,transparent 100%);
+  mask-image:linear-gradient(to bottom,#000 0%,#000 78%,rgba(0,0,0,.92) 84%,rgba(0,0,0,.55) 92%,transparent 100%);
+}
+.portrait-crop-stage::after{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(to top,rgba(9,26,42,.77),rgba(18,42,61,.24) 32%,transparent 64%);
+}
+.portrait-crop-name{
+  position:absolute;bottom:9px;left:8px;right:8px;z-index:2;text-align:center;
+  font:900 clamp(13px,3vw,18px)/1.2 Poppins,system-ui,sans-serif;
+  overflow-wrap:anywhere;pointer-events:none;
+  background:linear-gradient(105deg,#fff,#dceff5 24%,#fadfb1 48%,#e0d2fa 69%,#b7f3e2 88%,#fff);
+  background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  filter:drop-shadow(0 1px 2px #071222);
+}
+.portrait-crop-controls{display:grid;gap:10px}
+.portrait-crop-controls label{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;
+  color:#345771;font:800 12px Poppins,system-ui,sans-serif}
+.portrait-crop-controls label input{grid-column:1/-1;width:100%;accent-color:#27a7aa;cursor:pointer}
+.portrait-crop-controls output{font-variant-numeric:tabular-nums;color:#173f55}
+.portrait-crop-help{margin:0;color:#526f80;font:600 11px/1.45 Poppins,system-ui,sans-serif;text-align:center}
+.portrait-crop-actions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+#cropPortraitBtn[hidden]{display:none!important}
+@media(max-width:530px){.portrait-crop-dialog .modal-body{padding:12px}.portrait-crop-stage{width:min(100%,320px)}}
 </style>
 </head>
 <body>
@@ -2497,11 +2548,34 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
       </div>
     </form>
   </dialog>
+  <dialog id="portraitCropDialog" class="modal small portrait-crop-dialog" aria-labelledby="portraitCropTitle">
+    <div class="modal-header"><div><span class="modal-kicker">RAPLI SPORTS / PORTRAITS</span><h2 id="portraitCropTitle" class="modal-title">Recadrer le portrait</h2></div><button type="button" class="close-modal" data-close="portraitCropDialog" aria-label="Fermer">×</button></div>
+    <div class="modal-body">
+      <div id="portraitCropStage" class="portrait-crop-stage" aria-label="Aperçu du cadrage, faire glisser la photo pour la déplacer" role="img">
+        <img id="portraitCropImage" alt="Aperçu du portrait à recadrer" draggable="false">
+        <span id="portraitCropName" class="portrait-crop-name"></span>
+      </div>
+      <p class="portrait-crop-help">Fais glisser la photo à la souris ou au doigt. Utilise les curseurs pour affiner le cadrage. Le PNG original reste intact.</p>
+      <div class="portrait-crop-controls">
+        <label for="portraitCropScale">Zoom <output id="portraitCropScaleValue" for="portraitCropScale">100 %</output>
+          <input id="portraitCropScale" type="range" min="70" max="160" step="1" value="100"></label>
+        <label for="portraitCropX">Horizontal <output id="portraitCropXValue" for="portraitCropX">0 %</output>
+          <input id="portraitCropX" type="range" min="-35" max="35" step="1" value="0"></label>
+        <label for="portraitCropY">Vertical <output id="portraitCropYValue" for="portraitCropY">0 %</output>
+          <input id="portraitCropY" type="range" min="-35" max="35" step="1" value="0"></label>
+      </div>
+      <div class="portrait-crop-actions">
+        <button id="portraitCropReset" type="button" class="button button-ghost">Réinitialiser</button>
+        <button id="portraitCropCancel" type="button" class="button button-soft">Annuler</button>
+        <button id="portraitCropSave" type="button" class="button button-primary">Appliquer le cadrage</button>
+      </div>
+    </div>
+  </dialog>
   <dialog id="logoDialog" class="modal small" aria-labelledby="logoDialogTitle">
     <div class="modal-header"><div><span class="modal-kicker">RAPLI SPORTS / IDENTITÉS VISUELLES</span><h2 id="logoDialogTitle" class="modal-title">Bibliothèque de logos</h2></div><button type="button" class="close-modal" data-close="logoDialog" aria-label="Fermer">×</button></div>
     <div class="modal-body">
       <div class="logo-tabs"><button type="button" class="logo-tab active" data-logo-type="brand">Marques</button><button type="button" class="logo-tab" data-logo-type="team">Équipes</button><button type="button" class="logo-tab" data-logo-type="rookie">Rookie / RC</button><button type="button" class="logo-tab" data-logo-type="athlete">Portraits athlètes</button><button type="button" class="logo-tab" data-logo-type="nationality">Pays</button><button type="button" class="logo-tab" data-logo-type="sport">Sports</button><button type="button" class="logo-tab" data-logo-type="grading">Organismes de grading</button><button type="button" class="logo-tab" data-logo-type="tag">Tags / variations</button><button type="button" class="logo-tab" data-logo-type="labels">Étiquettes</button><button type="button" class="logo-tab" data-logo-type="collector">Style des badges</button></div>
-      <div class="logo-create" id="logoCreatePanel"><p class="logo-help" id="logoCreateHelp">Associe une image à une marque ou une équipe : son logo s'affichera automatiquement sur toutes les cartes correspondantes.</p><div class="logo-create-row"><div class="input-group"><label id="logoNameLabel" for="logoName">Nom de la marque</label><select id="logoAthletePicker" class="select saved-value-picker" aria-label="Choisir un athlète déjà présent dans la collection" hidden><option value="">Choisir un athlète enregistré…</option></select><select id="logoTeamPicker" class="select saved-value-picker" aria-label="Choisir une équipe enregistrée" hidden><option value="">Choisir une équipe…</option></select><select id="logoTagPicker" class="select saved-value-picker" aria-label="Choisir un tag enregistré" hidden><option value="">Choisir un tag…</option></select><select id="logoGroupPicker" class="select saved-value-picker" aria-label="Choisir un pays ou un sport" hidden><option value="">Choisir une catégorie…</option></select><input class="input" id="logoName" list="logoNamesList" maxlength="100" placeholder="Topps"><datalist id="logoNamesList"></datalist></div><div class="input-group"><label id="logoImageLabel">Image du logo</label><label class="logo-file" id="logoFileLabel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 16V4m-5 5 5-5 5 5M4 17v4h16v-4"/></svg><span id="logoFileText">Choisir</span><input type="file" id="logoFileInput" accept="image/png,image/jpeg,image/webp"></label></div><button id="saveLogoBtn" type="button" class="button button-primary">Ajouter</button></div>
+      <div class="logo-create" id="logoCreatePanel"><p class="logo-help" id="logoCreateHelp">Associe une image à une marque ou une équipe : son logo s'affichera automatiquement sur toutes les cartes correspondantes.</p><div class="logo-create-row"><div class="input-group"><label id="logoNameLabel" for="logoName">Nom de la marque</label><select id="logoAthletePicker" class="select saved-value-picker" aria-label="Choisir un athlète déjà présent dans la collection" hidden><option value="">Choisir un athlète enregistré…</option></select><select id="logoTeamPicker" class="select saved-value-picker" aria-label="Choisir une équipe enregistrée" hidden><option value="">Choisir une équipe…</option></select><select id="logoTagPicker" class="select saved-value-picker" aria-label="Choisir un tag enregistré" hidden><option value="">Choisir un tag…</option></select><select id="logoGroupPicker" class="select saved-value-picker" aria-label="Choisir un pays ou un sport" hidden><option value="">Choisir une catégorie…</option></select><input class="input" id="logoName" list="logoNamesList" maxlength="100" placeholder="Topps"><datalist id="logoNamesList"></datalist></div><div class="input-group"><label id="logoImageLabel">Image du logo</label><label class="logo-file" id="logoFileLabel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 16V4m-5 5 5-5 5 5M4 17v4h16v-4"/></svg><span id="logoFileText">Choisir</span><input type="file" id="logoFileInput" accept="image/png,image/jpeg,image/webp"></label></div><button id="cropPortraitBtn" type="button" class="button button-soft" hidden>✂ Recadrer</button><button id="saveLogoBtn" type="button" class="button button-primary">Ajouter</button></div>
       <section id="gradingStylePanel" class="grading-style-settings" aria-label="Personnaliser la bordure de grading" hidden>
         <div class="grading-style-colors">
           <label for="gradingEdgeStart">Couleur bordure · début<input id="gradingEdgeStart" type="color" value="#7aaeb8"></label>
@@ -2613,6 +2687,7 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
         return false;
       };
       let db=null, cards=[], logos=[], currentView='own', currentTags=[], currentPhoto='', editingId=null, logoType='brand', pendingLogoPhoto='', toastTimer=null;
+      let pendingPortraitCrop={scale:1,x:0,y:0},portraitCropEditing=null,portraitCropPointer=null;
       let sportsGalleryLayout='details',sportsGallerySelected=null,sportsGalleryPage=1;
       const rainbowEngine=window.RapliSportsRainbow;
       let rainbowEditingId=null,rainbowAssignments=new Map(),rainbowBaseVariant='',randomSportsCardId=null;
@@ -3469,9 +3544,25 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
           '<span class="sports-gallery-athlete-foil">'+safeText(athlete)+'</span>'+
           '</span></button></article>';
       }
+      const PORTRAIT_CROP_DEFAULT=Object.freeze({scale:1,x:0,y:0});
+      function portraitCropConfig(value){
+        const clamp=(n,low,high,fallback)=>Number.isFinite(Number(n))&&n!==null&&n!==''?
+          Math.min(high,Math.max(low,Number(n))):fallback;
+        return {
+          scale:Math.round(clamp(value?.scale,.7,1.6,1)*100)/100,
+          x:Math.round(clamp(value?.x,-35,35,0)*10)/10,
+          y:Math.round(clamp(value?.y,-35,35,0)*10)/10
+        };
+      }
+      function portraitCropStyle(value){
+        const c=portraitCropConfig(value);
+        return '--portrait-x:'+c.x+'%;--portrait-y:'+c.y+'%;--portrait-scale:'+c.scale;
+      }
       function sportsGalleryGroupCard(group,type){
         const isCategoryView=Boolean(SPORTS_TAG_GALLERY_TYPES[type]);
         const picture=group.untagged||group.uncategorized?'':logoFor(isCategoryView?'tag':type,group.label);
+        const portraitProfile=type==='athlete'?logos.find(row=>row.type==='athlete'&&normalize(row.name)===normalize(group.label)):null;
+        const portraitStyle=type==='athlete'?' style="'+portraitCropStyle(portraitProfile?.crop)+'"':'';
         const initials=group.label.split(/\s+/).filter(Boolean).slice(0,2).map(x=>x[0]).join('').toUpperCase();
         const symbol=type==='nationality'?(group.label==='Nationalité non renseignée'?'🌍':group.label.slice(-4)):
           type==='sport'?sportsGallerySportIcon(group.label):
@@ -3489,7 +3580,7 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
         }[type]||'COLLECTION';
         const foilTitle='<span class="sports-gallery-athlete-foil sports-gallery-group-title">'+safeText(group.label)+'</span>';
         return '<button type="button" class="sports-gallery-group" data-group-type="'+type+'" data-sports-gallery-group="'+safeText(group.key)+'" aria-label="Voir les cartes de '+safeText(group.label)+'">'+
-         '<span class="sports-gallery-group-picture">'+(picture?'<img src="'+picture+'" alt="'+(type==='athlete'?'Portrait de ':'Icône de ')+safeText(group.label)+'" loading="lazy" decoding="async">':fallback)+foilTitle+'</span></button>';
+         '<span class="sports-gallery-group-picture">'+(picture?'<img src="'+picture+'" alt="'+(type==='athlete'?'Portrait de ':'Icône de ')+safeText(group.label)+'"'+portraitStyle+' loading="lazy" decoding="async">':fallback)+foilTitle+'</span></button>';
       }
       function sportsGalleryPagination(total){
         const pages=Math.ceil(total/SPORTS_GALLERY_PAGE_SIZE);
@@ -3928,9 +4019,70 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
         if(!$('sportsRandomDialog').open)openModal('sportsRandomDialog');
       }
       function clearFilters(){$('filterDream').checked=false;$('filterSearch').value='';['filterBrand','filterTeam','filterTag','filterSport','filterAuto','filterPatch'].forEach(id=>$(id).value='');$('filterNumbered').checked=false;sportsGalleryPage=1;sportsGallerySelected=null;renderAll()}
+
+      function athleteLogoByName(name){
+        return logos.find(row=>row.type==='athlete'&&normalize(row.name)===normalize(name));
+      }
+      function updateCropButton(){
+        const profile=athleteLogoByName($('logoName').value.trim());
+        $('cropPortraitBtn').hidden=logoType!=='athlete'||!(imgSafe(pendingLogoPhoto)||imgSafe(profile?.image));
+      }
+      function renderPortraitCrop(){
+        if(!portraitCropEditing)return;
+        const c=portraitCropConfig(portraitCropEditing.crop);
+        portraitCropEditing.crop=c;
+        const preview=$('portraitCropStage');
+        preview.style.setProperty('--portrait-x',c.x+'%');
+        preview.style.setProperty('--portrait-y',c.y+'%');
+        preview.style.setProperty('--portrait-scale',String(c.scale));
+        $('portraitCropScale').value=Math.round(c.scale*100);
+        $('portraitCropX').value=c.x;
+        $('portraitCropY').value=c.y;
+        $('portraitCropScaleValue').textContent=Math.round(c.scale*100)+' %';
+        $('portraitCropXValue').textContent=c.x+' %';
+        $('portraitCropYValue').textContent=c.y+' %';
+      }
+      function openPortraitCrop(image,name,crop,existingId=''){
+        if(!requireRapliEditor()||!imgSafe(image))return;
+        portraitCropEditing={existingId,image,name:String(name||'Athlète'),crop:portraitCropConfig(crop)};
+        $('portraitCropImage').src=image;
+        $('portraitCropName').textContent=portraitCropEditing.name;
+        renderPortraitCrop();
+        openModal('portraitCropDialog');
+      }
+      function cropExistingPortrait(id){
+        const profile=logos.find(row=>row.id===id&&row.type==='athlete'&&imgSafe(row.image));
+        if(!profile)return;
+        openPortraitCrop(profile.image,profile.name,profile.crop,profile.id);
+      }
+      async function applyPortraitCrop(){
+        if(!portraitCropEditing||!requireRapliEditor())return;
+        const crop=portraitCropConfig(portraitCropEditing.crop);
+        const targetId=portraitCropEditing.existingId;
+        const saveButton=$('portraitCropSave');
+        saveButton.disabled=true;
+        try{
+          if(targetId){
+            const target=logos.find(row=>row.id===targetId&&row.type==='athlete');
+            if(!target)throw Error('Portrait non retrouvé');
+            await saveLogo({...target,crop});
+            renderLogos();renderAll();
+            showToast('Cadrage du portrait enregistré ✓');
+          }else{
+            pendingPortraitCrop=crop;
+            updateCropButton();
+            showToast('Cadrage prêt ✓ Enregistre le portrait pour le conserver.');
+          }
+          closeModal('portraitCropDialog');
+          portraitCropEditing=null;
+        }catch(error){
+          console.error(error);
+          showToast('Impossible d’enregistrer le recadrage.');
+        }finally{saveButton.disabled=false;}
+      }
       function setLogoType(type){
         if(!['brand','team','rookie','athlete','nationality','sport','grading','tag','labels','collector'].includes(type))type='brand';
-        logoType=type;pendingLogoPhoto='';$('logoName').value='';$('logoFileInput').value='';$('logoFileText').textContent='Choisir';
+        logoType=type;pendingLogoPhoto='';pendingPortraitCrop={...PORTRAIT_CROP_DEFAULT};$('logoName').value='';$('logoFileInput').value='';$('logoFileText').textContent='Choisir';
         $('logoAthletePicker').hidden=type!=='athlete';$('logoAthletePicker').value='';
         $('logoTeamPicker').hidden=type!=='team';$('logoTeamPicker').value='';
         $('logoTagPicker').hidden=type!=='tag';$('logoTagPicker').value='';
@@ -3958,6 +4110,7 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
         document.querySelectorAll('.logo-tab').forEach(b=>b.classList.toggle('active',b.dataset.logoType===type));
         if(styleTab)openCollectorSettings();else if(labelsTab)renderLabelEditors();else renderLogos();
         if(type==='grading')syncGradingEditor(true);
+        updateCropButton();
       }
       function syncGradingEditor(loadSaved=false){
         if(logoType!=='grading')return;
@@ -4008,6 +4161,8 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
           panel.innerHTML=data.length?data.map(l=>
             '<div class="logo-entry" data-logo-type="'+safeText(logoType)+'">'+brandBadge(logoType,l.name)+
             '<span class="logo-entry-name">'+safeText(l.name)+'</span>'+
+            (logoType==='athlete'?
+              '<button type="button" class="grading-edit-button" data-crop-portrait="'+safeText(l.id)+'" aria-label="Recadrer le portrait de '+safeText(l.name)+'">✂ Recadrer</button>':'')+
             ((logoType==='brand'||logoType==='team')?
               '<button type="button" class="logo-pin-toggle" data-pin-logo="'+safeText(l.id)+
               '" aria-pressed="'+(l.pinned===true)+'" title="'+(l.pinned===true?'Désépingler':'Épingler dans les sélecteurs')+
@@ -4045,7 +4200,8 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
           {...existing,id,type:'grading',name,image:pendingLogoPhoto||existing?.image||'',
             borderStart:validCollectorColor($('gradingEdgeStart').value,GRADE_EDGE_DEFAULTS.borderStart),
             borderEnd:validCollectorColor($('gradingEdgeEnd').value,GRADE_EDGE_DEFAULTS.borderEnd)}:
-          {...existing,id,type:logoType,name,image:pendingLogoPhoto,pinned:existing?.pinned===true};
+          {...existing,id,type:logoType,name,image:pendingLogoPhoto,pinned:existing?.pinned===true,
+            ...(logoType==='athlete'?{crop:portraitCropConfig(pendingPortraitCrop)}:{})};
         try{
           await saveLogo(row);
           setLogoType(logoType);renderAll();
@@ -4199,6 +4355,7 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
       $('logoAthletePicker').addEventListener('change',event=>{
         if(event.target.value)$('logoName').value=event.target.value;
         event.target.value='';
+        updateCropButton();
       });
       for(const id of ['logoTeamPicker','logoTagPicker'])$(id).addEventListener('change',event=>{
         if(event.target.value){
@@ -4215,10 +4372,81 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
       $('logoName').addEventListener('input',event=>{
         if(logoType==='tag')syncTagCategoryForm(event.target.value.trim());
         if(logoType==='grading')syncGradingEditor(true);
+        if(logoType==='athlete')updateCropButton();
       });
       for(const id of ['gradingEdgeStart','gradingEdgeEnd'])$(id).addEventListener('input',()=>syncGradingEditor());
-      $('logoFileInput').addEventListener('change',async e=>{const file=e.target.files[0];if(!file)return;try{pendingLogoPhoto=logoType==='athlete'?await readPhoto(file,620,.86,'portrait'):await readPhoto(file,450,.93,'logo');$('logoFileText').textContent='Prêt ✓';if(logoType==='grading')syncGradingEditor();showToast('Logo prêt à enregistrer')}catch(err){showToast(err.message||'Image invalide')}});
+      $('logoFileInput').addEventListener('change',async e=>{
+        const file=e.target.files[0];if(!file)return;
+        const selectedType=logoType;
+        try{
+          const photo=selectedType==='athlete'?await readPhoto(file,620,.86,'portrait'):await readPhoto(file,450,.93,'logo');
+          if(selectedType!==logoType)return;
+          pendingLogoPhoto=photo;
+          $('logoFileText').textContent='Prêt ✓';
+          if(selectedType==='athlete'){
+            pendingPortraitCrop={...PORTRAIT_CROP_DEFAULT};
+            updateCropButton();
+            openPortraitCrop(photo,$('logoName').value.trim(),pendingPortraitCrop);
+          }else{
+            if(selectedType==='grading')syncGradingEditor();
+            showToast('Logo prêt à enregistrer');
+          }
+        }catch(err){showToast(err.message||'Image invalide')}
+      });
       $('saveLogoBtn').addEventListener('click',saveNewLogo);
+      $('cropPortraitBtn').addEventListener('click',()=>{
+        if(!requireRapliEditor())return;
+        const profile=athleteLogoByName($('logoName').value.trim());
+        if(imgSafe(pendingLogoPhoto))openPortraitCrop(pendingLogoPhoto,$('logoName').value.trim(),pendingPortraitCrop);
+        else if(profile)cropExistingPortrait(profile.id);
+      });
+      $('portraitCropCancel').addEventListener('click',()=>closeModal('portraitCropDialog'));
+      $('portraitCropReset').addEventListener('click',()=>{
+        if(!portraitCropEditing)return;
+        portraitCropEditing.crop={...PORTRAIT_CROP_DEFAULT};
+        renderPortraitCrop();
+      });
+      $('portraitCropSave').addEventListener('click',applyPortraitCrop);
+      for(const [field,property,convert] of [
+        ['portraitCropScale','scale',n=>n/100],
+        ['portraitCropX','x',Number],
+        ['portraitCropY','y',Number]
+      ]){
+        $(field).addEventListener('input',event=>{
+          if(!portraitCropEditing)return;
+          portraitCropEditing.crop[property]=convert(Number(event.target.value));
+          renderPortraitCrop();
+        });
+      }
+      const portraitStage=$('portraitCropStage');
+      portraitStage.addEventListener('pointerdown',event=>{
+        if(!portraitCropEditing||event.button!==0)return;
+        event.preventDefault();
+        portraitCropPointer={id:event.pointerId,clientX:event.clientX,clientY:event.clientY,
+          origin:{...portraitCropEditing.crop}};
+        portraitStage.setPointerCapture?.(event.pointerId);
+        portraitStage.classList.add('is-dragging');
+      });
+      portraitStage.addEventListener('pointermove',event=>{
+        if(!portraitCropEditing||!portraitCropPointer||portraitCropPointer.id!==event.pointerId)return;
+        event.preventDefault();
+        const box=portraitStage.getBoundingClientRect();
+        portraitCropEditing.crop.x=portraitCropPointer.origin.x+
+          (event.clientX-portraitCropPointer.clientX)/Math.max(box.width,1)*100;
+        portraitCropEditing.crop.y=portraitCropPointer.origin.y+
+          (event.clientY-portraitCropPointer.clientY)/Math.max(box.height,1)*100;
+        renderPortraitCrop();
+      });
+      for(const type of ['pointerup','pointercancel','lostpointercapture']){
+        portraitStage.addEventListener(type,event=>{
+          if(portraitCropPointer?.id!==event.pointerId)return;
+          portraitCropPointer=null;portraitStage.classList.remove('is-dragging');
+        });
+      }
+      $('portraitCropDialog').addEventListener('close',()=>{
+        portraitCropPointer=null;portraitCropEditing=null;
+        portraitStage.classList.remove('is-dragging');
+      });
       ['collectorNumberFont','collectorRookieFont','collectorBackground','collectorForeground','collectorPremium','collectorByPrintRun']
         .forEach(id=>$(id).addEventListener('change',updateCollectorPreview));
       ['collectorBackground','collectorForeground'].forEach(id=>$(id).addEventListener('input',updateCollectorPreview));
@@ -4259,6 +4487,8 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
         if(row)updateLabelPreview(row);
       });
       $('logoList').addEventListener('click',async e=>{
+        const crop=e.target.closest('[data-crop-portrait]');
+        if(crop){cropExistingPortrait(crop.dataset.cropPortrait);return;}
         const pin=e.target.closest('[data-pin-logo]');
         if(pin){
           if(!requireRapliEditor())return;

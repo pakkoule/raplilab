@@ -2737,6 +2737,13 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
 .sports-navigation-return:focus-visible{outline:2px solid #419e94;outline-offset:2px}
 .sports-navigation-return[hidden]{display:none!important}
 </style>
+<style id="rapli-pr3-athlete-country-active-group">
+.sports-athlete-country-editor{display:grid;gap:7px;margin:12px 0;padding:11px;border:1px solid #bcd8d4;border-radius:11px;background:linear-gradient(120deg,#eefbf5,#f0f3fd);color:#28576f;font:800 11px Poppins,sans-serif}
+.sports-athlete-country-editor[hidden]{display:none!important}
+.sports-athlete-country-editor small{font-size:10px;font-weight:500;line-height:1.4;color:#607c8c}
+#logoList .sports-athlete-country-label{color:#456d80;font:700 10px Poppins,sans-serif;padding:3px 7px;border-radius:7px;background:#e7f3f0}
+.sports-group-active-pill{display:inline-flex;align-items:center;margin-right:8px;padding:4px 7px;border:1px solid #8ccabc;border-radius:999px;background:linear-gradient(115deg,#d9f5e9,#e7eefb);color:#256858;font:900 9px Poppins,sans-serif;letter-spacing:.05em;vertical-align:middle}
+</style>
   <link rel="stylesheet" href="card-tools.css">
 </head>
 <body>
@@ -2880,6 +2887,12 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
     <div class="modal-body">
       <div class="logo-tabs"><button type="button" class="logo-tab active" data-logo-type="brand">Marques</button><button type="button" class="logo-tab" data-logo-type="team">Équipes</button><button type="button" class="logo-tab" data-logo-type="rookie">Rookie / RC</button><button type="button" class="logo-tab" data-logo-type="athlete">Portraits athlètes</button><button type="button" class="logo-tab" data-logo-type="nationality">Pays</button><button type="button" class="logo-tab" data-logo-type="sport">Sports</button><button type="button" class="logo-tab" data-logo-type="grading">Organismes de grading</button><button type="button" class="logo-tab" data-logo-type="tag">Tags / variations</button><button type="button" class="logo-tab" data-logo-type="labels">Étiquettes</button><button type="button" class="logo-tab" data-logo-type="collector">Style des badges</button></div>
       <div class="logo-create" id="logoCreatePanel"><p class="logo-help" id="logoCreateHelp">Associe une image à une marque ou une équipe : son logo s'affichera automatiquement sur toutes les cartes correspondantes.</p><div class="logo-create-row"><div class="input-group"><label id="logoNameLabel" for="logoName">Nom de la marque</label><select id="logoAthletePicker" class="select saved-value-picker" aria-label="Choisir un athlète déjà présent dans la collection" hidden><option value="">Choisir un athlète enregistré…</option></select><select id="logoTeamPicker" class="select saved-value-picker" aria-label="Choisir une équipe enregistrée" hidden><option value="">Choisir une équipe…</option></select><select id="logoTagPicker" class="select saved-value-picker" aria-label="Choisir un tag enregistré" hidden><option value="">Choisir un tag…</option></select><select id="logoGroupPicker" class="select saved-value-picker" aria-label="Choisir un pays ou un sport" hidden><option value="">Choisir une catégorie…</option></select><input class="input" id="logoName" list="logoNamesList" maxlength="100" placeholder="Topps"><datalist id="logoNamesList"></datalist></div><div class="input-group"><label id="logoImageLabel">Image du logo</label><label class="logo-file" id="logoFileLabel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 16V4m-5 5 5-5 5 5M4 17v4h16v-4"/></svg><span id="logoFileText">Choisir</span><input type="file" id="logoFileInput" accept="image/png,image/jpeg,image/webp"></label></div><button id="cropPortraitBtn" type="button" class="button button-soft" hidden>✂ Recadrer</button><button id="saveLogoBtn" type="button" class="button button-primary">Ajouter</button></div>
+      <label id="athleteNationalityWrap" class="sports-athlete-country-editor" for="athleteNationality" hidden>
+        PAYS DE L’ATHLÈTE
+        <input id="athleteNationality" class="input" list="athleteCountryList" maxlength="100" placeholder="France, États-Unis…" autocomplete="off">
+        <datalist id="athleteCountryList"></datalist>
+        <small>Ce pays apparaît sur les cartes sans pays renseigné manuellement.</small>
+      </label>
       <section id="countryIconPanel" class="country-icon-settings" hidden>
         <div class="country-icon-editor">
           <label>ICÔNE PAYS · FICHE CARTE
@@ -3045,7 +3058,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
       function countryTagKey(value){return normalize(countryTagLabel(value))}
       function savedCountryTags(){
         return savedValues(cards.flatMap(card=>cardPlayers(card).map(player=>countryTagLabel(player.nationality)))
-          .concat(logos.filter(row=>row.type==='nationality').map(row=>countryTagLabel(row.name))));
+          .concat(logos.filter(row=>row.type==='nationality').map(row=>countryTagLabel(row.name)),logos.filter(row=>row.type==='athlete').map(row=>countryTagLabel(row.nationality))));
       }
       function countryLogoProfile(name){
         const key=countryTagKey(name);
@@ -3072,9 +3085,14 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
           nationality:String(item.nationality??'').trim().slice(0,100)
         };
       }
+      function athleteCountry(name){
+        const profile=logos.find(item=>item.type==='athlete'&&normalize(item.name)===normalize(name));
+        return countryTagLabel(profile?.nationality||'');
+      }
       function cardPlayers(card){
         const list=Array.isArray(card?.players)?card.players.slice(0,MAX_CARD_PLAYERS).map(normalizedPlayer).filter(p=>p.name):[];
-        return list.length?list:[normalizedPlayer({name:card?.player||''})];
+        const players=list.length?list:[normalizedPlayer({name:card?.player||''})];
+        return players.map(player=>({...player,nationality:countryTagLabel(player.nationality)||athleteCountry(player.name)}));
       }
       function savedValues(values){
         const seen=new Map();
@@ -4008,7 +4026,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
           const group=groups.find(x=>x.key===sportsGallerySelected);
           if(!group){sportsGallerySelected=null;sportsGalleryPage=1;}
           else return '<button type="button" class="sports-gallery-back" data-sports-gallery-back>← Tous les groupes</button>'+
-            '<div class="sports-gallery-breadcrumb">'+safeText(group.label)+' · '+group.items.length+' carte'+(group.items.length>1?'s':'')+'</div>'+
+            '<div class="sports-gallery-breadcrumb"><span class="sports-group-active-pill">GROUPE ACTIF</span>'+safeText(group.label)+' · '+group.items.length+' carte'+(group.items.length>1?'s':'')+'</div>'+
             sportsGalleryPageMarkup(group.items,sportsGalleryCard);
         }
         return sportsGalleryPageMarkup(groups,g=>sportsGalleryGroupCard(g,sportsGalleryLayout),true);
@@ -4452,10 +4470,17 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
           showToast('Impossible d’enregistrer le recadrage.');
         }finally{saveButton.disabled=false;}
       }
+      function syncAthleteCountry(){
+        if(logoType!=='athlete')return;
+        $('athleteNationality').value=athleteCountry($('logoName').value.trim());
+        const list=$('athleteCountryList');list.replaceChildren();
+        savedCountryTags().forEach(item=>list.append(new Option(item,item)));
+      }
       function setLogoType(type){
         if(!['brand','team','rookie','athlete','nationality','sport','grading','tag','labels','collector'].includes(type))type='brand';
-        logoType=type;pendingLogoPhoto='';countryDraft={tileImage:null,catalogImage:null};pendingPortraitCrop={...PORTRAIT_CROP_DEFAULT};$('logoName').value='';$('logoFileInput').value='';$('logoFileText').textContent='Choisir';
+        logoType=type;pendingLogoPhoto='';countryDraft={tileImage:null,catalogImage:null};pendingPortraitCrop={...PORTRAIT_CROP_DEFAULT};$('athleteNationality').value='';$('logoName').value='';$('logoFileInput').value='';$('logoFileText').textContent='Choisir';
         $('logoAthletePicker').hidden=type!=='athlete';$('logoAthletePicker').value='';
+        $('athleteNationalityWrap').hidden=type!=='athlete';
         $('logoTeamPicker').hidden=type!=='team';$('logoTeamPicker').value='';
         $('logoTagPicker').hidden=type!=='tag';$('logoTagPicker').value='';
         $('logoGroupPicker').hidden=!['nationality','sport','grading'].includes(type);$('logoGroupPicker').value='';
@@ -4486,6 +4511,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         if(styleTab)openCollectorSettings();else if(labelsTab)renderLabelEditors();else renderLogos();
         if(type==='grading')syncGradingEditor(true);
         if(type==='nationality')syncCountryIconEditor(true);
+        if(type==='athlete')syncAthleteCountry();
         updateCropButton();
       }
       function syncCountryIconEditor(loadSaved=false){
@@ -4572,6 +4598,8 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
             '<div class="logo-entry" data-logo-type="'+safeText(logoType)+'">'+brandBadge(logoType,l.name)+
             '<span class="logo-entry-name">'+safeText(l.name)+'</span>'+
             (logoType==='athlete'?
+              '<span class="sports-athlete-country-label">'+safeText(countryTagLabel(l.nationality)||'Pays non renseigné')+'</span>'+
+              '<button type="button" class="grading-edit-button" data-edit-athlete="'+safeText(l.name)+'" aria-label="Modifier le pays et le portrait de '+safeText(l.name)+'">Modifier</button>'+
               '<button type="button" class="grading-edit-button" data-crop-portrait="'+safeText(l.id)+'" aria-label="Recadrer le portrait de '+safeText(l.name)+'">✂ Recadrer</button>':'')+
             ((logoType==='brand'||logoType==='team')?
               '<button type="button" class="logo-pin-toggle" data-pin-logo="'+safeText(l.id)+
@@ -4608,7 +4636,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         if(['collector','labels'].includes(logoType))return;
         const existing=logoType==='nationality'?countryLogoProfile(name):
           logos.find(row=>row.type===logoType&&normalize(row.name)===normalize(name));
-        if(!['tag','grading','nationality'].includes(logoType)&&!pendingLogoPhoto)return showToast(logoType==='athlete'?'Sélectionne un portrait.':'Sélectionne une image de logo.');
+        if(!['tag','grading','nationality'].includes(logoType)&&!pendingLogoPhoto&&!(logoType==='athlete'&&existing?.image))return showToast(logoType==='athlete'?'Sélectionne un portrait.':'Sélectionne une image de logo.');
         const id=existing?.id||logoType+':'+normalize(name);
         const row=logoType==='tag'?
           {...existing,id,type:'tag',name,image:pendingLogoPhoto||existing?.image||'',categories:currentTagCategories(),brands:currentTagBrands()}:
@@ -4621,8 +4649,9 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
           {...existing,id,type:'grading',name,image:pendingLogoPhoto||existing?.image||'',
             borderStart:validCollectorColor($('gradingEdgeStart').value,GRADE_EDGE_DEFAULTS.borderStart),
             borderEnd:validCollectorColor($('gradingEdgeEnd').value,GRADE_EDGE_DEFAULTS.borderEnd)}:
-          {...existing,id,type:logoType,name,image:pendingLogoPhoto,pinned:existing?.pinned===true,
-            ...(logoType==='athlete'?{crop:portraitCropConfig(pendingPortraitCrop)}:{})};
+          {...existing,id,type:logoType,name,image:pendingLogoPhoto||existing?.image||'',pinned:existing?.pinned===true,
+            ...(logoType==='athlete'?{crop:existing?.crop&&!pendingLogoPhoto?existing.crop:portraitCropConfig(pendingPortraitCrop),
+              nationality:countryTagLabel($('athleteNationality').value)}:{})};
         try{
           await saveLogo(row);
           setLogoType(logoType);renderAll();
@@ -4799,6 +4828,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
       $('logoAthletePicker').addEventListener('change',event=>{
         if(event.target.value)$('logoName').value=event.target.value;
         event.target.value='';
+        syncAthleteCountry();
         updateCropButton();
       });
       for(const id of ['logoTeamPicker','logoTagPicker'])$(id).addEventListener('change',event=>{
@@ -4818,7 +4848,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         if(logoType==='tag')syncTagCategoryForm(event.target.value.trim());
         if(logoType==='grading')syncGradingEditor(true);
         if(logoType==='nationality')syncCountryIconEditor(true);
-        if(logoType==='athlete')updateCropButton();
+        if(logoType==='athlete'){syncAthleteCountry();updateCropButton();}
       });
       for(const id of ['gradingEdgeStart','gradingEdgeEnd'])$(id).addEventListener('input',()=>syncGradingEditor());
       /* Normalize uploaded flags to their destination shape. Trim transparent PNG
@@ -4990,6 +5020,13 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         if(row)updateLabelPreview(row);
       });
       $('logoList').addEventListener('click',async e=>{
+        const athlete=e.target.closest('[data-edit-athlete]');
+        if(athlete){
+          setLogoType('athlete');$('logoName').value=athlete.dataset.editAthlete;
+          syncAthleteCountry();updateCropButton();$('logoName').focus();
+          $('logoCreatePanel').scrollIntoView?.({behavior:'smooth',block:'nearest'});
+          return;
+        }
         const crop=e.target.closest('[data-crop-portrait]');
         if(crop){cropExistingPortrait(crop.dataset.cropPortrait);return;}
         const pin=e.target.closest('[data-pin-logo]');
@@ -5103,6 +5140,12 @@ function rapliModuleReady(){
       window.RapliCardToolsBridge={
         card:id=>cards.find(card=>card.id===id),
         cardMarkup,cardRainbows,
+        summaryCards:()=>{
+          const match=filterCards();
+          if(sportsGallerySelected&&sportsGalleryLayout!=='details'&&sportsGalleryLayout!=='cards')
+            return sportsGalleryGroups(match,sportsGalleryLayout).find(group=>group.key===sportsGallerySelected)?.items.map(card=>card.id)||[];
+          return match.map(card=>card.id);
+        },
         copyText:card=>window.RapliCardTools.referenceText(card,cardPlayers(card).map(p=>p.name),tagCategories),
         players:cardPlayers,country:countryTagLabel,autoLabels:AUTO_TYPES,
         rainbow:id=>{const group=savedRainbows().find(row=>row.id===id);return group?rainbowEngine.progress(group,cards):null;},

@@ -141,12 +141,34 @@
   function summary(card){
     if(!dialog){dialog=document.createElement('dialog');dialog.className='card-summary-dialog';dialog.setAttribute('aria-labelledby','card-summary-title');document.body.append(dialog);dialog.addEventListener('click',e=>{if(e.target===dialog||e.target.closest('[data-summary-close]'))dialog.close();});}
     const info=cardInfo(card,bridge);
-    dialog.innerHTML='<div class="card-summary-content" data-card-id="'+esc(card.id)+'"><header><h2 id="card-summary-title">'+esc(info.title)+'</h2><button type="button" data-summary-close aria-label="Fermer le résumé">×</button></header><div class="card-summary-body">'+(imageSource(card.photo)?'<img class="card-summary-photo" src="'+card.photo+'" alt="Photo de la carte">':'')+'<dl>'+info.rows.map(([label,value])=>'<div><dt>'+esc(label)+'</dt><dd>'+esc(value)+'</dd></div>').join('')+'</dl></div><footer class="card-export-actions"><button type="button" data-card-tool="png">⬇ FICHE PNG</button><button type="button" data-card-tool="photo">⬇ PHOTO</button></footer></div>';
+    const ordered=typeof bridge.summaryCards==='function'?bridge.summaryCards():[];
+    const index=ordered.indexOf(card.id);
+    const count=ordered.length;
+    const navigation=count>1&&index>=0?
+      '<nav class="card-summary-navigation" aria-label="Parcourir les cartes de cette vue">'+
+      '<button type="button" data-summary-step="-1"'+(index===0?' disabled':'')+' aria-label="Carte précédente">← Précédente</button>'+
+      '<span>'+(index+1)+' / '+count+'</span>'+
+      '<button type="button" data-summary-step="1"'+(index===count-1?' disabled':'')+' aria-label="Carte suivante">Suivante →</button>'+
+      '</nav>':'';
+    dialog.innerHTML='<div class="card-summary-content" data-card-id="'+esc(card.id)+'"><header><h2 id="card-summary-title">'+esc(info.title)+'</h2><button type="button" data-summary-close aria-label="Fermer le résumé">×</button></header><div class="card-summary-body">'+(imageSource(card.photo)?'<img class="card-summary-photo" src="'+card.photo+'" alt="Photo de la carte">':'')+'<dl>'+info.rows.map(([label,value])=>'<div><dt>'+esc(label)+'</dt><dd>'+esc(value)+'</dd></div>').join('')+'</dl></div>'+navigation+'<footer class="card-export-actions"><button type="button" data-card-tool="png">⬇ FICHE PNG</button><button type="button" data-card-tool="photo">⬇ PHOTO</button></footer></div>';
     if(!dialog.open)dialog.showModal();
   }
   document.addEventListener('contextmenu',event=>{const tile=event.target.closest('.sports-gallery-tile[data-card-id]');if(!tile)return;const card=bridge.card(tile.dataset.cardId);if(card){event.preventDefault();event.stopPropagation();summary(card);}},true);
   document.addEventListener('keydown',event=>{const link=event.target.closest('#cardGrid [data-card-group], .rainbow-versions-dialog [data-card-group]');if(link&&['Enter',' '].includes(event.key)){event.preventDefault();event.stopPropagation();if(rainbowDialog?.open)rainbowDialog.close();bridge.navigate(link.dataset.cardGroup,link.dataset.groupLabel);}},true);
   document.addEventListener('click',async event=>{
+    const step=event.target.closest('.card-summary-dialog [data-summary-step]');
+    if(step){
+      event.preventDefault();event.stopImmediatePropagation();
+      const current=dialog?.querySelector('[data-card-id]')?.dataset.cardId;
+      const ordered=typeof bridge.summaryCards==='function'?bridge.summaryCards():[];
+      const index=ordered.indexOf(current);
+      const next=index+Number(step.dataset.summaryStep);
+      if(index>=0&&next>=0&&next<ordered.length){
+        const card=bridge.card(ordered[next]);
+        if(card)summary(card);
+      }
+      return;
+    }
     const link=event.target.closest('#cardGrid [data-card-group], .rainbow-versions-dialog [data-card-group]');
     if(link){event.preventDefault();event.stopImmediatePropagation();if(rainbowDialog?.open)rainbowDialog.close();bridge.navigate(link.dataset.cardGroup,link.dataset.groupLabel);return;}
     const action=event.target.closest('[data-card-tool], [data-rainbow-pdf]');if(!action)return;

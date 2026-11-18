@@ -33,6 +33,7 @@
   const patch=owned.filter(c=>playersOf(c).some(p=>!!p.patch));
   const autoTypes=ranked(owned,c=>playersOf(c).filter(p=>p.auto).map(p=>p.auto==='on-card'?'Auto On Card':p.auto==='stickers'?'Auto Stickers':'Autre Auto'));
   const patchTypes=ranked(owned,c=>playersOf(c).filter(p=>p.patch).map(p=>p.patch==='game-worn'?'Patch Game Worn':p.patch==='not-affiliated'?'Patch Not Affiliated':'Autre Patch'));
+  const seasons=ranked(owned,c=>{const value=clean(c.season);return [/^\d{4}(?:\/\d{4})?$/.test(value)?value:'Saison non renseignée'];}).sort((a,b)=>a.label==='Saison non renseignée'?1:b.label==='Saison non renseignée'?-1:a.label.localeCompare(b.label,'fr',{numeric:true}));
   const serialTiers=ranked(owned,c=>{
    if(!c.numbered)return ['Non numérotées'];
    const n=int(c.printRun);
@@ -61,6 +62,7 @@
    {title:'Athlètes les plus collectionnés',data:players},
    {title:'Par équipe',data:teams},
    {title:'Par marque',data:brands},
+   {title:'Répartition par saison',data:seasons,chartType:'season-bars'},
    {title:'Variations et tags',data:tags},
    {title:'Rareté / numérotation',data:serialTiers},
    {title:"Types d'autographes",data:autoTypes},

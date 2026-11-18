@@ -15,13 +15,21 @@
   const BUCKET = 'rapli-archives-private';
   const IMAGE_PREFIX = 'rapli-private://';
   const ACK_KEY = 'rapli-cloud-' + MODULE + '-ack-v1'; // Reuse the old local sync marker.
+  const CHECK_TTL = 60000;
+  const CHECK_KEY = 'rapli-last-check-v1-'+OWNER_ID+'-'+MODULE;
   const MAX_IMAGE = 10 * 1024 * 1024;
+  const Diff = window.RapliCollectionDiff;
+  const emptyState = () => ({records:[], logos:[]});
+  let remoteState = emptyState(), baseDisplay = emptyState(), hashes = {};
+  let mediaIncomplete = false;
+  let lastCheck = 0, checkpointChain = Promise.resolve(), cacheDatabase;
+  let restoredPending = false, legacyLocal = null, failures = 0, bootReady = false;
   // Lightweight public collection metadata in localStorage; images belong in IndexedDB.
   const STATE_CACHE_KEY = 'rapli-shared-public-state-v2-' + MODULE;
 
   let client = null, revision = null, initialized = false, dirty = false;
   let busy = false, blocked = false, bootPromise = null, saveTimer = null;
-  let refreshTimer = null, retryTimer = null;
+  let refreshTimer = null;
   const uploaded = new Map(), downloaded = new Map();
   const loader = MODULE === 'sports' ? document.getElementById('rapliSharedLoading') : null;
   const loaderMessage = document.getElementById('rapliSharedLoadingMessage');
@@ -91,12 +99,6 @@
       console.info('Rapli : cache images local indisponible ; chargement en ligne maintenu.', error?.name || '');
     }
   }
-  function cacheState(row) {
-    try {
-      const payload = {owner: OWNER_ID, module: MODULE, revision: Number(row.state_revision), state: row.state};
-      localStorage.setItem(STATE_CACHE_KEY, JSON.stringify(payload));
-    } catch (_) { /* localStorage full/disabled: remote collection still works */ }
-  }
   function readStateCache() {
     try {
       const cached = JSON.parse(localStorage.getItem(STATE_CACHE_KEY) || 'null');
@@ -112,20 +114,73 @@
     imageCompleted = completedImages.size;
     showImageProgress();
   }
-  async function showCachedPreview() {
-    // Display cached PUBLIC data immediately for viewers; never cover local
-    // unsent edits from an administrator or grant editing without server confirmation.
-    if (isEditor() || !bridge.ready) return;
-    const cached = readStateCache();
-    if (!cached) return;
+  function stateDb() {
+    if (!cacheDatabase) cacheDatabase = new Promise((resolve,reject) => {
+      const req=indexedDB.open('rapli-collection-sync-v1',1);
+      req.onupgradeneeded=()=>req.result.createObjectStore('states');
+      req.onsuccess=()=>resolve(req.result);
+      req.onerror=()=>reject(req.error);
+      req.onblocked=()=>reject(Error('Cache local bloqué.'));
+    });
+    return cacheDatabase;
+  }
+  async function readCheckpoint() {
     try {
-      const state = await transfer(cached.state, 'cached');
-      bridge.previewState(state);
-      cachedVisible = true;
-      loading('Version enregistrée sur cet appareil — vérification en ligne…', 'ready');
-      status('Collection locale affichée · vérification en cours…', 'pending');
-    } catch (error) {
-      console.warn('Rapli : aperçu local indisponible', error);
+      const db=await stateDb();
+      return await new Promise((resolve,reject)=>{
+        const req=db.transaction('states').objectStore('states').get(OWNER_ID+'/'+MODULE);
+        req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);
+      });
+    } catch (_) { return null; }
+  }
+  function checkpoint() {
+    // Capture now; serialize commits so a delayed write cannot replace a newer edit.
+    const value=structuredClone({revision,remoteState,baseDisplay,hashes,working:snapshot(),dirty,mediaIncomplete});
+    checkpointChain=checkpointChain.catch(()=>{}).then(async()=>{
+      const db=await stateDb();
+      await new Promise((resolve,reject)=>{
+        const tx=db.transaction('states','readwrite');
+        tx.objectStore('states').put(value,OWNER_ID+'/'+MODULE);
+        tx.oncomplete=resolve;tx.onerror=tx.onabort=()=>reject(tx.error);
+      });
+    });
+    return checkpointChain;
+  }
+  function seedImages(remote, display) {
+    if (isReference(remote) && isImage(display)) {
+      uploaded.set(display,remote);downloaded.set(remote,display);
+    } else if (Array.isArray(remote) && Array.isArray(display)) {
+      const byId=new Map(display.map(row=>[row?.id,row]));
+      remote.forEach((row,i)=>seedImages(row,row?.id?byId.get(row.id):display[i]));
+    } else if(remote && display && typeof remote==='object' && typeof display==='object') {
+      Object.keys(remote).forEach(key=>seedImages(remote[key],display[key]));
+    }
+  }
+  async function showCachedPreview() {
+    legacyLocal=snapshot(); // Keep unsent legacy edits even before authentication resolves.
+    const cached=await readCheckpoint();
+    if (cached && Number.isFinite(cached.revision) &&
+        Array.isArray(cached.remoteState?.records) && Array.isArray(cached.baseDisplay?.records) &&
+        Array.isArray(cached.working?.records)) {
+      revision=cached.revision;remoteState=cached.remoteState;baseDisplay=cached.baseDisplay;
+      hashes=cached.hashes||{};restoredPending=Boolean(cached.dirty);dirty=restoredPending;
+      seedImages(remoteState,baseDisplay);
+      mediaIncomplete=Boolean(cached.mediaIncomplete)||[...collectImages(remoteState)].some(ref=>!downloaded.has(ref));
+      if(!Diff.equal(snapshot(),Diff.apply(cached.working,[])))bridge.previewState(cached.working);
+      initialized=true;cachedVisible=true;
+    } else {
+      const old=readStateCache();
+      if(old) {
+        remoteState=old.state;revision=old.revision;
+        baseDisplay=await transfer(remoteState,'cached');
+        seedImages(remoteState,baseDisplay);
+        bridge.previewState(baseDisplay);cachedVisible=true;
+        // Missing photos in a legacy cache must still be hydrated on the first refresh.
+      }
+    }
+    if(cachedVisible) {
+      loading('Collection enregistrée sur cet appareil','ready');
+      status('Collection locale affichée · vérification en arrière-plan…','pending');
     }
   }
   function loading(message, mode = 'loading') {
@@ -170,7 +225,7 @@
   });
 
   const isEditor = () => window.RapliAdminAccess?.isEditor?.() === true;
-  const canEdit = () => isEditor() && initialized && !blocked && !busyLoading;
+  const canEdit = () => isEditor() && bootReady && initialized && !blocked && !busyLoading && !mediaIncomplete;
   let busyLoading = false;
   const sorted = rows => [...rows].sort((a, b) => String(a.id).localeCompare(String(b.id)));
   function snapshot() {
@@ -214,6 +269,7 @@
       window.parent.postMessage({type: 'RAPLI_SHARED_STATUS', module: MODULE, message, level}, location.origin);
   }
   async function supabase() {
+    if(!client && window.RapliAdminAccess?.getClient)client=await window.RapliAdminAccess.getClient();
     if (!client) {
       const sdk = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.83.0/+esm');
       client = sdk.createClient(SUPABASE_URL, PUBLIC_KEY, {
@@ -222,14 +278,18 @@
     }
     return client;
   }
-  async function remoteRow() {
-    const sdk = await supabase();
-    const {data, error} = await sdk.from(TABLE).select('state,state_revision,updated_at')
-      .eq('owner_id', OWNER_ID).eq('module', MODULE).maybeSingle();
-    if (error) throw error;
-    if (!data) throw Error('Collection commune non accessible. Vérifie les règles de lecture Supabase.');
-    if (!data.state || !Array.isArray(data.state.records) || !Array.isArray(data.state.logos))
-      throw Error('La collection commune est invalide.');
+  async function remoteVersion() {
+    const {data,error}=await (await supabase()).from(TABLE).select('state_revision')
+      .eq('owner_id',OWNER_ID).eq('module',MODULE).maybeSingle();
+    if(error)throw error;
+    if(!data)throw Error('Collection commune inaccessible.');
+    return Number(data.state_revision);
+  }
+  async function fetchDelta() {
+    const {data,error}=await (await supabase()).rpc('rapli_collection_delta',{
+      p_owner:OWNER_ID,p_module:MODULE,p_known:hashes
+    });
+    if(error)throw error;
     return data;
   }
 
@@ -276,14 +336,16 @@
         const fromDisk = await cachedImage(value);
         if (fromDisk) {
           downloaded.set(value, fromDisk);
+          uploaded.set(fromDisk, value);
           if (direction === 'download') markImageLoaded(value);
           return fromDisk;
         }
-        if (direction === 'cached') return ''; // Missing cache item: leave a placeholder, no network.
+        if (direction === 'cached') return value; // Retain the reference while its image is still pending.
         const {data, error} = await (await supabase()).storage.from(BUCKET).download(path);
         if (error) throw error;
         const dataUri = await blobAsDataURI(data);
         downloaded.set(value, dataUri);
+        uploaded.set(dataUri, value);
         markImageLoaded(value);
         await rememberImage(value, data);
         return dataUri;
@@ -306,144 +368,215 @@
   }
   function blockOnConflict() {
     blocked = true;
-    loading('Conflit local détecté. Exporte tes données locales avant de recharger.', 'conflict');
-    status('Conflit de versions : exporte tes données locales avant de recharger la page.', 'error');
+    // Keep all tiles visible, and retain the local journal for recovery.
+    if(!cachedVisible) loading('Conflit de versions. Tes modifications locales sont conservées.','conflict');
+    status('Même fiche modifiée ailleurs : modifications locales conservées. Exporte-les avant de résoudre le conflit.','error');
   }
-  async function refresh() {
-    if (!bridge.ready || busy || dirty || blocked || busyLoading) return;
-    if (document.querySelector('dialog[open]') && initialized) return; // Preserve an open form.
-    busyLoading = true;
-    if (!initialized && !cachedVisible) loading('Connexion à Supabase…');
+  // Keep image references in the model until resolved. Never turn a pending photo
+  // into an empty field that an editor could accidentally save back to the server.
+  function withKnownImages(value) {
+    if(isReference(value))return downloaded.get(value)||value;
+    if(Array.isArray(value))return value.map(withKnownImages);
+    if(value && typeof value==='object')return Object.fromEntries(
+      Object.entries(value).map(([key,item])=>[key,withKnownImages(item)]));
+    return value;
+  }
+  async function acceptDelta(delta, newerEdits=[]) {
+    const nextRemote=Diff.mergeDelta(remoteState,delta);
+    const refs=[...collectImages(nextRemote)];
+    imageTotal=refs.length;imageCompleted=0;completedImages.clear();
+    // Paint cached content immediately, then progressively replace placeholders.
+    // Four workers are deliberately bounded: never issue hundreds of requests at once.
+    let next=0,lastPaint=0;
+    const paint=()=>{
+      bridge.previewState(Diff.apply(withKnownImages(nextRemote),newerEdits));
+      cachedVisible=true;loading('Chargement des images en arrière-plan…','ready');
+      status('Photos et logos : '+imageCompleted+' / '+imageTotal,'pending');
+      lastPaint=Date.now();
+    };
+    paint();lastPaint=0; // Show the first completed image immediately.
+    await Promise.all(Array.from({length:Math.min(4,refs.length)},async()=>{
+      while(next<refs.length){
+        const ref=refs[next++];
+        try{await transfer(ref,'download');}
+        catch(error){console.warn('Rapli : une image reste à charger',error?.message||error);}
+        if(Date.now()-lastPaint>350)paint();
+      }
+    }));
+    const display=withKnownImages(nextRemote);
+    const working=Diff.apply(display,newerEdits);
+    mediaIncomplete=refs.some(ref=>!downloaded.has(ref));
+    // Incomplete media never replace the module's durable editor database.
+    if(isEditor() && !mediaIncomplete) await bridge.replaceState(working);
+    else bridge.previewState(working);
+    remoteState=nextRemote;hashes=delta.hashes;revision=Number(delta.revision);
+    baseDisplay=display;
+    if(!newerEdits.length)baseDisplay=snapshot();
+    initialized=true;cachedVisible=true;dirty=newerEdits.length>0;
+    seedImages(remoteState,baseDisplay);
+    if(!dirty && !mediaIncomplete && isEditor()) acknowledge(snapshot());
+    try{await checkpoint();}catch(error){console.warn('Rapli : cache local inaccessible',error);}
+    loading('Collection disponible','ready');
+    status(mediaIncomplete?'Certaines images restent à charger · appuie sur ↻ pour réessayer.':
+      dirty?'Enregistré sur cet appareil · synchronisation…':'Synchronisé ✓',mediaIncomplete?'error':dirty?'pending':'ok');
+  }
+  function rememberCheck(){
+    lastCheck=Date.now();
+    try{localStorage.setItem(CHECK_KEY,JSON.stringify({revision,at:lastCheck}));}catch(_){}
+  }
+  function recentlyChecked(){
+    if(!initialized || mediaIncomplete)return false;
+    try{
+      const check=JSON.parse(localStorage.getItem(CHECK_KEY)||'null');
+      const age=Date.now()-check?.at;
+      return check?.revision===revision && age>=0 && age<CHECK_TTL;
+    }catch(_){return false;}
+  }
+  async function refresh(force=false) {
+    if (!bridge.ready || busy || blocked || busyLoading) return;
+    if(dirty && !mediaIncomplete) { if(isEditor())void saveNow(); return; }
+    if (document.querySelector('dialog[open]') && initialized) return;
+    if(!force && recentlyChecked()){status('Collection locale · vérifiée il y a moins d’une minute');return;}
+    if(!force && Date.now()-lastCheck<1000)return;
+    lastCheck=Date.now();busyLoading=true;
+    if(!cachedVisible)loading('Connexion à Supabase…');
     try {
-      const row = await remoteRow();
-      const current = Number(row.state_revision || 0);
-      if (initialized && current === revision) return;
-      // Sports still checks pending local edits; Regatta retains its old IndexedDB untouched.
-      if (MODULE === 'sports' && !initialized && isEditor()) {
-        const baseline = knownBaseline();
-        const local = snapshot();
-        // A first-time editor on a different device may have unsent local records.
-        // Never replace real local data without a matching acknowledged baseline.
-        if ((baseline && baseline.hash !== fingerprint(local)) ||
-            (!baseline && (local.records.some(card => !card.demo) || local.logos.length > 0))) {
-          blockOnConflict();
-          return;
-        }
+      if(mediaIncomplete && initialized){
+        await acceptDelta({changed:{},deleted:{},hashes,revision},Diff.changes(baseDisplay,snapshot()));
+        if(dirty && !mediaIncomplete)queueSave();
+        return;
       }
-      status(initialized ? 'Actualisation de la collection…' : 'Chargement de la collection…', 'pending');
-      if (!initialized && loader) {
-        imageTotal = collectImages(row.state).size;
-        imageCompleted = 0;
-        completedImages.clear();
-        if (!cachedVisible) showImageProgress();
+      // On an empty/legacy cache, the delta is needed anyway: skip the pre-read.
+      if(initialized){
+        const current=await remoteVersion();
+        if(current===revision){rememberCheck();status('Synchronisé ✓');return;}
       }
-      const state = await transfer(row.state, 'download');
-      // Keep historical Regatta IndexedDB untouched; use the published version in memory.
-      if (MODULE === 'regatta') bridge.previewState(state);
-      else if (isEditor()) await bridge.replaceState(state);
-      else bridge.previewState(state);
-      revision = current;
-      initialized = true;
-      cacheState(row);
-      if (isEditor()) acknowledge(snapshot());
-      loading('Collection à jour ✓', 'ready');
-      status('Collection à jour ✓');
-    } catch (error) {
-      console.warn('Rapli Sports : lecture partagée impossible', error);
-      if (!cachedVisible) loading('Chargement impossible. Vérifie ta connexion puis réessaie.', 'error');
-      status(cachedVisible ?
-        'Collection locale affichée · connexion Supabase indisponible.' :
-        'Collection indisponible : lecture impossible sur Supabase.', 'error');
-      if (!initialized && !cachedVisible && !isEditor())
-        bridge.previewState({records:[], logos:[]});
-    } finally {
-      busyLoading = false;
-    }
+      status('Vérification des nouveautés…','pending');
+      const delta=await fetchDelta();
+      await acceptDelta(delta);
+      if(!mediaIncomplete)rememberCheck();
+      failures=0;
+    } catch(error) {
+      console.warn('Rapli : synchronisation indisponible',error);
+      if(!cachedVisible)loading('Chargement impossible. Réessaie lorsque la connexion est rétablie.','error');
+      status(cachedVisible?'Collection locale disponible · vérification en ligne impossible.':'Collection inaccessible · réessaie la connexion.','error');
+    } finally { busyLoading=false; }
   }
-  function queueSave(delay = 850) {
+  function queueSave(delay=850) {
     clearTimeout(saveTimer);
-    saveTimer = setTimeout(() => { void saveNow(); }, delay);
+    saveTimer=setTimeout(()=>{void saveNow();},delay);
   }
   async function saveNow() {
-    if (!dirty || !canEdit() || busy) return;
-    busy = true;
-    const state = snapshot(), hash = fingerprint(state), baseRevision = revision;
-    status('Enregistrement automatique…', 'pending');
+    if(!dirty || !canEdit() || busy)return;
+    busy=true;
+    const sent=snapshot();
+    status('Enregistré sur cet appareil · synchronisation…','pending');
     try {
-      const remote = await remoteRow();
-      if (Number(remote.state_revision || 0) !== baseRevision) {
-        blockOnConflict(); return;
-      }
-      const serialized = await transfer(state, 'upload');
-      const {data, error} = await (await supabase()).from(TABLE)
-        .update({state:serialized, state_revision:baseRevision + 1, updated_at:new Date().toISOString()})
-        .eq('owner_id', OWNER_ID).eq('module', MODULE).eq('state_revision', baseRevision)
-        .select('state_revision').maybeSingle();
-      if (error) throw error;
-      if (!data) { blockOnConflict(); return; }
-      revision = Number(data.state_revision);
-      cacheState({state: serialized, state_revision: revision});
-      acknowledge(state);
-      dirty = fingerprint(snapshot()) !== hash;
-      status(dirty ? 'Modifications en cours…' : 'Enregistré pour tous ✓', dirty ? 'pending' : 'ok');
-    } catch (error) {
-      console.warn('Rapli Sports : écriture partagée impossible', error);
-      status('Enregistrement en attente : connexion ou autorisations Supabase à vérifier.', 'error');
-    } finally {
-      busy = false;
-      if (dirty && !blocked) queueSave(8000); // Preserve local edits and retry without forcing an overwrite.
+      await checkpoint().catch(()=>{});
+      const edits=Diff.changes(baseDisplay,sent);
+      if(!edits.length){dirty=false;await checkpoint().catch(()=>{});status('Synchronisé ✓');return;}
+      // Upload only new images in modified records; known image references survive reloads.
+      const patches=[];
+      for(const edit of edits)patches.push({
+        kind:edit.kind,id:edit.id,before:hashes[edit.kind]?.[edit.id]||null,
+        after:edit.after===null?null:await transfer(edit.after,'upload')
+      });
+      const {data,error}=await (await supabase()).rpc('rapli_collection_patch',{
+        p_owner:OWNER_ID,p_module:MODULE,p_changes:patches,p_known:hashes
+      });
+      if(error){if(error.code==='40001'){blockOnConflict();return;}throw error;}
+      // Edits made while an upload is in flight belong to the next batch.
+      busyLoading=true;
+      const newer=Diff.changes(sent,snapshot());
+      await acceptDelta(data,newer);
+      if(!mediaIncomplete)rememberCheck();
+      failures=0;
+    }catch(error){
+      failures++;
+      console.warn('Rapli : envoi en attente',error);
+      status('Enregistré sur cet appareil · envoi en attente de connexion.','error');
+    }finally{
+      busyLoading=false;busy=false;
+      if(dirty&&!blocked&&navigator.onLine!==false)queueSave(Math.min(60000,4000*2**Math.min(failures,4)));
     }
   }
   function changed() {
-    if (!canEdit()) return;
-    dirty = true;
-    status('Modifications en attente…', 'pending');
+    if(!canEdit())return;
+    dirty=true;
+    status('Enregistré sur cet appareil · synchronisation…','pending');
+    void checkpoint().catch(error=>console.warn('Rapli : journal local inaccessible',error));
     queueSave();
   }
   function scheduleRefresh() {
-    if (dirty || blocked || busy || busyLoading) return;
+    if(document.hidden)return;
     clearTimeout(refreshTimer);
-    refreshTimer = setTimeout(() => { void refresh(); }, 400);
+    refreshTimer=setTimeout(()=>{if(dirty && !mediaIncomplete)void saveNow();else void refresh();},400);
   }
   async function boot() {
-    if (bootPromise) return bootPromise;
-    bootPromise = (async () => {
-      await window.RapliAdminAccess?.initialize?.();
+    if(bootPromise)return bootPromise;
+    bootPromise=(async()=>{
+      // Cached tiles are visible before any auth/database request finishes.
       await showCachedPreview();
-      await supabase();
-      await refresh();
-      // Realtime improves latency; polling and focus events remain a fallback
-      // until the publication is enabled by the separate, reviewed RLS migration.
-      client.channel('rapli-' + MODULE + '-public-v2')
-        .on('postgres_changes', {
-          event:'UPDATE', schema:'public', table:TABLE, filter:'owner_id=eq.' + OWNER_ID
-        }, payload => {
-          if (payload.new?.module === MODULE) scheduleRefresh();
-        }).subscribe();
-      setInterval(() => { void refresh(); }, 20000);
-    })().catch(error => {
-      console.warn('Rapli Sports : initialisation commune impossible', error);
-      if (!cachedVisible) loading('Connexion impossible. Réessaie le chargement.', 'error');
-      status(cachedVisible ? 'Collection locale affichée · connexion à vérifier.' :
-        'Collection indisponible : connexion à vérifier.', 'error');
+      await window.RapliAdminAccess?.initialize?.();
+      if(isEditor()) {
+        const ack=knownBaseline();
+        if(MODULE==='sports' && ack && ack.hash!==fingerprint(legacyLocal)) {
+          if(!cachedVisible){blockOnConflict();return;}
+          bridge.previewState(legacyLocal);dirty=true;restoredPending=true;
+        } else if(MODULE==='sports' && !ack && !restoredPending &&
+            (legacyLocal.records.some(row=>!row.demo)||legacyLocal.logos.length) &&
+            (!cachedVisible || !Diff.equal(legacyLocal,snapshot()))) {
+          blockOnConflict();return;
+        }
+        if(restoredPending) {
+          // Normalize/persist the journal without losing the state captured before login.
+          initialized=true;
+          if(!mediaIncomplete)await bridge.replaceState(snapshot());
+          await checkpoint().catch(()=>{});
+          // Legacy cache has no server fingerprints: hydrate its baseline via a read,
+          // then reconcile explicitly instead of blindly overwriting remote changes.
+          if(!Object.keys(hashes).length){blockOnConflict();return;}
+          bootReady=true;if(mediaIncomplete)await refresh(true);else await saveNow();return;
+        }
+        if(initialized && !mediaIncomplete){
+          if(!Diff.equal(legacyLocal,snapshot()))await bridge.replaceState(snapshot());
+          acknowledge(snapshot());
+        }
+      } else if(dirty) {
+        bootReady=true;status('Ajouts locaux en attente · connecte-toi pour les synchroniser.','pending');return;
+      }
+      bootReady=true;await refresh();
+    })().catch(error=>{
+      console.warn('Rapli : initialisation impossible',error);
+      if(!cachedVisible)loading('Connexion impossible. Réessaie le chargement.','error');
+      status('Collection locale conservée · connexion à vérifier.','error');
     });
     return bootPromise;
   }
-  window.RapliSharedCollection = {
-    changed, canEdit, refresh,
-    getStatus: () => ({initialized, revision, dirty, blocked, busy})
-  };
-  window.addEventListener('rapli-module-ready', () => { void boot(); }, {once:true});
-  document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) { if (dirty) queueSave(300); else scheduleRefresh(); }
+  window.RapliSharedCollection={changed,canEdit,refresh:()=>refresh(true),
+    getStatus:()=>({initialized,revision,dirty,blocked,busy,mediaIncomplete,busyLoading})};
+  // Explicit refresh rather than full polling or an always-on Realtime connection.
+  const statusElement=document.getElementById('rapli-shared-status-'+MODULE);
+  if(statusElement){
+    const button=document.createElement('button');
+    button.type='button';button.textContent='↻';button.title='Vérifier les nouveautés';
+    button.setAttribute('aria-label','Actualiser la collection');
+    button.style.cssText='margin-left:8px;border:1px solid #b8c8c9;border-radius:50%;width:28px;height:28px;cursor:pointer;background:linear-gradient(120deg,#d2f2e6,#dbe6f9,#f3dfd8);color:#182b3b';
+    button.onclick=()=>{lastCheck=0;if(dirty && !mediaIncomplete)void saveNow();else void refresh(true);};
+    statusElement.after(button);
+  }
+  window.addEventListener('rapli-module-ready',()=>{void boot();},{once:true});
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)scheduleRefresh();});
+  window.addEventListener('focus',scheduleRefresh);
+  window.addEventListener('online',()=>{lastCheck=0;scheduleRefresh();});
+  window.addEventListener('rapli-admin-access-change',()=>{
+    if(!isEditor() || !bootReady || !initialized || blocked || mediaIncomplete)return;
+    // A viewer can become editor without a reload. Persist the displayed collection
+    // before enabling per-record edits in the module's local database.
+    bootReady=false;
+    void bridge.replaceState(snapshot()).then(()=>{
+      bootReady=true;if(dirty)queueSave(300);else acknowledge(snapshot());
+    }).catch(error=>{status('Stockage local inaccessible : édition suspendue.','error');console.warn(error);});
   });
-  window.addEventListener('focus', () => {
-    if (dirty) queueSave(300);
-    else scheduleRefresh();
-  });
-  window.addEventListener('online', () => {
-    if (dirty) queueSave(300);
-    else scheduleRefresh();
-  });
-  if (bridge.ready) void boot();
+  if(bridge.ready)void boot();
 })();

@@ -26,6 +26,9 @@ html:not([data-rapli-role="editor"]) [data-action="delete"],
 html:not([data-rapli-role="editor"]) [data-action="record-close"],
 html:not([data-rapli-role="editor"]) #save-race,
 html:not([data-rapli-role="editor"]) #delete-race,
+html:not([data-rapli-role="editor"]) #vsr-ranking-form,
+html:not([data-rapli-role="editor"]) [data-vsr-ranking-edit],
+html:not([data-rapli-role="editor"]) [data-vsr-ranking-delete],
 html:not([data-rapli-role="editor"]) #rapli-module-cloud-save{display:none!important}
 </style>
 
@@ -109,6 +112,21 @@ html:not([data-rapli-role="editor"]) #rapli-module-cloud-save{display:none!impor
       <div class="counter"><strong id="count-record">0</strong><span>RECORDS</span></div>
     </div>
     <div class="stats-intro"><strong>STATISTIQUES DE MES COURSES</strong><span id="stats-summary">Collection personnelle</span></div>
+    <section class="vsr-ranking-section" aria-labelledby="vsr-ranking-title">
+      <header class="vsr-ranking-heading">
+        <div><span class="vsr-ranking-kicker">VIRTUAL REGATTA · CLASSEMENT PERSONNEL</span><h2 id="vsr-ranking-title">ÉVOLUTION DE MON CLASSEMENT VSR</h2><p>Enregistre chaque mise à jour de ton rang VSR pour suivre ta progression. Plus la courbe monte, meilleur est ton classement.</p></div>
+        <div class="vsr-ranking-current" aria-live="polite"><span>DERNIER CLASSEMENT</span><strong id="vsr-ranking-current-value">—</strong><small id="vsr-ranking-change">Aucun relevé</small></div>
+      </header>
+      <form id="vsr-ranking-form" class="vsr-ranking-form" autocomplete="off">
+        <label>DATE ET HEURE DE MISE À JOUR<input type="datetime-local" id="vsr-ranking-date" required></label>
+        <label>MON CLASSEMENT VSR<input type="number" id="vsr-ranking-rank" min="1" max="99999999" step="1" inputmode="numeric" placeholder="Ex. 4280" required></label>
+        <label class="vsr-ranking-note-label">NOTE (FACULTATIVE)<input type="text" id="vsr-ranking-note" maxlength="120" placeholder="Ex. Après la Transat"></label>
+        <div class="vsr-ranking-form-actions"><button type="submit" class="btn primary tiny" id="vsr-ranking-save">＋ AJOUTER LE RELEVÉ</button><button type="button" class="btn subtle tiny" id="vsr-ranking-cancel" hidden>ANNULER</button></div>
+      </form>
+      <div id="vsr-ranking-chart" class="vsr-ranking-chart" aria-live="polite"></div>
+      <div class="vsr-ranking-history-heading"><strong>HISTORIQUE DES MISES À JOUR</strong><span id="vsr-ranking-count">0 relevé</span></div>
+      <div id="vsr-ranking-history" class="vsr-ranking-history"></div>
+    </section>
     <div id="stats-content" class="stats-content"></div>
   </section>
   <section id="honors-panel" class="honors-panel" role="tabpanel" aria-labelledby="view-honors" hidden>
@@ -230,6 +248,7 @@ html:not([data-rapli-role="editor"]) #rapli-module-cloud-save{display:none!impor
 <script defer src="app.js"></script>
 <script defer src="../shared/photo-zoom.js"></script>
 <script defer src="../shared/admin-access.js"></script>
+<script defer src="../shared/collection-diff.js"></script>
 <script defer src="../shared/shared-collection.js"></script>
 <script defer src="../shared/profile-menu.js"></script>
 </body>

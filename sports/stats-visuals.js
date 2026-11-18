@@ -68,7 +68,7 @@
   function renderPanels(breakdowns,escape,owned){
     if(!Array.isArray(breakdowns))return '';
     return breakdowns.map((entry,i)=>{
-      const p=colors(i),type=formats[i%formats.length],list=Array.isArray(entry.data)?entry.data:[];
+      const p=colors(i),type=entry.chartType==='season-bars'?'bars':formats[i%formats.length],list=Array.isArray(entry.data)?entry.data:[];
       let content;
       if(!list.length)content='<p class="stats-visual-empty">Aucune donnée renseignée pour cette catégorie.</p>';
       else if(type==='donut')content=donutHTML(list,p,escape);
@@ -102,7 +102,7 @@
     ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fillStyle=color;ctx.fill();
   }
   function drawStatsPanel(ctx,entry,i,x,y,w,h,owned){
-    const p=colors(i),type=formats[i%formats.length],items=Array.isArray(entry.data)?entry.data:[],
+    const p=colors(i),type=entry.chartType==='season-bars'?'bars':formats[i%formats.length],items=Array.isArray(entry.data)?entry.data:[],
       inner=x+32;
     round(ctx,x,y,w,h,21,'#ffffff');
     round(ctx,x,y,9,h,5,p[0]);
@@ -177,7 +177,9 @@
     if(!root.document?.createElement)throw Error('Le navigateur ne permet pas cet export.');
     if(root.document.fonts?.ready)await root.document.fonts.ready;
     const canvas=root.document.createElement('canvas');
-    const W=1600,H=2460,margin=74,gap=26;
+    const entries=Array.isArray(data.breakdowns)?data.breakdowns:[];
+    const rows=Math.ceil(entries.length/2);
+    const W=1600,H=Math.max(2460,653+rows*398+Math.max(0,rows-1)*24+123),margin=74,gap=26;
     canvas.width=W;canvas.height=H;
     const ctx=canvas.getContext('2d',{alpha:false});
     if(!ctx)throw Error('Canvas 2D indisponible.');
@@ -204,12 +206,11 @@
       txt(ctx,format(entry.value),x+22,y+80,'900 36px Poppins, sans-serif',p[0],kpiW-40);
     }
     txt(ctx,'RÉPARTITIONS',margin,632,'900 24px Poppins, sans-serif','#193c66');
-    txt(ctx,'Huit lectures complémentaires de ta collection',margin+223,632,'600 17px Poppins, sans-serif','#8292a7');
-    const entries=Array.isArray(data.breakdowns)?data.breakdowns:[];
+    txt(ctx,'Répartitions de ta collection',margin+223,632,'600 17px Poppins, sans-serif','#8292a7');
     const panelW=(W-margin*2-gap)/2,panelH=398,top=653,rowGap=24;
-    for(let i=0;i<entries.length&&i<8;i++)
+    for(let i=0;i<entries.length;i++)
       drawStatsPanel(ctx,entries[i],i,margin+(i%2)*(panelW+gap),top+Math.floor(i/2)*(panelH+rowGap),panelW,panelH,data.total);
-    const footY=top+4*panelH+3*rowGap+30;
+    const footY=top+rows*panelH+Math.max(0,rows-1)*rowGap+30;
     round(ctx,margin,footY,W-2*margin,63,13,'#dce9f7');
     txt(ctx,'DONNÉES : CARTES OWN RÉELLES · WISHLIST ET DÉMONSTRATIONS EXCLUES',margin+25,footY+39,
       '800 17px Poppins, sans-serif','#254768',W-2*margin-45);

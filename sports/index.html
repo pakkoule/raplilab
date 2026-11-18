@@ -550,8 +550,17 @@ button.sports-rainbow-cover{cursor:pointer}
 .sports-grade-toggle{display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:900;color:#dbeafc}
 .sports-grade-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:8px 0}
 .sports-grade-fields label{display:grid;gap:4px;font-size:10px;color:#a9bfdb}
-.sports-new-flag{position:absolute;top:8px;left:8px;z-index:5;background:#123e3a;color:#baffdc;border:1px solid #5bd09d;border-radius:5px;font-size:8px;font-weight:900;padding:4px 6px;box-shadow:0 3px 10px #0008}
-.sports-gallery-new{position:absolute;top:8px;right:8px;z-index:5;background:#124b39;color:#b6ffda;border:1px solid #51d69e;border-radius:5px;font-size:8px;font-weight:900;padding:4px 6px}
+/* NEW: a restrained mint/pearl foil pill, automatically limited to the first 7 days. */
+.sports-new-flag,.sports-gallery-new{
+ position:absolute;top:8px;left:8px;right:auto;z-index:6;pointer-events:none;
+ display:inline-flex;align-items:center;justify-content:center;
+ min-height:20px;padding:3px 8px;box-sizing:border-box;
+ border:1px solid #80c8b4;border-radius:999px;
+ background:linear-gradient(115deg,#d3fae8 0%,#f7fffd 38%,#c5e8ed 68%,#dff6e7 100%);
+ color:#1e6656;font:900 8px/1 Poppins,system-ui,sans-serif;letter-spacing:.08em;
+ text-shadow:0 1px 0 #fff;box-shadow:inset 0 1px 0 #fff,0 2px 6px #184b3f30;
+}
+@media(max-width:540px){.sports-new-flag,.sports-gallery-new{top:6px;left:6px;padding:3px 6px;font-size:7px}}
 /* Grading now uses the two-column, pearl-white .grading-plate component. */
 .sports-flag{display:inline-flex;align-items:center;vertical-align:middle;margin-left:4px}
 .sports-country-badge{display:inline-flex;align-items:center;justify-content:center;flex:none;vertical-align:middle;
@@ -563,9 +572,6 @@ button.sports-rainbow-cover{cursor:pointer}
 @media(max-width:550px){.sports-country-badge{width:29px;height:20px;font-size:9px}}
 .sports-player-country select,.sports-player-country .input{width:100%;max-width:280px}
 .player-extra-names .sports-country-badge{margin:0 4px 0 2px}
-.sports-random-photo{width:100%;max-height:315px;object-fit:contain;border-radius:9px;background:#14243c}
-.sports-random-meta{display:grid;gap:7px;margin:12px 0;color:#c0d5ef;font-size:11px}
-.sports-random-meta strong{font-size:17px;color:white}
 @media(max-width:780px){.sports-rainbow-list{grid-template-columns:1fr}.sports-rainbow-head{align-items:flex-start;flex-direction:column}}
 @media(max-width:470px){.sports-rainbow-variants,.sports-rainbow-form-cols,.sports-rainbow-bind{grid-template-columns:1fr}.sports-rainbow-panel{padding:10px 6px 24px}.sports-grade-fields{grid-template-columns:1fr}}
 
@@ -822,7 +828,7 @@ button.sports-rainbow-cover{cursor:pointer}
 .card-info .team-identity img.logo-tiny.has-image{display:block;flex:none;width:auto;height:auto;max-width:70px;max-height:38px;object-fit:contain;background:none!important;padding:0!important;border:0!important;border-radius:0!important;box-shadow:none!important;filter:none!important}
 .card-info .identity-logos .logo-tiny:not(.has-image){flex:0 0 auto}
 .card-info .team-identity{font-size:11px;font-weight:750;color:#687a93}
-.card-info .brand-lockup>span:not(.logo-tiny),.card-info .team-identity>span:not(.logo-tiny){white-space:nowrap;text-overflow:ellipsis;overflow:hidden;max-width:125px}
+.card-info .brand-lockup>span:not(.logo-tiny):not(.card-group-link),.card-info .team-identity>span:not(.logo-tiny):not(.card-group-link){white-space:nowrap;text-overflow:ellipsis;overflow:hidden;max-width:125px}
 .card-info .identity-row .sport-chip{margin-left:0}
 @media(max-width:750px){
  .card-info .card-athlete .player{font-size:clamp(15px,3.2vw,21px)}
@@ -838,7 +844,7 @@ button.sports-rainbow-cover{cursor:pointer}
  .card-info .brand-lockup img.logo-tiny.has-image{max-width:42px;max-height:25px}
  .card-info .team-identity img.logo-tiny.has-image{max-width:56px;max-height:30px}
  .card-info .identity-row{margin:6px 0 2px;gap:5px}
- .card-info .brand-lockup>span:not(.logo-tiny),.card-info .team-identity>span:not(.logo-tiny){max-width:66px}
+ .card-info .brand-lockup>span:not(.logo-tiny):not(.card-group-link),.card-info .team-identity>span:not(.logo-tiny):not(.card-group-link){max-width:66px}
 }
 </style>
 
@@ -1594,13 +1600,6 @@ body::before{background:radial-gradient(ellipse 730px 420px at 7% -10%,rgba(90,2
  .sports-catalogue-controls>.rapli-collapsible-filters[open]{grid-column:1/-1;grid-row:3}
  .sports-catalogue-search .input.with-icon{height:42px;min-height:42px;font-size:16px}
 }
-/* Dice with five clear pips instead of a font-dependent Unicode glyph. */
-.sports-catalogue-controls #sportsRandomBtn .sports-random-dice{width:21px;height:21px;display:block;overflow:visible;transition:transform .2s ease,filter .2s ease}
-.sports-catalogue-controls #sportsRandomBtn{color:#e2fff5;border-color:#478f9a;background:linear-gradient(140deg,#0d4964,#116376);box-shadow:inset 0 1px 0 #ffffff22}
-.sports-catalogue-controls #sportsRandomBtn:hover{color:#fff;background:linear-gradient(140deg,#146781,#137f89);box-shadow:0 3px 12px #157b843b}
-.sports-catalogue-controls #sportsRandomBtn:hover .sports-random-dice{transform:rotate(-12deg) scale(1.07);filter:drop-shadow(0 0 3px #b9ffeb55)}
-.sports-catalogue-controls #sportsRandomBtn:focus-visible{outline:2px solid #74d8c6;outline-offset:3px}
-@media(prefers-reduced-motion:reduce){.sports-catalogue-controls #sportsRandomBtn .sports-random-dice{transition:none}.sports-catalogue-controls #sportsRandomBtn:hover .sports-random-dice{transform:none}}
 /* Premium pearl-foil pagination — restrained by default, richer on the current page. */
 .sports-gallery-pagination button{
   position:relative;
@@ -1962,20 +1961,29 @@ html:not([data-rapli-role="editor"]) .move-card{display:none!important}
 /* 59 — tiny, noninteractive metallic corner strokes on detail and gallery tiles. */
 .cards-grid .card-item .sports-tile-corners,.sports-gallery-tile .sports-tile-corners{
   position:absolute;inset:5px;z-index:3;pointer-events:none;
-  background:
-    linear-gradient(90deg,#8da4b2,#f4e6bd) left top / 12px 2px no-repeat,
-    linear-gradient(180deg,#8da4b2,#f4e6bd) left top / 2px 12px no-repeat,
-    linear-gradient(270deg,#8da4b2,#f4e6bd) right top / 12px 2px no-repeat,
-    linear-gradient(180deg,#8da4b2,#f4e6bd) right top / 2px 12px no-repeat,
-    linear-gradient(90deg,#8da4b2,#f4e6bd) left bottom / 12px 2px no-repeat,
-    linear-gradient(0deg,#8da4b2,#f4e6bd) left bottom / 2px 12px no-repeat,
-    linear-gradient(270deg,#8da4b2,#f4e6bd) right bottom / 12px 2px no-repeat,
-    linear-gradient(0deg,#8da4b2,#f4e6bd) right bottom / 2px 12px no-repeat;
+  /* A thin curved metallic outline, masked to just its four rounded corners. */
+  border:2px solid #a6b5bd;
+  border-top-color:#ead9b5;
+  border-right-color:#b5bdc1;
+  border-bottom-color:#e2d5b7;
+  border-left-color:#97acb8;
+  border-radius:10px;
+  background:none;
+  -webkit-mask:
+    linear-gradient(#000 0 0) left top/20px 20px no-repeat,
+    linear-gradient(#000 0 0) right top/20px 20px no-repeat,
+    linear-gradient(#000 0 0) left bottom/20px 20px no-repeat,
+    linear-gradient(#000 0 0) right bottom/20px 20px no-repeat;
+  mask:
+    linear-gradient(#000 0 0) left top/20px 20px no-repeat,
+    linear-gradient(#000 0 0) right top/20px 20px no-repeat,
+    linear-gradient(#000 0 0) left bottom/20px 20px no-repeat,
+    linear-gradient(#000 0 0) right bottom/20px 20px no-repeat;
   opacity:.7;
 }
 @media(max-width:540px){
   .cards-grid .card-item .sports-tile-corners,.sports-gallery-tile .sports-tile-corners{
-    inset:4px;opacity:.58;
+    inset:4px;border-radius:9px;opacity:.58;
   }
 }
 /* 89 — pin frequently used brand/team logos (admin only). */
@@ -2363,9 +2371,9 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
 
 </style>
 <style id="rapli-sports-toolbar-mint-blue-coral">
-/* One coherent gradient progression across Settings → Random → Add.
-   All three controls retain identical geometry on desktop and mobile. */
-.sports-catalogue-controls>.nav-actions :is(#logosBtn,#sportsRandomBtn,#addCardBtn){
+/* Coherent gradient progression across Settings → Add.
+   Both controls retain identical geometry on desktop and mobile. */
+.sports-catalogue-controls>.nav-actions :is(#logosBtn,#addCardBtn){
   color:#fff!important;
   border:1px solid rgba(255,255,255,.35)!important;
   border-radius:11px;
@@ -2376,26 +2384,23 @@ html:not([data-rapli-role="editor"]) #logoList .logo-pin-toggle{display:none!imp
 .sports-catalogue-controls>.nav-actions #logosBtn{
   background:linear-gradient(120deg,#2dbb9c 0%,#24a8a9 56%,#168bb5 100%)!important;
 }
-.sports-catalogue-controls>.nav-actions #sportsRandomBtn{
-  background:linear-gradient(120deg,#168bb5 0%,#287cc4 52%,#3567cf 100%)!important;
-}
 .sports-catalogue-controls>.nav-actions #addCardBtn{
   background:linear-gradient(120deg,#3567cf 0%,#8461a9 42%,#ed5e54 100%)!important;
 }
-.sports-catalogue-controls>.nav-actions :is(#logosBtn,#sportsRandomBtn,#addCardBtn):hover:not(:disabled){
+.sports-catalogue-controls>.nav-actions :is(#logosBtn,#addCardBtn):hover:not(:disabled){
   filter:brightness(1.09);
   transform:translateY(-1px);
   box-shadow:inset 0 1px 0 rgba(255,255,255,.34),0 5px 13px rgba(21,49,80,.23)!important;
 }
-.sports-catalogue-controls>.nav-actions :is(#logosBtn,#sportsRandomBtn,#addCardBtn):focus-visible{
+.sports-catalogue-controls>.nav-actions :is(#logosBtn,#addCardBtn):focus-visible{
   outline:2px solid #d9fef6;outline-offset:3px;
 }
 @media(max-width:530px){
-  .sports-catalogue-controls>.nav-actions :is(#logosBtn,#sportsRandomBtn,#addCardBtn){border-radius:9px}
+  .sports-catalogue-controls>.nav-actions :is(#logosBtn,#addCardBtn){border-radius:9px}
 }
 @media(prefers-reduced-motion:reduce){
-  .sports-catalogue-controls>.nav-actions :is(#logosBtn,#sportsRandomBtn,#addCardBtn){transition:none}
-  .sports-catalogue-controls>.nav-actions :is(#logosBtn,#sportsRandomBtn,#addCardBtn):hover:not(:disabled){transform:none}
+  .sports-catalogue-controls>.nav-actions :is(#logosBtn,#addCardBtn){transition:none}
+  .sports-catalogue-controls>.nav-actions :is(#logosBtn,#addCardBtn):hover:not(:disabled){transform:none}
 }
 
 </style>
@@ -2646,6 +2651,100 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
 @media(max-width:600px){#rapliSharedLoading{margin:24px auto 36px;padding:22px 15px}}
 @media(prefers-reduced-motion:reduce){#rapliSharedProgressFill,#rapliSharedProgressFill::after{animation:none;transition:none}}
 </style>
+
+<style id="rapli-mobile-card-logo-fit">
+/* Mobile: logos must fit the information column without setting tile dimensions.
+   Scope to FICHES cards only; preserve natural aspect ratios and desktop rendering. */
+@media(max-width:750px){
+  .cards-grid .card-item{min-width:0}
+  .cards-grid .card-item .card-info,
+  .cards-grid .card-item .identity-row,
+  .cards-grid .card-item .identity-logos,
+  .cards-grid .card-item .tags{min-width:0;max-width:100%}
+  .cards-grid .card-item .identity-logos{gap:4px 0}
+  .cards-grid .card-item .brand-lockup,
+  .cards-grid .card-item .team-identity{flex:0 1 auto;min-width:0;max-width:100%}
+  .cards-grid .card-item .brand-lockup img.logo-tiny.has-image{
+    width:auto;height:auto;max-width:46px;max-height:23px;object-fit:contain;flex:0 1 auto
+  }
+  .cards-grid .card-item .team-identity img.logo-tiny.has-image{
+    width:auto;height:auto;max-width:51px;max-height:27px;object-fit:contain;flex:0 1 auto
+  }
+  .cards-grid .card-item .tags{
+    display:flex;flex-wrap:wrap;align-items:center;align-content:flex-start;
+    gap:4px 0;margin-top:6px;padding-top:6px
+  }
+  .cards-grid .card-item .tags .card-tag-entry{
+    display:inline-flex;flex:0 1 auto;max-width:100%;min-width:0;
+    min-height:24px;padding:0 5px;align-items:center;justify-content:center;
+  }
+  .cards-grid .card-item .tags .card-tag-entry:first-child{padding-left:0}
+  .cards-grid .card-item .tags .card-tag-logo,
+  .cards-grid .card-item .tags:has(> .card-tag-entry:only-child) .card-tag-logo,
+  .cards-grid .card-item .tags:has(> .card-tag-entry:nth-child(2):last-child) .card-tag-logo{
+    display:block;flex:0 1 auto;width:auto;height:auto;
+    max-width:min(100%,72px);max-height:24px;
+    min-width:0;object-fit:contain;object-position:center;
+  }
+  .cards-grid .card-item .tags .card-tag-entry + .card-tag-entry::before{
+    height:min(17px,75%);
+  }
+}
+@media(max-width:420px){
+  .cards-grid .card-item .identity-logos{gap:3px 0}
+  .cards-grid .card-item .brand-lockup img.logo-tiny.has-image{max-width:39px;max-height:21px}
+  .cards-grid .card-item .team-identity{margin-left:5px;padding-left:6px}
+  .cards-grid .card-item .team-identity img.logo-tiny.has-image{max-width:46px;max-height:24px}
+  .cards-grid .card-item .tags .card-tag-entry{min-height:21px;padding:0 4px}
+  .cards-grid .card-item .tags .card-tag-logo,
+  .cards-grid .card-item .tags:has(> .card-tag-entry:only-child) .card-tag-logo,
+  .cards-grid .card-item .tags:has(> .card-tag-entry:nth-child(2):last-child) .card-tag-logo{
+    max-width:min(100%,58px);max-height:20px;
+  }
+  .cards-grid .card-item .tags .card-tag-entry + .card-tag-entry::before{height:14px}
+}
+</style>
+<style id="rapli-sports-small-upgrades-pr3">
+/* The refractor color is a subtle accent, never a replacement for the silver/gold foil. */
+#cardGrid .card-item[class*="card-parallel-"]{
+ border-color:color-mix(in srgb,var(--card-parallel-accent) 43%,#c7d6dc);
+ box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--card-parallel-accent) 30%,transparent),
+            0 6px 18px rgba(23,51,75,.11);
+}
+#cardGrid .sports-gallery-tile[class*="card-parallel-"]{
+ box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--card-parallel-accent) 42%,transparent),
+            0 7px 20px rgba(25,55,82,.11);
+}
+#cardGrid .card-parallel-orange{--card-parallel-accent:#dc894a}
+#cardGrid .card-parallel-green{--card-parallel-accent:#46ae81}
+#cardGrid .card-parallel-purple{--card-parallel-accent:#9874d6}
+#cardGrid .card-parallel-blue{--card-parallel-accent:#518fdc}
+#cardGrid .card-parallel-red{--card-parallel-accent:#d96a6d}
+#cardGrid .card-parallel-gold{--card-parallel-accent:#c6a04a}
+#cardGrid .card-parallel-pink{--card-parallel-accent:#d982b5}
+#cardGrid .card-parallel-black{--card-parallel-accent:#647184}
+#cardGrid .card-parallel-yellow{--card-parallel-accent:#d4b24e}
+#cardGrid .card-parallel-aqua{--card-parallel-accent:#4daebc}
+#cardGrid .card-parallel-silver{--card-parallel-accent:#91a8ba}
+.sports-navigation-return{
+ display:inline-flex;align-items:center;gap:6px;min-height:35px;margin:3px 0 10px;
+ padding:7px 12px;border:1px solid #aacac8;border-radius:10px;
+ background:linear-gradient(120deg,#e4f7ef,#e6effc 60%,#f8efe4);
+ color:#275d73;font:800 10px Poppins,system-ui,sans-serif;
+ box-shadow:inset 0 1px 0 #fff,0 2px 6px #285e7020;cursor:pointer;
+}
+.sports-navigation-return:hover{border-color:#77b6a9;filter:brightness(.98)}
+.sports-navigation-return:focus-visible{outline:2px solid #419e94;outline-offset:2px}
+.sports-navigation-return[hidden]{display:none!important}
+</style>
+<style id="rapli-pr3-athlete-country-active-group">
+.sports-athlete-country-editor{display:grid;gap:7px;margin:12px 0;padding:11px;border:1px solid #bcd8d4;border-radius:11px;background:linear-gradient(120deg,#eefbf5,#f0f3fd);color:#28576f;font:800 11px Poppins,sans-serif}
+.sports-athlete-country-editor[hidden]{display:none!important}
+.sports-athlete-country-editor small{font-size:10px;font-weight:500;line-height:1.4;color:#607c8c}
+#logoList .sports-athlete-country-label{color:#456d80;font:700 10px Poppins,sans-serif;padding:3px 7px;border-radius:7px;background:#e7f3f0}
+.sports-group-active-pill{display:inline-flex;align-items:center;margin-right:8px;padding:4px 7px;border:1px solid #8ccabc;border-radius:999px;background:linear-gradient(115deg,#d9f5e9,#e7eefb);color:#256858;font:900 9px Poppins,sans-serif;letter-spacing:.05em;vertical-align:middle}
+</style>
+  <link rel="stylesheet" href="card-tools.css">
 </head>
 <body>
   <div class="app-shell">
@@ -2673,13 +2772,13 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         <div class="sports-catalogue-controls">
           <div class="nav-actions" role="group" aria-label="Actions sur les cartes">
             <button id="logosBtn" type="button" class="button button-soft sports-icon-action rapli-personalize-action" aria-label="Gérer les logos" title="Gérer les logos"><svg class="rapli-personalize-gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M10.3 2.4h3.4l.5 1.9 1.7.7 1.7-1 2.4 2.4-1 1.7.7 1.7 1.9.5v3.4l-1.9.5-.7 1.7 1 1.7-2.4 2.4-1.7-1-1.7.7-.5 1.9h-3.4l-.5-1.9-1.7-.7-1.7 1-2.4-2.4 1-1.7-.7-1.7-1.9-.5v-3.4l1.9-.5.7-1.7-1-1.7 2.4-2.4 1.7 1 1.7-.7z"/></svg></button>
-            <button id="sportsRandomBtn" type="button" class="button button-soft sports-icon-action" aria-label="Découvrir une carte au hasard" title="Tirer une carte au hasard"><svg class="sports-random-dice" viewBox="0 0 24 24" role="img" aria-hidden="true" focusable="false"><rect x="3" y="3" width="18" height="18" rx="4" fill="none" stroke="currentColor" stroke-width="1.9"/><circle cx="8" cy="8" r="1.45" fill="currentColor"/><circle cx="16" cy="8" r="1.45" fill="currentColor"/><circle cx="12" cy="12" r="1.45" fill="currentColor"/><circle cx="8" cy="16" r="1.45" fill="currentColor"/><circle cx="16" cy="16" r="1.45" fill="currentColor"/></svg></button>
             <button id="addCardBtn" type="button" class="button button-primary sports-icon-action" aria-label="Ajouter une carte" title="Ajouter une carte"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
           </div>
+        <select id="sportsViewSelect" aria-label="Vue des cartes"><option value="details">FICHES</option><option value="cards">VIGNETTES</option><option value="brand">MARQUE</option><option value="team">TEAM</option><option value="athlete">ATHLÈTE</option><option value="nationality">PAYS</option><option value="tag">TAG</option><option value="competition">LIGUE</option><option value="edition">ÉDITION</option><option value="insert">INSERT</option><option value="parallel">PARALLÈLE</option><option value="sport">SPORT</option><option value="grading">GRADING</option></select>
         <span class="results-label sports-count-foil" id="resultsLabel" aria-live="polite">0 carte</span>
         <input id="filterDream" type="checkbox" hidden aria-label="Afficher uniquement la Dreamlist">
         <div class="field search-field sports-catalogue-search"><label class="field-label" for="filterSearch">RECHERCHE</label><div class="input-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input class="input with-icon" id="filterSearch" type="search" autocomplete="off" placeholder="Rechercher une carte…" aria-label="Rechercher dans toutes les informations des cartes"></div></div>
-        <select id="sortSelect" class="sorter" aria-label="Trier les cartes"><option value="recent">Plus récentes</option><option value="name">Joueur A – Z</option><option value="brand">Marque A – Z</option><option value="team">Équipe A – Z</option></select>
+        <select id="sortSelect" class="sorter" aria-label="Trier les cartes"><option value="recent">Plus récentes</option><option value="name">Joueur A – Z</option><option value="brand">Marque A – Z</option><option value="team">Équipe A – Z</option><option value="season-new">Saisons récentes</option><option value="season-old">Saisons anciennes</option></select>
         <div class="rapli-profile" id="rapliProfile">
           <button id="rapliProfileToggle" type="button" class="rapli-profile-toggle" aria-label="Ouvrir le menu Profil" title="Profil et applications" aria-haspopup="true" aria-expanded="false" aria-controls="rapliProfileMenu">
             <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5.2 20c.2-4 2.8-6.2 6.8-6.2s6.6 2.2 6.8 6.2"/></svg>
@@ -2694,26 +2793,14 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         </div>
         </div>
         <div id="sportsGalleryToolbar" class="sports-gallery-switch" role="group" aria-label="Mode de consultation des cartes">
-          <span class="sports-gallery-title">VUE</span>
+
         <div id="wishlistViews" class="wishlist-views" role="group" aria-label="Vue de la Wishlist" hidden>
           <button type="button" class="sports-gallery-option" data-wishlist-dream="false" aria-pressed="true">TOUTES</button>
           <button type="button" class="sports-gallery-option" data-wishlist-dream="true" aria-pressed="false">✨ DREAMLIST <span id="dreamlistCount">0</span></button>
         </div>
-          <button type="button" class="sports-gallery-option" data-sports-layout="details" aria-pressed="true">FICHES</button>
-          <button type="button" class="sports-gallery-option" data-sports-layout="cards" aria-pressed="false">VIGNETTES</button>
-          <button type="button" class="sports-gallery-option" data-sports-layout="brand" aria-pressed="false">MARQUE</button>
-          <button type="button" class="sports-gallery-option" data-sports-layout="team" aria-pressed="false">TEAM</button>
-          <button type="button" class="sports-gallery-option" data-sports-layout="athlete" aria-pressed="false">ATHLÈTE</button>
-          <button type="button" class="sports-gallery-option" data-sports-layout="nationality" aria-pressed="false">PAYS</button>
-          <button type="button" class="sports-gallery-option" data-sports-layout="tag" aria-pressed="false">TAG</button>
-          <button type="button" class="sports-gallery-option" data-sports-layout="competition" aria-pressed="false">LIGUE</button>
-          <button type="button" class="sports-gallery-option" data-sports-layout="edition" aria-pressed="false" title="Tags classés Collection">ÉDITION</button>
-          <button type="button" class="sports-gallery-option" data-sports-layout="insert" aria-pressed="false">INSERT</button>
-          <button type="button" class="sports-gallery-option" data-sports-layout="parallel" aria-pressed="false">PARALLÈLE</button>
-          <button type="button" class="sports-gallery-option" data-sports-layout="sport" aria-pressed="false">SPORT</button>
-          <button type="button" class="sports-gallery-option" data-sports-layout="grading" aria-pressed="false">GRADING</button>
         </div>
         <div id="demoBanner" class="demo-strip hidden"><span><strong>APERÇU DE DÉMONSTRATION</strong> — Ces cartes sont des exemples modifiables.</span><button class="link-btn" id="clearDemoBtn" type="button">Supprimer les exemples</button></div>
+        <button id="sportsNavigationReturn" type="button" class="sports-navigation-return" hidden aria-label="Revenir à la vue précédente">← Retour à la vue précédente</button>
         <div id="sportsPaginationTop" class="sports-pagination-host" aria-label="Pagination supérieure"></div>
         <div id="cardGrid" class="cards-grid" aria-live="polite"></div>
         <div id="sportsPaginationBottom" class="sports-pagination-host" aria-label="Pagination inférieure"></div>
@@ -2763,6 +2850,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
             <div class="input-group"><label for="cardTeam">Équipe</label><select id="cardTeamPicker" class="select saved-value-picker" aria-label="Choisir une équipe déjà enregistrée"><option value="">Choisir une équipe enregistrée…</option></select><input id="cardTeam" class="input" name="team" list="teamsList" maxlength="100" placeholder="Ou saisir une nouvelle équipe"><datalist id="teamsList"></datalist></div>
             <div class="input-group"><label for="cardReference">Référence</label><input id="cardReference" class="input" name="reference" maxlength="180" placeholder="2025-26 Topps Chrome #…"></div>
             <div class="input-group"><label for="tagField">Variations / tags</label><select id="tagPicker" class="select saved-value-picker" aria-label="Ajouter un tag déjà enregistré"><option value="">Ajouter un tag existant…</option></select><div id="chipEditor" class="chip-editor"><div id="editChips" style="display:contents"></div><input id="tagField" class="tag-input" placeholder="Chrome, Refractor…" maxlength="60" autocomplete="off"></div><div class="field-hint">Sélectionne un tag existant, ou saisis-en un nouveau puis appuie sur Entrée.</div></div>
+            <div class="input-group"><label for="cardSeason">Saison (facultative)</label><input id="cardSeason" class="input" maxlength="9" placeholder="2025 ou 2025/2026" pattern="[0-9]{4}(/[0-9]{4})?"><label class="sports-grade-toggle"><input id="cardLegendary" type="checkbox"> LÉGENDAIRE</label><div class="field-hint">Pour les athlètes de légende présents dans des collections récentes.</div></div>
             <div class="input-group sports-grading"><label class="sports-grade-toggle"><input id="cardGraded" type="checkbox"> 🏅 CARTE GRADÉE</label><div id="cardGradeFields" class="sports-grade-fields hidden"><label for="cardGradeOrg">Organisme<select id="cardGradeOrg" class="select"><option value="">Non précisé</option><option value="PSA">PSA</option><option value="BGS">BGS / Beckett</option><option value="SGC">SGC</option><option value="CGC">CGC</option><option value="Autre">Autre</option></select></label><label for="cardGradeScore">Note du grading<input id="cardGradeScore" class="input" type="text" maxlength="4" inputmode="decimal" placeholder="10 ou 9.5"></label></div><div class="field-hint">Notation facultative de 0,5 à 10 · séparateur point ou virgule.</div></div>
             <div class="number-control"><div class="number-head"><label for="cardNumbered"><input id="cardNumbered" class="custom" type="checkbox"><span class="box-check"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></span> CARTE NUMÉROTÉE</label><span class="field-hint" id="cardNumberHint">Ex. 12 / 99</span></div><div id="serialFields" class="number-row hidden"><div class="input-group"><label for="cardSerial" id="cardSerialLabel">Numéro de la carte</label><input id="cardSerial" class="input" maxlength="8" inputmode="numeric" pattern="[0-9]*" placeholder="12"></div><span class="slash">/</span><div class="input-group"><label for="cardPrintRun">Tirage total</label><input id="cardPrintRun" class="input" maxlength="8" inputmode="numeric" pattern="[0-9]*" placeholder="99"></div></div></div><div class="rookie-control"><label for="cardRookie"><input id="cardRookie" class="custom" type="checkbox"><span class="box-check"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></span> ROOKIE CARD (RC)</label><span class="field-hint">Logo personnalisé selon le sport, sinon RC</span></div>
           </div>
@@ -2799,6 +2887,12 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
     <div class="modal-body">
       <div class="logo-tabs"><button type="button" class="logo-tab active" data-logo-type="brand">Marques</button><button type="button" class="logo-tab" data-logo-type="team">Équipes</button><button type="button" class="logo-tab" data-logo-type="rookie">Rookie / RC</button><button type="button" class="logo-tab" data-logo-type="athlete">Portraits athlètes</button><button type="button" class="logo-tab" data-logo-type="nationality">Pays</button><button type="button" class="logo-tab" data-logo-type="sport">Sports</button><button type="button" class="logo-tab" data-logo-type="grading">Organismes de grading</button><button type="button" class="logo-tab" data-logo-type="tag">Tags / variations</button><button type="button" class="logo-tab" data-logo-type="labels">Étiquettes</button><button type="button" class="logo-tab" data-logo-type="collector">Style des badges</button></div>
       <div class="logo-create" id="logoCreatePanel"><p class="logo-help" id="logoCreateHelp">Associe une image à une marque ou une équipe : son logo s'affichera automatiquement sur toutes les cartes correspondantes.</p><div class="logo-create-row"><div class="input-group"><label id="logoNameLabel" for="logoName">Nom de la marque</label><select id="logoAthletePicker" class="select saved-value-picker" aria-label="Choisir un athlète déjà présent dans la collection" hidden><option value="">Choisir un athlète enregistré…</option></select><select id="logoTeamPicker" class="select saved-value-picker" aria-label="Choisir une équipe enregistrée" hidden><option value="">Choisir une équipe…</option></select><select id="logoTagPicker" class="select saved-value-picker" aria-label="Choisir un tag enregistré" hidden><option value="">Choisir un tag…</option></select><select id="logoGroupPicker" class="select saved-value-picker" aria-label="Choisir un pays ou un sport" hidden><option value="">Choisir une catégorie…</option></select><input class="input" id="logoName" list="logoNamesList" maxlength="100" placeholder="Topps"><datalist id="logoNamesList"></datalist></div><div class="input-group"><label id="logoImageLabel">Image du logo</label><label class="logo-file" id="logoFileLabel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 16V4m-5 5 5-5 5 5M4 17v4h16v-4"/></svg><span id="logoFileText">Choisir</span><input type="file" id="logoFileInput" accept="image/png,image/jpeg,image/webp"></label></div><button id="cropPortraitBtn" type="button" class="button button-soft" hidden>✂ Recadrer</button><button id="saveLogoBtn" type="button" class="button button-primary">Ajouter</button></div>
+      <label id="athleteNationalityWrap" class="sports-athlete-country-editor" for="athleteNationality" hidden>
+        PAYS DE L’ATHLÈTE
+        <input id="athleteNationality" class="input" list="athleteCountryList" maxlength="100" placeholder="France, États-Unis…" autocomplete="off">
+        <datalist id="athleteCountryList"></datalist>
+        <small>Ce pays apparaît sur les cartes sans pays renseigné manuellement.</small>
+      </label>
       <section id="countryIconPanel" class="country-icon-settings" hidden>
         <div class="country-icon-editor">
           <label>ICÔNE PAYS · FICHE CARTE
@@ -2897,7 +2991,6 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
       <div id="rainbowVariantLinks" class="sports-rainbow-bind-list"></div>
     </div><div class="modal-footer"><button type="button" class="button button-ghost" data-close="rainbowDialog">Annuler</button><button id="saveRainbowBtn" class="button button-primary" type="submit">Enregistrer le Rainbow</button></div></div></form>
   </dialog>
-  <dialog id="sportsRandomDialog" class="modal small" aria-labelledby="sportsRandomTitle"><div class="modal-header"><div><span class="modal-kicker">RAPLI SPORTS / SÉLECTION ALÉATOIRE</span><h2 id="sportsRandomTitle" class="modal-title">Une carte au hasard</h2></div><button type="button" class="close-modal" data-close="sportsRandomDialog" aria-label="Fermer">×</button></div><div class="modal-body"><div id="sportsRandomBody"></div><div class="modal-footer"><button id="sportsRandomAgain" class="button button-soft" type="button">⚄ UNE AUTRE CARTE</button><button id="sportsRandomEdit" class="button button-primary" type="button">MODIFIER</button></div></div></dialog>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <button type="button" id="sportsBackToTop" hidden aria-label="Retour en haut de la collection" title="Retour en haut">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 14 6-6 6 6"/><path d="M12 9v11"/></svg>
@@ -2931,9 +3024,19 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
       let db=null, cards=[], logos=[], currentView='own', currentTags=[], currentPhoto='', editingId=null, logoType='brand', pendingLogoPhoto='', toastTimer=null;
       let pendingPortraitCrop={scale:1,x:0,y:0},portraitCropEditing=null,portraitCropPointer=null;
       let countryDraft={tileImage:null,catalogImage:null};
-      let sportsGalleryLayout='details',sportsGallerySelected=null,sportsGalleryPage=1;
+      const SPORTS_GALLERY_LAYOUTS=Object.freeze(['details','cards','brand','team','athlete','nationality','tag','competition','edition','insert','parallel','sport','grading']);
+      const SPORTS_GALLERY_LAYOUT_KEY='rapli-sports-gallery-layout-v1';
+      function savedSportsGalleryLayout(){
+        try{const value=localStorage.getItem(SPORTS_GALLERY_LAYOUT_KEY);return SPORTS_GALLERY_LAYOUTS.includes(value)?value:'details';}
+        catch(_){return 'details';}
+      }
+      function saveSportsGalleryLayout(value){
+        try{localStorage.setItem(SPORTS_GALLERY_LAYOUT_KEY,value);}catch(_){/* Private browsing may prevent local storage. */}
+      }
+      let sportsGalleryLayout=savedSportsGalleryLayout(),sportsGallerySelected=null,sportsGalleryPage=1;
+      const sportsNavigationHistory=[];
       const rainbowEngine=window.RapliSportsRainbow;
-      let rainbowEditingId=null,rainbowAssignments=new Map(),rainbowBaseVariant='',randomSportsCardId=null;
+      let rainbowEditingId=null,rainbowAssignments=new Map(),rainbowBaseVariant='';
       const SPORTS_GALLERY_PAGE_SIZE=30;
       const collator=new Intl.Collator('fr',{sensitivity:'base',numeric:true});
 
@@ -2955,13 +3058,13 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
       function countryTagKey(value){return normalize(countryTagLabel(value))}
       function savedCountryTags(){
         return savedValues(cards.flatMap(card=>cardPlayers(card).map(player=>countryTagLabel(player.nationality)))
-          .concat(logos.filter(row=>row.type==='nationality').map(row=>countryTagLabel(row.name))));
+          .concat(logos.filter(row=>row.type==='nationality').map(row=>countryTagLabel(row.name)),logos.filter(row=>row.type==='athlete').map(row=>countryTagLabel(row.nationality))));
       }
       function countryLogoProfile(name){
         const key=countryTagKey(name);
         return key?logos.find(row=>row.type==='nationality'&&countryTagKey(row.name)===key):null;
       }
-      function countryCatalogueBadge(value){
+      function countryCatalogueBadgeRaw(value){
         const name=countryTagLabel(value);
         if(!name)return '';
         const profile=countryLogoProfile(name);
@@ -2982,9 +3085,14 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
           nationality:String(item.nationality??'').trim().slice(0,100)
         };
       }
+      function athleteCountry(name){
+        const profile=logos.find(item=>item.type==='athlete'&&normalize(item.name)===normalize(name));
+        return countryTagLabel(profile?.nationality||'');
+      }
       function cardPlayers(card){
         const list=Array.isArray(card?.players)?card.players.slice(0,MAX_CARD_PLAYERS).map(normalizedPlayer).filter(p=>p.name):[];
-        return list.length?list:[normalizedPlayer({name:card?.player||''})];
+        const players=list.length?list:[normalizedPlayer({name:card?.player||''})];
+        return players.map(player=>({...player,nationality:countryTagLabel(player.nationality)||athleteCountry(player.name)}));
       }
       function savedValues(values){
         const seen=new Map();
@@ -3217,13 +3325,13 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
           ';--sports-label-border:'+cfg.border+';--sports-label-radius:'+radius+
           ';--sports-label-gradient:'+gradient+';';
       }
-      function sportsSportBadge(sport){
+      function sportsSportBadgeRaw(sport){
         const value=String(sport||'').trim();
         if(!value)return '';
         const key='sport:'+normalize(value);
         const [bg,ink,border]=SPORT_LABEL_COLORS[normalize(value)]||['#f4f7fd','#2457c6','#d7e3f7'];
         const cfg=labelConfig({key,type:'sport',title:value,text:value,bg,ink,border});
-        return '<span class="sport-chip" style="'+labelInlineStyle(cfg)+'" title="'+safeText(value)+'"><span class="sports-sport-symbol" aria-hidden="true">'+safeText(sportsGallerySportIcon(value))+'</span>'+safeText(cfg.text)+'</span>';
+        return '<span class="sport-chip" style="'+labelInlineStyle(cfg)+'" title="'+safeText(value)+'">'+safeText(cfg.text)+'</span>';
       }
       function sportsFeatureBadge(kind,value,prefix=''){
         const def=LABEL_FEATURES.find(item=>item.key===kind+':'+value);
@@ -3338,7 +3446,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         const badges=[...autos,...patchBadges].filter(Boolean);
         const reference=String(card.reference||'').trim();
         return '<div class="player-name-reference"><h3 class="player"><span class="player-primary-name">'+safeText(first)+'</span>'+(roster[0]?.nationality?' <span class="sports-flag">'+countryCatalogueBadge(roster[0].nationality)+'</span>':'')+more+'</h3>'+
-          (reference?'<span class="card-ref-inline" title="'+safeText(reference)+'">'+safeText(reference)+'</span>':'')+
+          '<span class="card-reference-actions">'+(cardRainbows(card).length?'<button type="button" class="card-rainbow-link" data-card-tool="rainbows" data-card-target="'+safeText(card.id)+'" aria-label="Voir les versions du Rainbow" title="Voir les versions du Rainbow">🌈</button>':'')+(reference?'<button type="button" class="card-ref-inline" data-card-tool="copy" data-card-target="'+safeText(card.id)+'" title="Copier le nom et la référence">'+safeText(reference)+'</button>':'')+'</span>'+
           '</div>'+(badges.length?'<div class="player-traits">'+badges.join('')+'</div>':'');
       }
       function normalize(value){return String(value??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim()}
@@ -3394,7 +3502,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
           '<span class="grading-logo-slot">'+agencyMarkup+'</span>'+
           '<span class="grading-score">'+safeText(grade||'—')+'</span></span>';
       }
-      function brandBadge(type,name){const src=logoFor(type,name);const initials=String(name||'?').split(/\s+/).filter(Boolean).slice(0,2).map(x=>x[0]).join('').toUpperCase().slice(0,2);return src?`<img class="logo-tiny has-image" src="${src}" alt="Logo ${safeText(name)}">`:`<span class="logo-tiny" aria-hidden="true">${safeText(initials)}</span>`}
+      function brandBadgeRaw(type,name){const src=logoFor(type,name);const initials=String(name||'?').split(/\s+/).filter(Boolean).slice(0,2).map(x=>x[0]).join('').toUpperCase().slice(0,2);return src?`<img class="logo-tiny has-image" src="${src}" alt="Logo ${safeText(name)}">`:`<span class="logo-tiny" aria-hidden="true">${safeText(initials)}</span>`}
 
 
       const COLLECTOR_STYLE_ID='collector:style';
@@ -3496,7 +3604,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         const hasSerial=/^\d+$/.test(String(card.serial||''))&&Number(card.serial)>0&&Number(card.serial)<=Number(card.printRun);
         const numbered=!!card.numbered&&hasPrintRun&&(hasSerial||card.status==='wishlist');
         const rookie=card.rookie===true;
-        if(!numbered&&!rookie)return '<span class="collector-no-number">Non numérotée</span>';
+        if(!numbered&&!rookie)return '';
         let badges='';
         if(numbered){
           const tier=collectorTier(card.printRun);
@@ -3584,11 +3692,22 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         if(type!=='brand'&&type!=='team')return names;
         return names.sort((a,b)=>Number(pinnedLogo(type,b))-Number(pinnedLogo(type,a))||collator.compare(a,b));
       }
-      function fillSavedPicker(select,values,placeholder,pinnedType=''){
+      function hasLibraryLogo(type,name){
+        if(type==='nationality'){
+          const profile=countryLogoProfile(name);
+          return Boolean(imgSafe(profile?.image)||imgSafe(profile?.catalogImage));
+        }
+        // An existing tag/grade style without an image is not a registered logo.
+        return Boolean(logoFor(type,name));
+      }
+      function fillSavedPicker(select,values,placeholder,pinnedType='',libraryLogoType=''){
         const value=select.value;
         select.replaceChildren(new Option(placeholder,''));
-        for(const item of sortedLogoNames(values,pinnedType))
-          select.add(new Option(pinnedLogo(pinnedType,item)?'★ '+item:item,item));
+        for(const item of sortedLogoNames(values,pinnedType)){
+          const pinned=pinnedLogo(pinnedType,item)?'★ ':'';
+          const check=libraryLogoType&&hasLibraryLogo(libraryLogoType,item)?' ✓':'';
+          select.add(new Option(pinned+item+check,item));
+        }
         select.value=[...select.options].some(o=>o.value===value)?value:'';
       }
       function refreshGradeOrgOptions(){
@@ -3687,10 +3806,24 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
           return true;
         });
         const sort=$('sortSelect').value;
-        matches.sort((a,b)=>sort==='name'?collator.compare(a.player,b.player):
-          sort==='brand'?collator.compare(a.brand,b.brand):
-          sort==='team'?collator.compare(a.team,b.team):
-          (b.createdAt||0)-(a.createdAt||0));
+        const addedAt=card=>{const value=card.createdAt;return Number(value)||Date.parse(value)||0;};
+        const byAdded=(a,b)=>addedAt(b)-addedAt(a);
+        const seasonKey=card=>{
+          const match=/^(\d{4})(?:\/(\d{4}))?$/.exec(String(card.season||'').trim());
+          return match?Number(match[1])*10000+Number(match[2]||match[1]):null;
+        };
+        matches.sort((a,b)=>{
+          if(sort==='name')return collator.compare(a.player,b.player);
+          if(sort==='brand')return collator.compare(a.brand,b.brand);
+          if(sort==='team')return collator.compare(a.team,b.team);
+          if(sort==='season-new'||sort==='season-old'){
+            const left=seasonKey(a),right=seasonKey(b);
+            if(left===null||right===null)return left===null&&right===null?byAdded(a,b):left===null?1:-1;
+            const difference=sort==='season-new'?right-left:left-right;
+            return difference||byAdded(a,b);
+          }
+          return byAdded(a,b);
+        });
         return matches;
       }
 
@@ -3772,12 +3905,27 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         }
         return [...groups.values()].sort((a,b)=>collator.compare(a.label,b.label));
       }
+      function cardParallelAccentClass(card){
+        const tags=Array.isArray(card.tags)?card.tags:[];
+        // Prefer tags classified as parallels, while accepting older Refractor/Foil labels.
+        const classified=tags.filter(tag=>tagCategories(tag).includes('parallel'));
+        const candidates=classified.length?classified:
+          tags.filter(tag=>/\b(refractor|foil|parallel|prizm|shimmer|wave)\b/i.test(tag));
+        for(const tag of candidates){
+          const match=normalize(tag).match(/\b(orange|green|purple|blue|red|gold|pink|black|yellow|aqua|teal|turquoise|mint|silver|prism)\b/);
+          if(match){
+            const tone=['teal','turquoise','mint'].includes(match[1])?'aqua':match[1]==='prism'?'silver':match[1];
+            return ' card-parallel-'+tone;
+          }
+        }
+        return '';
+      }
       function cardTileFoilClass(card){
-        // One-of-one cards use a softer champagne-gold foil, including wishlist items.
+        // One-of-one cards retain the champagne-gold foil and its neutral border.
         const isOneOfOne=(card.numbered&&/^0*1$/.test(String(card.printRun??'').trim()))||
           (Array.isArray(card.tags)&&card.tags.some(tag=>
             /^(?:1\s*\/\s*1|1\s*of\s*1|one[\s-]*of[\s-]*one)$/i.test(String(tag??'').trim())));
-        return isOneOfOne?'card-foil-gold':'card-foil-silver';
+        return isOneOfOne?'card-foil-gold':'card-foil-silver'+cardParallelAccentClass(card);
       }
       function sportsGalleryCard(item){
         const photo=imgSafe(item.photo)?
@@ -3787,11 +3935,12 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         return '<article class="sports-gallery-tile '+cardTileFoilClass(item)+(item.rookie===true?' is-rookie-card':'')+
           (item.status==='wishlist'&&item.dream?' is-dream-gallery':'')+'" data-card-id="'+safeText(item.id)+'">'+
           '<span class="sports-tile-corners" aria-hidden="true"></span>'+
+          (recentCard(item)?'<span class="sports-gallery-new" title="Ajoutée il y a moins de 7 jours">NEW</span>':'')+
           '<button type="button" class="sports-gallery-card-action" data-sports-gallery-card="'+safeText(item.id)+
           '" aria-label="Ouvrir la fiche de '+safeText(athlete)+'">'+
           '<span class="sports-gallery-media">'+photo+
           '<span class="sports-gallery-athlete-foil">'+safeText(athlete)+'</span>'+
-          '</span></button></article>';
+          '</span></button><button type="button" class="card-summary-button" data-card-tool="summary" aria-label="Résumé et exports de la carte" title="Résumé et exports">ⓘ</button></article>';
       }
       const PORTRAIT_CROP_DEFAULT=Object.freeze({scale:1,x:0,y:0});
       function portraitCropConfig(value){
@@ -3877,7 +4026,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
           const group=groups.find(x=>x.key===sportsGallerySelected);
           if(!group){sportsGallerySelected=null;sportsGalleryPage=1;}
           else return '<button type="button" class="sports-gallery-back" data-sports-gallery-back>← Tous les groupes</button>'+
-            '<div class="sports-gallery-breadcrumb">'+safeText(group.label)+' · '+group.items.length+' carte'+(group.items.length>1?'s':'')+'</div>'+
+            '<div class="sports-gallery-breadcrumb"><span class="sports-group-active-pill">GROUPE ACTIF</span>'+safeText(group.label)+' · '+group.items.length+' carte'+(group.items.length>1?'s':'')+'</div>'+
             sportsGalleryPageMarkup(group.items,sportsGalleryCard);
         }
         return sportsGalleryPageMarkup(groups,g=>sportsGalleryGroupCard(g,sportsGalleryLayout),true);
@@ -3905,13 +4054,13 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
       function isNegativeRefractorTag(tag){
         return /\bnegative[\s-]*refractor\b/i.test(String(tag??''));
       }
-      function cardTagMarkup(t){
+      function cardTagMarkupRaw(t){
         const logo=logoFor('tag',t);
         return logo?'<img class="card-tag-logo" src="'+logo+'" alt="'+safeText(t)+'" title="'+safeText(t)+'" loading="lazy">':
           '<span class="tag">'+safeText(t)+'</span>';
       }
       function cardMarkup(c){const photo=imgSafe(c.photo)?`<img src="${c.photo}" alt="Carte de ${safeText(c.player)}" loading="lazy">`:`<div class="placeholder"><span class="mini-logo">RAPLI / SPORTS</span><div class="place-center">${ico('layers')}</div><span class="place-foot">COLLECTOR'S CARD</span></div>`;const tags=orderedCardTags(c.tags).slice(0,8).map(tag=>'<span class="card-tag-entry">'+cardTagMarkup(tag)+'</span>').join('')+
-        ((c.tags||[]).length>8?`<span class="card-tag-entry"><span class="tag more">+${c.tags.length-8}</span></span>`:'');return `<article class="card-item ${cardTileFoilClass(c)}${c.rookie===true?' is-rookie-card':''}${c.status==='wishlist'&&c.dream?' is-dream-card':''}" data-id="${safeText(c.id)}" data-card-id="${safeText(c.id)}"><span class="sports-tile-corners" aria-hidden="true"></span><div class="photo-side"><div class="card-photo" style="${sportFrameStyle(c.sport)}">${photo}${c.demo?'<span class="photo-flag">DÉMO</span>':''}${recentCard(c)?'<span class="sports-new-flag">NEW</span>':''}</div></div><div class="card-info"><div class="card-top"><div class="card-athlete">${playerCardSummary(c)}</div><div class="card-controls"><button type="button" class="icon-btn" data-action="edit" data-id="${safeText(c.id)}" aria-label="Modifier cette carte" title="Modifier">${ico('edit')}</button><button type="button" class="icon-btn delete" data-action="delete" data-id="${safeText(c.id)}" aria-label="Supprimer cette carte" title="Supprimer">${ico('trash')}</button></div></div><div class="identity-row"><div class="identity-logos"><div class="brand-lockup">${brandBadge('brand',c.brand)}${logoFor('brand',c.brand)?'':'<span>'+safeText(c.brand||'Sans marque')+'</span>'}</div><div class="team-identity">${c.team?brandBadge('team',c.team):''}${logoFor('team',c.team)?'':'<span>'+safeText(c.team||'Équipe non renseignée')+'</span>'}</div></div></div><div class="tags">${tags||'<span class="blank-tag">Aucune variation</span>'}</div><div class="card-bottom"><div class="card-status-badges">${sportsSportBadge(c.sport)}${collectorBadgeMarkup(c)}${gradingBadgeMarkup(c)}${c.status==='wishlist'&&c.dream?'<span class="card-dream-badge"><span class="dream-sparkle" aria-hidden="true">✨</span> DANS MES RÊVES</span>':''}</div><button type="button" class="move-card" data-action="move" data-id="${safeText(c.id)}">${c.status==='own'?'→ WISHLIST':'→ OWN'}</button></div></div></article>`}
+        ((c.tags||[]).length>8?`<span class="card-tag-entry"><span class="tag more">+${c.tags.length-8}</span></span>`:'');return `<article class="card-item ${cardTileFoilClass(c)}${c.rookie===true?' is-rookie-card':''}${c.status==='wishlist'&&c.dream?' is-dream-card':''}" data-id="${safeText(c.id)}" data-card-id="${safeText(c.id)}"><span class="sports-tile-corners" aria-hidden="true"></span><div class="photo-side"><div class="card-photo" style="${sportFrameStyle(c.sport)}">${photo}${c.demo?'<span class="photo-flag">DÉMO</span>':''}${recentCard(c)?'<span class="sports-new-flag">NEW</span>':''}</div></div><div class="card-info"><div class="card-top"><div class="card-athlete">${playerCardSummary(c)}</div><div class="card-controls"><button type="button" class="icon-btn" data-action="edit" data-id="${safeText(c.id)}" aria-label="Modifier cette carte" title="Modifier">${ico('edit')}</button><button type="button" class="icon-btn delete" data-action="delete" data-id="${safeText(c.id)}" aria-label="Supprimer cette carte" title="Supprimer">${ico('trash')}</button></div></div><div class="identity-row"><div class="identity-logos"><div class="brand-lockup">${brandBadge('brand',c.brand)}${logoFor('brand',c.brand)?'':'<span>'+safeText(c.brand||'Sans marque')+'</span>'}</div><div class="team-identity">${c.team?brandBadge('team',c.team):''}${logoFor('team',c.team)?'':'<span>'+safeText(c.team||'Équipe non renseignée')+'</span>'}</div></div></div><div class="tags">${tags||'<span class="blank-tag">Aucune variation</span>'}</div><div class="card-bottom"><div class="card-status-badges">${sportsSportBadge(c.sport)}${collectorBadgeMarkup(c)}${seasonBadge(c)}${gradingBadgeMarkup(c)}${c.status==='wishlist'&&c.dream?'<span class="card-dream-badge"><span class="dream-sparkle" aria-hidden="true">✨</span> DANS MES RÊVES</span>':''}</div><div class="card-export-actions"><button type="button" data-card-tool="png">⬇ PNG</button><button type="button" data-card-tool="photo">⬇ PHOTO</button></div><button type="button" class="move-card" data-action="move" data-id="${safeText(c.id)}">${c.status==='own'?'→ WISHLIST':'→ OWN'}</button></div></div></article>`}
       const statsEngine=window.RapliSportsStats;
       const statsVisuals=window.RapliSportsStatsVisuals;
       function renderOwnedStatistics(data=statsEngine.calculate(cards)){
@@ -4035,7 +4184,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
               '<span class="sports-rainbow-stat-icon" aria-hidden="true">○</span>'+
               '<span class="sports-rainbow-stat-info"><strong>'+group.missing+'</strong><small>MANQUANTES</small></span></span></div>'+
             '</div></div><details class="sports-rainbow-disclosure" data-rainbow-disclosure="'+safeText(group.id)+'"'+(expanded.has(group.id)?' open':'')+'><summary>Variations · '+group.total+'</summary><div class="sports-rainbow-variants">'+variants+'</div></details>'+
-            '<div class="sports-rainbow-actions"><button type="button" class="button button-soft" data-rainbow-edit="'+safeText(group.id)+'">MODIFIER</button>'+
+            '<div class="sports-rainbow-actions"><button type="button" class="button button-soft" data-rainbow-pdf="'+safeText(group.id)+'">↓ CHECKLIST PDF</button><button type="button" class="button button-soft" data-rainbow-edit="'+safeText(group.id)+'">MODIFIER</button>'+
             '<button type="button" class="button button-ghost" data-rainbow-delete="'+safeText(group.id)+'">SUPPRIMER LE RAINBOW</button></div></article>';
         }).join(''):'<div class="sports-rainbow-empty">Aucun Rainbow créé pour le moment.<p>Définis une checklist des parallèles d’une même carte, puis associe tes fiches OWN et Wishlist pour suivre ta progression.</p></div>';
       }
@@ -4153,6 +4302,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
           t.classList.toggle('active',active);
           t.setAttribute('aria-selected',String(active));
         });
+        $('sportsNavigationReturn').hidden=sportsNavigationHistory.length===0;
         const showStats=currentView==='stats',showRainbow=currentView==='rainbow';
         $('collectionPanel').hidden=showStats||showRainbow;
         $('statsPanel').hidden=!showStats;
@@ -4167,8 +4317,11 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
           const ownData=statsEngine.calculate(cards);updateOwnedSummary(ownData);renderOwnedStatistics(ownData);return;
         }
         const match=filterCards();
-        $('resultsLabel').innerHTML='<strong>'+match.length+'</strong> carte'+(match.length>1?'s':'')+
-          (currentView==='own'?' possédée':' recherchée')+(match.length>1?'s':'')+
+        $('sportsViewSelect').value=sportsGalleryLayout;
+        const selectedGroup=sportsGallerySelected?sportsGalleryGroups(match,sportsGalleryLayout).find(g=>g.key===sportsGallerySelected):null;
+        const visibleCount=selectedGroup?selectedGroup.items.length:match.length;
+        $('resultsLabel').innerHTML='<strong>'+visibleCount+'</strong> carte'+(visibleCount>1?'s':'')+
+          (currentView==='own'?' possédée':' recherchée')+(visibleCount>1?'s':'')+
           (currentView==='wishlist'&&$('filterDream').checked?' · Dreamlist':'');
         document.querySelectorAll('[data-sports-layout]').forEach(button=>{
           button.setAttribute('aria-pressed',String(button.dataset.sportsLayout===sportsGalleryLayout));
@@ -4194,7 +4347,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
       function closeModal(id){$(id).close();if(!document.querySelector('dialog[open]'))document.body.style.overflow=''}
       function syncDreamField(){const eligible=$('statusWish').checked;$('cardDreamWrap').hidden=!eligible;if(!eligible)$('cardDream').checked=false;updateSerialUI();}
       function resetForm(){editingId=null;currentTags=[];currentPhoto='';$('cardForm').reset();$('cardGradeFields').classList.add('hidden');$('cardGradeOrg').value='';$('cardGradeScore').value='';$('cardSport').querySelectorAll('option[data-custom-sport]').forEach(option=>option.remove());$('cardBrandPicker').value='';$('cardTeamPicker').value='';$('tagPicker').value='';resetPlayersForm();$('cardRookie').checked=false;$('statusOwn').checked=currentView!=='wishlist';$('statusWish').checked=currentView==='wishlist';$('cardDialogTitle').textContent='Ajouter une carte';$('cardSubmitBtn').textContent='Enregistrer la carte';renderTags();updateSerialUI();renderPhoto();syncDreamField()}
-      function openCard(card){resetForm();if(card){editingId=card.id;currentTags=[...(card.tags||[])];currentPhoto=imgSafe(card.photo)?card.photo:'';$('cardDialogTitle').textContent='Modifier la carte';$('cardSubmitBtn').textContent='Enregistrer les modifications';$('statusOwn').checked=card.status==='own';$('statusWish').checked=card.status==='wishlist';$('cardBrand').value=card.brand||'';const sportSelect=$('cardSport');if(card.sport&&![...sportSelect.options].some(option=>option.value===card.sport)){const custom=new Option(card.sport,card.sport);custom.dataset.customSport='';sportSelect.add(custom);}sportSelect.value=card.sport||'';resetPlayersForm(card);$('cardTeam').value=card.team||'';$('cardReference').value=card.reference||'';$('cardNumbered').checked=Boolean(card.numbered);$('cardRookie').checked=card.rookie===true;$('cardSerial').value=card.serial||'';$('cardPrintRun').value=card.printRun||'';$('cardDream').checked=card.status==='wishlist'&&card.dream===true;$('cardGraded').checked=!!card.graded;refreshGradeOrgOptions();if(card.gradeOrg&&![...$('cardGradeOrg').options].some(option=>option.value===card.gradeOrg)){$('cardGradeOrg').add(new Option(card.gradeOrg,card.gradeOrg));}$('cardGradeOrg').value=card.gradeOrg||'';$('cardGradeScore').value=card.gradeScore||'';$('cardGradeFields').classList.toggle('hidden',!card.graded);renderTags();renderPhoto();updateSerialUI();syncDreamField()}refreshCardTagPicker();openModal('cardDialog');setTimeout(()=>$('cardBrand').focus(),70)}
+      function openCard(card){resetForm();if(card){editingId=card.id;currentTags=[...(card.tags||[])];currentPhoto=imgSafe(card.photo)?card.photo:'';$('cardDialogTitle').textContent='Modifier la carte';$('cardSubmitBtn').textContent='Enregistrer les modifications';$('statusOwn').checked=card.status==='own';$('statusWish').checked=card.status==='wishlist';$('cardBrand').value=card.brand||'';const sportSelect=$('cardSport');if(card.sport&&![...sportSelect.options].some(option=>option.value===card.sport)){const custom=new Option(card.sport,card.sport);custom.dataset.customSport='';sportSelect.add(custom);}sportSelect.value=card.sport||'';resetPlayersForm(card);$('cardTeam').value=card.team||'';$('cardReference').value=card.reference||'';$('cardSeason').value=card.season||'';$('cardLegendary').checked=card.legendary===true;$('cardNumbered').checked=Boolean(card.numbered);$('cardRookie').checked=card.rookie===true;$('cardSerial').value=card.serial||'';$('cardPrintRun').value=card.printRun||'';$('cardDream').checked=card.status==='wishlist'&&card.dream===true;$('cardGraded').checked=!!card.graded;refreshGradeOrgOptions();if(card.gradeOrg&&![...$('cardGradeOrg').options].some(option=>option.value===card.gradeOrg)){$('cardGradeOrg').add(new Option(card.gradeOrg,card.gradeOrg));}$('cardGradeOrg').value=card.gradeOrg||'';$('cardGradeScore').value=card.gradeScore||'';$('cardGradeFields').classList.toggle('hidden',!card.graded);renderTags();renderPhoto();updateSerialUI();syncDreamField()}refreshCardTagPicker();openModal('cardDialog');setTimeout(()=>$('cardBrand').focus(),70)}
       function renderPhoto(){const valid=imgSafe(currentPhoto);$('photoPreview').classList.toggle('hidden',!valid);$('photoPrompt').classList.toggle('hidden',valid);$('removePhotoBtn').classList.toggle('hidden',!valid);if(valid)$('photoPreview').src=currentPhoto;else $('photoPreview').removeAttribute('src')}
       function updateSerialUI(){
         const numbered=$('cardNumbered').checked,wishlist=$('statusWish').checked;
@@ -4223,6 +4376,8 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         if(numbered&&((!isWishlist&&!serial)||(serial&&(!/^\d+$/.test(serial)||Number(serial)<1||Number(serial)>Number(printRun))))){
           showToast(isWishlist?'Le numéro individuel est facultatif, mais doit être valide s’il est saisi.':'Indique le numéro individuel de ta carte OWN.');$('cardSerial').focus();return;
         }
+        const season=window.RapliCardTools.normalizeSeason($('cardSeason').value);
+        if(season===null){showToast('Saisis 2025 ou deux années consécutives : 2025/2026.');$('cardSeason').focus();return;}
         const gradeScore=$('cardGraded').checked?gradingScore($('cardGradeScore').value):'';
         if(gradeScore===null){showToast('Note de grading invalide : saisis une valeur entre 0,5 et 10.');$('cardGradeScore').focus();return;}
         const prev=editingId?cards.find(x=>x.id===editingId):null,now=Date.now();
@@ -4234,7 +4389,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
           players, // Independent Auto and Patch assignments for each player.
           sport:$('cardSport').value,
           team:$('cardTeam').value.trim(),
-          reference:$('cardReference').value.trim(),
+          reference:$('cardReference').value.trim(),season,legendary:$('cardLegendary').checked,
           tags:[...currentTags],numbered,graded:$('cardGraded').checked,gradeOrg:$('cardGraded').checked?$('cardGradeOrg').value:'',gradeScore,rookie:$('cardRookie').checked,dream:$('statusWish').checked&&$('cardDream').checked,
           serial:numbered?serial:'',printRun:numbered?printRun:'',
           photo:currentPhoto,createdAt:prev?.createdAt||now,updatedAt:now
@@ -4242,7 +4397,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         try{await saveCard(card);closeModal('cardDialog');renderAll();if(card.status==='own'&&prev?.status!=='own')flashOwnedCard(card.id);showToast(prev?'Carte mise à jour':'Carte ajoutée à la collection');}
         catch(err){console.error(err);showToast('Enregistrement impossible. Essaie un export puis une image plus légère.');}
       }
-      async function cardAction(e){if(!requireRapliEditor())return;const btn=e.target.closest('[data-action]');if(!btn)return;const card=cards.find(x=>x.id===btn.dataset.id);if(!card)return;if(btn.dataset.action==='edit')openCard(card);else if(btn.dataset.action==='delete'){if(confirm(`Supprimer la carte de ${card.player} ?`)){try{await removeCard(card.id);renderAll();showToast('Carte supprimée')}catch(err){showToast('Suppression impossible')}}}else if(btn.dataset.action==='move'){if(card.status==='wishlist'&&card.numbered&&(!/^\d+$/.test(String(card.serial||''))||Number(card.serial)<1||Number(card.serial)>Number(card.printRun))){openCard({...card,status:'own',dream:false});showToast('Pour passer en OWN, indique le numéro individuel de la carte.');return;}try{await saveCard({...card,status:card.status==='own'?'wishlist':'own',dream:false,updatedAt:Date.now(),demo:false});renderAll();if(card.status==='wishlist')flashOwnedCard(card.id);showToast('Carte transférée vers '+(card.status==='own'?'WISHLIST':'OWN'))}catch(e){showToast('Transfert impossible')}}}
+      async function cardAction(e){const btn=e.target.closest('[data-action]');if(!btn||!requireRapliEditor())return;const card=cards.find(x=>x.id===btn.dataset.id);if(!card)return;if(btn.dataset.action==='edit')openCard(card);else if(btn.dataset.action==='delete'){if(confirm(`Supprimer la carte de ${card.player} ?`)){try{await removeCard(card.id);renderAll();showToast('Carte supprimée')}catch(err){showToast('Suppression impossible')}}}else if(btn.dataset.action==='move'){if(card.status==='wishlist'&&card.numbered&&(!/^\d+$/.test(String(card.serial||''))||Number(card.serial)<1||Number(card.serial)>Number(card.printRun))){openCard({...card,status:'own',dream:false});showToast('Pour passer en OWN, indique le numéro individuel de la carte.');return;}try{await saveCard({...card,status:card.status==='own'?'wishlist':'own',dream:false,updatedAt:Date.now(),demo:false});renderAll();if(card.status==='wishlist')flashOwnedCard(card.id);showToast('Carte transférée vers '+(card.status==='own'?'WISHLIST':'OWN'))}catch(e){showToast('Transfert impossible')}}}
 
       // On-screen notification only. No persistent flags or cloud data fields.
       function flashOwnedCard(id){
@@ -4253,24 +4408,6 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         void target.offsetWidth;
         target.classList.add('is-own-arrival');
         target.addEventListener('animationend',()=>target.classList.remove('is-own-arrival'),{once:true});
-      }
-      function showRandomSportsCard(){
-        const pool=currentView==='own'||currentView==='wishlist'?filterCards():
-          cards.filter(c=>c.status==='own'&&!c.demo);
-        if(!pool.length){showToast('Aucune carte disponible pour un tirage aléatoire.');return;}
-        let choices=pool;
-        if(pool.length>1&&randomSportsCardId)choices=pool.filter(c=>c.id!==randomSportsCardId);
-        const choice=choices[Math.floor(Math.random()*choices.length)];
-        randomSportsCardId=choice.id;
-        const photo=imgSafe(choice.photo)?'<img class="sports-random-photo" src="'+choice.photo+'" alt="Carte de '+safeText(choice.player)+'">':
-          '<div class="sports-rainbow-empty">Aucune photo enregistrée</div>';
-        const fullPlayers=cardPlayers(choice).map(p=>safeText(p.name)+(p.nationality?' '+countryCatalogueBadge(p.nationality):'')).join(' · ');
-        $('sportsRandomBody').innerHTML=photo+'<div class="sports-random-meta"><strong>'+fullPlayers+'</strong>'+
-          '<span>'+safeText([choice.brand,choice.team,choice.sport].filter(Boolean).join(' · '))+'</span>'+
-          '<small>'+safeText(choice.reference||'Référence non renseignée')+'</small>'+
-          '<small>'+safeText((choice.tags||[]).join(' · '))+'</small>'+
-          gradingBadgeMarkup(choice)+'</div>';
-        if(!$('sportsRandomDialog').open)openModal('sportsRandomDialog');
       }
 
       function athleteLogoByName(name){
@@ -4333,10 +4470,17 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
           showToast('Impossible d’enregistrer le recadrage.');
         }finally{saveButton.disabled=false;}
       }
+      function syncAthleteCountry(){
+        if(logoType!=='athlete')return;
+        $('athleteNationality').value=athleteCountry($('logoName').value.trim());
+        const list=$('athleteCountryList');list.replaceChildren();
+        savedCountryTags().forEach(item=>list.append(new Option(item,item)));
+      }
       function setLogoType(type){
         if(!['brand','team','rookie','athlete','nationality','sport','grading','tag','labels','collector'].includes(type))type='brand';
-        logoType=type;pendingLogoPhoto='';countryDraft={tileImage:null,catalogImage:null};pendingPortraitCrop={...PORTRAIT_CROP_DEFAULT};$('logoName').value='';$('logoFileInput').value='';$('logoFileText').textContent='Choisir';
+        logoType=type;pendingLogoPhoto='';countryDraft={tileImage:null,catalogImage:null};pendingPortraitCrop={...PORTRAIT_CROP_DEFAULT};$('athleteNationality').value='';$('logoName').value='';$('logoFileInput').value='';$('logoFileText').textContent='Choisir';
         $('logoAthletePicker').hidden=type!=='athlete';$('logoAthletePicker').value='';
+        $('athleteNationalityWrap').hidden=type!=='athlete';
         $('logoTeamPicker').hidden=type!=='team';$('logoTeamPicker').value='';
         $('logoTagPicker').hidden=type!=='tag';$('logoTagPicker').value='';
         $('logoGroupPicker').hidden=!['nationality','sport','grading'].includes(type);$('logoGroupPicker').value='';
@@ -4367,6 +4511,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         if(styleTab)openCollectorSettings();else if(labelsTab)renderLabelEditors();else renderLogos();
         if(type==='grading')syncGradingEditor(true);
         if(type==='nationality')syncCountryIconEditor(true);
+        if(type==='athlete')syncAthleteCountry();
         updateCropButton();
       }
       function syncCountryIconEditor(loadSaved=false){
@@ -4453,6 +4598,8 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
             '<div class="logo-entry" data-logo-type="'+safeText(logoType)+'">'+brandBadge(logoType,l.name)+
             '<span class="logo-entry-name">'+safeText(l.name)+'</span>'+
             (logoType==='athlete'?
+              '<span class="sports-athlete-country-label">'+safeText(countryTagLabel(l.nationality)||'Pays non renseigné')+'</span>'+
+              '<button type="button" class="grading-edit-button" data-edit-athlete="'+safeText(l.name)+'" aria-label="Modifier le pays et le portrait de '+safeText(l.name)+'">Modifier</button>'+
               '<button type="button" class="grading-edit-button" data-crop-portrait="'+safeText(l.id)+'" aria-label="Recadrer le portrait de '+safeText(l.name)+'">✂ Recadrer</button>':'')+
             ((logoType==='brand'||logoType==='team')?
               '<button type="button" class="logo-pin-toggle" data-pin-logo="'+safeText(l.id)+
@@ -4465,17 +4612,22 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         }
         const list=$('logoNamesList');list.replaceChildren();
         const names=logoType==='rookie'
-          ? [...document.querySelectorAll('#cardSport option')].map(o=>o.value).concat(cards.map(c=>c.sport))
+          ? [...document.querySelectorAll('#cardSport option')].map(o=>o.value).concat(cards.map(c=>c.sport),logos.filter(l=>l.type==='rookie').map(l=>l.name))
           : logoType==='athlete'?savedPlayers().concat(logos.filter(x=>x.type==='athlete').map(x=>x.name))
           : logoType==='nationality'?savedCountryTags()
           : logoType==='sport'?cards.map(c=>c.sport).concat([...document.querySelectorAll('#cardSport option')].map(o=>o.value),logos.filter(x=>x.type==='sport').map(x=>x.name))
           : logoType==='grading'?['PSA','BGS','SGC','CGC','Autre'].concat(cards.filter(c=>c.graded).map(c=>c.gradeOrg),logos.filter(x=>x.type==='grading').map(x=>x.name))
-          : logoType==='tag'?savedTags():logoType==='team'?savedTeams():cards.map(c=>c.brand);
-        [...new Set(names.filter(Boolean))].sort(collator.compare).forEach(x=>list.append(new Option(x,x)));
-        if(logoType==='athlete')fillSavedPicker($('logoAthletePicker'),names,'Choisir un athlète enregistré…');
-        if(logoType==='team')fillSavedPicker($('logoTeamPicker'),names,'Choisir une équipe enregistrée…');
-        if(logoType==='tag')fillSavedPicker($('logoTagPicker'),names,'Choisir un tag enregistré…');
-        if(['nationality','sport','grading'].includes(logoType))fillSavedPicker($('logoGroupPicker'),names,logoType==='nationality'?'Choisir un pays enregistré…':logoType==='grading'?'Choisir un organisme de grading…':'Choisir un sport enregistré…');
+          : logoType==='tag'?savedTags():logoType==='team'?savedTeams():savedBrands();
+        [...new Set(names.filter(Boolean))].sort(collator.compare).forEach(name=>{
+          const option=new Option(name,name);
+          if(hasLibraryLogo(logoType,name))option.label='✓ '+name;
+          list.append(option);
+        });
+        if(logoType==='athlete')fillSavedPicker($('logoAthletePicker'),names,'Choisir un athlète enregistré…','','athlete');
+        if(logoType==='team')fillSavedPicker($('logoTeamPicker'),names,'Choisir une équipe enregistrée…','','team');
+        if(logoType==='tag')fillSavedPicker($('logoTagPicker'),names,'Choisir un tag enregistré…','','tag');
+        if(['nationality','sport','grading'].includes(logoType))
+          fillSavedPicker($('logoGroupPicker'),names,logoType==='nationality'?'Choisir un pays enregistré…':logoType==='grading'?'Choisir un organisme de grading…':'Choisir un sport enregistré…','',logoType);
       }
       async function saveNewLogo(){
         const name=$('logoName').value.trim();
@@ -4484,7 +4636,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         if(['collector','labels'].includes(logoType))return;
         const existing=logoType==='nationality'?countryLogoProfile(name):
           logos.find(row=>row.type===logoType&&normalize(row.name)===normalize(name));
-        if(!['tag','grading','nationality'].includes(logoType)&&!pendingLogoPhoto)return showToast(logoType==='athlete'?'Sélectionne un portrait.':'Sélectionne une image de logo.');
+        if(!['tag','grading','nationality'].includes(logoType)&&!pendingLogoPhoto&&!(logoType==='athlete'&&(existing?.image||$('athleteNationality').value.trim())))return showToast(logoType==='athlete'?'Sélectionne un portrait ou attribue un pays.':'Sélectionne une image de logo.');
         const id=existing?.id||logoType+':'+normalize(name);
         const row=logoType==='tag'?
           {...existing,id,type:'tag',name,image:pendingLogoPhoto||existing?.image||'',categories:currentTagCategories(),brands:currentTagBrands()}:
@@ -4497,8 +4649,9 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
           {...existing,id,type:'grading',name,image:pendingLogoPhoto||existing?.image||'',
             borderStart:validCollectorColor($('gradingEdgeStart').value,GRADE_EDGE_DEFAULTS.borderStart),
             borderEnd:validCollectorColor($('gradingEdgeEnd').value,GRADE_EDGE_DEFAULTS.borderEnd)}:
-          {...existing,id,type:logoType,name,image:pendingLogoPhoto,pinned:existing?.pinned===true,
-            ...(logoType==='athlete'?{crop:portraitCropConfig(pendingPortraitCrop)}:{})};
+          {...existing,id,type:logoType,name,image:pendingLogoPhoto||existing?.image||'',pinned:existing?.pinned===true,
+            ...(logoType==='athlete'?{crop:existing?.crop&&!pendingLogoPhoto?existing.crop:portraitCropConfig(pendingPortraitCrop),
+              nationality:countryTagLabel($('athleteNationality').value)}:{})};
         try{
           await saveLogo(row);
           setLogoType(logoType);renderAll();
@@ -4508,6 +4661,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
       document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>closeModal(b.dataset.close)));
       document.querySelectorAll('dialog').forEach(d=>{d.addEventListener('close',()=>{if(!document.querySelector('dialog[open]'))document.body.style.overflow=''})});
       document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
+        sportsNavigationHistory.length=0;
         currentView=t.dataset.view;sportsGallerySelected=null;sportsGalleryPage=1;renderAll();
       }));
       $('newRainbowBtn').addEventListener('click',()=>openRainbow());
@@ -4546,12 +4700,19 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         try{await removeLogo(group.id);renderAll();showToast('Rainbow supprimé. Toutes les cartes sont conservées.');}
         catch(error){console.error(error);showToast('Suppression du Rainbow impossible.');}
       });
+      function chooseSportsGalleryLayout(value){
+        if(!SPORTS_GALLERY_LAYOUTS.includes(value))return;
+        sportsNavigationHistory.length=0;
+        sportsGalleryLayout=value;sportsGallerySelected=null;sportsGalleryPage=1;
+        saveSportsGalleryLayout(value);
+        renderAll();
+      }
+      $('sportsViewSelect').addEventListener('change',()=>chooseSportsGalleryLayout($('sportsViewSelect').value));
       $('sportsGalleryToolbar').addEventListener('click',event=>{
         const option=event.target.closest('[data-sports-layout]');
         if(!option)return;
         const next=option.dataset.sportsLayout;
-        if(!['details','cards','brand','team','athlete','nationality','tag','competition','edition','insert','parallel','sport','grading'].includes(next))return;
-        sportsGalleryLayout=next;sportsGallerySelected=null;sportsGalleryPage=1;renderAll();
+        chooseSportsGalleryLayout(next);
       });
       function sportsPaginationClick(event){
         const page=event.target.closest('[data-sports-gallery-page]');
@@ -4573,6 +4734,17 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         window.scrollTo({top:0,behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
       });
       updateSportsBackToTop();
+      $('sportsNavigationReturn').addEventListener('click',()=>{
+        const previous=sportsNavigationHistory.pop();
+        if(!previous)return;
+        currentView=previous.view;sportsGalleryLayout=previous.layout;
+        sportsGallerySelected=previous.selected;sportsGalleryPage=previous.page;
+        $('filterSearch').value=previous.search;
+        $('filterDream').checked=previous.dream;
+        $('sortSelect').value=previous.sort;
+        renderAll();
+        requestAnimationFrame(()=>window.scrollTo(0,previous.scrollY));
+      });
       $('sportsPaginationTop').addEventListener('click',sportsPaginationClick);
       $('sportsPaginationBottom').addEventListener('click',sportsPaginationClick);
       $('cardGrid').addEventListener('click',event=>{
@@ -4588,13 +4760,12 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
       $('statsExportPngBtn').addEventListener('click',()=>void exportOwnedStatsPng());
       ['filterSearch','filterDream','sortSelect']
         .forEach(id=>$(id).addEventListener(id==='filterSearch'?'input':'change',()=>{
+          sportsNavigationHistory.length=0;
           sportsGalleryPage=1;sportsGallerySelected=null;renderAll();
         }));
-      $('sportsRandomBtn').addEventListener('click',showRandomSportsCard);
-      $('sportsRandomAgain').addEventListener('click',showRandomSportsCard);
-      $('sportsRandomEdit').addEventListener('click',()=>{const picked=cards.find(c=>c.id===randomSportsCardId);closeModal('sportsRandomDialog');if(picked)openCard(picked);});
       document.querySelectorAll('[data-wishlist-dream]').forEach(button=>button.addEventListener('click',()=>{
         $('filterDream').checked=button.dataset.wishlistDream==='true';
+        sportsNavigationHistory.length=0;
         sportsGalleryPage=1;sportsGallerySelected=null;renderAll();
       }));
       $('addCardBtn').addEventListener('click',()=>openCard());$('emptyAddBtn').addEventListener('click',()=>openCard());$('cardForm').addEventListener('submit',submitCard);$('cardGrid').addEventListener('click',cardAction);
@@ -4657,6 +4828,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
       $('logoAthletePicker').addEventListener('change',event=>{
         if(event.target.value)$('logoName').value=event.target.value;
         event.target.value='';
+        syncAthleteCountry();
         updateCropButton();
       });
       for(const id of ['logoTeamPicker','logoTagPicker'])$(id).addEventListener('change',event=>{
@@ -4676,7 +4848,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         if(logoType==='tag')syncTagCategoryForm(event.target.value.trim());
         if(logoType==='grading')syncGradingEditor(true);
         if(logoType==='nationality')syncCountryIconEditor(true);
-        if(logoType==='athlete')updateCropButton();
+        if(logoType==='athlete'){syncAthleteCountry();updateCropButton();}
       });
       for(const id of ['gradingEdgeStart','gradingEdgeEnd'])$(id).addEventListener('input',()=>syncGradingEditor());
       /* Normalize uploaded flags to their destination shape. Trim transparent PNG
@@ -4848,6 +5020,13 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         if(row)updateLabelPreview(row);
       });
       $('logoList').addEventListener('click',async e=>{
+        const athlete=e.target.closest('[data-edit-athlete]');
+        if(athlete){
+          setLogoType('athlete');$('logoName').value=athlete.dataset.editAthlete;
+          syncAthleteCountry();updateCropButton();$('logoName').focus();
+          $('logoCreatePanel').scrollIntoView?.({behavior:'smooth',block:'nearest'});
+          return;
+        }
         const crop=e.target.closest('[data-crop-portrait]');
         if(crop){cropExistingPortrait(crop.dataset.cropPortrait);return;}
         const pin=e.target.closest('[data-pin-logo]');
@@ -4947,11 +5126,53 @@ function rapliModuleReady(){
  window.dispatchEvent(new Event('rapli-module-ready'));
 }
 
+
+      function cardRainbows(card){return savedRainbows().filter(group=>(group.variants||[]).some(variant=>variant.cardId===card.id));}
+      function seasonBadge(card){return card.season||card.legendary?'<span class="card-season'+(card.legendary?' is-legendary':'')+'"><strong>'+safeText(card.season||'LÉGENDAIRE')+'</strong>'+(card.legendary&&card.season?'<small>LÉGENDAIRE</small>':'')+'</span>':'';}
+      function groupLink(type,name,markup){
+        if(!name||!markup)return markup;
+        return '<span class="card-group-link" role="button" tabindex="0" data-card-group="'+safeText(type)+'" data-group-label="'+safeText(name)+'" aria-label="Voir '+safeText(name)+'">'+markup+'</span>';
+      }
+      function countryCatalogueBadge(value){return groupLink('nationality',countryTagLabel(value),countryCatalogueBadgeRaw(value));}
+      function brandBadge(type,name){return groupLink(type,name,brandBadgeRaw(type,name));}
+      function cardTagMarkup(name){return groupLink('tag',name,cardTagMarkupRaw(name));}
+      function sportsSportBadge(name){return groupLink('sport',name,sportsSportBadgeRaw(name));}
+      window.RapliCardToolsBridge={
+        card:id=>cards.find(card=>card.id===id),
+        cardMarkup,cardRainbows,
+        summaryCards:()=>{
+          const match=filterCards();
+          if(sportsGallerySelected&&sportsGalleryLayout!=='details'&&sportsGalleryLayout!=='cards')
+            return sportsGalleryGroups(match,sportsGalleryLayout).find(group=>group.key===sportsGallerySelected)?.items.map(card=>card.id)||[];
+          return match.map(card=>card.id);
+        },
+        copyText:card=>window.RapliCardTools.referenceText(card,cardPlayers(card).map(p=>p.name),tagCategories),
+        players:cardPlayers,country:countryTagLabel,autoLabels:AUTO_TYPES,
+        rainbow:id=>{const group=savedRainbows().find(row=>row.id===id);return group?rainbowEngine.progress(group,cards):null;},
+        navigate(type,label){
+          if(!['nationality','brand','team','tag','sport'].includes(type))return;
+          const destination=normalize(label);
+          if(sportsGalleryLayout===type&&sportsGallerySelected===destination)return;
+          sportsNavigationHistory.push({
+            view:currentView,layout:sportsGalleryLayout,selected:sportsGallerySelected,
+            page:sportsGalleryPage,search:$('filterSearch').value,
+            dream:$('filterDream').checked,sort:$('sortSelect').value,
+            scrollY:window.scrollY||0
+          });
+          if(sportsNavigationHistory.length>10)sportsNavigationHistory.shift();
+          sportsGalleryLayout=type;sportsGallerySelected=destination;sportsGalleryPage=1;
+          renderAll();$('sportsViewSelect').scrollIntoView({block:'nearest',behavior:'smooth'});
+        },
+        notify:showToast
+      };
+
       initialize().then(rapliModuleReady).catch(err=>console.warn('Rapli module startup',err));
     })();
   </script>
+<script src="card-tools.js" defer></script>
 <script src="../shared/admin-access.js" defer></script>
 <script src="../shared/profile-menu.js" defer></script>
+<script src="../shared/collection-diff.js" defer></script>
 <script src="../shared/shared-collection.js" defer></script>
   <script src="../shared/photo-zoom.js" defer></script>
 </body>

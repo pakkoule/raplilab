@@ -550,8 +550,17 @@ button.sports-rainbow-cover{cursor:pointer}
 .sports-grade-toggle{display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:900;color:#dbeafc}
 .sports-grade-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:8px 0}
 .sports-grade-fields label{display:grid;gap:4px;font-size:10px;color:#a9bfdb}
-.sports-new-flag{position:absolute;top:8px;left:8px;z-index:5;background:#123e3a;color:#baffdc;border:1px solid #5bd09d;border-radius:5px;font-size:8px;font-weight:900;padding:4px 6px;box-shadow:0 3px 10px #0008}
-.sports-gallery-new{position:absolute;top:8px;right:8px;z-index:5;background:#124b39;color:#b6ffda;border:1px solid #51d69e;border-radius:5px;font-size:8px;font-weight:900;padding:4px 6px}
+/* NEW: a restrained mint/pearl foil pill, automatically limited to the first 7 days. */
+.sports-new-flag,.sports-gallery-new{
+ position:absolute;top:8px;left:8px;right:auto;z-index:6;pointer-events:none;
+ display:inline-flex;align-items:center;justify-content:center;
+ min-height:20px;padding:3px 8px;box-sizing:border-box;
+ border:1px solid #80c8b4;border-radius:999px;
+ background:linear-gradient(115deg,#d3fae8 0%,#f7fffd 38%,#c5e8ed 68%,#dff6e7 100%);
+ color:#1e6656;font:900 8px/1 Poppins,system-ui,sans-serif;letter-spacing:.08em;
+ text-shadow:0 1px 0 #fff;box-shadow:inset 0 1px 0 #fff,0 2px 6px #184b3f30;
+}
+@media(max-width:540px){.sports-new-flag,.sports-gallery-new{top:6px;left:6px;padding:3px 6px;font-size:7px}}
 /* Grading now uses the two-column, pearl-white .grading-plate component. */
 .sports-flag{display:inline-flex;align-items:center;vertical-align:middle;margin-left:4px}
 .sports-country-badge{display:inline-flex;align-items:center;justify-content:center;flex:none;vertical-align:middle;
@@ -2695,6 +2704,39 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
   .cards-grid .card-item .tags .card-tag-entry + .card-tag-entry::before{height:14px}
 }
 </style>
+<style id="rapli-sports-small-upgrades-pr3">
+/* The refractor color is a subtle accent, never a replacement for the silver/gold foil. */
+#cardGrid .card-item[class*="card-parallel-"]{
+ border-color:color-mix(in srgb,var(--card-parallel-accent) 43%,#c7d6dc);
+ box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--card-parallel-accent) 30%,transparent),
+            0 6px 18px rgba(23,51,75,.11);
+}
+#cardGrid .sports-gallery-tile[class*="card-parallel-"]{
+ box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--card-parallel-accent) 42%,transparent),
+            0 7px 20px rgba(25,55,82,.11);
+}
+#cardGrid .card-parallel-orange{--card-parallel-accent:#dc894a}
+#cardGrid .card-parallel-green{--card-parallel-accent:#46ae81}
+#cardGrid .card-parallel-purple{--card-parallel-accent:#9874d6}
+#cardGrid .card-parallel-blue{--card-parallel-accent:#518fdc}
+#cardGrid .card-parallel-red{--card-parallel-accent:#d96a6d}
+#cardGrid .card-parallel-gold{--card-parallel-accent:#c6a04a}
+#cardGrid .card-parallel-pink{--card-parallel-accent:#d982b5}
+#cardGrid .card-parallel-black{--card-parallel-accent:#647184}
+#cardGrid .card-parallel-yellow{--card-parallel-accent:#d4b24e}
+#cardGrid .card-parallel-aqua{--card-parallel-accent:#4daebc}
+#cardGrid .card-parallel-silver{--card-parallel-accent:#91a8ba}
+.sports-navigation-return{
+ display:inline-flex;align-items:center;gap:6px;min-height:35px;margin:3px 0 10px;
+ padding:7px 12px;border:1px solid #aacac8;border-radius:10px;
+ background:linear-gradient(120deg,#e4f7ef,#e6effc 60%,#f8efe4);
+ color:#275d73;font:800 10px Poppins,system-ui,sans-serif;
+ box-shadow:inset 0 1px 0 #fff,0 2px 6px #285e7020;cursor:pointer;
+}
+.sports-navigation-return:hover{border-color:#77b6a9;filter:brightness(.98)}
+.sports-navigation-return:focus-visible{outline:2px solid #419e94;outline-offset:2px}
+.sports-navigation-return[hidden]{display:none!important}
+</style>
   <link rel="stylesheet" href="card-tools.css">
 </head>
 <body>
@@ -2729,7 +2771,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         <span class="results-label sports-count-foil" id="resultsLabel" aria-live="polite">0 carte</span>
         <input id="filterDream" type="checkbox" hidden aria-label="Afficher uniquement la Dreamlist">
         <div class="field search-field sports-catalogue-search"><label class="field-label" for="filterSearch">RECHERCHE</label><div class="input-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input class="input with-icon" id="filterSearch" type="search" autocomplete="off" placeholder="Rechercher une carte…" aria-label="Rechercher dans toutes les informations des cartes"></div></div>
-        <select id="sortSelect" class="sorter" aria-label="Trier les cartes"><option value="recent">Plus récentes</option><option value="name">Joueur A – Z</option><option value="brand">Marque A – Z</option><option value="team">Équipe A – Z</option></select>
+        <select id="sortSelect" class="sorter" aria-label="Trier les cartes"><option value="recent">Plus récentes</option><option value="name">Joueur A – Z</option><option value="brand">Marque A – Z</option><option value="team">Équipe A – Z</option><option value="season-new">Saisons récentes</option><option value="season-old">Saisons anciennes</option></select>
         <div class="rapli-profile" id="rapliProfile">
           <button id="rapliProfileToggle" type="button" class="rapli-profile-toggle" aria-label="Ouvrir le menu Profil" title="Profil et applications" aria-haspopup="true" aria-expanded="false" aria-controls="rapliProfileMenu">
             <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5.2 20c.2-4 2.8-6.2 6.8-6.2s6.6 2.2 6.8 6.2"/></svg>
@@ -2751,6 +2793,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         </div>
         </div>
         <div id="demoBanner" class="demo-strip hidden"><span><strong>APERÇU DE DÉMONSTRATION</strong> — Ces cartes sont des exemples modifiables.</span><button class="link-btn" id="clearDemoBtn" type="button">Supprimer les exemples</button></div>
+        <button id="sportsNavigationReturn" type="button" class="sports-navigation-return" hidden aria-label="Revenir à la vue précédente">← Retour à la vue précédente</button>
         <div id="sportsPaginationTop" class="sports-pagination-host" aria-label="Pagination supérieure"></div>
         <div id="cardGrid" class="cards-grid" aria-live="polite"></div>
         <div id="sportsPaginationBottom" class="sports-pagination-host" aria-label="Pagination inférieure"></div>
@@ -2968,7 +3011,17 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
       let db=null, cards=[], logos=[], currentView='own', currentTags=[], currentPhoto='', editingId=null, logoType='brand', pendingLogoPhoto='', toastTimer=null;
       let pendingPortraitCrop={scale:1,x:0,y:0},portraitCropEditing=null,portraitCropPointer=null;
       let countryDraft={tileImage:null,catalogImage:null};
-      let sportsGalleryLayout='details',sportsGallerySelected=null,sportsGalleryPage=1;
+      const SPORTS_GALLERY_LAYOUTS=Object.freeze(['details','cards','brand','team','athlete','nationality','tag','competition','edition','insert','parallel','sport','grading']);
+      const SPORTS_GALLERY_LAYOUT_KEY='rapli-sports-gallery-layout-v1';
+      function savedSportsGalleryLayout(){
+        try{const value=localStorage.getItem(SPORTS_GALLERY_LAYOUT_KEY);return SPORTS_GALLERY_LAYOUTS.includes(value)?value:'details';}
+        catch(_){return 'details';}
+      }
+      function saveSportsGalleryLayout(value){
+        try{localStorage.setItem(SPORTS_GALLERY_LAYOUT_KEY,value);}catch(_){/* Private browsing may prevent local storage. */}
+      }
+      let sportsGalleryLayout=savedSportsGalleryLayout(),sportsGallerySelected=null,sportsGalleryPage=1;
+      const sportsNavigationHistory=[];
       const rainbowEngine=window.RapliSportsRainbow;
       let rainbowEditingId=null,rainbowAssignments=new Map(),rainbowBaseVariant='';
       const SPORTS_GALLERY_PAGE_SIZE=30;

@@ -67,7 +67,7 @@ function device(api){
  },status:()=>ctx.RapliSharedCollection?.getStatus(),state:()=>state,
  edit(id,player,photo){assert.ok(ctx.RapliSharedCollection.canEdit());state.records=state.records.filter(x=>x.id!==id);state.records.push({id,player,...(photo?{photo}:{})});storage.set('local',JSON.stringify(state));ctx.RapliSharedCollection.changed();},
  emit(name){for(const fn of listeners[name]||[])fn();},refresh(){return ctx.RapliSharedCollection.refresh();},
- sync:()=>until(()=>dev.status()?.initialized&&!dev.status().dirty&&!dev.status().busy)
+ sync:()=>until(()=>dev.status()?.initialized&&!dev.status().dirty&&!dev.status().busy&&!dev.status().busyLoading)
  };return dev;
 }
 test('warm cache: one revision request, zero image downloads, no periodic polling',async()=>{
@@ -115,4 +115,38 @@ test('edits made during upload are kept for next batch',async()=>{
  await until(()=>!d.status().busy);assert.equal(d.state().records.find(x=>x.id==='a').player,'Second');
  d.emit('online');await d.sync();assert.equal(api.state.records.find(x=>x.id==='a').player,'Second');
  }finally{d.close();}
+});
+
+test('a missing image does not block other photos and is repaired at the same revision',async()=>{
+ const api=backend(),other=ref.replace('a'.repeat(64),'b'.repeat(64));
+ api.state.records.push({id:'c',player:'Other card',photo:other});
+ const original=api.call;let fail=true;
+ api.call=async(name,args={})=>name==='image'&&args.path.endsWith('b'.repeat(64)+'.png')&&fail?
+   {error:{message:'temporary storage error'}}:original(name,args);
+ const d=device(api).boot();try{
+ await d.sync();assert.equal(d.state().records.find(x=>x.id==='a').photo,dataUri);
+ assert.equal(d.state().records.find(x=>x.id==='c').photo,other);
+ assert.equal(d.status().mediaIncomplete,true);
+ assert.throws(()=>d.edit('c','Must not erase an unloaded photo'));
+ d.boot();await d.sync();assert.equal(d.status().mediaIncomplete,true);
+ fail=false;api.calls=[];await d.refresh();
+ assert.equal(d.status().mediaIncomplete,false);
+ assert.equal(d.state().records.find(x=>x.id==='c').photo,dataUri);
+ assert.deepEqual(api.calls.map(c=>c.name),['image']);
+ }finally{d.close();}
+});
+test('first image is displayed while a later download is still pending',async()=>{
+ const api=backend(),other=ref.replace('a'.repeat(64),'b'.repeat(64));
+ api.state.records.push({id:'c',player:'Slow image',photo:other});
+ const original=api.call;let release;const held=new Promise(r=>release=r);
+ api.call=async(name,args={})=>{
+   if(name==='image'&&args.path.endsWith('b'.repeat(64)+'.png'))await held;
+   return original(name,args);
+ };
+ const d=device(api).boot();try{
+ await until(()=>d.state().records.find(x=>x.id==='a')?.photo===dataUri);
+ assert.equal(d.status().busyLoading,true);
+ assert.equal(d.state().records.find(x=>x.id==='c').photo,other);
+ release();await d.sync();assert.equal(d.status().mediaIncomplete,false);
+ }finally{release();d.close();}
 });

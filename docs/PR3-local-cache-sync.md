@@ -25,7 +25,7 @@ Les deux fonctions sont `SECURITY INVOKER`, avec `search_path` vide, privilèges
 
 ## Vérification
 
-`npm ci && npm test` (Node 18+) : cinq scénarios couvrant les appels au redémarrage, la réutilisation des images, la reprise d'une file hors connexion, deux appareils, les suppressions, les conflits et les modifications pendant un envoi.
+`npm ci && npm test` (Node 18+) : sept scénarios couvrant les appels au redémarrage, la réutilisation des images, la reprise d'une file hors connexion, deux appareils, les suppressions, les conflits et les modifications pendant un envoi.
 
 Tests SQL transactionnels avec ROLLBACK : ajout ciblé, modifications sur deux fiches, répétition idempotente, conflit, suppression, lecture publique, refus d'accès à une autre collection et absence de permission d'écriture anonyme. Les 56 cartes / 107 logos Sports et les 4 courses / 1 réglage Regatta, ainsi que leurs révisions, étaient inchangés après les tests.
 

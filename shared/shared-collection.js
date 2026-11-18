@@ -19,6 +19,7 @@
   const Diff = window.RapliCollectionDiff;
   const emptyState = () => ({records:[], logos:[]});
   let remoteState = emptyState(), baseDisplay = emptyState(), hashes = {};
+  let mediaIncomplete = false;
   let lastCheck = 0, checkpointChain = Promise.resolve(), cacheDatabase;
   let restoredPending = false, legacyLocal = null, failures = 0, bootReady = false;
   // Lightweight public collection metadata in localStorage; images belong in IndexedDB.
@@ -132,7 +133,7 @@
   }
   function checkpoint() {
     // Capture now; serialize commits so a delayed write cannot replace a newer edit.
-    const value=structuredClone({revision,remoteState,baseDisplay,hashes,working:snapshot(),dirty});
+    const value=structuredClone({revision,remoteState,baseDisplay,hashes,working:snapshot(),dirty,mediaIncomplete});
     checkpointChain=checkpointChain.catch(()=>{}).then(async()=>{
       const db=await stateDb();
       await new Promise((resolve,reject)=>{
@@ -162,6 +163,7 @@
       revision=cached.revision;remoteState=cached.remoteState;baseDisplay=cached.baseDisplay;
       hashes=cached.hashes||{};restoredPending=Boolean(cached.dirty);dirty=restoredPending;
       seedImages(remoteState,baseDisplay);
+      mediaIncomplete=Boolean(cached.mediaIncomplete)||[...collectImages(remoteState)].some(ref=>!downloaded.has(ref));
       if(!Diff.equal(snapshot(),Diff.apply(cached.working,[])))bridge.previewState(cached.working);
       initialized=true;cachedVisible=true;
     } else {
@@ -221,7 +223,7 @@
   });
 
   const isEditor = () => window.RapliAdminAccess?.isEditor?.() === true;
-  const canEdit = () => isEditor() && bootReady && initialized && !blocked && !busyLoading;
+  const canEdit = () => isEditor() && bootReady && initialized && !blocked && !busyLoading && !mediaIncomplete;
   let busyLoading = false;
   const sorted = rows => [...rows].sort((a, b) => String(a.id).localeCompare(String(b.id)));
   function snapshot() {
@@ -335,7 +337,7 @@
           if (direction === 'download') markImageLoaded(value);
           return fromDisk;
         }
-        if (direction === 'cached') return ''; // Missing cache item: leave a placeholder, no network.
+        if (direction === 'cached') return value; // Retain the reference while its image is still pending.
         const {data, error} = await (await supabase()).storage.from(BUCKET).download(path);
         if (error) throw error;
         const dataUri = await blobAsDataURI(data);
@@ -367,32 +369,67 @@
     if(!cachedVisible) loading('Conflit de versions. Tes modifications locales sont conservées.','conflict');
     status('Même fiche modifiée ailleurs : modifications locales conservées. Exporte-les avant de résoudre le conflit.','error');
   }
+  // Keep image references in the model until resolved. Never turn a pending photo
+  // into an empty field that an editor could accidentally save back to the server.
+  function withKnownImages(value) {
+    if(isReference(value))return downloaded.get(value)||value;
+    if(Array.isArray(value))return value.map(withKnownImages);
+    if(value && typeof value==='object')return Object.fromEntries(
+      Object.entries(value).map(([key,item])=>[key,withKnownImages(item)]));
+    return value;
+  }
   async function acceptDelta(delta, newerEdits=[]) {
     const nextRemote=Diff.mergeDelta(remoteState,delta);
-    if(!cachedVisible){imageTotal=collectImages(nextRemote).size;imageCompleted=0;completedImages.clear();showImageProgress();}
-    const display=await transfer(nextRemote,'download');
+    const refs=[...collectImages(nextRemote)];
+    imageTotal=refs.length;imageCompleted=0;completedImages.clear();
+    // Paint cached content immediately, then progressively replace placeholders.
+    // Four workers are deliberately bounded: never issue hundreds of requests at once.
+    let next=0,lastPaint=0;
+    const paint=()=>{
+      bridge.previewState(Diff.apply(withKnownImages(nextRemote),newerEdits));
+      cachedVisible=true;loading('Chargement des images en arrière-plan…','ready');
+      status('Photos et logos : '+imageCompleted+' / '+imageTotal,'pending');
+      lastPaint=Date.now();
+    };
+    paint();lastPaint=0; // Show the first completed image immediately.
+    await Promise.all(Array.from({length:Math.min(4,refs.length)},async()=>{
+      while(next<refs.length){
+        const ref=refs[next++];
+        try{await transfer(ref,'download');}
+        catch(error){console.warn('Rapli : une image reste à charger',error?.message||error);}
+        if(Date.now()-lastPaint>350)paint();
+      }
+    }));
+    const display=withKnownImages(nextRemote);
     const working=Diff.apply(display,newerEdits);
-    if(isEditor()) await bridge.replaceState(working);
+    mediaIncomplete=refs.some(ref=>!downloaded.has(ref));
+    // Incomplete media never replace the module's durable editor database.
+    if(isEditor() && !mediaIncomplete) await bridge.replaceState(working);
     else bridge.previewState(working);
-    // The bridges normalize records. Compare against the same normalized representation.
     remoteState=nextRemote;hashes=delta.hashes;revision=Number(delta.revision);
     baseDisplay=display;
     if(!newerEdits.length)baseDisplay=snapshot();
     initialized=true;cachedVisible=true;dirty=newerEdits.length>0;
     seedImages(remoteState,baseDisplay);
-    if(!dirty && isEditor()) acknowledge(snapshot());
+    if(!dirty && !mediaIncomplete && isEditor()) acknowledge(snapshot());
     try{await checkpoint();}catch(error){console.warn('Rapli : cache local inaccessible',error);}
-    loading('Collection à jour ✓','ready');
-    status(dirty?'Enregistré sur cet appareil · synchronisation…':'Synchronisé ✓',dirty?'pending':'ok');
+    loading('Collection disponible','ready');
+    status(mediaIncomplete?'Certaines images restent à charger · appuie sur ↻ pour réessayer.':
+      dirty?'Enregistré sur cet appareil · synchronisation…':'Synchronisé ✓',mediaIncomplete?'error':dirty?'pending':'ok');
   }
   async function refresh(force=false) {
     if (!bridge.ready || busy || blocked || busyLoading) return;
-    if(dirty) { if(isEditor())void saveNow(); return; }
+    if(dirty && !mediaIncomplete) { if(isEditor())void saveNow(); return; }
     if (document.querySelector('dialog[open]') && initialized) return;
     if(!force && Date.now()-lastCheck<15000)return;
     lastCheck=Date.now();busyLoading=true;
     if(!cachedVisible)loading('Connexion à Supabase…');
     try {
+      if(mediaIncomplete && initialized){
+        await acceptDelta({changed:{},deleted:{},hashes,revision},Diff.changes(baseDisplay,snapshot()));
+        if(dirty && !mediaIncomplete)queueSave();
+        return;
+      }
       const current=await remoteVersion();
       if(initialized && current===revision) {
         status('Synchronisé ✓');return;
@@ -454,7 +491,7 @@
   function scheduleRefresh() {
     if(document.hidden)return;
     clearTimeout(refreshTimer);
-    refreshTimer=setTimeout(()=>{if(dirty)void saveNow();else void refresh();},400);
+    refreshTimer=setTimeout(()=>{if(dirty && !mediaIncomplete)void saveNow();else void refresh();},400);
   }
   async function boot() {
     if(bootPromise)return bootPromise;
@@ -475,14 +512,14 @@
         if(restoredPending) {
           // Normalize/persist the journal without losing the state captured before login.
           initialized=true;
-          await bridge.replaceState(snapshot());
+          if(!mediaIncomplete)await bridge.replaceState(snapshot());
           await checkpoint().catch(()=>{});
           // Legacy cache has no server fingerprints: hydrate its baseline via a read,
           // then reconcile explicitly instead of blindly overwriting remote changes.
           if(!Object.keys(hashes).length){blockOnConflict();return;}
-          bootReady=true;await saveNow();return;
+          bootReady=true;if(mediaIncomplete)await refresh(true);else await saveNow();return;
         }
-        if(initialized){
+        if(initialized && !mediaIncomplete){
           if(!Diff.equal(legacyLocal,snapshot()))await bridge.replaceState(snapshot());
           acknowledge(snapshot());
         }
@@ -498,7 +535,7 @@
     return bootPromise;
   }
   window.RapliSharedCollection={changed,canEdit,refresh:()=>refresh(true),
-    getStatus:()=>({initialized,revision,dirty,blocked,busy})};
+    getStatus:()=>({initialized,revision,dirty,blocked,busy,mediaIncomplete,busyLoading})};
   // Explicit refresh rather than full polling or an always-on Realtime connection.
   const statusElement=document.getElementById('rapli-shared-status-'+MODULE);
   if(statusElement){
@@ -506,7 +543,7 @@
     button.type='button';button.textContent='↻';button.title='Vérifier les nouveautés';
     button.setAttribute('aria-label','Actualiser la collection');
     button.style.cssText='margin-left:8px;border:1px solid #b8c8c9;border-radius:50%;width:28px;height:28px;cursor:pointer;background:linear-gradient(120deg,#d2f2e6,#dbe6f9,#f3dfd8);color:#182b3b';
-    button.onclick=()=>{lastCheck=0;if(dirty)void saveNow();else void refresh(true);};
+    button.onclick=()=>{lastCheck=0;if(dirty && !mediaIncomplete)void saveNow();else void refresh(true);};
     statusElement.after(button);
   }
   window.addEventListener('rapli-module-ready',()=>{void boot();},{once:true});
@@ -514,7 +551,7 @@
   window.addEventListener('focus',scheduleRefresh);
   window.addEventListener('online',()=>{lastCheck=0;scheduleRefresh();});
   window.addEventListener('rapli-admin-access-change',()=>{
-    if(!isEditor() || !bootReady || !initialized || blocked)return;
+    if(!isEditor() || !bootReady || !initialized || blocked || mediaIncomplete)return;
     // A viewer can become editor without a reload. Persist the displayed collection
     // before enabling per-record edits in the module's local database.
     bootReady=false;

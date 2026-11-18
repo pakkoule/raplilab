@@ -2745,6 +2745,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
 .sports-group-active-pill{display:inline-flex;align-items:center;margin-right:8px;padding:4px 7px;border:1px solid #8ccabc;border-radius:999px;background:linear-gradient(115deg,#d9f5e9,#e7eefb);color:#256858;font:900 9px Poppins,sans-serif;letter-spacing:.05em;vertical-align:middle}
 </style>
   <link rel="stylesheet" href="card-tools.css">
+<link rel="stylesheet" href="color-theme.css">
 </head>
 <body>
   <div class="app-shell">
@@ -2885,7 +2886,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
   <dialog id="logoDialog" class="modal small" aria-labelledby="logoDialogTitle">
     <div class="modal-header"><div><span class="modal-kicker">RAPLI SPORTS / IDENTITÉS VISUELLES</span><h2 id="logoDialogTitle" class="modal-title">Bibliothèque de logos</h2></div><button type="button" class="close-modal" data-close="logoDialog" aria-label="Fermer">×</button></div>
     <div class="modal-body">
-      <div class="logo-tabs"><button type="button" class="logo-tab active" data-logo-type="brand">Marques</button><button type="button" class="logo-tab" data-logo-type="team">Équipes</button><button type="button" class="logo-tab" data-logo-type="rookie">Rookie / RC</button><button type="button" class="logo-tab" data-logo-type="athlete">Portraits athlètes</button><button type="button" class="logo-tab" data-logo-type="nationality">Pays</button><button type="button" class="logo-tab" data-logo-type="sport">Sports</button><button type="button" class="logo-tab" data-logo-type="grading">Organismes de grading</button><button type="button" class="logo-tab" data-logo-type="tag">Tags / variations</button><button type="button" class="logo-tab" data-logo-type="labels">Étiquettes</button><button type="button" class="logo-tab" data-logo-type="collector">Style des badges</button></div>
+      <div class="logo-tabs"><button type="button" class="logo-tab" id="appearanceSettingsBtn">Couleurs &amp; variations</button><button type="button" class="logo-tab active" data-logo-type="brand">Marques</button><button type="button" class="logo-tab" data-logo-type="team">Équipes</button><button type="button" class="logo-tab" data-logo-type="rookie">Rookie / RC</button><button type="button" class="logo-tab" data-logo-type="athlete">Portraits athlètes</button><button type="button" class="logo-tab" data-logo-type="nationality">Pays</button><button type="button" class="logo-tab" data-logo-type="sport">Sports</button><button type="button" class="logo-tab" data-logo-type="grading">Organismes de grading</button><button type="button" class="logo-tab" data-logo-type="tag">Tags / variations</button><button type="button" class="logo-tab" data-logo-type="labels">Étiquettes</button><button type="button" class="logo-tab" data-logo-type="collector">Style des badges</button></div>
       <div class="logo-create" id="logoCreatePanel"><p class="logo-help" id="logoCreateHelp">Associe une image à une marque ou une équipe : son logo s'affichera automatiquement sur toutes les cartes correspondantes.</p><div class="logo-create-row"><div class="input-group"><label id="logoNameLabel" for="logoName">Nom de la marque</label><select id="logoAthletePicker" class="select saved-value-picker" aria-label="Choisir un athlète déjà présent dans la collection" hidden><option value="">Choisir un athlète enregistré…</option></select><select id="logoTeamPicker" class="select saved-value-picker" aria-label="Choisir une équipe enregistrée" hidden><option value="">Choisir une équipe…</option></select><select id="logoTagPicker" class="select saved-value-picker" aria-label="Choisir un tag enregistré" hidden><option value="">Choisir un tag…</option></select><select id="logoGroupPicker" class="select saved-value-picker" aria-label="Choisir un pays ou un sport" hidden><option value="">Choisir une catégorie…</option></select><input class="input" id="logoName" list="logoNamesList" maxlength="100" placeholder="Topps"><datalist id="logoNamesList"></datalist></div><div class="input-group"><label id="logoImageLabel">Image du logo</label><label class="logo-file" id="logoFileLabel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 16V4m-5 5 5-5 5 5M4 17v4h16v-4"/></svg><span id="logoFileText">Choisir</span><input type="file" id="logoFileInput" accept="image/png,image/jpeg,image/webp"></label></div><button id="cropPortraitBtn" type="button" class="button button-soft" hidden>✂ Recadrer</button><button id="saveLogoBtn" type="button" class="button button-primary">Ajouter</button></div>
       <label id="athleteNationalityWrap" class="sports-athlete-country-editor" for="athleteNationality" hidden>
         PAYS DE L’ATHLÈTE
@@ -4288,6 +4289,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
       }
 
       function renderAll(){
+        window.RapliAppearance?.refresh();
         refreshCataloguePickers();
         $('tabOwnCount').textContent=cards.filter(x=>x.status==='own').length;
         $('tabWishCount').textContent=cards.filter(x=>x.status==='wishlist').length;
@@ -4824,7 +4826,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
       $('editChips').addEventListener('click',e=>{const btn=e.target.closest('[data-remove-tag]');if(!btn)return;currentTags.splice(Number(btn.dataset.removeTag),1);renderTags()});
       $('photoDrop').addEventListener('click',()=>$('cardPhotoFile').click());$('photoDrop').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();$('cardPhotoFile').click()}});$('cardPhotoFile').addEventListener('change',e=>{if(e.target.files[0])handleCardPhoto(e.target.files[0]);e.target.value='' });$('removePhotoBtn').addEventListener('click',()=>{currentPhoto='';renderPhoto()});
       $('photoDrop').addEventListener('dragover',e=>{e.preventDefault();$('photoDrop').classList.add('dragging')});$('photoDrop').addEventListener('dragleave',()=>$('photoDrop').classList.remove('dragging'));$('photoDrop').addEventListener('drop',e=>{e.preventDefault();$('photoDrop').classList.remove('dragging');if(e.dataTransfer.files[0])handleCardPhoto(e.dataTransfer.files[0])});
-      $('logosBtn').addEventListener('click',()=>{setLogoType('brand');openModal('logoDialog')});document.querySelectorAll('.logo-tab').forEach(b=>b.addEventListener('click',()=>setLogoType(b.dataset.logoType)));
+      $('logosBtn').addEventListener('click',()=>{setLogoType('brand');openModal('logoDialog')});document.querySelectorAll('.logo-tab[data-logo-type]').forEach(b=>b.addEventListener('click',()=>setLogoType(b.dataset.logoType)));
       $('logoAthletePicker').addEventListener('change',event=>{
         if(event.target.value)$('logoName').value=event.target.value;
         event.target.value='';
@@ -5137,6 +5139,12 @@ function rapliModuleReady(){
       function brandBadge(type,name){return groupLink(type,name,brandBadgeRaw(type,name));}
       function cardTagMarkup(name){return groupLink('tag',name,cardTagMarkupRaw(name));}
       function sportsSportBadge(name){return groupLink('sport',name,sportsSportBadgeRaw(name));}
+      window.RapliAppearanceBridge={
+        card:id=>cards.find(card=>card.id===id),
+        canEdit:isRapliEditor,notify:showToast,
+        load:()=>logos.find(row=>row.id==='settings:appearance')?.config||null,
+        async save(config){await saveLogo({id:'settings:appearance',type:'appearance',name:'Couleurs et variations',config,updatedAt:Date.now()});renderAll();}
+      };
       window.RapliCardToolsBridge={
         card:id=>cards.find(card=>card.id===id),
         cardMarkup,cardRainbows,
@@ -5170,6 +5178,7 @@ function rapliModuleReady(){
     })();
   </script>
 <script src="card-tools.js" defer></script>
+<script src="color-theme.js" defer></script>
 <script src="../shared/admin-access.js" defer></script>
 <script src="../shared/profile-menu.js" defer></script>
 <script src="../shared/collection-diff.js" defer></script>

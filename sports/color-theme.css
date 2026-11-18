@@ -1,0 +1,19 @@
+.appearance-dialog{box-sizing:border-box;width:min(1000px,96vw);max-height:92dvh;padding:22px;border:2px solid #a2c7c9;border-radius:22px;background:linear-gradient(125deg,#effaf5,#f3f4fc,#faf3e9);color:#284e69;font:13px Poppins,sans-serif;overflow:auto}
+.appearance-dialog::backdrop{background:#10283b8c}
+.appearance-dialog header,.appearance-dialog footer{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.appearance-dialog h2,.appearance-dialog h3{margin:8px 0}.appearance-dialog p{line-height:1.6}
+.appearance-dialog button,.appearance-dialog select,.appearance-dialog input{box-sizing:border-box;border:1px solid #a9c7cf;border-radius:9px;background:#f8fcff;color:#284e69;padding:9px;font:inherit;max-width:100%}
+.appearance-dialog button{cursor:pointer;background:linear-gradient(120deg,#dcefe7,#eff1ff,#f5e9d7);font-weight:700}
+.appearance-dialog button:disabled{opacity:.5;cursor:wait}
+.appearance-workspace{display:grid;grid-template-columns:260px 1fr;gap:24px;margin:20px 0}
+.appearance-dialog label{display:flex;flex-direction:column;gap:6px;margin-bottom:12px;font-weight:600}
+.appearance-dialog .appearance-check{flex-direction:row;align-items:center}
+.appearance-dialog aside ol{padding-left:20px}.appearance-dialog aside li{margin:6px 0}.appearance-dialog aside li button{text-align:left;width:100%}
+.appearance-dialog fieldset{border:1px solid #b7ccd6;border-radius:12px;padding:14px;margin:12px 0}
+.appearance-colors{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.appearance-colors input{width:100%;height:42px;padding:3px;cursor:pointer}
+.appearance-dialog .appearance-rule-actions{display:flex;gap:7px;flex-wrap:wrap}
+.appearance-examples{display:grid;grid-template-columns:1fr 1fr;gap:16px}.appearance-sample{padding:16px;border:1px solid #a7c4cd;border-radius:14px;background:linear-gradient(130deg,#edf2f9,#fafcff);min-width:0}
+.appearance-sample h4{font-size:19px;margin:8px 0}.appearance-sample-badges{display:flex;gap:8px;flex-wrap:wrap}.appearance-sample-badges>span{padding:6px;border:1px solid #c6d9de;border-radius:6px}
+.appearance-dialog .appearance-rainbow-sample{width:100%;max-height:none;padding:12px;margin:16px 0;overflow:visible}
+.appearance-dialog footer{margin-top:20px;border-top:1px solid #bdd3da;padding-top:14px}.appearance-dialog footer>span{flex:1 0 100%}
+@media(max-width:650px){.appearance-workspace{grid-template-columns:1fr}.appearance-colors{grid-template-columns:1fr 1fr}.appearance-examples{grid-template-columns:1fr}.appearance-dialog input,.appearance-dialog select{font-size:16px}}

@@ -3266,7 +3266,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         const key='sport:'+normalize(value);
         const [bg,ink,border]=SPORT_LABEL_COLORS[normalize(value)]||['#f4f7fd','#2457c6','#d7e3f7'];
         const cfg=labelConfig({key,type:'sport',title:value,text:value,bg,ink,border});
-        return '<span class="sport-chip" style="'+labelInlineStyle(cfg)+'" title="'+safeText(value)+'"><span class="sports-sport-symbol" aria-hidden="true">'+safeText(sportsGallerySportIcon(value))+'</span>'+safeText(cfg.text)+'</span>';
+        return '<span class="sport-chip" style="'+labelInlineStyle(cfg)+'" title="'+safeText(value)+'">'+safeText(cfg.text)+'</span>';
       }
       function sportsFeatureBadge(kind,value,prefix=''){
         const def=LABEL_FEATURES.find(item=>item.key===kind+':'+value);
@@ -3539,7 +3539,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         const hasSerial=/^\d+$/.test(String(card.serial||''))&&Number(card.serial)>0&&Number(card.serial)<=Number(card.printRun);
         const numbered=!!card.numbered&&hasPrintRun&&(hasSerial||card.status==='wishlist');
         const rookie=card.rookie===true;
-        if(!numbered&&!rookie)return '<span class="collector-no-number">Non numérotée</span>';
+        if(!numbered&&!rookie)return '';
         let badges='';
         if(numbered){
           const tier=collectorTier(card.printRun);

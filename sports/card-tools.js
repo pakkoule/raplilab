@@ -22,7 +22,7 @@
       ['Marque',card.brand],['Équipe',card.team],['Sport',card.sport],
       ['Pays',[...new Set(players.map(p=>bridge.country(p.nationality)).filter(Boolean))].join(' / ')],
       ['Référence',card.reference],['Tags',(card.tags||[]).join(' · ')],
-      ['Numérotation',card.numbered?[card.serial||'',card.printRun||'?'].join(' / '):'Non numérotée'],
+      ['Numérotation',card.numbered?[card.serial||'',card.printRun||'?'].join(' / '):''],
       ['Saison',card.season],['Légendaire',card.legendary?'Oui':''],['Rookie',card.rookie?'Oui':''],
       ...players.flatMap(p=>[[`Autographe · ${p.name}`,bridge.autoLabels[p.auto]||''],[`Patch · ${p.name}`,({'game-worn':'Game Worn','not-affiliated':'Not Affiliated'})[p.patch]||'']]),
       ['Grading',card.graded?[card.gradeOrg,card.gradeScore].filter(Boolean).join(' ')||'Gradée':'']
@@ -134,7 +134,7 @@
   function rainbowVersions(card){
     if(!rainbowDialog){rainbowDialog=document.createElement('dialog');rainbowDialog.className='rainbow-versions-dialog';rainbowDialog.setAttribute('aria-label','Versions du Rainbow');document.body.append(rainbowDialog);rainbowDialog.addEventListener('click',event=>{if(event.target===rainbowDialog||event.target.closest('[data-rainbow-close]'))rainbowDialog.close();});}
     rainbowDialog.innerHTML='<header><h2>Versions du Rainbow</h2><button type="button" data-rainbow-close aria-label="Fermer les versions du Rainbow">×</button></header>'+bridge.cardRainbows(card).map(raw=>{
-      const group=bridge.rainbow(raw.id);return '<section><h3>'+esc(group.name)+'</h3><p>'+group.owned+' / '+group.total+' possédées</p><div class="rainbow-version-grid">'+group.entries.map(entry=>'<article class="rainbow-version"><h4>'+esc(entry.label)+'</h4><p>'+({own:'Possédée',wishlist:'Wishlist',missing:'Manquante'})[entry.status]+'</p>'+(entry.card?'<div class="cards-grid">'+bridge.cardMarkup(entry.card)+'</div>':'<div class="rainbow-version-missing">Version non associée à une carte</div>')+'</article>').join('')+'</div></section>';
+      const group=bridge.rainbow(raw.id);return '<section><h3>'+esc(group.name)+'</h3><p>'+group.owned+' / '+group.total+' possédées</p><div class="rainbow-version-grid">'+group.entries.map(entry=>'<article class="rainbow-version" data-status="'+esc(entry.status)+'"><h4>'+esc(entry.label)+'</h4><p>'+({own:'Possédée',wishlist:'Wishlist',missing:'Manquante'})[entry.status]+'</p>'+(entry.card?'<div class="cards-grid">'+bridge.cardMarkup(entry.card)+'</div>':'<div class="rainbow-version-missing">Version non associée à une carte</div>')+'</article>').join('')+'</div></section>';
     }).join('');if(!rainbowDialog.open)rainbowDialog.showModal();
   }
   let dialog;

@@ -74,3 +74,13 @@
 .cards-grid .card-item .card-status-badges .collector-badge--number{height:38px!important;min-height:38px!important;box-sizing:border-box}
 .cards-grid .card-item .card-status-badges>.card-group-link>.sport-chip{height:38px!important;min-height:38px!important;align-self:center}
 .rainbow-versions-dialog .card-controls,.rainbow-versions-dialog .move-card{display:none!important}
+
+/* Status foil is scoped to the Rainbow window, including 1/1 cards. */
+.rainbow-versions-dialog .rainbow-version[data-status="own"] .card-item{
+ background:linear-gradient(115deg,transparent 10%,#ffffff80 32%,transparent 55%),linear-gradient(135deg,#e8fff0,#b9e6cb 30%,#d8f4df 50%,#94cdb5 72%,#e9fff1)!important;
+ border-color:#74b997!important;
+}
+.rainbow-versions-dialog .rainbow-version[data-status="wishlist"] .card-item{
+ background:linear-gradient(115deg,transparent 10%,#ffffff80 32%,transparent 55%),linear-gradient(135deg,#f4edff,#d3bce9 30%,#eee0ff 50%,#b79bd4 72%,#f5edff)!important;
+ border-color:#ad8acb!important;
+}

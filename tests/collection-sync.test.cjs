@@ -70,12 +70,18 @@ function device(api){
  sync:()=>until(()=>dev.status()?.initialized&&!dev.status().dirty&&!dev.status().busy&&!dev.status().busyLoading)
  };return dev;
 }
-test('warm cache: one revision request, zero image downloads, no periodic polling',async()=>{
+test('warm cache: no request within one minute, one check after expiry, manual bypass',async()=>{
  const api=backend(),d=device(api).boot();try{
  await d.sync();assert.equal(api.calls.filter(c=>c.name==='image').length,1);
+ assert.equal(api.calls.filter(c=>c.name==='version').length,0,'cold cache skips metadata pre-read');
  api.calls=[];d.boot();await d.sync();await wait(40);
- assert.deepEqual(api.calls.map(c=>c.name),['version']);assert.equal(d.state().records[0].photo,dataUri);
+ assert.deepEqual(api.calls.map(c=>c.name),[]);assert.equal(d.state().records[0].photo,dataUri);
  api.calls=[];for(let i=0;i<5;i++)d.emit('focus');await wait(40);assert.equal(api.calls.length,0);
+ await d.refresh();assert.deepEqual(api.calls.map(c=>c.name),['version'],'manual refresh bypasses TTL');
+ const key='rapli-last-check-v1-'+owner+'-sports';
+ d.storage.set(key,JSON.stringify({revision:api.revision,at:Date.now()-61000}));
+ api.calls=[];d.boot();await d.sync();await wait(40);
+ assert.deepEqual(api.calls.map(c=>c.name),['version'],'expired cache checks just the revision');
  }finally{d.close();}
 });
 test('targeted edit and existing images reused after restart',async()=>{

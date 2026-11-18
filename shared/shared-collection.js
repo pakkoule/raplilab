@@ -15,6 +15,8 @@
   const BUCKET = 'rapli-archives-private';
   const IMAGE_PREFIX = 'rapli-private://';
   const ACK_KEY = 'rapli-cloud-' + MODULE + '-ack-v1'; // Reuse the old local sync marker.
+  const CHECK_TTL = 60000;
+  const CHECK_KEY = 'rapli-last-check-v1-'+OWNER_ID+'-'+MODULE;
   const MAX_IMAGE = 10 * 1024 * 1024;
   const Diff = window.RapliCollectionDiff;
   const emptyState = () => ({records:[], logos:[]});
@@ -267,6 +269,7 @@
       window.parent.postMessage({type: 'RAPLI_SHARED_STATUS', module: MODULE, message, level}, location.origin);
   }
   async function supabase() {
+    if(!client && window.RapliAdminAccess?.getClient)client=await window.RapliAdminAccess.getClient();
     if (!client) {
       const sdk = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.83.0/+esm');
       client = sdk.createClient(SUPABASE_URL, PUBLIC_KEY, {
@@ -417,11 +420,24 @@
     status(mediaIncomplete?'Certaines images restent à charger · appuie sur ↻ pour réessayer.':
       dirty?'Enregistré sur cet appareil · synchronisation…':'Synchronisé ✓',mediaIncomplete?'error':dirty?'pending':'ok');
   }
+  function rememberCheck(){
+    lastCheck=Date.now();
+    try{localStorage.setItem(CHECK_KEY,JSON.stringify({revision,at:lastCheck}));}catch(_){}
+  }
+  function recentlyChecked(){
+    if(!initialized || mediaIncomplete)return false;
+    try{
+      const check=JSON.parse(localStorage.getItem(CHECK_KEY)||'null');
+      const age=Date.now()-check?.at;
+      return check?.revision===revision && age>=0 && age<CHECK_TTL;
+    }catch(_){return false;}
+  }
   async function refresh(force=false) {
     if (!bridge.ready || busy || blocked || busyLoading) return;
     if(dirty && !mediaIncomplete) { if(isEditor())void saveNow(); return; }
     if (document.querySelector('dialog[open]') && initialized) return;
-    if(!force && Date.now()-lastCheck<15000)return;
+    if(!force && recentlyChecked()){status('Collection locale · vérifiée il y a moins d’une minute');return;}
+    if(!force && Date.now()-lastCheck<1000)return;
     lastCheck=Date.now();busyLoading=true;
     if(!cachedVisible)loading('Connexion à Supabase…');
     try {
@@ -430,13 +446,15 @@
         if(dirty && !mediaIncomplete)queueSave();
         return;
       }
-      const current=await remoteVersion();
-      if(initialized && current===revision) {
-        status('Synchronisé ✓');return;
+      // On an empty/legacy cache, the delta is needed anyway: skip the pre-read.
+      if(initialized){
+        const current=await remoteVersion();
+        if(current===revision){rememberCheck();status('Synchronisé ✓');return;}
       }
       status('Vérification des nouveautés…','pending');
       const delta=await fetchDelta();
       await acceptDelta(delta);
+      if(!mediaIncomplete)rememberCheck();
       failures=0;
     } catch(error) {
       console.warn('Rapli : synchronisation indisponible',error);
@@ -471,6 +489,7 @@
       busyLoading=true;
       const newer=Diff.changes(sent,snapshot());
       await acceptDelta(data,newer);
+      if(!mediaIncomplete)rememberCheck();
       failures=0;
     }catch(error){
       failures++;
@@ -526,7 +545,7 @@
       } else if(dirty) {
         bootReady=true;status('Ajouts locaux en attente · connecte-toi pour les synchroniser.','pending');return;
       }
-      bootReady=true;await refresh(true);
+      bootReady=true;await refresh();
     })().catch(error=>{
       console.warn('Rapli : initialisation impossible',error);
       if(!cachedVisible)loading('Connexion impossible. Réessaie le chargement.','error');

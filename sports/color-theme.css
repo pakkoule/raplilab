@@ -1,5 +1,5 @@
-.appearance-dialog,#logoDialog{box-sizing:border-box;width:min(1000px,96vw);max-height:92dvh}
-.appearance-dialog{padding:22px;border:2px solid #a2c7c9;border-radius:22px;background:linear-gradient(125deg,#effaf5,#f3f4fc,#faf3e9);color:#284e69;font:13px Poppins,sans-serif;overflow:auto}
+#logoDialog{box-sizing:border-box;width:min(1000px,96vw);max-height:92dvh}
+.appearance-dialog{padding:18px;border:2px solid #a2c7c9;border-radius:22px;background:linear-gradient(125deg,#effaf5,#f3f4fc,#faf3e9);color:#284e69;font:13px Poppins,sans-serif;overflow:auto}
 .appearance-dialog::backdrop{background:#10283b8c}
 .appearance-dialog header,.appearance-dialog footer{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .appearance-dialog h2,.appearance-dialog h3{margin:8px 0}.appearance-dialog p{line-height:1.6}
@@ -18,3 +18,7 @@
 .appearance-dialog .appearance-rainbow-sample{width:100%;max-height:none;padding:12px;margin:16px 0;overflow:visible}
 .appearance-dialog footer{margin-top:20px;border-top:1px solid #bdd3da;padding-top:14px}.appearance-dialog footer>span{flex:1 0 100%}
 @media(max-width:650px){.appearance-workspace{grid-template-columns:1fr}.appearance-colors{grid-template-columns:1fr 1fr}.appearance-examples{grid-template-columns:1fr}.appearance-dialog input,.appearance-dialog select{font-size:16px}}
+
+#appearanceSettingsPanel{width:100%;max-height:none;overflow:visible}
+#appearanceSettingsPanel[hidden]{display:none}
+@media(max-width:650px){#appearanceSettingsPanel{padding:12px}}

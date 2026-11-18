@@ -80,14 +80,14 @@ function annotate(container=document){
 }
 function apply(value){sheet.textContent=value?compile(value):'';annotate();}
 function refresh(){if(!draft)apply(bridge.load());}
-root.RapliAppearance={refresh};refresh();
+root.RapliAppearance={refresh,open,leave};refresh();
 new MutationObserver(records=>{for(const record of records)for(const node of record.addedNodes)if(node.nodeType===1&&node!==sheet)annotate(node);}).observe(document.body,{childList:true,subtree:true});
 function preview(){restoring=false;apply(draft);dirty=true;dialog.querySelector('[data-theme-state]').textContent='Aperçu temporaire · non enregistré';}
 function selected(){if(selection.startsWith('base:')){const target=selection.slice(5);return {base:true,target,style:draft.base[target]||fallback};}return draft.rules[Number(selection.slice(5))];}
 function render(){
  const item=selected();if(!item){selection='base:athlete';return render();}
  const target=TARGETS[item.target];
- dialog.innerHTML=`<header><div><small>BIBLIOTHÈQUE / APPARENCE</small><h2>Couleurs & variations</h2></div><button type="button" data-theme-close aria-label="Fermer les couleurs">×</button></header>
+ dialog.innerHTML=`<header><div><small>BIBLIOTHÈQUE / APPARENCE</small><h2>Couleurs & variations</h2></div></header>
  <p>Les couleurs de base s’appliquent aux éléments choisis. Les variations les remplacent selon la carte. En cas de conflit, la dernière variation de la liste l’emporte.</p>
  <div class="appearance-workspace"><aside><label>Élément ou variation<select id="appearanceSelection"><optgroup label="Couleurs de base">${Object.entries(TARGETS).map(([key,t])=>`<option value="base:${key}">${esc(t.label)}${draft.base[key]?' · personnalisé':''}</option>`).join('')}</optgroup><optgroup label="Variations conditionnelles">${draft.rules.map((r,i)=>`<option value="rule:${i}">${r.enabled?'●':'○'} ${esc(r.name)}</option>`).join('')}</optgroup></select></label><button type="button" data-theme-add>＋ Ajouter une variation</button>
  <p>Les couleurs spécifiques par sport, autographe, patch, tirage ou organisme restent accessibles dans « Étiquettes », « Style des badges » et « Organismes de grading ».</p>
@@ -104,10 +104,13 @@ function render(){
 }
 function sample(label,status,rookie,legendary){return `<article class="card-item appearance-sample" data-appearance-card data-appearance-status="${status}" data-appearance-rookie="${rookie}" data-appearance-legendary="${legendary}" data-appearance-numbered="true"><small>${label}</small><h4 class="player-primary-name">Tyrese Maxey</h4><span class="card-ref-inline">#41</span><p><span class="tag">Topps Chrome</span></p><div class="appearance-sample-badges"><span class="sport-chip">Basketball</span><span class="collector-badge--number">12 / 99</span><span class="card-season">2025/2026</span></div></article>`;}
 function open(){if(!bridge.canEdit())return bridge.notify('Modification réservée à l’administrateur.');
- if(!dialog){dialog=document.createElement('dialog');dialog.className='appearance-dialog';dialog.setAttribute('aria-label','Couleurs et variations');document.body.append(dialog);dialog.addEventListener('click',onClick);dialog.addEventListener('change',onChange);dialog.addEventListener('input',onInput);dialog.addEventListener('cancel',event=>{event.preventDefault();close();});}
- draft=clean(bridge.load());dirty=false;restoring=false;selection='base:athlete';render();dialog.showModal();
+ if(!dialog){dialog=document.getElementById('appearanceSettingsPanel');if(!dialog)return;dialog.addEventListener('click',onClick);dialog.addEventListener('change',onChange);dialog.addEventListener('input',onInput);}
+ if(!draft){draft=clean(bridge.load());dirty=false;restoring=false;selection='base:athlete';}
+ render();if(dirty)apply(restoring?null:draft);
 }
-function close(){draft=null;dialog.close();refresh();}
+function leave(){apply(bridge.load());}
+function close(){draft=null;refresh();open();}
+function discard(){draft=null;refresh();}
 function onInput(event){if(!draft)return;const item=selected();if(event.target.id==='appearanceName'){item.name=event.target.value;dirty=true;return;}const key=event.target.dataset.themeColor;if(!key)return;const value=event.target.value;if(!/^#[a-f0-9]{6}$/i.test(value))return;const s={...item.style,[key]:value};if(item.base)draft.base[item.target]=s;else item.style=s;preview();}
 function onChange(event){const id=event.target.id,item=selected();if(id==='appearanceSelection'){selection=event.target.value;render();return;}
  if(id==='appearanceEnabled'){if(item.base){if(event.target.checked)draft.base[item.target]={...fallback};else delete draft.base[item.target];}else item.enabled=event.target.checked;preview();render();return;}
@@ -122,7 +125,8 @@ async function onClick(event){const button=event.target.closest('button');if(!bu
  if(button.hasAttribute('data-theme-delete')){draft.rules.splice(Number(selection.slice(5)),1);selection='base:tile';preview();render();return;}
  if(button.hasAttribute('data-theme-move')){const index=Number(selection.slice(5)),next=index+Number(button.dataset.themeMove);if(next>=0&&next<draft.rules.length){[draft.rules[index],draft.rules[next]]=[draft.rules[next],draft.rules[index]];selection='rule:'+next;preview();render();}return;}
  if(button.hasAttribute('data-theme-reset')){draft=defaults();selection='base:athlete';restoring=true;dirty=true;apply(null);render();return;}
- if(button.hasAttribute('data-theme-save')){button.disabled=true;try{await bridge.save(restoring?null:clean(draft));draft=null;dialog.close();refresh();bridge.notify('Couleurs et variations enregistrées ✓');}catch(error){bridge.notify(error.message||'Enregistrement impossible.');button.disabled=false;}}
+ if(button.hasAttribute('data-theme-save')){button.disabled=true;try{await bridge.save(restoring?null:clean(draft));draft=null;refresh();open();dialog.querySelector('[data-theme-state]').textContent='Modifications enregistrées ✓';bridge.notify('Couleurs et variations enregistrées ✓');}catch(error){bridge.notify(error.message||'Enregistrement impossible.');button.disabled=false;}}
 }
-document.getElementById('appearanceSettingsBtn')?.addEventListener('click',open);
+document.getElementById('logoDialog')?.addEventListener('close',discard);
+document.getElementById('logoDialog')?.addEventListener('cancel',discard);
 })(typeof window==='undefined'?globalThis:window);

@@ -125,8 +125,10 @@
       (document.querySelector('dialog[open]')||document.body).append(input);input.select();
       const copied=document.execCommand('copy');input.remove();if(!copied)throw Error('Copie impossible dans ce navigateur.');
     }
-    const original=button.textContent;button.textContent='Copié ✔';button.classList.add('is-copied');
-    bridge.notify('Copié ✔');setTimeout(()=>{button.textContent=original;button.classList.remove('is-copied');},1800);
+    // Keep the reference text in layout so success never changes its dimensions.
+    clearTimeout(button.copyFeedbackTimer);
+    button.classList.add('is-copied');
+    button.copyFeedbackTimer=setTimeout(()=>button.classList.remove('is-copied'),1800);
   }
   let rainbowDialog;
   function rainbowVersions(card){

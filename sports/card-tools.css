@@ -40,7 +40,11 @@
 .card-reference-actions{display:inline-flex;align-items:center;gap:4px;flex-shrink:0;max-width:100%}
 .card-ref-inline{cursor:pointer;font-family:monospace}
 .card-rainbow-link{border:1px solid #a7c6ca;border-radius:7px;background:linear-gradient(130deg,#d5f4e6,#e5eaff,#ffead8);padding:3px;cursor:pointer;line-height:1.1}
-.card-ref-inline.is-copied{background:linear-gradient(110deg,#bfead9,#dce4ff,#f5d9af,#e2f8eb)!important;color:#214e50;box-shadow:0 0 7px #83c5b9;font-family:Poppins,sans-serif}
+.cards-grid .card-item .card-athlete .player-name-reference{display:grid;grid-template-columns:minmax(0,1fr) fit-content(48%);align-items:start}
+.cards-grid .card-item .card-reference-actions{justify-self:end;align-self:start;min-width:0;margin-left:auto}
+.cards-grid .card-item .card-ref-inline{position:relative;min-width:0}
+.cards-grid .card-item .card-ref-inline.is-copied{background:linear-gradient(110deg,#bfead9,#dce4ff,#f5d9af,#e2f8eb)!important;color:transparent!important;text-shadow:none;box-shadow:0 0 7px #83c5b9}
+.cards-grid .card-item .card-ref-inline.is-copied::after{content:"✓";position:absolute;inset:0;display:grid;place-items:center;color:#215b4c;font-weight:900;font-size:1.1em;pointer-events:none}
 .cards-grid .card-item .card-bottom{display:flex;align-items:center;flex-wrap:wrap;gap:6px}
 .cards-grid .card-item .card-status-badges{align-items:stretch!important;gap:6px;flex:1 1 auto}
 .cards-grid .card-item .card-status-badges>.card-group-link{align-self:stretch;align-items:stretch}

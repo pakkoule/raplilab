@@ -92,3 +92,12 @@
  background:linear-gradient(115deg,transparent 10%,#ffffff80 32%,transparent 55%),linear-gradient(135deg,#f4edff,#d3bce9 30%,#eee0ff 50%,#b79bd4 72%,#f5edff)!important;
  border-color:#ad8acb!important;
 }
+
+
+/* PR #3 — card summary navigation, compact and touch friendly. */
+.card-summary-navigation{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:16px;padding:10px;border:1px solid #c5d9df;border-radius:12px;background:linear-gradient(125deg,#effaf5,#eaf0fc 60%,#faf4ea)}
+.card-summary-navigation button{border:1px solid #a3c9c6;border-radius:9px;background:linear-gradient(115deg,#d8f4e9,#e7edfd);padding:9px 11px;color:#27526d;font:800 11px Poppins,sans-serif;cursor:pointer}
+.card-summary-navigation button:hover:not(:disabled){filter:brightness(.97)}
+.card-summary-navigation button:disabled{opacity:.4;cursor:default}
+.card-summary-navigation span{font:800 11px Poppins,sans-serif;color:#54738b;white-space:nowrap}
+@media(max-width:420px){.card-summary-navigation{gap:5px;padding:7px}.card-summary-navigation button{padding:8px 7px;font-size:10px}}

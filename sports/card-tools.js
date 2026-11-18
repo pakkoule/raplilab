@@ -41,7 +41,15 @@
   const bridge=root.RapliCardToolsBridge;if(!bridge)return;
   const imageSource=value=>/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(value||'');
   function bytesOf(source){const raw=atob(source.split(',')[1]);return Uint8Array.from(raw,ch=>ch.charCodeAt(0));}
-  function download(blob,name){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);}
+  function download(blob,name){
+    // Start the download in the same-origin portal, when embedded. This also
+    // keeps the download link outside the iframe's modal/inert document body.
+    let host=document;
+    try{if(root.parent!==root&&root.parent.location.origin===root.location.origin)host=root.parent.document;}catch(_){}
+    const url=URL.createObjectURL(blob),a=host.createElement('a');a.href=url;a.download=name;
+    (host.querySelector('dialog[open]')||host.body).append(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),60000);
+  }
   function photoDownload(card){
     if(!imageSource(card.photo))throw Error('La photo n’est pas encore disponible. Attends son chargement puis réessaie.');
     const mime=card.photo.slice(5,card.photo.indexOf(';'));

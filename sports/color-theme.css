@@ -1,4 +1,5 @@
-.appearance-dialog{box-sizing:border-box;width:min(1000px,96vw);max-height:92dvh;padding:22px;border:2px solid #a2c7c9;border-radius:22px;background:linear-gradient(125deg,#effaf5,#f3f4fc,#faf3e9);color:#284e69;font:13px Poppins,sans-serif;overflow:auto}
+.appearance-dialog,#logoDialog{box-sizing:border-box;width:min(1000px,96vw);max-height:92dvh}
+.appearance-dialog{padding:22px;border:2px solid #a2c7c9;border-radius:22px;background:linear-gradient(125deg,#effaf5,#f3f4fc,#faf3e9);color:#284e69;font:13px Poppins,sans-serif;overflow:auto}
 .appearance-dialog::backdrop{background:#10283b8c}
 .appearance-dialog header,.appearance-dialog footer{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .appearance-dialog h2,.appearance-dialog h3{margin:8px 0}.appearance-dialog p{line-height:1.6}

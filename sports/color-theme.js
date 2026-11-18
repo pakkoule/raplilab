@@ -74,14 +74,22 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 function annotate(container=document){
  const nodes=[...(container.matches?.('[data-card-id]')?[container]:[]),...container.querySelectorAll('[data-card-id]')];
  for(const node of nodes){if(!node.matches('.card-item,.sports-gallery-tile'))continue;const card=bridge.card(node.dataset.cardId);if(!card)continue;
-  node.dataset.appearanceCard='';node.dataset.appearanceStatus=card.status;
-  for(const key of ['rookie','legendary','dream','graded','numbered'])node.dataset['appearance'+key[0].toUpperCase()+key.slice(1)]=String(card[key]===true);
-  node.dataset.appearancePlate=String(card.numbered&&Number(card.printRun)===1&&card.uniqueKind==='plate');
-  node.dataset.appearanceReview=String(card.numbered&&Number(card.printRun)===1&&!['plate','oneofone'].includes(card.uniqueKind));
-  node.dataset.appearanceOneofone=String(card.numbered&&Number(card.printRun)===1&&card.uniqueKind==='oneofone');
+  const set=(key,value)=>{if(node.dataset[key]!==value)node.dataset[key]=value;};
+  set('appearanceCard','');set('appearanceStatus',card.status);
+  for(const key of ['rookie','legendary','dream','graded','numbered'])
+    set('appearance'+key[0].toUpperCase()+key.slice(1),String(card[key]===true));
+  set('appearancePlate',String(card.numbered&&Number(card.printRun)===1&&card.uniqueKind==='plate'));
+  set('appearanceReview',String(card.numbered&&Number(card.printRun)===1&&!['plate','oneofone'].includes(card.uniqueKind)));
+  set('appearanceOneofone',String(card.numbered&&Number(card.printRun)===1&&card.uniqueKind==='oneofone'));
  }
 }
-function apply(value){sheet.textContent=value?compile(value):'';annotate();}
+let lastAppliedCss='';
+function apply(value){
+ const nextCss=value?compile(value):'';
+ // Rewriting an identical stylesheet repaints iOS Safari photo layers.
+ if(nextCss!==lastAppliedCss){sheet.textContent=nextCss;lastAppliedCss=nextCss;}
+ annotate();
+}
 function refresh(){if(!draft)apply(bridge.load());}
 root.RapliAppearance={refresh,open,leave};refresh();
 new MutationObserver(records=>{for(const record of records)for(const node of record.addedNodes)if(node.nodeType===1&&node!==sheet)annotate(node);}).observe(document.body,{childList:true,subtree:true});

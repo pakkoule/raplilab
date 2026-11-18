@@ -15,3 +15,15 @@ test('multipage PDF has byte-exact xref offsets and separate image streams',asyn
  const entries=text.slice(xref).split('\n').slice(3,17);
  entries.forEach((entry,i)=>assert.equal(text.slice(Number(entry.slice(0,10)),Number(entry.slice(0,10))+`${i+1} 0 obj`.length),`${i+1} 0 obj`));
 });
+test('season accepts one year or consecutive full years and rejects malformed ranges',()=>{
+ const {normalizeSeason}=require('../sports/card-tools.js');
+ for(const value of ['2025','2025/2026',''])assert.equal(normalizeSeason(value),value);
+ for(const value of ['25','2025/26','2025/2027','2026/2025','<2025>'])assert.equal(normalizeSeason(value),null);
+});
+test('reference copy includes all athletes and classified edition/parallel only',()=>{
+ const {referenceText}=require('../sports/card-tools.js');
+ const card={reference:'#41',tags:['NBA','Prism Refractor','Topps Chrome','Insert']};
+ const categories=tag=>({'Topps Chrome':['collection'],'Prism Refractor':['parallel'],NBA:['competition'],Insert:['insert']})[tag];
+ assert.equal(referenceText(card,['Tyrese Maxey'],categories),'Tyrese Maxey #41 Topps Chrome Prism Refractor');
+ assert.equal(referenceText({reference:'#1',tags:[]},['A','B'],categories),'A / B #1');
+});

@@ -3,6 +3,18 @@
   'use strict';
   const cleanName=value=>String(value||'carte').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9_-]+/gi,'-').replace(/^-|-$/g,'').slice(0,100)||'carte';
   const esc=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+  function normalizeSeason(value){
+    const season=String(value||'').trim();if(!season)return '';
+    if(!/^\d{4}(\/\d{4})?$/.test(season))return null;
+    const years=season.split('/').map(Number);
+    return years[0]>=1000&&(!years[1]||years[1]===years[0]+1)?season:null;
+  }
+  function referenceText(card,players,categories){
+    const tags=card.tags||[];
+    const editions=tags.filter(tag=>categories(tag).includes('collection'));
+    const parallels=tags.filter(tag=>categories(tag).includes('parallel')&&!editions.includes(tag));
+    return [players.filter(Boolean).join(' / ')||card.player,card.reference,...editions,...parallels].filter(Boolean).join(' ').replace(/\s+/g,' ').trim();
+  }
   function cardInfo(card,bridge){
     const players=bridge.players(card);
     return {title:players.map(p=>p.name).filter(Boolean).join(' / ')||card.player||'Carte',rows:[
@@ -11,7 +23,7 @@
       ['Pays',[...new Set(players.map(p=>bridge.country(p.nationality)).filter(Boolean))].join(' / ')],
       ['Référence',card.reference],['Tags',(card.tags||[]).join(' · ')],
       ['Numérotation',card.numbered?[card.serial||'',card.printRun||'?'].join(' / '):'Non numérotée'],
-      ['Rookie',card.rookie?'Oui':''],
+      ['Saison',card.season],['Légendaire',card.legendary?'Oui':''],['Rookie',card.rookie?'Oui':''],
       ...players.flatMap(p=>[[`Autographe · ${p.name}`,bridge.autoLabels[p.auto]||''],[`Patch · ${p.name}`,({'game-worn':'Game Worn','not-affiliated':'Not Affiliated'})[p.patch]||'']]),
       ['Grading',card.graded?[card.gradeOrg,card.gradeScore].filter(Boolean).join(' ')||'Gradée':'']
     ].filter(row=>row[1])};
@@ -37,7 +49,8 @@
     put(`trailer\n<< /Size ${offsets.length} /Root 1 0 R >>\nstartxref\n${start}\n%%EOF\n`);
     return new Blob(chunks,{type:'application/pdf'});
   }
-  if(typeof module!=='undefined'&&module.exports){module.exports={cardInfo,cleanName,jpegPdf};return;}
+  if(typeof module!=='undefined'&&module.exports){module.exports={cardInfo,cleanName,jpegPdf,normalizeSeason,referenceText};return;}
+  root.RapliCardTools={normalizeSeason,referenceText};
   const bridge=root.RapliCardToolsBridge;if(!bridge)return;
   const imageSource=value=>/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(value||'');
   function bytesOf(source){const raw=atob(source.split(',')[1]);return Uint8Array.from(raw,ch=>ch.charCodeAt(0));}
@@ -105,11 +118,28 @@
     if(!group.entries.length){ctx.font='24px Poppins, sans-serif';ctx.fillText('Aucune variation définie.',70,y);}
     finish();download(jpegPdf(pages),cleanName(group.name)+'-checklist.pdf');
   }
+  async function copyReference(card,button){
+    const text=bridge.copyText(card);
+    try{await navigator.clipboard.writeText(text);}catch(error){
+      const input=document.createElement('textarea');input.value=text;input.style.cssText='position:fixed;left:0;top:0;opacity:0';
+      (document.querySelector('dialog[open]')||document.body).append(input);input.select();
+      const copied=document.execCommand('copy');input.remove();if(!copied)throw Error('Copie impossible dans ce navigateur.');
+    }
+    const original=button.textContent;button.textContent='Copié ✔';button.classList.add('is-copied');
+    bridge.notify('Copié ✔');setTimeout(()=>{button.textContent=original;button.classList.remove('is-copied');},1800);
+  }
+  let rainbowDialog;
+  function rainbowVersions(card){
+    if(!rainbowDialog){rainbowDialog=document.createElement('dialog');rainbowDialog.className='rainbow-versions-dialog';rainbowDialog.setAttribute('aria-label','Versions du Rainbow');document.body.append(rainbowDialog);rainbowDialog.addEventListener('click',event=>{if(event.target===rainbowDialog||event.target.closest('[data-rainbow-close]'))rainbowDialog.close();});}
+    rainbowDialog.innerHTML='<header><h2>Versions du Rainbow</h2><button type="button" data-rainbow-close aria-label="Fermer les versions du Rainbow">×</button></header>'+bridge.cardRainbows(card).map(raw=>{
+      const group=bridge.rainbow(raw.id);return '<section><h3>'+esc(group.name)+'</h3><p>'+group.owned+' / '+group.total+' possédées</p><div class="rainbow-version-grid">'+group.entries.map(entry=>'<article class="rainbow-version"><h4>'+esc(entry.label)+'</h4><p>'+({own:'Possédée',wishlist:'Wishlist',missing:'Manquante'})[entry.status]+'</p>'+(entry.card?'<div class="cards-grid">'+bridge.cardMarkup(entry.card)+'</div>':'<div class="rainbow-version-missing">Version non associée à une carte</div>')+'</article>').join('')+'</div></section>';
+    }).join('');if(!rainbowDialog.open)rainbowDialog.showModal();
+  }
   let dialog;
   function summary(card){
     if(!dialog){dialog=document.createElement('dialog');dialog.className='card-summary-dialog';dialog.setAttribute('aria-labelledby','card-summary-title');document.body.append(dialog);dialog.addEventListener('click',e=>{if(e.target===dialog||e.target.closest('[data-summary-close]'))dialog.close();});}
     const info=cardInfo(card,bridge);
-    dialog.innerHTML='<div class="card-summary-content" data-card-id="'+esc(card.id)+'"><header><h2 id="card-summary-title">'+esc(info.title)+'</h2><button type="button" data-summary-close aria-label="Fermer le résumé">×</button></header><div class="card-summary-body">'+(imageSource(card.photo)?'<img class="card-summary-photo" src="'+card.photo+'" alt="Photo de la carte">':'')+'<dl>'+info.rows.map(([label,value])=>'<div><dt>'+esc(label)+'</dt><dd>'+esc(value)+'</dd></div>').join('')+'</dl></div><footer class="card-export-actions"><button type="button" data-card-tool="png">↓ FICHE PNG</button><button type="button" data-card-tool="photo">↓ PHOTO</button></footer></div>';
+    dialog.innerHTML='<div class="card-summary-content" data-card-id="'+esc(card.id)+'"><header><h2 id="card-summary-title">'+esc(info.title)+'</h2><button type="button" data-summary-close aria-label="Fermer le résumé">×</button></header><div class="card-summary-body">'+(imageSource(card.photo)?'<img class="card-summary-photo" src="'+card.photo+'" alt="Photo de la carte">':'')+'<dl>'+info.rows.map(([label,value])=>'<div><dt>'+esc(label)+'</dt><dd>'+esc(value)+'</dd></div>').join('')+'</dl></div><footer class="card-export-actions"><button type="button" data-card-tool="png">⬇ FICHE PNG</button><button type="button" data-card-tool="photo">⬇ PHOTO</button></footer></div>';
     if(!dialog.open)dialog.showModal();
   }
   document.addEventListener('contextmenu',event=>{const tile=event.target.closest('.sports-gallery-tile[data-card-id]');if(!tile)return;const card=bridge.card(tile.dataset.cardId);if(card){event.preventDefault();event.stopPropagation();summary(card);}},true);
@@ -121,8 +151,10 @@
     event.preventDefault();event.stopImmediatePropagation();if(action.disabled)return;action.disabled=true;
     try{
       if(action.hasAttribute('data-rainbow-pdf')){const group=bridge.rainbow(action.dataset.rainbowPdf);if(group)await pdfDownload(group);}
-      else{const card=bridge.card(action.closest('[data-card-id]')?.dataset.cardId);if(!card)return;
+      else{const card=bridge.card(action.dataset.cardTarget||action.closest('[data-card-id]')?.dataset.cardId);if(!card)return;
         if(action.dataset.cardTool==='summary')summary(card);
+        if(action.dataset.cardTool==='copy')await copyReference(card,action);
+        if(action.dataset.cardTool==='rainbows')rainbowVersions(card);
         if(action.dataset.cardTool==='png')await pngDownload(card);
         if(action.dataset.cardTool==='photo')photoDownload(card);
       }

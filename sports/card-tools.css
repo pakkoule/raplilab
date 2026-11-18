@@ -20,3 +20,50 @@
 .card-summary-body dd{margin:2px 0}
 .card-summary-dialog footer{margin-top:16px}
 @media(max-width:420px){.card-summary-dialog{padding:14px}.card-summary-body{gap:12px}.card-summary-dialog h2{font-size:17px}}
+/* Compact catalogue controls, shared height and foil treatment. */
+.app-shell .sports-catalogue-controls{display:grid;grid-template-columns:max-content 126px max-content minmax(100px,1fr) 150px 40px;gap:8px;align-items:center}
+.app-shell .sports-catalogue-controls>.nav-actions{grid-column:1;grid-row:1}
+.app-shell .sports-catalogue-controls>#sportsViewSelect{grid-column:2;grid-row:1}
+.app-shell .sports-catalogue-controls>#resultsLabel{grid-column:3;grid-row:1;max-width:none;margin:0}
+.app-shell .sports-catalogue-controls>.sports-catalogue-search{grid-column:4;grid-row:1}
+.app-shell .sports-catalogue-controls>#sortSelect{grid-column:5;grid-row:1}
+.app-shell .sports-catalogue-controls>.rapli-profile{grid-column:6;grid-row:1}
+.app-shell .sports-catalogue-controls>#sportsViewSelect,.app-shell .sports-catalogue-controls>#sortSelect{
+ appearance:none;box-sizing:border-box;width:100%;height:40px;min-height:40px;margin:0;padding:0 26px 0 10px;border:2px solid #a9cfcb;border-radius:12px;
+ background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath d='m4 6 4 4 4-4' fill='none' stroke='%23264d68' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") right 7px center/14px no-repeat,linear-gradient(115deg,#dcf4ec,#eff2ff 55%,#f7e5d0);
+ box-shadow:0 2px 6px #285e7020,inset 0 0 0 1px #ffffffb0;color:#284e69;font:700 12px Poppins,sans-serif;cursor:pointer;
+}
+#sportsViewSelect option,#sortSelect option{background:#f0f5fa;color:#284e69}
+.app-shell .sports-catalogue-controls>#resultsLabel{height:40px;box-sizing:border-box;display:flex;align-items:center;gap:4px;padding:0 10px}
+#sportsGalleryToolbar:has(#wishlistViews[hidden]){display:none}
+#sportsGalleryToolbar{margin-top:8px}
+.card-reference-actions{display:inline-flex;align-items:center;gap:4px;flex-shrink:0;max-width:100%}
+.card-ref-inline{cursor:pointer;font-family:monospace}
+.card-rainbow-link{border:1px solid #a7c6ca;border-radius:7px;background:linear-gradient(130deg,#d5f4e6,#e5eaff,#ffead8);padding:3px;cursor:pointer;line-height:1.1}
+.card-ref-inline.is-copied{background:linear-gradient(110deg,#bfead9,#dce4ff,#f5d9af,#e2f8eb)!important;color:#214e50;box-shadow:0 0 7px #83c5b9;font-family:Poppins,sans-serif}
+.cards-grid .card-item .card-bottom{display:flex;align-items:center;flex-wrap:wrap;gap:6px}
+.cards-grid .card-item .card-status-badges{align-items:stretch!important;gap:6px;flex:1 1 auto}
+.cards-grid .card-item .card-status-badges>.card-group-link{align-self:stretch;align-items:stretch}
+.cards-grid .card-item .card-status-badges>.card-group-link>.sport-chip{height:auto!important;min-height:38px!important;box-sizing:border-box;align-self:stretch;display:inline-flex;align-items:center}
+.cards-grid .card-item .card-export-actions{margin:0 0 0 auto;flex:0 0 auto;align-self:center;justify-content:flex-end}
+.cards-grid .card-item .card-export-actions button{font-size:10px;font-weight:800;padding:6px 7px}
+.card-season{display:inline-flex;flex-direction:column;justify-content:center;align-items:center;min-height:38px;box-sizing:border-box;padding:4px 9px;border:1px solid #b1c6d1;border-radius:8px;background:linear-gradient(125deg,#fcffff,#dce9ed 35%,#f4f1ff 60%,#dbeee5);box-shadow:inset 0 0 0 1px #ffffffad;color:#365066;font:700 12px Poppins,sans-serif;white-space:nowrap}
+.card-season small{font-size:7px;letter-spacing:.08em}
+.card-season.is-legendary{border-color:#c7a560;color:#70521b;background:linear-gradient(115deg,#f8e9aa,#dbc58c 26%,#ffefb8 45%,#e8d6ee 65%,#dceacd 80%,#f2d291);box-shadow:inset 0 0 0 1px #fff2c6,0 2px 6px #ad8b5133}
+.rainbow-versions-dialog{width:min(1180px,95vw);max-height:90dvh;box-sizing:border-box;overflow:auto;border:2px solid #a7ccca;border-radius:20px;padding:20px;background:linear-gradient(130deg,#f0faf7,#edf0fb,#fcf4e8);color:#284e69}
+.rainbow-versions-dialog::backdrop{background:#142c4880}
+.rainbow-versions-dialog>header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.rainbow-versions-dialog header button{border:1px solid #a7c6ca;border-radius:10px;background:#f1f8fc;font-size:26px;cursor:pointer}
+.rainbow-version-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,460px),1fr));gap:16px}
+.rainbow-version h4,.rainbow-version p{margin:6px 0}.rainbow-version{min-width:0}
+.rainbow-version .cards-grid{display:block}.rainbow-version-missing{border:1px dashed #a7bcc9;border-radius:12px;padding:20px;color:#6a7d8e}
+@media(max-width:850px){
+ .app-shell .sports-catalogue-controls{grid-template-columns:max-content 120px minmax(0,1fr) 40px;gap:6px}
+ .app-shell .sports-catalogue-controls>#sportsViewSelect{grid-column:2;grid-row:1}
+ .app-shell .sports-catalogue-controls>#resultsLabel{grid-column:3/5;grid-row:1;justify-self:start;font-size:10px}
+ .app-shell .sports-catalogue-controls>.sports-catalogue-search{grid-column:1/3;grid-row:2}
+ .app-shell .sports-catalogue-controls>#sortSelect{grid-column:3;grid-row:2}
+ .app-shell .sports-catalogue-controls>.rapli-profile{grid-column:4;grid-row:2}
+ .app-shell .sports-catalogue-controls>#sportsViewSelect,.app-shell .sports-catalogue-controls>#sortSelect{font-size:16px}
+}
+@media(max-width:420px){.app-shell .sports-catalogue-controls{grid-template-columns:max-content 105px minmax(0,1fr) 36px;gap:4px}.app-shell .sports-catalogue-controls>#resultsLabel{padding:0 5px;font-size:9px}.card-season{font-size:10px;padding:3px 5px}}

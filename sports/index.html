@@ -2749,8 +2749,8 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
 <link rel="stylesheet" href="collection-extras.css">
 
 <style id="rapli-pr4-iphone-header-stability">
-/* PR #4: explicit placement beats older overlapping grid/auto-placement rules.
-   No horizontal body overflow or clipped view/sort/profile controls on Safari. */
+/* PR #4 / iPhone: fixed views + search on row one; utilities below.
+   The existing premium finishes, permissions and desktop grid are retained. */
 .sports-catalogue-controls{
   display:grid;
   grid-template-columns:max-content minmax(116px,160px) max-content minmax(180px,1fr) minmax(112px,150px) 42px;
@@ -2771,7 +2771,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
 .sports-catalogue-controls>.sports-catalogue-search{grid-column:4;grid-row:1;min-width:0;width:100%}
 .sports-catalogue-controls>#sortSelect{grid-column:5;grid-row:1;min-width:0;width:100%;max-width:100%}
 .sports-catalogue-controls>.rapli-profile{grid-column:6;grid-row:1;justify-self:end}
-@media(max-width:1000px){
+@media(max-width:1000px) and (min-width:751px){
   .sports-catalogue-controls{
     grid-template-columns:max-content minmax(100px,140px) minmax(0,1fr) 40px;
     gap:7px;
@@ -2784,76 +2784,119 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
   .sports-catalogue-controls>.sports-catalogue-search{grid-column:3/5;grid-row:2}
 }
 @media(max-width:750px){
+  /* Navigation independent of the old wrapping flex rules. */
   .section-nav{
-    display:grid;grid-template-columns:42px minmax(0,1fr);
-    gap:6px;align-items:center;min-width:0;padding:3px 0 8px;
+    display:grid!important;grid-template-columns:42px minmax(0,1fr)!important;
+    align-items:center!important;column-gap:5px!important;
+    padding:3px 0 7px!important;min-width:0;
   }
-  .section-nav .sports-lab-brand{grid-column:1;grid-row:1;width:42px;min-width:0}
-  .section-nav .sports-lab-brand img{display:block;width:42px;height:42px;max-width:100%;object-fit:contain}
+  .section-nav .sports-lab-brand{
+    grid-column:1;grid-row:1;display:flex;width:42px;min-width:0;
+  }
+  .section-nav .sports-lab-brand img{width:42px!important;height:42px!important;max-width:100%;object-fit:contain}
   .section-nav .tabs{
-    grid-column:2;grid-row:1;display:grid;
-    grid-template-columns:repeat(4,minmax(0,1fr));
-    width:100%;max-width:100%;min-width:0;gap:2px;
-    margin:0;padding:0;align-items:stretch;
+    grid-column:2;grid-row:1;display:grid!important;
+    grid-template-columns:repeat(4,minmax(0,1fr))!important;
+    grid-auto-flow:column!important;justify-content:stretch!important;
+    align-items:stretch!important;flex-wrap:nowrap!important;
+    gap:2px!important;width:100%!important;max-width:100%!important;
+    min-width:0!important;margin:0!important;padding:0!important;
   }
   .section-nav .tabs .tab{
-    display:flex;flex:initial;justify-content:center;align-items:center;
-    width:100%;min-width:0;gap:2px;
-    padding:9px 1px 11px;letter-spacing:0;
-    font-size:clamp(8px,1.95vw,10px);white-space:nowrap;
+    display:flex!important;flex:initial!important;flex-flow:row nowrap!important;
+    align-items:center!important;justify-content:center!important;
+    width:100%!important;min-width:0!important;max-width:100%!important;
+    gap:2px!important;padding:10px 1px!important;
+    font-size:clamp(8px,1.8vw,10px)!important;line-height:1.15!important;
+    letter-spacing:0!important;white-space:nowrap!important;
+    overflow:hidden;text-overflow:clip;
   }
-  .section-nav .tabs .tab b{flex:0 0 auto;font-size:8px;padding:2px 3px}
-  .section-nav .sports-stats-tab-full{display:none}
-  .section-nav .sports-stats-tab-short{display:inline}
+  .section-nav .tabs .tab b{
+    flex:0 0 auto;font-size:8px!important;line-height:1.2!important;
+    padding:2px 3px!important;
+  }
+  .section-nav .sports-stats-tab-full{display:none!important}
+  .section-nav .sports-stats-tab-short{display:inline!important}
+
+  /* Mobile controls: enforce exactly one shared line for view + search.
+     Their combined bases occupy the row; actions/count/sort/profile wrap below. */
   .sports-catalogue-controls{
-    grid-template-columns:76px minmax(0,1fr) minmax(0,1fr) 36px;
-    gap:6px;align-items:center;margin-block:4px 8px;
-  }
-  .sports-catalogue-controls>.nav-actions{
-    grid-column:1;grid-row:1;display:flex;gap:4px;
-  }
-  .sports-catalogue-controls .sports-icon-action{
-    width:36px;height:38px;min-height:38px;
+    --rapli-view-width:clamp(112px,34vw,138px);
+    display:flex!important;flex-flow:row wrap!important;
+    align-items:center!important;justify-content:flex-start!important;
+    gap:6px!important;min-width:0!important;
+    margin:5px 0 9px!important;
   }
   .sports-catalogue-controls>#sportsViewSelect{
-    grid-column:2;grid-row:1;height:38px;min-height:38px;
-    padding:3px 4px;font-size:16px;
-  }
-  .sports-catalogue-controls>#sortSelect{
-    grid-column:3;grid-row:1;box-sizing:border-box;
-    height:38px;min-height:38px;min-width:0;
-    padding:3px 3px;font-size:16px;
-    overflow:hidden;text-overflow:ellipsis;
-  }
-  .sports-catalogue-controls>.rapli-profile{grid-column:4;grid-row:1;align-self:center}
-  .sports-catalogue-controls .rapli-profile-toggle{width:36px;height:38px}
-  .sports-catalogue-controls>.sports-count-foil{
-    grid-column:1;grid-row:2;align-self:stretch;
-    padding:7px 3px;min-width:0;max-width:none;
-    font-size:9px;line-height:1.15;overflow-wrap:anywhere;
+    order:1;flex:0 0 var(--rapli-view-width)!important;
+    grid-column:auto;grid-row:auto;
+    width:var(--rapli-view-width)!important;min-width:0!important;
+    height:42px!important;min-height:42px!important;
+    max-width:var(--rapli-view-width)!important;
+    padding:4px 24px 4px 7px!important;
+    font-size:16px!important;line-height:normal!important;
+    border-radius:11px;
   }
   .sports-catalogue-controls>.sports-catalogue-search{
-    grid-column:2/5;grid-row:2;min-width:0;align-self:center;
+    order:2;flex:1 1 calc(100% - var(--rapli-view-width) - 9px)!important;
+    width:auto!important;min-width:0!important;max-width:none!important;
+    grid-column:auto;grid-row:auto;align-self:center!important;
   }
+  .sports-catalogue-search .input-wrap{width:100%;min-width:0}
   .sports-catalogue-search .input.with-icon{
-    width:100%;min-width:0;height:40px;min-height:40px;
-    padding:0 7px 0 30px;font-size:16px;
-    overflow:hidden;text-overflow:ellipsis;
+    display:block;box-sizing:border-box;width:100%!important;
+    height:42px!important;min-height:42px!important;
+    padding:0 8px 0 32px!important;font-size:16px!important;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
   }
+  .sports-catalogue-controls>.nav-actions{
+    order:3;grid-column:auto;grid-row:auto;
+    flex:0 0 auto;display:flex;gap:4px;min-width:0;margin:0;padding:0;
+  }
+  .sports-catalogue-controls .sports-icon-action{
+    width:36px!important;height:38px!important;min-height:38px!important;
+    flex:0 0 36px;border-radius:9px;
+  }
+  .sports-catalogue-controls>.sports-count-foil{
+    order:4;grid-column:auto;grid-row:auto;flex:1 1 0;align-self:stretch;
+    min-width:0!important;max-width:none!important;
+    padding:6px 4px;font-size:9px;line-height:1.2;
+    overflow-wrap:anywhere;text-align:center;
+  }
+  .sports-catalogue-controls>#sortSelect{
+    order:5;grid-column:auto;grid-row:auto;
+    flex:0 1 124px;box-sizing:border-box;
+    width:124px!important;min-width:100px!important;max-width:124px!important;
+    height:38px!important;min-height:38px!important;
+    padding:3px 24px 3px 7px!important;font-size:16px!important;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  }
+  .sports-catalogue-controls>.rapli-profile{
+    order:6;grid-column:auto;grid-row:auto;
+    flex:0 0 36px;justify-self:auto;align-self:center;
+    min-width:36px;margin:0;
+  }
+  .sports-catalogue-controls .rapli-profile-toggle{width:36px;height:38px}
+  /* Viewer mode: editor-only actions vanish without reserving a dead grid column. */
   html:not([data-rapli-role="editor"]) .sports-catalogue-controls>.nav-actions{display:none!important}
-  html:not([data-rapli-role="editor"]) .sports-catalogue-controls>#sportsViewSelect{grid-column:1/3}
+}
+@media(max-width:520px){
+  /* Readable single-row OWN/WISHLIST/RAINBOW/STATS instead of a second tab line. */
+  .section-nav .tabs .tab b{display:none!important}
 }
 @media(max-width:390px){
-  .section-nav{grid-template-columns:34px minmax(0,1fr);gap:4px}
-  .section-nav .sports-lab-brand{width:34px}
-  .section-nav .sports-lab-brand img{width:34px;height:38px}
-  .section-nav .tabs .tab{font-size:8px;padding-inline:0}
-  .section-nav .tabs .tab b{font-size:7px;padding:1px 2px}
-  .sports-catalogue-controls{grid-template-columns:68px minmax(0,1fr) minmax(0,1fr) 34px;gap:4px}
-  .sports-catalogue-controls .sports-icon-action{width:32px;min-height:36px;height:36px}
-  .sports-catalogue-controls>#sportsViewSelect,
-  .sports-catalogue-controls>#sortSelect{font-size:16px;height:36px;min-height:36px}
+  .section-nav{grid-template-columns:32px minmax(0,1fr)!important;gap:3px!important}
+  .section-nav .sports-lab-brand{width:32px}
+  .section-nav .sports-lab-brand img{width:32px!important;height:36px!important}
+  .section-nav .tabs .tab{font-size:8px!important;padding-inline:0!important;gap:0!important}
+  .sports-catalogue-controls{--rapli-view-width:112px;gap:4px!important}
+  .sports-catalogue-controls>.sports-catalogue-search{
+    flex-basis:calc(100% - var(--rapli-view-width) - 7px)!important;
+  }
+  .sports-catalogue-controls .sports-icon-action{width:32px!important;min-height:36px!important;height:36px!important;flex-basis:32px}
+  .sports-catalogue-controls>.rapli-profile{flex-basis:34px;min-width:34px}
   .sports-catalogue-controls .rapli-profile-toggle{width:34px;height:36px}
+  .sports-catalogue-controls>#sortSelect{flex-basis:108px;width:108px!important;min-width:98px!important;max-width:108px!important}
 }
 </style>
 </head>
@@ -4418,6 +4461,36 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
           element.querySelector('[data-sports-gallery-group]');
         return group?'group:'+group.getAttribute('data-sports-gallery-group'):null;
       }
+      // Morph changed card contents without removing their photo elements.
+      // A newly hydrated logo used to replace the complete card and flash its photo.
+      function updateStableTile(current,next){
+        if(current.nodeType!==next.nodeType||current.nodeName!==next.nodeName){
+          current.replaceWith(next);
+          return next;
+        }
+        if(current.nodeType===Node.TEXT_NODE){
+          if(current.nodeValue!==next.nodeValue)current.nodeValue=next.nodeValue;
+          return current;
+        }
+        if(current.nodeType!==Node.ELEMENT_NODE)return current;
+        for(const attribute of [...current.attributes]){
+          // Appearance annotations are runtime-only; the card model owns their values.
+          if(attribute.name.startsWith('data-appearance-'))continue;
+          if(!next.hasAttribute(attribute.name))current.removeAttribute(attribute.name);
+        }
+        for(const attribute of next.attributes){
+          if(current.getAttribute(attribute.name)!==attribute.value)
+            current.setAttribute(attribute.name,attribute.value);
+        }
+        const oldChildren=[...current.childNodes],newChildren=[...next.childNodes];
+        for(let i=0;i<newChildren.length;i++){
+          if(oldChildren[i])updateStableTile(oldChildren[i],newChildren[i]);
+          else current.appendChild(newChildren[i]);
+        }
+        for(let i=newChildren.length;i<oldChildren.length;i++)oldChildren[i].remove();
+        return current;
+      }
+
       function patchCardGrid(markup){
         if(markup===lastGridMarkup)return false;
         const host=$('cardGrid'),fragment=document.createElement('template');
@@ -4445,7 +4518,11 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
           const wanted=after.map((node,index)=>{
             const current=previous.get(keysAfter[index]);
             const html=node.outerHTML;
-            if(current&&renderedTileMarkup.get(current)===html)return current;
+            if(current){
+              if(renderedTileMarkup.get(current)!==html)updateStableTile(current,node);
+              renderedTileMarkup.set(current,html);
+              return current;
+            }
             renderedTileMarkup.set(node,html);
             return node;
           });

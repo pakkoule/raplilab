@@ -104,7 +104,20 @@ const colorSafe=v=>/^#[a-f0-9]{6}$/i.test(v||'')?v:'#008fa1';
 const COLOR_SETTINGS_ID='regatta-class-colors-v1';
 const COLOR_STORAGE_KEY='rapli-regatta-class-colors-v1';
 const DEFAULT_TAG_COLOR='#008fa1';
-const defaultClassSettings=()=>({id:COLOR_SETTINGS_ID,defaultColor:DEFAULT_TAG_COLOR,classColors:{},vsrColors:{...DEFAULT_VSR_COLORS}});
+const defaultClassSettings=()=>({id:COLOR_SETTINGS_ID,defaultColor:DEFAULT_TAG_COLOR,classColors:{},vsrColors:{...DEFAULT_VSR_COLORS},vsrRankingHistory:[]});
+function normalizeVsrRankingHistory(value){
+ if(!Array.isArray(value))return [];
+ const seen=new Set(),points=[];
+ for(const item of value.slice(0,5000)){
+  const date=String(item?.date||'');
+  const rank=Number(item?.rank),id=String(item?.id||'').slice(0,90);
+  if(!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(date)||!Number.isSafeInteger(rank)||rank<1||rank>99999999||!id||seen.has(id))continue;
+  const ts=new Date(date);
+  if(!Number.isFinite(ts.getTime())||ts.getFullYear()!==Number(date.slice(0,4))||ts.getMonth()+1!==Number(date.slice(5,7))||ts.getDate()!==Number(date.slice(8,10)))continue;
+  seen.add(id);points.push({id,date,rank,note:clean(item.note,120)});
+ }
+ return points.sort((a,b)=>a.date.localeCompare(b.date)||a.id.localeCompare(b.id));
+}
 const classKey=value=>String(value||'').trim().normalize('NFKC').toLocaleUpperCase('fr').slice(0,100);
 function normalizeClassSettings(input){
  const source=input&&typeof input==='object'?input:{};
@@ -120,7 +133,7 @@ function normalizeClassSettings(input){
  }
  const vsrColors=Object.create(null);
  for(const key of VSR_ORDER)vsrColors[key]=/^#[a-f0-9]{6}$/i.test(source.vsrColors?.[key]||'')?colorSafe(source.vsrColors[key]):DEFAULT_VSR_COLORS[key];
- return {id:COLOR_SETTINGS_ID,defaultColor:colorSafe(source.defaultColor),classColors,vsrColors};
+ return {id:COLOR_SETTINGS_ID,defaultColor:colorSafe(source.defaultColor),classColors,vsrColors,vsrRankingHistory:normalizeVsrRankingHistory(source.vsrRankingHistory)};
 }
 function readClassSettings(){
  try{
@@ -137,7 +150,8 @@ function getClassTagColor(boatClass){
 function getVSRTagColor(key){return classSettings.vsrColors?.[key]||DEFAULT_VSR_COLORS[key]||'#e8f2fa';}
 function settingsAreCustom(){
  return classSettings.defaultColor!==DEFAULT_TAG_COLOR||Object.keys(classSettings.classColors).length>0||
-   VSR_ORDER.some(key=>getVSRTagColor(key)!==DEFAULT_VSR_COLORS[key]);
+   VSR_ORDER.some(key=>getVSRTagColor(key)!==DEFAULT_VSR_COLORS[key])||
+   classSettings.vsrRankingHistory.length>0;
 }
 function colorSettingsState(){
  return settingsAreCustom()?[classSettings]:[];
@@ -549,6 +563,7 @@ function renderHonors(){
  $('honors-content').innerHTML=window.RapliRegattaHonors.render(rows,computeRaceStatistics(rows),scoreView,recordEngine);
 }
 function renderStatistics(){
+ renderVsrRankingHistory();
  const raceRows=rows.filter(r=>r.kind==='race');
  const stats=computeRaceStatistics(raceRows);
 
@@ -1251,6 +1266,99 @@ function exportCalendar(r){
  }catch(error){toast(error.message||'Export calendrier indisponible',true);}
 }
 
+const VSR_RANKING_MAX=99999999;
+let vsrRankingEditingId='';
+function rankDateDisplay(value){
+ const [day,clock]=value.split('T');
+ return day.split('-').reverse().join('/')+' · '+clock;
+}
+function renderVsrRankingHistory(){
+ const entries=classSettings.vsrRankingHistory;
+ const current=entries.at(-1),previous=entries.at(-2);
+ $('vsr-ranking-current-value').textContent=current?'#'+current.rank.toLocaleString('fr-FR'):'—';
+ $('vsr-ranking-change').textContent=previous?
+  (previous.rank===current.rank?'Classement inchangé':
+   (previous.rank>current.rank?'▲ ':'▼ ')+Math.abs(previous.rank-current.rank).toLocaleString('fr-FR')+
+   ' place'+(Math.abs(previous.rank-current.rank)>1?'s':'')+(previous.rank>current.rank?' gagnée':' perdue')+(Math.abs(previous.rank-current.rank)>1?'s':'')):
+  current?'Premier relevé enregistré':'Aucun relevé';
+ $('vsr-ranking-count').textContent=entries.length+' relevé'+(entries.length>1?'s':'');
+ $('vsr-ranking-history').innerHTML=entries.length?
+  [...entries].reverse().map((entry,i)=>
+   '<div class="vsr-ranking-history-row"><time datetime="'+safe(entry.date)+'">'+safe(rankDateDisplay(entry.date))+'</time>'+
+   '<strong>#'+entry.rank.toLocaleString('fr-FR')+'</strong>'+
+   '<span>'+safe(entry.note||'—')+'</span>'+
+   '<div class="vsr-ranking-row-actions">'+
+   '<button type="button" class="btn subtle tiny" data-vsr-ranking-edit="'+safe(entry.id)+'" aria-label="Modifier le relevé du '+safe(rankDateDisplay(entry.date))+'">Modifier</button>'+
+   '<button type="button" class="btn subtle tiny" data-vsr-ranking-delete="'+safe(entry.id)+'" aria-label="Supprimer le relevé du '+safe(rankDateDisplay(entry.date))+'">×</button>'+
+   '</div></div>').join(''):
+  '<p class="vsr-ranking-empty">Aucun historique pour le moment. Ajoute ton premier classement VSR pour commencer la courbe.</p>';
+ const plot=$('vsr-ranking-chart');
+ if(!entries.length){plot.innerHTML='<p class="vsr-ranking-empty">Le graphique apparaîtra dès le premier relevé.</p>';return;}
+ const w=820,h=310,padX=62,padTop=32,padBottom=58,plotW=w-2*padX,plotH=h-padTop-padBottom;
+ const times=entries.map(e=>new Date(e.date).getTime()),tMin=Math.min(...times),tMax=Math.max(...times);
+ const ranks=entries.map(e=>e.rank),min=Math.min(...ranks),max=Math.max(...ranks);
+ const lower=Math.max(1,Math.floor(min-Math.max(1,(max-min)*.12)));
+ const upper=Math.max(lower+1,Math.ceil(max+Math.max(1,(max-min)*.12)));
+ const coords=entries.map((e,i)=>({
+  x:padX+(tMax===tMin?(entries.length===1?plotW/2:plotW*i/(entries.length-1)):(times[i]-tMin)/(tMax-tMin)*plotW),
+  y:padTop+(e.rank-lower)/(upper-lower)*plotH
+ }));
+ const path=coords.map((p,i)=>(i?'L':'M')+p.x.toFixed(2)+' '+p.y.toFixed(2)).join(' ');
+ const ticks=Array.from({length:5},(_,i)=>{const value=Math.round(lower+(upper-lower)*i/4),y=padTop+plotH*i/4;return '<line x1="'+padX+'" y1="'+y+'" x2="'+(w-padX)+'" y2="'+y+'" stroke="#cbdde5" stroke-dasharray="4 5"/>'+
+ '<text x="'+(padX-12)+'" y="'+(y+4)+'" text-anchor="end" fill="#6a8294" font-size="12">'+value.toLocaleString('fr-FR')+'</text>';}).join('');
+ const points=coords.map((p,i)=>'<circle cx="'+p.x+'" cy="'+p.y+'" r="5" fill="#0c869b" stroke="#fff" stroke-width="2"><title>'+
+ safe(rankDateDisplay(entries[i].date)+' · Rang '+entries[i].rank.toLocaleString('fr-FR')+(entries[i].note?' · '+entries[i].note:''))+
+ '</title></circle>').join('');
+ const firstDate=entries[0].date.slice(0,10).split('-').reverse().join('/');
+ const lastDate=entries.at(-1).date.slice(0,10).split('-').reverse().join('/');
+ plot.innerHTML='<svg role="img" aria-label="Courbe chronologique de classement VSR. Le rang 1 est en haut, un rang plus élevé est moins bon." viewBox="0 0 '+w+' '+h+'" preserveAspectRatio="xMidYMid meet">'+
+ '<text x="14" y="15" fill="#547689" font-size="11">MEILLEUR RANG ↑</text>'+
+ ticks+'<path d="'+path+'" fill="none" stroke="#0b91a5" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>'+points+
+ '<text x="'+padX+'" y="'+(h-12)+'" text-anchor="start" font-size="12" fill="#547689">'+safe(firstDate)+'</text>'+
+ '<text x="'+(w-padX)+'" y="'+(h-12)+'" text-anchor="end" font-size="12" fill="#547689">'+safe(lastDate)+'</text>'+
+ '</svg><p class="vsr-ranking-plot-caption">Classement VSR · Un rang plus faible est meilleur · '+entries.length+' relevé'+(entries.length>1?'s':'')+'</p>';
+}
+function resetVsrRankingForm(){
+ vsrRankingEditingId='';
+ $('vsr-ranking-form').reset();
+ const local=new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,16);
+ $('vsr-ranking-date').value=local;
+ $('vsr-ranking-save').textContent='＋ AJOUTER LE RELEVÉ';
+ $('vsr-ranking-cancel').hidden=true;
+}
+$('vsr-ranking-form').addEventListener('submit',event=>{
+ event.preventDefault();
+ if(!window.RapliSharedCollection?.canEdit?.()){toast('Connecte-toi en administrateur pour modifier le classement VSR.',true);return;}
+ const date=$('vsr-ranking-date').value,rank=Number($('vsr-ranking-rank').value);
+ if(!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(date)||!Number.isSafeInteger(rank)||rank<1||rank>VSR_RANKING_MAX){toast('Date ou classement VSR invalide.',true);return;}
+ const existing=classSettings.vsrRankingHistory;
+ if(existing.some(row=>row.date===date&&row.id!==vsrRankingEditingId)){toast('Un relevé existe déjà pour cette date et heure. Modifie-le plutôt.',true);return;}
+ const entry={id:vsrRankingEditingId||uid(),date,rank,note:clean($('vsr-ranking-note').value,120)};
+ storeClassSettings({...classSettings,vsrRankingHistory:[...existing.filter(e=>e.id!==vsrRankingEditingId),entry]});
+ resetVsrRankingForm();toast('Classement VSR enregistré dans ton historique ✓');
+});
+$('vsr-ranking-cancel').addEventListener('click',resetVsrRankingForm);
+$('vsr-ranking-history').addEventListener('click',event=>{
+ const edit=event.target.closest('[data-vsr-ranking-edit]');
+ const del=event.target.closest('[data-vsr-ranking-delete]');
+ if(!edit&&!del)return;
+ if(!window.RapliSharedCollection?.canEdit?.()){toast('Mode administrateur requis.',true);return;}
+ const id=(edit||del).dataset[edit?'vsrRankingEdit':'vsrRankingDelete'];
+ const row=classSettings.vsrRankingHistory.find(e=>e.id===id);
+ if(!row)return;
+ if(edit){
+  vsrRankingEditingId=id;
+  $('vsr-ranking-date').value=row.date;$('vsr-ranking-rank').value=row.rank;$('vsr-ranking-note').value=row.note||'';
+  $('vsr-ranking-save').textContent='✓ ENREGISTRER LA MODIFICATION';
+  $('vsr-ranking-cancel').hidden=false;
+  $('vsr-ranking-form').scrollIntoView?.({behavior:'smooth',block:'nearest'});
+ }else if(confirm('Supprimer le classement du '+rankDateDisplay(row.date)+' ?')){
+  storeClassSettings({...classSettings,vsrRankingHistory:classSettings.vsrRankingHistory.filter(e=>e.id!==id)});
+  if(vsrRankingEditingId===id)resetVsrRankingForm();
+  toast('Relevé VSR supprimé.');
+ }
+});
+resetVsrRankingForm();
 $('race-equipment-group').addEventListener('change',event=>{
  const selected=event.target.closest('input[name="race-equipment"]');
  if(!selected||!selected.checked)return;

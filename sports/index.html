@@ -3788,10 +3788,24 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
           return true;
         });
         const sort=$('sortSelect').value;
-        matches.sort((a,b)=>sort==='name'?collator.compare(a.player,b.player):
-          sort==='brand'?collator.compare(a.brand,b.brand):
-          sort==='team'?collator.compare(a.team,b.team):
-          (b.createdAt||0)-(a.createdAt||0));
+        const addedAt=card=>{const value=card.createdAt;return Number(value)||Date.parse(value)||0;};
+        const byAdded=(a,b)=>addedAt(b)-addedAt(a);
+        const seasonKey=card=>{
+          const match=/^(\d{4})(?:\/(\d{4}))?$/.exec(String(card.season||'').trim());
+          return match?Number(match[1])*10000+Number(match[2]||match[1]):null;
+        };
+        matches.sort((a,b)=>{
+          if(sort==='name')return collator.compare(a.player,b.player);
+          if(sort==='brand')return collator.compare(a.brand,b.brand);
+          if(sort==='team')return collator.compare(a.team,b.team);
+          if(sort==='season-new'||sort==='season-old'){
+            const left=seasonKey(a),right=seasonKey(b);
+            if(left===null||right===null)return left===null&&right===null?byAdded(a,b):left===null?1:-1;
+            const difference=sort==='season-new'?right-left:left-right;
+            return difference||byAdded(a,b);
+          }
+          return byAdded(a,b);
+        });
         return matches;
       }
 
@@ -3873,12 +3887,27 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         }
         return [...groups.values()].sort((a,b)=>collator.compare(a.label,b.label));
       }
+      function cardParallelAccentClass(card){
+        const tags=Array.isArray(card.tags)?card.tags:[];
+        // Prefer tags classified as parallels, while accepting older Refractor/Foil labels.
+        const classified=tags.filter(tag=>tagCategories(tag).includes('parallel'));
+        const candidates=classified.length?classified:
+          tags.filter(tag=>/\b(refractor|foil|parallel|prizm|shimmer|wave)\b/i.test(tag));
+        for(const tag of candidates){
+          const match=normalize(tag).match(/\b(orange|green|purple|blue|red|gold|pink|black|yellow|aqua|teal|turquoise|mint|silver|prism)\b/);
+          if(match){
+            const tone=['teal','turquoise','mint'].includes(match[1])?'aqua':match[1]==='prism'?'silver':match[1];
+            return ' card-parallel-'+tone;
+          }
+        }
+        return '';
+      }
       function cardTileFoilClass(card){
-        // One-of-one cards use a softer champagne-gold foil, including wishlist items.
+        // One-of-one cards retain the champagne-gold foil and its neutral border.
         const isOneOfOne=(card.numbered&&/^0*1$/.test(String(card.printRun??'').trim()))||
           (Array.isArray(card.tags)&&card.tags.some(tag=>
             /^(?:1\s*\/\s*1|1\s*of\s*1|one[\s-]*of[\s-]*one)$/i.test(String(tag??'').trim())));
-        return isOneOfOne?'card-foil-gold':'card-foil-silver';
+        return isOneOfOne?'card-foil-gold':'card-foil-silver'+cardParallelAccentClass(card);
       }
       function sportsGalleryCard(item){
         const photo=imgSafe(item.photo)?
@@ -3888,6 +3917,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         return '<article class="sports-gallery-tile '+cardTileFoilClass(item)+(item.rookie===true?' is-rookie-card':'')+
           (item.status==='wishlist'&&item.dream?' is-dream-gallery':'')+'" data-card-id="'+safeText(item.id)+'">'+
           '<span class="sports-tile-corners" aria-hidden="true"></span>'+
+          (recentCard(item)?'<span class="sports-gallery-new" title="Ajoutée il y a moins de 7 jours">NEW</span>':'')+
           '<button type="button" class="sports-gallery-card-action" data-sports-gallery-card="'+safeText(item.id)+
           '" aria-label="Ouvrir la fiche de '+safeText(athlete)+'">'+
           '<span class="sports-gallery-media">'+photo+
@@ -4254,6 +4284,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
           t.classList.toggle('active',active);
           t.setAttribute('aria-selected',String(active));
         });
+        $('sportsNavigationReturn').hidden=sportsNavigationHistory.length===0;
         const showStats=currentView==='stats',showRainbow=currentView==='rainbow';
         $('collectionPanel').hidden=showStats||showRainbow;
         $('statsPanel').hidden=!showStats;
@@ -4601,6 +4632,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
       document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>closeModal(b.dataset.close)));
       document.querySelectorAll('dialog').forEach(d=>{d.addEventListener('close',()=>{if(!document.querySelector('dialog[open]'))document.body.style.overflow=''})});
       document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
+        sportsNavigationHistory.length=0;
         currentView=t.dataset.view;sportsGallerySelected=null;sportsGalleryPage=1;renderAll();
       }));
       $('newRainbowBtn').addEventListener('click',()=>openRainbow());
@@ -4639,13 +4671,19 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         try{await removeLogo(group.id);renderAll();showToast('Rainbow supprimé. Toutes les cartes sont conservées.');}
         catch(error){console.error(error);showToast('Suppression du Rainbow impossible.');}
       });
-      $('sportsViewSelect').addEventListener('change',()=>{sportsGalleryLayout=$('sportsViewSelect').value;sportsGallerySelected=null;sportsGalleryPage=1;renderAll();});
+      function chooseSportsGalleryLayout(value){
+        if(!SPORTS_GALLERY_LAYOUTS.includes(value))return;
+        sportsNavigationHistory.length=0;
+        sportsGalleryLayout=value;sportsGallerySelected=null;sportsGalleryPage=1;
+        saveSportsGalleryLayout(value);
+        renderAll();
+      }
+      $('sportsViewSelect').addEventListener('change',()=>chooseSportsGalleryLayout($('sportsViewSelect').value));
       $('sportsGalleryToolbar').addEventListener('click',event=>{
         const option=event.target.closest('[data-sports-layout]');
         if(!option)return;
         const next=option.dataset.sportsLayout;
-        if(!['details','cards','brand','team','athlete','nationality','tag','competition','edition','insert','parallel','sport','grading'].includes(next))return;
-        sportsGalleryLayout=next;sportsGallerySelected=null;sportsGalleryPage=1;renderAll();
+        chooseSportsGalleryLayout(next);
       });
       function sportsPaginationClick(event){
         const page=event.target.closest('[data-sports-gallery-page]');
@@ -4667,6 +4705,17 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         window.scrollTo({top:0,behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
       });
       updateSportsBackToTop();
+      $('sportsNavigationReturn').addEventListener('click',()=>{
+        const previous=sportsNavigationHistory.pop();
+        if(!previous)return;
+        currentView=previous.view;sportsGalleryLayout=previous.layout;
+        sportsGallerySelected=previous.selected;sportsGalleryPage=previous.page;
+        $('filterSearch').value=previous.search;
+        $('filterDream').checked=previous.dream;
+        $('sortSelect').value=previous.sort;
+        renderAll();
+        requestAnimationFrame(()=>window.scrollTo(0,previous.scrollY));
+      });
       $('sportsPaginationTop').addEventListener('click',sportsPaginationClick);
       $('sportsPaginationBottom').addEventListener('click',sportsPaginationClick);
       $('cardGrid').addEventListener('click',event=>{
@@ -4682,10 +4731,12 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
       $('statsExportPngBtn').addEventListener('click',()=>void exportOwnedStatsPng());
       ['filterSearch','filterDream','sortSelect']
         .forEach(id=>$(id).addEventListener(id==='filterSearch'?'input':'change',()=>{
+          sportsNavigationHistory.length=0;
           sportsGalleryPage=1;sportsGallerySelected=null;renderAll();
         }));
       document.querySelectorAll('[data-wishlist-dream]').forEach(button=>button.addEventListener('click',()=>{
         $('filterDream').checked=button.dataset.wishlistDream==='true';
+        sportsNavigationHistory.length=0;
         sportsGalleryPage=1;sportsGallerySelected=null;renderAll();
       }));
       $('addCardBtn').addEventListener('click',()=>openCard());$('emptyAddBtn').addEventListener('click',()=>openCard());$('cardForm').addEventListener('submit',submitCard);$('cardGrid').addEventListener('click',cardAction);
@@ -5057,7 +5108,16 @@ function rapliModuleReady(){
         rainbow:id=>{const group=savedRainbows().find(row=>row.id===id);return group?rainbowEngine.progress(group,cards):null;},
         navigate(type,label){
           if(!['nationality','brand','team','tag','sport'].includes(type))return;
-          sportsGalleryLayout=type;sportsGallerySelected=normalize(label);sportsGalleryPage=1;
+          const destination=normalize(label);
+          if(sportsGalleryLayout===type&&sportsGallerySelected===destination)return;
+          sportsNavigationHistory.push({
+            view:currentView,layout:sportsGalleryLayout,selected:sportsGallerySelected,
+            page:sportsGalleryPage,search:$('filterSearch').value,
+            dream:$('filterDream').checked,sort:$('sortSelect').value,
+            scrollY:window.scrollY||0
+          });
+          if(sportsNavigationHistory.length>10)sportsNavigationHistory.shift();
+          sportsGalleryLayout=type;sportsGallerySelected=destination;sportsGalleryPage=1;
           renderAll();$('sportsViewSelect').scrollIntoView({block:'nearest',behavior:'smooth'});
         },
         notify:showToast

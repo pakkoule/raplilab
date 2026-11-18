@@ -19,6 +19,9 @@
     const players=bridge.players(card);
     return {title:players.map(p=>p.name).filter(Boolean).join(' / ')||card.player||'Carte',rows:[
       ['Statut',card.status==='own'?'Possédée':card.dream?'Wishlist · Dans mes rêves':'Wishlist'],
+      ['Suivi',card.status==='wishlist'?({ordered:'Commandée',shipping:'En attente de livraison'})[card.wishStage]||'':''],
+      ['Type 1/1',card.numbered&&Number(card.printRun)===1?(card.uniqueKind==='plate'?'Printing Plate'+(card.plateColor?' · '+card.plateColor:''):card.uniqueKind==='oneofone'?'Véritable One of One':'À vérifier'):''],
+      ['Provenance',card.source],['Lien',card.sourceUrl],
       ['Marque',card.brand],['Équipe',card.team],['Sport',card.sport],
       ['Pays',[...new Set(players.map(p=>bridge.country(p.nationality)).filter(Boolean))].join(' / ')],
       ['Référence',card.reference],['Tags',(card.tags||[]).join(' · ')],

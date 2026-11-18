@@ -37,7 +37,7 @@
   const serialTiers=ranked(owned,c=>{
    if(!c.numbered)return ['Non numérotées'];
    const n=int(c.printRun);
-   if(n===1)return ['1/1'];
+   if(n===1)return [c.uniqueKind==='oneofone'?'Véritables One of One':c.uniqueKind==='plate'?'Printing Plates 1/1':'1/1 à vérifier'];
    if(n!==null&&n>=2&&n<=10)return ['/2 à /10'];
    if(n!==null&&n>=11&&n<=99)return ['/11 à /99'];
    if(n!==null&&n>=100)return ['/100 et plus'];
@@ -51,6 +51,8 @@
    {label:'Sports',value:sports.length},
    {label:'Rookie Cards',value:owned.filter(c=>c.rookie===true).length},
    {label:'Numérotées',value:numbered.length},
+   {label:'Véritables One of One',value:numbered.filter(c=>int(c.printRun)===1&&c.uniqueKind==='oneofone').length},
+   {label:'Printing Plates 1/1',value:numbered.filter(c=>int(c.printRun)===1&&c.uniqueKind==='plate').length},
    {label:'Autographiées',value:autograph.length},
    {label:'Avec patch',value:patch.length},
    {label:'Multi-athlètes',value:owned.filter(c=>playersOf(c).filter(p=>clean(p.name)).length>1).length},

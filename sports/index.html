@@ -1952,20 +1952,29 @@ html:not([data-rapli-role="editor"]) .move-card{display:none!important}
 /* 59 — tiny, noninteractive metallic corner strokes on detail and gallery tiles. */
 .cards-grid .card-item .sports-tile-corners,.sports-gallery-tile .sports-tile-corners{
   position:absolute;inset:5px;z-index:3;pointer-events:none;
-  background:
-    linear-gradient(90deg,#8da4b2,#f4e6bd) left top / 12px 2px no-repeat,
-    linear-gradient(180deg,#8da4b2,#f4e6bd) left top / 2px 12px no-repeat,
-    linear-gradient(270deg,#8da4b2,#f4e6bd) right top / 12px 2px no-repeat,
-    linear-gradient(180deg,#8da4b2,#f4e6bd) right top / 2px 12px no-repeat,
-    linear-gradient(90deg,#8da4b2,#f4e6bd) left bottom / 12px 2px no-repeat,
-    linear-gradient(0deg,#8da4b2,#f4e6bd) left bottom / 2px 12px no-repeat,
-    linear-gradient(270deg,#8da4b2,#f4e6bd) right bottom / 12px 2px no-repeat,
-    linear-gradient(0deg,#8da4b2,#f4e6bd) right bottom / 2px 12px no-repeat;
+  /* A thin curved metallic outline, masked to just its four rounded corners. */
+  border:2px solid #a6b5bd;
+  border-top-color:#ead9b5;
+  border-right-color:#b5bdc1;
+  border-bottom-color:#e2d5b7;
+  border-left-color:#97acb8;
+  border-radius:10px;
+  background:none;
+  -webkit-mask:
+    linear-gradient(#000 0 0) left top/20px 20px no-repeat,
+    linear-gradient(#000 0 0) right top/20px 20px no-repeat,
+    linear-gradient(#000 0 0) left bottom/20px 20px no-repeat,
+    linear-gradient(#000 0 0) right bottom/20px 20px no-repeat;
+  mask:
+    linear-gradient(#000 0 0) left top/20px 20px no-repeat,
+    linear-gradient(#000 0 0) right top/20px 20px no-repeat,
+    linear-gradient(#000 0 0) left bottom/20px 20px no-repeat,
+    linear-gradient(#000 0 0) right bottom/20px 20px no-repeat;
   opacity:.7;
 }
 @media(max-width:540px){
   .cards-grid .card-item .sports-tile-corners,.sports-gallery-tile .sports-tile-corners{
-    inset:4px;opacity:.58;
+    inset:4px;border-radius:9px;opacity:.58;
   }
 }
 /* 89 — pin frequently used brand/team logos (admin only). */
@@ -3612,11 +3621,22 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         if(type!=='brand'&&type!=='team')return names;
         return names.sort((a,b)=>Number(pinnedLogo(type,b))-Number(pinnedLogo(type,a))||collator.compare(a,b));
       }
-      function fillSavedPicker(select,values,placeholder,pinnedType=''){
+      function hasLibraryLogo(type,name){
+        if(type==='nationality'){
+          const profile=countryLogoProfile(name);
+          return Boolean(imgSafe(profile?.image)||imgSafe(profile?.catalogImage));
+        }
+        // An existing tag/grade style without an image is not a registered logo.
+        return Boolean(logoFor(type,name));
+      }
+      function fillSavedPicker(select,values,placeholder,pinnedType='',libraryLogoType=''){
         const value=select.value;
         select.replaceChildren(new Option(placeholder,''));
-        for(const item of sortedLogoNames(values,pinnedType))
-          select.add(new Option(pinnedLogo(pinnedType,item)?'★ '+item:item,item));
+        for(const item of sortedLogoNames(values,pinnedType)){
+          const pinned=pinnedLogo(pinnedType,item)?'★ ':'';
+          const check=libraryLogoType&&hasLibraryLogo(libraryLogoType,item)?' ✓':'';
+          select.add(new Option(pinned+item+check,item));
+        }
         select.value=[...select.options].some(o=>o.value===value)?value:'';
       }
       function refreshGradeOrgOptions(){
@@ -4480,17 +4500,22 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         }
         const list=$('logoNamesList');list.replaceChildren();
         const names=logoType==='rookie'
-          ? [...document.querySelectorAll('#cardSport option')].map(o=>o.value).concat(cards.map(c=>c.sport))
+          ? [...document.querySelectorAll('#cardSport option')].map(o=>o.value).concat(cards.map(c=>c.sport),logos.filter(l=>l.type==='rookie').map(l=>l.name))
           : logoType==='athlete'?savedPlayers().concat(logos.filter(x=>x.type==='athlete').map(x=>x.name))
           : logoType==='nationality'?savedCountryTags()
           : logoType==='sport'?cards.map(c=>c.sport).concat([...document.querySelectorAll('#cardSport option')].map(o=>o.value),logos.filter(x=>x.type==='sport').map(x=>x.name))
           : logoType==='grading'?['PSA','BGS','SGC','CGC','Autre'].concat(cards.filter(c=>c.graded).map(c=>c.gradeOrg),logos.filter(x=>x.type==='grading').map(x=>x.name))
-          : logoType==='tag'?savedTags():logoType==='team'?savedTeams():cards.map(c=>c.brand);
-        [...new Set(names.filter(Boolean))].sort(collator.compare).forEach(x=>list.append(new Option(x,x)));
-        if(logoType==='athlete')fillSavedPicker($('logoAthletePicker'),names,'Choisir un athlète enregistré…');
-        if(logoType==='team')fillSavedPicker($('logoTeamPicker'),names,'Choisir une équipe enregistrée…');
-        if(logoType==='tag')fillSavedPicker($('logoTagPicker'),names,'Choisir un tag enregistré…');
-        if(['nationality','sport','grading'].includes(logoType))fillSavedPicker($('logoGroupPicker'),names,logoType==='nationality'?'Choisir un pays enregistré…':logoType==='grading'?'Choisir un organisme de grading…':'Choisir un sport enregistré…');
+          : logoType==='tag'?savedTags():logoType==='team'?savedTeams():savedBrands();
+        [...new Set(names.filter(Boolean))].sort(collator.compare).forEach(name=>{
+          const option=new Option(name,name);
+          if(hasLibraryLogo(logoType,name))option.label='✓ '+name;
+          list.append(option);
+        });
+        if(logoType==='athlete')fillSavedPicker($('logoAthletePicker'),names,'Choisir un athlète enregistré…','','athlete');
+        if(logoType==='team')fillSavedPicker($('logoTeamPicker'),names,'Choisir une équipe enregistrée…','','team');
+        if(logoType==='tag')fillSavedPicker($('logoTagPicker'),names,'Choisir un tag enregistré…','','tag');
+        if(['nationality','sport','grading'].includes(logoType))
+          fillSavedPicker($('logoGroupPicker'),names,logoType==='nationality'?'Choisir un pays enregistré…':logoType==='grading'?'Choisir un organisme de grading…':'Choisir un sport enregistré…','',logoType);
       }
       async function saveNewLogo(){
         const name=$('logoName').value.trim();

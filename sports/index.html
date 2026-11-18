@@ -4636,7 +4636,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         if(['collector','labels'].includes(logoType))return;
         const existing=logoType==='nationality'?countryLogoProfile(name):
           logos.find(row=>row.type===logoType&&normalize(row.name)===normalize(name));
-        if(!['tag','grading','nationality'].includes(logoType)&&!pendingLogoPhoto&&!(logoType==='athlete'&&existing?.image))return showToast(logoType==='athlete'?'Sélectionne un portrait.':'Sélectionne une image de logo.');
+        if(!['tag','grading','nationality'].includes(logoType)&&!pendingLogoPhoto&&!(logoType==='athlete'&&(existing?.image||$('athleteNationality').value.trim())))return showToast(logoType==='athlete'?'Sélectionne un portrait ou attribue un pays.':'Sélectionne une image de logo.');
         const id=existing?.id||logoType+':'+normalize(name);
         const row=logoType==='tag'?
           {...existing,id,type:'tag',name,image:pendingLogoPhoto||existing?.image||'',categories:currentTagCategories(),brands:currentTagBrands()}:

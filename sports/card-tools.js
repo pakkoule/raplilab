@@ -143,10 +143,10 @@
     if(!dialog.open)dialog.showModal();
   }
   document.addEventListener('contextmenu',event=>{const tile=event.target.closest('.sports-gallery-tile[data-card-id]');if(!tile)return;const card=bridge.card(tile.dataset.cardId);if(card){event.preventDefault();event.stopPropagation();summary(card);}},true);
-  document.addEventListener('keydown',event=>{const link=event.target.closest('#cardGrid [data-card-group]');if(link&&['Enter',' '].includes(event.key)){event.preventDefault();event.stopPropagation();bridge.navigate(link.dataset.cardGroup,link.dataset.groupLabel);}},true);
+  document.addEventListener('keydown',event=>{const link=event.target.closest('#cardGrid [data-card-group], .rainbow-versions-dialog [data-card-group]');if(link&&['Enter',' '].includes(event.key)){event.preventDefault();event.stopPropagation();if(rainbowDialog?.open)rainbowDialog.close();bridge.navigate(link.dataset.cardGroup,link.dataset.groupLabel);}},true);
   document.addEventListener('click',async event=>{
-    const link=event.target.closest('#cardGrid [data-card-group]');
-    if(link){event.preventDefault();event.stopImmediatePropagation();bridge.navigate(link.dataset.cardGroup,link.dataset.groupLabel);return;}
+    const link=event.target.closest('#cardGrid [data-card-group], .rainbow-versions-dialog [data-card-group]');
+    if(link){event.preventDefault();event.stopImmediatePropagation();if(rainbowDialog?.open)rainbowDialog.close();bridge.navigate(link.dataset.cardGroup,link.dataset.groupLabel);return;}
     const action=event.target.closest('[data-card-tool], [data-rainbow-pdf]');if(!action)return;
     event.preventDefault();event.stopImmediatePropagation();if(action.disabled)return;action.disabled=true;
     try{

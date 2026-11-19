@@ -2943,6 +2943,27 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
  .collector-plate-settings{padding:10px}
 }
 </style>
+<style id="rapli-season-wishlist-label-customization">
+/* Match the existing Sports label editor's shared color, text and foil settings. */
+.cards-grid .card-item .card-season.is-custom-label{
+ background:var(--sports-label-gradient,var(--sports-label-bg))!important;
+ color:var(--sports-label-text)!important;
+ border:1px solid var(--sports-label-border)!important;
+ border-radius:var(--sports-label-radius,6px)!important;
+ box-shadow:inset 0 1px 0 #ffffff6b,0 2px 5px #071f2e18;
+ text-shadow:0 1px 0 #ffffff25;
+ max-width:100%;white-space:normal;text-align:center;overflow-wrap:anywhere;
+}
+.cards-grid .card-item .card-season.is-custom-label strong{color:inherit}
+#labelSettingsPanel .sports-label-help{
+ padding:7px 12px 0;margin:0;color:#607c97;
+ font:650 10px/1.55 Poppins,system-ui,sans-serif;
+}
+#labelSettingsPanel .sports-label-help code{
+ padding:1px 4px;border-radius:4px;background:#e8eef8;
+ color:#225180;font:800 10px/1.3 'Courier New',monospace;
+}
+</style>
 </head>
 <body>
   <div class="app-shell">
@@ -3134,6 +3155,11 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
       <div id="logoList" class="logo-list"></div>
       <div id="labelSettingsPanel" class="sports-label-settings" hidden>
         <p class="logo-help">Personnalise les étiquettes affichées sur les cartes : intitulé, fond, texte, contour et forme. Les styles sont communs aux cartes OWN et Wishlist, sans modifier leurs données.</p>
+        <details class="sports-label-section" open>
+          <summary>SAISON & SUIVI WISHLIST <span>Saison, commandée, livraison</span></summary>
+          <p class="sports-label-help">Pour la saison, conserve <code>{saison}</code> dans le texte pour afficher automatiquement l’année de chaque carte. Exemple : <strong>Saison {saison}</strong>.</p>
+          <div id="collectionLabelEditors" class="sports-label-rows"></div>
+        </details>
         <details class="sports-label-section" open>
           <summary>ÉTIQUETTES DE SPORT <span>Basketball, football, F1, tennis…</span></summary>
           <div id="sportLabelEditors" class="sports-label-rows"></div>
@@ -3470,6 +3496,11 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         {key:'patch:game-worn',type:'patch',title:'Patch Game Worn',text:'PATCH GAME WORN',bg:'#fff0df',ink:'#94522a',border:'#e7cba2'},
         {key:'patch:not-affiliated',type:'patch',title:'Patch Not Affiliated',text:'PATCH NOT AFFILIATED',bg:'#f1eff5',ink:'#624c75',border:'#d6c8e0'}
       ]);
+      const LABEL_COLLECTION=Object.freeze([
+        {key:'season:year',type:'season',title:'Saison',text:'{saison}',bg:'#f4fbfa',ink:'#28516e',border:'#b2d5d2'},
+        {key:'wishlist:ordered',type:'wishlist',title:'Wishlist · Commandée',text:'Commandée',bg:'#e9f5ed',ink:'#285c4a',border:'#b9dcca'},
+        {key:'wishlist:shipping',type:'wishlist',title:'Wishlist · En attente de livraison',text:'En attente de livraison',bg:'#f1f4fa',ink:'#32546e',border:'#b2c7d6'}
+      ]);
       const SPORT_LABEL_COLORS=Object.freeze({
         basketball:['#e8efff','#1e54a9','#c0d3f7'],
         football:['#e6f5ed','#206f50','#b3ddc5'],
@@ -3489,12 +3520,13 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
             const [bg,ink,border]=SPORT_LABEL_COLORS[normalize(name)]||['#f4f7fd','#2457c6','#d7e3f7'];
             return {key:'sport:'+normalize(name),type:'sport',title:name,text:name,bg,ink,border};
           }),
-          features:LABEL_FEATURES
+          features:LABEL_FEATURES,
+          collection:LABEL_COLLECTION
         };
       }
       function sportsDefaultLabel(key){
         const defs=sportsLabelDefs();
-        return [...defs.sports,...defs.features].find(def=>def.key===key)||{
+        return [...defs.sports,...defs.features,...defs.collection].find(def=>def.key===key)||{
           key,type:'sport',title:key.replace(/^sport:/,''),text:key.replace(/^sport:/,''),
           bg:'#f4f7fd',ink:'#2457c6',border:'#d7e3f7'
         };
@@ -3506,7 +3538,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         const source=value&&typeof value==='object'&&!Array.isArray(value)?value:{};
         const output={};
         for(const [key,item] of Object.entries(source).slice(0,120)){
-          if(typeof key!=='string'||key.length>135||!(/^(sport:[^<>]*|auto:(?:stickers|on-card)|patch:(?:game-worn|not-affiliated))$/).test(key))continue;
+          if(typeof key!=='string'||key.length>135||!(/^(sport:[^<>]*|auto:(?:stickers|on-card)|patch:(?:game-worn|not-affiliated)|season:year|wishlist:(?:ordered|shipping))$/).test(key))continue;
           if(!item||typeof item!=='object'||Array.isArray(item))continue;
           const def=sportsDefaultLabel(key);
           output[key]={
@@ -3532,6 +3564,19 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
           shape:['rounded','pill','square'].includes(stored.shape)?stored.shape:'rounded',
           gradient:typeof stored.gradient==='string'&&(['solid','foil'].includes(stored.gradient)||COLLECTOR_METALS.some(m=>m.key===stored.gradient))?stored.gradient:'foil'
         };
+      }
+      // {saison} inserts each card's own season; a fixed text remains possible.
+      function renderedLabelText(def,cfg,seasonValue='2026/2027'){
+        return def.key==='season:year'
+          ? cfg.text.replace(/\{(?:saison|season)\}/gi,String(seasonValue))
+          : cfg.text;
+      }
+      function collectionLabelMarkup(key){
+        const def=LABEL_COLLECTION.find(item=>item.key===key);
+        if(!def)return '';
+        const cfg=labelConfig(def);
+        return '<span class="extras-mini-badge is-custom-label" style="'+labelInlineStyle(cfg)+
+          '" title="'+safeText(def.title)+'">'+safeText(renderedLabelText(def,cfg))+'</span>';
       }
       function labelInlineStyle(cfg){
         const radius=cfg.shape==='pill'?'999px':cfg.shape==='square'?'2px':'6px';
@@ -3567,7 +3612,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         const shapes=[['rounded','Arrondie'],['pill','Pilule'],['square','Carrée']];
         return '<section class="sports-label-row" data-label-row="'+id+'">'+
           '<div class="sports-label-row-header"><strong>'+safeText(def.title)+'</strong>'+
-          '<span class="sports-label-preview" data-label-preview style="'+labelInlineStyle(cfg)+'">'+safeText(cfg.text)+'</span></div>'+
+          '<span class="sports-label-preview" data-label-preview style="'+labelInlineStyle(cfg)+'">'+safeText(renderedLabelText(def,cfg))+'</span></div>'+
           '<div class="sports-label-controls">'+
           '<label>Texte<input class="input" type="text" maxlength="52" data-label-caption value="'+safeText(cfg.text)+'" aria-label="Texte '+safeText(def.title)+'"></label>'+
           '<label>Fond<input type="color" data-label-bg value="'+cfg.bg+'" aria-label="Fond '+safeText(def.title)+'"></label>'+
@@ -3590,6 +3635,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         };
         $('sportLabelEditors').innerHTML=defs.sports.map(withDraft).join('');
         $('featureLabelEditors').innerHTML=defs.features.map(withDraft).join('');
+        $('collectionLabelEditors').innerHTML=defs.collection.map(withDraft).join('');
       }
       function labelEditorRowWithConfig(def,cfg){
         // Reuse the same row renderer with an explicit draft configuration.
@@ -3607,7 +3653,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         root.querySelector('[data-label-gradient]').value=cfg.gradient;
         const preview=root.querySelector('[data-label-preview]');
         preview.style.cssText=labelInlineStyle(cfg);
-        preview.textContent=cfg.text;
+        preview.textContent=renderedLabelText(def,cfg);
         return holder.innerHTML;
       }
       function labelConfigFromRow(row){
@@ -3627,7 +3673,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         const cfg=labelConfigFromRow(row);
         const preview=row.querySelector('[data-label-preview]');
         preview.style.cssText=labelInlineStyle(cfg);
-        preview.textContent=cfg.text;
+        preview.textContent=renderedLabelText(sportsDefaultLabel(row.dataset.labelRow),cfg);
       }
       async function saveLabelSettings(){
         const settings={};
@@ -5488,7 +5534,15 @@ function rapliModuleReady(){
 
 
       function cardRainbows(card){return savedRainbows().filter(group=>(group.variants||[]).some(variant=>variant.cardId===card.id));}
-      function seasonBadge(card){return card.season||card.legendary?'<span class="card-season'+(card.legendary?' is-legendary':'')+'"><strong>'+safeText(card.season||'LÉGENDAIRE')+'</strong>'+(card.legendary&&card.season?'<small>LÉGENDAIRE</small>':'')+'</span>':'';}
+      function seasonBadge(card){
+        if(!card.season)return card.legendary?
+          '<span class="card-season is-legendary"><strong>LÉGENDAIRE</strong></span>':'';
+        const def=LABEL_COLLECTION[0],cfg=labelConfig(def);
+        const text=renderedLabelText(def,cfg,card.season);
+        return '<span class="card-season is-custom-label'+(card.legendary?' is-legendary':'')+
+          '" style="'+labelInlineStyle(cfg)+'" title="Saison '+safeText(card.season)+'"><strong>'+
+          safeText(text)+'</strong>'+(card.legendary?'<small>LÉGENDAIRE</small>':'')+'</span>';
+      }
       function groupLink(type,name,markup){
         if(!name||!markup)return markup;
         return '<span class="card-group-link" role="button" tabindex="0" data-card-group="'+safeText(type)+'" data-group-label="'+safeText(name)+'" aria-label="Voir '+safeText(name)+'">'+markup+'</span>';
@@ -5497,7 +5551,7 @@ function rapliModuleReady(){
       function brandBadge(type,name,season){return groupLink(type,name,brandBadgeRaw(type,name,season));}
       function cardTagMarkup(name,season){return groupLink('tag',name,cardTagMarkupRaw(name,season));}
       function sportsSportBadge(name){return groupLink('sport',name,sportsSportBadgeRaw(name));}
-      window.RapliExtrasBridge={cards:()=>cards,logos:()=>logos,saveCard,saveLogo,render:renderAll,canEdit:isRapliEditor,notify:showToast,readPhoto,tagCategories,players:savedPlayers,brands:savedBrands,tags:savedTags,openCard};
+      window.RapliExtrasBridge={cards:()=>cards,logos:()=>logos,saveCard,saveLogo,render:renderAll,canEdit:isRapliEditor,notify:showToast,readPhoto,tagCategories,players:savedPlayers,brands:savedBrands,tags:savedTags,openCard,labelBadge:collectionLabelMarkup};
       window.RapliAppearanceBridge={
         card:id=>cards.find(card=>card.id===id),
         canEdit:isRapliEditor,notify:showToast,

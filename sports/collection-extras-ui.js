@@ -46,7 +46,28 @@ historyButton.dataset.historyOpen='';
 historyButton.title='Gérer les logos d’équipes et de compétitions selon les saisons';
 // Keep the historical editor next to "Équipes", not at the end of a long mobile tab list.
 $('logoDialog').querySelector('.logo-tab[data-logo-type="team"]').after(historyButton);
-historyButton.onclick=()=>{if(window.RapliAdminAccess?.isEditor?.()!==true)return;const d=modal('Logos historiques');const content=d.querySelector('.extras-content');const $=id=>d.querySelector('#'+id);let editing='',image='';
+// Historical logos share the original logo dialog and its complete tab navigation.
+const logoDialog=$('logoDialog');
+function exitHistoricalTab(){
+ logoDialog.removeAttribute('data-rapli-history-mode');
+ logoDialog.querySelector('#historyInlinePanel')?.remove();
+}
+logoDialog.querySelector('.logo-tabs').addEventListener('click',event=>{
+ if(!event.target.closest('[data-history-open]'))exitHistoricalTab();
+},true);
+logoDialog.addEventListener('close',exitHistoricalTab);
+historyButton.onclick=()=>{
+ if(window.RapliAdminAccess?.isEditor?.()!==true)return;
+ exitHistoricalTab();
+ logoDialog.dataset.rapliHistoryMode='true';
+ logoDialog.querySelectorAll('.logo-tabs .logo-tab').forEach(button=>
+  button.classList.toggle('active',button===historyButton));
+ const d=logoDialog;
+ const content=element('section','','extras-content historical-inline-panel');
+ content.id='historyInlinePanel';
+ d.querySelector('.logo-tabs').after(content);
+ const $=id=>content.querySelector('#'+id);
+ let editing='',image='';
 const choices=()=>B.logos().filter(l=>l.type==='team'||(l.type==='tag'&&B.tagCategories(l.name).includes('competition')));
 content.innerHTML=`<label>Équipe ou compétition<select id="historyLogo">${choices().map(l=>`<option value="${esc(l.id)}">${esc(l.name)}</option>`).join('')}</select></label><p>Le logo principal reste utilisé hors des périodes définies.</p><div id="historyList"></div><div class="extras-fields"><label>Début (année ou saison)<input id="historyFrom" placeholder="1997 ou 1997/1998"></label><label>Fin (facultative)<input id="historyTo" placeholder="2000 ou 2000/2001"></label><label>Logo de cette période<input type="file" id="historyFile" accept="image/png,image/jpeg,image/webp"></label><img id="historyPreview" alt="Aperçu" hidden><button type="button" id="historySave">Enregistrer la variante</button><button type="button" id="historyCancel">Nouvelle variante</button></div>`;
 const record=()=>B.logos().find(l=>l.id===$('historyLogo').value);function reset(){editing='';image='';$('historyFrom').value='';$('historyTo').value='';$('historyFile').value='';$('historyPreview').hidden=true;}
@@ -59,9 +80,9 @@ content.onclick=async e=>{const edit=e.target.dataset.historyEdit,del=e.target.d
 // RAPLI HISTORY IMAGE LIBRARY — visually browse saved variants and select source images.
 // External files are previewed only; the existing historySave button controls all writes.
 historyButton.addEventListener('click',()=>{
- const d=[...document.querySelectorAll('dialog.extras-dialog[open]')].find(node=>node.querySelector('#historyLogo'));
- if(!d)return;
- const get=id=>d.querySelector('#'+id),select=get('historyLogo'),saved=get('historyList');
+ const d=$('logoDialog'),panel=d.querySelector('#historyInlinePanel');
+ if(!panel||d.dataset.rapliHistoryMode!=='true')return;
+ const get=id=>panel.querySelector('#'+id),select=get('historyLogo'),saved=get('historyList');
  let inFlight=false,searchSerial=0;
  const known=new Map();
  const presets=[

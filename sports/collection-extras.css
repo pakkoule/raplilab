@@ -179,3 +179,17 @@
  font:850 10px/1.25 Poppins,system-ui,sans-serif;
  text-align:center;white-space:normal;overflow-wrap:anywhere;
 }
+
+/* PR #4: historical and alternative logo editing, shared with the original library. */
+#logoDialog .historical-inline-panel #historyDateFields[hidden],
+#logoDialog .historical-inline-panel #historyNameWrap[hidden]{display:none!important}
+#logoDialog .historical-inline-panel #historyDateFields{display:grid;gap:9px}
+#logoDialog .historical-inline-panel #historyDateFields>label{
+ display:flex;flex-direction:column;gap:6px;margin:6px 0;
+ font:750 12px/1.4 Poppins,system-ui,sans-serif;color:#29465e;
+}
+#logoDialog .historical-inline-panel .historical-kind-hint{
+ margin:5px 0 12px;padding:9px 11px;border-radius:9px;
+ border:1px solid #c6dce0;background:linear-gradient(120deg,#edf9f5,#f0f5fd);
+ color:#47718a;font:650 11px/1.5 Poppins,system-ui,sans-serif;
+}

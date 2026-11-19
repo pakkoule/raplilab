@@ -5,3 +5,26 @@ test('full catalogue integration: views, search, editor fields, readonly and gol
 test('inbox import retains incomplete rows and retry does not duplicate cards',async()=>{const s=await setup();try{s.w.RapliModuleBridge.previewState({records:cards,logos:[]});[...s.w.document.querySelectorAll('button')].find(b=>b.textContent==='ARRIVÉES').click();s.$('inboxChecklist').value='Tyrese Maxey - Topps Chrome - #41 - Orange Refractor /25\nSakina Karchaoui';s.$('inboxParse').click();await new Promise(r=>setTimeout(r,20));assert.equal(s.w.document.querySelectorAll('.inbox-row').length,2);s.w.document.querySelector('[data-import-one]').click();await new Promise(r=>setTimeout(r,20));const imported=s.w.RapliExtrasBridge.cards().filter(c=>c.id.startsWith('import:'));assert.equal(imported.length,1);assert.equal(imported[0].status,'wishlist');assert.equal(imported[0].printRun,'25');assert.equal(s.w.document.querySelectorAll('.inbox-row').length,1);s.w.document.querySelector('[data-import-one]').click();await new Promise(r=>setTimeout(r,20));assert.equal(s.w.RapliExtrasBridge.cards().length,4);assert.deepEqual(s.errors,[]);}finally{await new Promise(r=>setTimeout(r,100));s.dom.window.close();}});
 test('visitors cannot write new settings or open the inbox',async()=>{const s=await setup(false);try{const b=[...s.w.document.querySelectorAll('button')].find(b=>b.textContent==='ARRIVÉES');assert.equal(b.hidden,true);b.click();assert.equal(s.$('inboxList'),null);await assert.rejects(s.w.RapliExtrasBridge.saveCard({id:'bad'}));assert.deepEqual(s.errors,[]);}finally{await new Promise(r=>setTimeout(r,100));s.dom.window.close();}});
 test('historical logos switch per season; editing preserves certification and provenance; rainbow simulation is read only',async()=>{const s=await setup();try{const png='data:image/png;base64,iVBORw0KGgo=';const record={...cards[0],gradePhoto:png,source:'Topps',sourceUrl:'https://www.topps.com/',customLegacyField:'keep'};const logo={id:'team:sixers',type:'team',name:'Philadelphia 76ers',image:png,historical:[{id:'old',from:'2025',to:'2025',image:png+'AA'}]};const rainbow={id:'rainbow:test',type:'rainbow',name:'Test',variants:[{label:'Base',cardId:'a'},{label:'Blue /99',cardId:'b'}]};s.w.RapliModuleBridge.previewState({records:[record,cards[1]],logos:[logo,rainbow]});assert.equal(s.w.document.querySelector('.team-identity img').getAttribute('src'),png+'AA');s.w.document.querySelector('[data-grade-photo]').click();assert.equal(s.w.document.querySelector('.extras-grade-zoom').getAttribute('src'),png);s.w.document.querySelector('.extras-dialog header button').click();s.w.RapliExtrasBridge.openCard(record);s.$('cardForm').dispatchEvent(new s.w.Event('submit',{bubbles:true,cancelable:true}));await new Promise(r=>setTimeout(r,20));const saved=s.w.RapliExtrasBridge.cards().find(c=>c.id==='a');assert.equal(saved.gradePhoto,png);assert.equal(saved.source,'Topps');assert.equal(saved.customLegacyField,'keep');s.w.document.querySelector('[data-view="rainbow"]').click();const before=JSON.stringify(s.w.RapliModuleBridge.getState());s.w.document.querySelector('[data-rainbow-sim]').click();assert.match(s.w.document.querySelector('.simulation-result').textContent,/100 %/);assert.equal(JSON.stringify(s.w.RapliModuleBridge.getState()),before);assert.deepEqual(s.errors,[]);}finally{await new Promise(r=>setTimeout(r,100));s.dom.window.close();}});
+
+test('historical logos and arrivals stay visible to a verified editor during temporary cloud hydration',async()=>{
+ const s=await setup(true);
+ try{
+  // Mirrors Supabase's busyLoading period: editor identity is valid, writes are paused.
+  s.w.RapliSharedCollection.canEdit=()=>false;
+  s.w.RapliExtrasUI.refresh();
+  const historic=s.w.document.querySelector('[data-history-open]');
+  const arrivals=[...s.w.document.querySelectorAll('button')].find(b=>b.textContent==='ARRIVÉES');
+  assert.ok(historic,'historical logos entry must exist');
+  assert.equal(historic.hidden,false);
+  assert.equal(arrivals.hidden,false);
+  assert.equal(historic.previousElementSibling.dataset.logoType,'team');
+  historic.click();
+  assert.ok(s.w.document.querySelector('.extras-dialog'),'history can be consulted before edits become available');
+  s.$('historySave').click();
+  assert.match(s.$('toast').textContent,/Synchronisation en cours/);
+  s.w.RapliSharedCollection.canEdit=()=>true;
+  s.w.RapliExtrasUI.refresh();
+  assert.equal(historic.hidden,false);
+  assert.deepEqual(s.errors,[]);
+ }finally{await new Promise(r=>setTimeout(r,100));s.dom.window.close();}
+});

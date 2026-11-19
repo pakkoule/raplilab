@@ -3316,6 +3316,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
       <div id="rainbowVariantLinks" class="sports-rainbow-bind-list"></div>
     </div><div class="modal-footer"><button type="button" class="button button-ghost" data-close="rainbowDialog">Annuler</button><button id="saveRainbowBtn" class="button button-primary" type="submit">Enregistrer le Rainbow</button></div></div></form>
   </dialog>
+  <div id="cardActionsMenu" class="sports-card-actions-menu" role="menu" aria-label="Actions de la carte" hidden></div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <button type="button" id="sportsBackToTop" hidden aria-label="Retour en haut de la collection" title="Retour en haut">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 14 6-6 6 6"/><path d="M12 9v11"/></svg>
@@ -4344,7 +4345,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
           '" aria-label="Ouvrir la fiche de '+safeText(athlete)+'">'+
           '<span class="sports-gallery-media">'+photo+
           '<span class="sports-gallery-athlete-foil">'+safeText(athlete)+'</span>'+
-          '</span></button><button type="button" class="card-summary-button" data-card-tool="summary" aria-label="Résumé et exports de la carte" title="Résumé et exports">ⓘ</button></article>';
+          '</span></button><button type="button" class="card-summary-button" data-card-tool="summary" aria-label="Résumé de la carte" title="Résumé de la carte">ⓘ</button>'+cardMenuTriggerMarkup(item)+'</article>';
       }
       const PORTRAIT_CROP_DEFAULT=Object.freeze({scale:1,x:0,y:0});
       function portraitCropConfig(value){
@@ -4463,8 +4464,13 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         return logo?'<img class="card-tag-logo" src="'+logo+'" alt="'+safeText(t)+'" title="'+safeText(t)+'" loading="lazy">':
           '<span class="tag">'+safeText(t)+'</span>';
       }
+      function cardMenuTriggerMarkup(card){
+        return '<button type="button" class="sports-card-menu-trigger" data-card-menu-trigger="'+safeText(card.id)+
+          '" aria-haspopup="menu" aria-expanded="false" aria-controls="cardActionsMenu" aria-label="Actions de la carte de '+
+          safeText(card.player||'cet athlète')+'" title="Actions de la carte"><span aria-hidden="true">⋯</span></button>';
+      }
       function cardMarkup(c){const photo=imgSafe(c.photo)?`<img src="${c.photo}" alt="Carte de ${safeText(c.player)}" loading="lazy">`:`<div class="placeholder"><span class="mini-logo">RAPLI / SPORTS</span><div class="place-center">${ico('layers')}</div><span class="place-foot">COLLECTOR'S CARD</span></div>`;const tags=orderedCardTags(c.tags).slice(0,8).map(tag=>'<span class="card-tag-entry">'+cardTagMarkup(tag,c.season)+'</span>').join('')+
-        ((c.tags||[]).length>8?`<span class="card-tag-entry"><span class="tag more">+${c.tags.length-8}</span></span>`:'');return `<article class="card-item ${cardTileFoilClass(c)}${c.rookie===true?' is-rookie-card':''}${c.status==='wishlist'&&c.dream?' is-dream-card':''}" data-id="${safeText(c.id)}" data-card-id="${safeText(c.id)}"><span class="sports-tile-corners" aria-hidden="true"></span><div class="photo-side"><div class="card-photo" style="${sportFrameStyle(c.sport)}">${photo}${c.demo?'<span class="photo-flag">DÉMO</span>':''}${recentCard(c)?'<span class="sports-new-flag">NEW</span>':''}</div></div><div class="card-info"><div class="card-top"><div class="card-athlete">${playerCardSummary(c)}</div><div class="card-controls"><button type="button" class="icon-btn" data-action="edit" data-id="${safeText(c.id)}" aria-label="Modifier cette carte" title="Modifier">${ico('edit')}</button><button type="button" class="icon-btn delete" data-action="delete" data-id="${safeText(c.id)}" aria-label="Supprimer cette carte" title="Supprimer">${ico('trash')}</button></div></div><div class="identity-row"><div class="identity-logos"><div class="brand-lockup">${brandBadge('brand',c.brand)}${logoFor('brand',c.brand)?'':'<span>'+safeText(c.brand||'Sans marque')+'</span>'}</div><div class="team-identity">${c.team?brandBadge('team',c.team,c.season,c.teamLogoOverride):''}${logoFor('team',c.team,c.season,c.teamLogoOverride)?'':'<span>'+safeText(c.team||'Équipe non renseignée')+'</span>'}</div></div></div><div class="tags">${tags||'<span class="blank-tag">Aucune variation</span>'}</div><div class="card-bottom"><div class="card-status-badges">${sportsSportBadge(c.sport)}${collectorBadgeMarkup(c)}${seasonBadge(c)}${gradingBadgeMarkup(c)}${c.status==='wishlist'&&c.dream?'<span class="card-dream-badge"><span class="dream-sparkle" aria-hidden="true">✨</span> DANS MES RÊVES</span>':''}</div><div class="card-export-actions"><button type="button" data-card-tool="png">⬇ PNG</button><button type="button" data-card-tool="photo">⬇ PHOTO</button></div><button type="button" class="move-card" data-action="move" data-id="${safeText(c.id)}">${c.status==='own'?'→ WISHLIST':'→ OWN'}</button></div></div></article>`}
+        ((c.tags||[]).length>8?`<span class="card-tag-entry"><span class="tag more">+${c.tags.length-8}</span></span>`:'');return `<article class="card-item ${cardTileFoilClass(c)}${c.rookie===true?' is-rookie-card':''}${c.status==='wishlist'&&c.dream?' is-dream-card':''}" data-id="${safeText(c.id)}" data-card-id="${safeText(c.id)}"><span class="sports-tile-corners" aria-hidden="true"></span><div class="photo-side"><div class="card-photo" style="${sportFrameStyle(c.sport)}">${photo}${c.demo?'<span class="photo-flag">DÉMO</span>':''}${recentCard(c)?'<span class="sports-new-flag">NEW</span>':''}</div></div><div class="card-info"><div class="card-top"><div class="card-athlete">${playerCardSummary(c)}</div><div class="card-kebab-wrap">${cardMenuTriggerMarkup(c)}</div></div><div class="identity-row"><div class="identity-logos"><div class="brand-lockup">${brandBadge('brand',c.brand)}${logoFor('brand',c.brand)?'':'<span>'+safeText(c.brand||'Sans marque')+'</span>'}</div><div class="team-identity">${c.team?brandBadge('team',c.team,c.season,c.teamLogoOverride):''}${logoFor('team',c.team,c.season,c.teamLogoOverride)?'':'<span>'+safeText(c.team||'Équipe non renseignée')+'</span>'}</div></div></div><div class="tags">${tags||'<span class="blank-tag">Aucune variation</span>'}</div><div class="card-bottom"><div class="card-status-badges">${sportsSportBadge(c.sport)}${collectorBadgeMarkup(c)}${seasonBadge(c)}${gradingBadgeMarkup(c)}${c.status==='wishlist'&&c.dream?'<span class="card-dream-badge"><span class="dream-sparkle" aria-hidden="true">✨</span> DANS MES RÊVES</span>':''}</div></div></div></article>`}
       const statsEngine=window.RapliSportsStats;
       const statsVisuals=window.RapliSportsStatsVisuals;
       function renderOwnedStatistics(data=statsEngine.calculate(cards)){
@@ -5015,7 +5021,114 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         try{await saveCard(card);closeModal('cardDialog');renderAll();if(card.status==='own'&&prev?.status!=='own')flashOwnedCard(card.id);showToast(prev?'Carte mise à jour':'Carte ajoutée à la collection');}
         catch(err){console.error(err);showToast('Enregistrement impossible. Essaie un export puis une image plus légère.');}
       }
-      async function cardAction(e){const btn=e.target.closest('[data-action]');if(!btn||!requireRapliEditor())return;const card=cards.find(x=>x.id===btn.dataset.id);if(!card)return;if(btn.dataset.action==='edit')openCard(card);else if(btn.dataset.action==='delete'){if(confirm(`Supprimer la carte de ${card.player} ?`)){try{await removeCard(card.id);renderAll();showToast('Carte supprimée')}catch(err){showToast('Suppression impossible')}}}else if(btn.dataset.action==='move'){if(card.status==='wishlist'&&card.numbered&&(!/^\d+$/.test(String(card.serial||''))||Number(card.serial)<1||Number(card.serial)>Number(card.printRun))){openCard({...card,status:'own',dream:false});showToast('Pour passer en OWN, indique le numéro individuel de la carte.');return;}try{await saveCard({...card,status:card.status==='own'?'wishlist':'own',dream:false,updatedAt:Date.now(),demo:false});renderAll();if(card.status==='wishlist')flashOwnedCard(card.id);showToast('Carte transférée vers '+(card.status==='own'?'WISHLIST':'OWN'))}catch(e){showToast('Transfert impossible')}}}
+      async function cardAction(e){
+        const btn=e.target.closest('[data-action]');
+        if(!btn||!requireRapliEditor())return;
+        const card=cards.find(x=>x.id===btn.dataset.id);
+        if(!card)return;
+        if(btn.dataset.action==='edit'){openCard(card);return;}
+        if(btn.dataset.action==='duplicate'){
+          // Preserve photo, tags and any legacy metadata; never reuse source ID.
+          const copy=JSON.parse(JSON.stringify(card));
+          copy.id=uid();copy.createdAt=Date.now();copy.updatedAt=copy.createdAt;copy.demo=false;
+          try{await saveCard(copy);renderAll();showToast('Carte dupliquée ✓');}
+          catch(error){console.error('Duplication de carte',error);showToast('Duplication impossible. Réessaie.');}
+          return;
+        }
+        if(btn.dataset.action==='delete'){
+          if(!confirm('Supprimer la carte de '+card.player+' ?'))return;
+          try{await removeCard(card.id);renderAll();showToast('Carte supprimée');}
+          catch(error){showToast('Suppression impossible');}
+          return;
+        }
+        if(btn.dataset.action==='move'){
+          if(card.status==='wishlist'&&card.numbered&&
+             (!/^\d+$/.test(String(card.serial||''))||Number(card.serial)<1||Number(card.serial)>Number(card.printRun))){
+            openCard({...card,status:'own',dream:false});
+            showToast('Pour passer en OWN, indique le numéro individuel de la carte.');
+            return;
+          }
+          try{
+            await saveCard({...card,status:card.status==='own'?'wishlist':'own',dream:false,
+              updatedAt:Date.now(),demo:false});
+            renderAll();
+            if(card.status==='wishlist')flashOwnedCard(card.id);
+            showToast('Carte transférée vers '+(card.status==='own'?'WISHLIST':'OWN'));
+          }catch(error){showToast('Transfert impossible');}
+        }
+      }
+      // One fixed popup outside the tiles prevents Safari clipping/scroll overflow.
+      let cardMenuTrigger=null;
+      const cardActionsMenu=$('cardActionsMenu');
+      function closeCardActionsMenu(focusTrigger=false){
+        cardActionsMenu.hidden=true;
+        if(cardMenuTrigger?.isConnected){
+          cardMenuTrigger.setAttribute('aria-expanded','false');
+          if(focusTrigger)cardMenuTrigger.focus({preventScroll:true});
+        }
+        cardMenuTrigger=null;
+      }
+      window.RapliCardMenu={close:closeCardActionsMenu};
+      function openCardActionsMenu(trigger){
+        const card=cards.find(row=>row.id===trigger.dataset.cardMenuTrigger);
+        if(!card)return;
+        if(!cardActionsMenu.hidden&&trigger===cardMenuTrigger){closeCardActionsMenu(true);return;}
+        closeCardActionsMenu();
+        cardMenuTrigger=trigger;trigger.setAttribute('aria-expanded','true');
+        const id=safeText(card.id);
+        const item=(icon,label,attrs)=>
+          '<button type="button" role="menuitem" '+attrs+'><span class="sports-card-menu-icon" aria-hidden="true">'+icon+
+          '</span><span>'+label+'</span></button>';
+        const entries=[
+          item('↓','Télécharger PNG','data-card-tool="png" data-card-target="'+id+'"'),
+          item('↓','Télécharger la photo','data-card-tool="photo" data-card-target="'+id+'"')
+        ];
+        if(isRapliEditor()){
+          entries.push('<div class="sports-card-menu-divider" role="separator"></div>');
+          entries.push(item('⧉','Dupliquer la carte','data-action="duplicate" data-id="'+id+'"'));
+          entries.push(item('⇄',card.status==='own'?'Passer en WISHLIST':'Passer en OWN',
+            'data-action="move" data-id="'+id+'"'));
+          entries.push(item('✎','Modifier la carte','data-action="edit" data-id="'+id+'"'));
+          entries.push('<div class="sports-card-menu-divider" role="separator"></div>');
+          entries.push(item('×','Supprimer la carte','class="is-danger" data-action="delete" data-id="'+id+'"'));
+        }
+        cardActionsMenu.innerHTML=entries.join('');
+        cardActionsMenu.hidden=false;
+        const width=Math.min(244,Math.max(185,window.innerWidth-24));
+        cardActionsMenu.style.width=width+'px';
+        const bounds=trigger.getBoundingClientRect(),height=cardActionsMenu.offsetHeight;
+        const top=bounds.bottom+height+12>window.innerHeight?bounds.top-height-7:bounds.bottom+7;
+        cardActionsMenu.style.top=Math.max(10,Math.min(top,window.innerHeight-height-10))+'px';
+        cardActionsMenu.style.left=Math.max(10,Math.min(bounds.right-width,window.innerWidth-width-10))+'px';
+        cardActionsMenu.querySelector('[role="menuitem"]')?.focus({preventScroll:true});
+      }
+      cardActionsMenu.addEventListener('click',event=>{
+        const action=event.target.closest('[data-action]');
+        if(!action)return;
+        closeCardActionsMenu();
+        void cardAction({target:action});
+      });
+      $('cardGrid').addEventListener('click',event=>{
+        const trigger=event.target.closest('[data-card-menu-trigger]');
+        if(trigger){event.preventDefault();event.stopPropagation();openCardActionsMenu(trigger);}
+      });
+      document.addEventListener('pointerdown',event=>{
+        if(!cardActionsMenu.hidden&&!event.target.closest('#cardActionsMenu,[data-card-menu-trigger]'))
+          closeCardActionsMenu();
+      });
+      document.addEventListener('keydown',event=>{
+        if(cardActionsMenu.hidden)return;
+        if(event.key==='Escape'){event.preventDefault();closeCardActionsMenu(true);return;}
+        if(event.key==='ArrowDown'||event.key==='ArrowUp'){
+          event.preventDefault();
+          const items=[...cardActionsMenu.querySelectorAll('[role="menuitem"]')];
+          const next=(items.indexOf(document.activeElement)+(event.key==='ArrowDown'?1:-1)+items.length)%items.length;
+          items[next]?.focus({preventScroll:true});
+        }
+        if(event.key==='Tab')closeCardActionsMenu();
+      });
+      window.addEventListener('resize',()=>closeCardActionsMenu(),{passive:true});
+      window.addEventListener('scroll',()=>closeCardActionsMenu(),{passive:true,capture:true});
 
       // On-screen notification only. No persistent flags or cloud data fields.
       function flashOwnedCard(id){

@@ -4477,6 +4477,52 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         }
       }
 
+      // Fit the athlete title to the space left by the reference capsule. Unlike
+      // flex-centering, this keeps references aligned with the first name line
+      // even if country flags or additional athletes wrap underneath.
+      function athleteFontSize(base,textWidth,space,min=11){
+        if(!Number.isFinite(base)||!Number.isFinite(textWidth)||!Number.isFinite(space)||
+           base<=0||textWidth<=0||space<=0)return base;
+        return Math.max(Math.min(min,base),Math.min(base,Math.floor(base*(space-3)/textWidth*10)/10));
+      }
+      function fitCardAthleteNames(){
+        if(sportsGalleryLayout!=='details')return;
+        for(const row of $('cardGrid').querySelectorAll('.card-item .player-name-reference')){
+          const player=row.querySelector(':scope > .player');
+          const title=player?.querySelector('.player-primary-name');
+          const actions=row.querySelector(':scope > .card-reference-actions');
+          if(!player||!title||!actions)continue;
+          // Measure at the current CSS base size, not the size of a previous fit.
+          player.style.removeProperty('font-size');
+          const base=Number.parseFloat(getComputedStyle(player).fontSize);
+          const available=row.clientWidth-actions.getBoundingClientRect().width-8;
+          if(!(available>0&&base>0))continue;
+          const probe=title.cloneNode(true);
+          Object.assign(probe.style,{
+            position:'absolute',visibility:'hidden',pointerEvents:'none',
+            display:'inline-block',whiteSpace:'nowrap',width:'max-content',
+            maxWidth:'none',overflow:'visible',top:'-10000px',left:'-10000px'
+          });
+          row.appendChild(probe);
+          const width=probe.getBoundingClientRect().width;
+          probe.remove();
+          if(!(width>0))continue;
+          const fitted=athleteFontSize(base,width,available);
+          if(fitted<base-.3)player.style.fontSize=fitted+'px';
+        }
+      }
+      let athleteFitRaf=0;
+      function scheduleCardAthleteFit(){
+        if(athleteFitRaf)cancelAnimationFrame(athleteFitRaf);
+        athleteFitRaf=requestAnimationFrame(()=>{
+          athleteFitRaf=0;
+          fitCardAthleteNames();
+          ensureCardTilesFit();
+        });
+      }
+      window.addEventListener('resize',scheduleCardAthleteFit,{passive:true});
+      document.fonts?.ready?.then(scheduleCardAthleteFit);
+
       // Only detect true overflow after render. No logo resizing or reflow search.
       function ensureCardTilesFit(){
         const grid=$('cardGrid');
@@ -4795,7 +4841,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         $('cardGrid').classList.toggle('dream-museum',sportsGalleryLayout==='dreammuseum');
         $('cardGrid').classList.toggle('is-gallery-layout',sportsGalleryLayout!=='details');
         const cardsUpdated=patchCardGrid(renderSportsGallery(match));
-        if(cardsUpdated&&sportsGalleryLayout==='details')requestAnimationFrame(ensureCardTilesFit);
+        if(cardsUpdated&&sportsGalleryLayout==='details')scheduleCardAthleteFit();
         const nav=sportsGalleryPagination(sportsGalleryCount(match));
         $('sportsPaginationTop').innerHTML=nav;
         $('sportsPaginationBottom').innerHTML=nav;

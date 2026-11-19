@@ -231,3 +231,33 @@ test('manual team logo overrides season for only one card, keeps same team and r
   assert.deepEqual(ctx.errors,[]);
  }finally{await new Promise(done=>setTimeout(done,100));ctx.dom.window.close();}
 });
+
+test('alternative logos are manual only and historical periods keep working',async()=>{
+ const ctx=await setup(true);
+ try{
+  const png='data:image/png;base64,iVBORw0KGgo=';
+  const logo={id:'team:sixers',type:'team',name:'Philadelphia 76ers',image:png+'AA',
+   historical:[{id:'old',from:'1997/1998',to:'2008/2009',image:png+'BB'},
+    {id:'alt',kind:'alternative',name:'City Edition rétro',image:png+'CC'}]};
+  const automatic={...cards[0],season:'2025/2026'};
+  const forced={...automatic,id:'alt-card',teamLogoOverride:'alternative:alt'};
+  ctx.w.RapliModuleBridge.previewState({records:[automatic,forced],logos:[logo]});
+  const tiles=ctx.w.document.querySelectorAll('.card-item');
+  assert.equal(tiles[0].querySelector('.team-identity img').getAttribute('src'),png+'AA');
+  assert.equal(tiles[1].querySelector('.team-identity img').getAttribute('src'),png+'CC');
+  ctx.w.RapliExtrasBridge.openCard(forced);
+  const select=ctx.$('cardTeamLogoOverride');
+  assert.equal(select.value,'alternative:alt');
+  assert.match([...select.options].map(x=>x.textContent).join(' '),/Alternatif · City Edition rétro/);
+  ctx.w.document.querySelector('[data-history-open]').click();
+  const type=ctx.$('historyKind');
+  assert.ok(type,'historical editor has a type selector');
+  assert.equal(type.value,'historical');
+  type.value='alternative';type.dispatchEvent(new ctx.w.Event('change',{bubbles:true}));
+  assert.equal(ctx.$('historyDateFields').hidden,true);
+  assert.equal(ctx.$('historyNameWrap').hidden,false);
+  assert.equal(ctx.w.RapliExtras.validatePeriod(logo.historical,{id:'new-alt',kind:'alternative',from:'',to:''}),true);
+  assert.equal(ctx.w.RapliExtras.historicalLogo(logo.historical,'2025/2026'),null);
+  assert.deepEqual(ctx.errors,[]);
+ }finally{await new Promise(resolve=>setTimeout(resolve,100));ctx.dom.window.close();}
+});

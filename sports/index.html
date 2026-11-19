@@ -3010,7 +3010,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
             <button id="logosBtn" type="button" class="button button-soft sports-icon-action rapli-personalize-action" aria-label="Gérer les logos" title="Gérer les logos"><svg class="rapli-personalize-gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M10.3 2.4h3.4l.5 1.9 1.7.7 1.7-1 2.4 2.4-1 1.7.7 1.7 1.9.5v3.4l-1.9.5-.7 1.7 1 1.7-2.4 2.4-1.7-1-1.7.7-.5 1.9h-3.4l-.5-1.9-1.7-.7-1.7 1-2.4-2.4 1-1.7-.7-1.7-1.9-.5v-3.4l1.9-.5.7-1.7-1-1.7 2.4-2.4 1.7 1 1.7-.7z"/></svg></button>
             <button id="addCardBtn" type="button" class="button button-primary sports-icon-action" aria-label="Ajouter une carte" title="Ajouter une carte"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
           </div>
-        <select id="sportsViewSelect" aria-label="Vue des cartes"><option value="details">FICHES</option><option value="cards">VIGNETTES</option><option value="brand">MARQUE</option><option value="team">TEAM</option><option value="athlete">ATHLÈTE</option><option value="nationality">PAYS</option><option value="tag">TAG</option><option value="competition">LIGUE</option><option value="edition">ÉDITION</option><option value="insert">INSERT</option><option value="parallel">PARALLÈLE</option><option value="sport">SPORT</option><option value="grading">GRADING</option><option value="recent">DERNIERS AJOUTS</option><option value="legendary">LÉGENDAIRES</option><option value="rookies">ROOKIES</option><option value="graded">CARTES GRADÉES</option><option value="season">PAR SAISON</option><option value="dreammuseum">MUSÉE DREAMLIST</option><option value="oneofone">ONE OF ONE</option><option value="plates">PRINTING PLATES</option><option value="unique-review">1/1 À VÉRIFIER</option></select>
+        <select id="sportsViewSelect" aria-label="Vue des cartes"><option value="details">FICHES</option><option value="cards">VIGNETTES</option><option value="brand">MARQUE</option><option value="team">TEAM</option><option value="athlete">ATHLÈTE</option><option value="nationality">PAYS</option><option value="tag">TAG</option><option value="competition">LIGUE</option><option value="edition">ÉDITION</option><option value="insert">INSERT</option><option value="parallel">PARALLÈLE</option><option value="sport">SPORT</option><option value="grading">GRADING</option><option value="recent">DERNIERS AJOUTS</option><option value="legendary">LÉGENDAIRES</option><option value="rookies">ROOKIES</option><option value="graded">CARTES GRADÉES</option><option value="season">PAR SAISON</option><option value="dreammuseum">MUSÉE DREAMLIST</option><option value="oneofone">ONE OF ONE</option><option value="plates">PRINTING PLATES</option></select>
         <span class="results-label sports-count-foil" id="resultsLabel" aria-live="polite">0 carte</span>
         <input id="filterDream" type="checkbox" hidden aria-label="Afficher uniquement la Dreamlist">
         <div class="field search-field sports-catalogue-search"><label class="field-label" for="filterSearch">RECHERCHE</label><div class="input-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input class="input with-icon" id="filterSearch" type="search" autocomplete="off" placeholder="Rechercher une carte…" aria-label="Rechercher dans toutes les informations des cartes"></div></div>
@@ -3296,7 +3296,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
       let db=null, cards=[], logos=[], currentView='own', currentTags=[], currentPhoto='', editingId=null, logoType='brand', pendingLogoPhoto='', toastTimer=null;
       let pendingPortraitCrop={scale:1,x:0,y:0},portraitCropEditing=null,portraitCropPointer=null;
       let countryDraft={tileImage:null,catalogImage:null};
-      const SPORTS_GALLERY_LAYOUTS=Object.freeze(['details','cards','brand','team','athlete','nationality','tag','competition','edition','insert','parallel','sport','grading','recent','legendary','rookies','graded','season','dreammuseum','oneofone','plates','unique-review']);
+      const SPORTS_GALLERY_LAYOUTS=Object.freeze(['details','cards','brand','team','athlete','nationality','tag','competition','edition','insert','parallel','sport','grading','recent','legendary','rookies','graded','season','dreammuseum','oneofone','plates']);
       const SPORTS_GALLERY_LAYOUT_KEY='rapli-sports-gallery-layout-v1';
       function savedSportsGalleryLayout(){
         try{const value=localStorage.getItem(SPORTS_GALLERY_LAYOUT_KEY);return SPORTS_GALLERY_LAYOUTS.includes(value)?value:'details';}
@@ -4153,7 +4153,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
           if(onlyDreams&&c.dream!==true)return false;
           if(!window.RapliExtras.serialMatch(query,c))return false;
           if(query&&!matchesFuzzy(query.replace(/(?:\b\d+\s*)?\/\s*\d+\b/g,''),cardSearchValues(c)))return false;
-          const conditions={legendary:c.legendary,rookies:c.rookie,graded:c.graded,dreammuseum:c.dream,oneofone:window.RapliExtras.classification(c)==='oneofone',plates:window.RapliExtras.classification(c)==='plate','unique-review':window.RapliExtras.classification(c)==='review'};
+          const conditions={legendary:c.legendary,rookies:c.rookie,graded:c.graded,dreammuseum:c.dream,oneofone:window.RapliExtras.classification(c)==='oneofone',plates:window.RapliExtras.classification(c)==='plate'};
           if(Object.hasOwn(conditions,sportsGalleryLayout)&&!conditions[sportsGalleryLayout])return false;
           return true;
         });
@@ -4370,7 +4370,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
           const offset=(sportsGalleryPage-1)*SPORTS_GALLERY_PAGE_SIZE;
           return items.slice(offset,offset+SPORTS_GALLERY_PAGE_SIZE).map(cardMarkup).join('');
         }
-        if(['cards','recent','legendary','rookies','graded','dreammuseum','oneofone','plates','unique-review'].includes(sportsGalleryLayout))return sportsGalleryPageMarkup(items,sportsGalleryCard);
+        if(['cards','recent','legendary','rookies','graded','dreammuseum','oneofone','plates'].includes(sportsGalleryLayout))return sportsGalleryPageMarkup(items,sportsGalleryCard);
         const groups=sportsGalleryGroups(items,sportsGalleryLayout);
         if(sportsGallerySelected){
           const group=groups.find(x=>x.key===sportsGallerySelected);

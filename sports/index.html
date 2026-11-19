@@ -4867,7 +4867,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
           button.setAttribute('aria-pressed',String((button.dataset.wishlistDream==='true')===$('filterDream').checked));
         });
         document.querySelectorAll('.tab').forEach(t=>{
-          const active=t.dataset.view===currentView;
+          const active=t.dataset.view===currentView&&sportsGalleryLayout!=='rainbows';
           t.classList.toggle('active',active);
           t.setAttribute('aria-selected',String(active));
         });
@@ -5286,7 +5286,11 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
       document.querySelectorAll('dialog').forEach(d=>{d.addEventListener('close',()=>{if(!document.querySelector('dialog[open]'))document.body.style.overflow=''})});
       document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
         sportsNavigationHistory.length=0;
-        currentView=t.dataset.view;sportsGallerySelected=null;sportsGalleryPage=1;renderAll();
+        currentView=t.dataset.view;
+        if(sportsGalleryLayout==='rainbows'){
+          sportsGalleryLayout='details';saveSportsGalleryLayout('details');
+        }
+        sportsGallerySelected=null;sportsGalleryPage=1;renderAll();
       }));
       $('newRainbowBtn').addEventListener('click',()=>{if(requireRapliEditor())openRainbow();});
       $('viewRainbowTilesBtn').addEventListener('click',()=>{

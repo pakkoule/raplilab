@@ -160,3 +160,41 @@ test('search clear starts hidden, follows input value and does not alter tab nav
   assert.deepEqual(s.errors,[]);
  }finally{await new Promise(r=>setTimeout(r,100));s.dom.window.close();}
 });
+
+test('the existing Étiquettes tab edits seasonal and Wishlist shipment labels, without changing card records',async()=>{
+ const s=await setup(true);
+ try{
+  const seasonCard={...cards[0],season:'2026/2027'};
+  const orderedCard={...cards[1],wishStage:'ordered'};
+  const shippingCard={...cards[1],id:'shipping-card',wishStage:'shipping'};
+  s.w.RapliModuleBridge.previewState({records:[seasonCard,orderedCard,shippingCard],logos:[]});
+  s.$('logosBtn').click();
+  s.w.document.querySelector('[data-logo-type="labels"]').click();
+  const seasonEditor=s.w.document.querySelector('[data-label-row="season:year"]');
+  const orderedEditor=s.w.document.querySelector('[data-label-row="wishlist:ordered"]');
+  const shippingEditor=s.w.document.querySelector('[data-label-row="wishlist:shipping"]');
+  assert.ok(seasonEditor);
+  assert.ok(orderedEditor);
+  assert.ok(shippingEditor);
+  assert.equal(seasonEditor.querySelector('[data-label-caption]').value,'{saison}');
+  assert.equal(seasonEditor.querySelector('[data-label-preview]').textContent,'2026/2027');
+  seasonEditor.querySelector('[data-label-caption]').value='SAISON {saison}';
+  seasonEditor.querySelector('[data-label-caption]').dispatchEvent(new s.w.Event('input',{bubbles:true}));
+  assert.equal(seasonEditor.querySelector('[data-label-preview]').textContent,'SAISON 2026/2027');
+  const initial=JSON.stringify(s.w.RapliModuleBridge.getState().records);
+  orderedEditor.querySelector('[data-label-caption]').value='À expédier';
+  orderedEditor.querySelector('[data-label-ink]').value='#ffffff';
+  shippingEditor.querySelector('[data-label-caption]').value='En route';
+  for(const row of [orderedEditor,shippingEditor]){
+   row.querySelector('[data-label-caption]').dispatchEvent(new s.w.Event('input',{bubbles:true}));
+  }
+  s.$('labelSaveBtn').click();
+  await new Promise(resolve=>setTimeout(resolve,40));
+  assert.equal(JSON.stringify(s.w.RapliModuleBridge.getState().records),initial,'customization must not rewrite cards');
+  assert.match(s.w.document.querySelector('[data-card-id="a"] .card-season').textContent,/SAISON 2026\/2027/);
+  assert.match(s.w.document.querySelector('[data-card-id="b"] .extras-mini-badge').textContent,/À expédier/);
+  assert.match(s.w.document.querySelector('[data-card-id="shipping-card"] .extras-mini-badge').textContent,/En route/);
+  assert.match(s.w.document.querySelector('[data-card-id="b"] .extras-mini-badge').getAttribute('style'),/#ffffff/);
+  assert.deepEqual(s.errors,[]);
+ }finally{await new Promise(resolve=>setTimeout(resolve,100));s.dom.window.close();}
+});

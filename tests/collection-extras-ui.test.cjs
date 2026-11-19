@@ -353,3 +353,63 @@ test('Rainbow manager lives inside the logo library and tile consultation stays 
   assert.deepEqual(s.errors,[]);
  }finally{await new Promise(resolve=>setTimeout(resolve,100));s.dom.window.close();}
 });
+
+test('card three-dot menu replaces direct tile controls and duplicates without changing original',async()=>{
+ const s=await setup(true);
+ try{
+  const source={...cards[0],id:'menu-original',customLegacyField:'preserved',
+   photo:'data:image/png;base64,iVBORw0KGgo='};
+  s.w.RapliModuleBridge.previewState({records:[source],logos:[]});
+  const tile=s.w.document.querySelector('#cardGrid .card-item[data-card-id="menu-original"]');
+  assert.ok(tile);
+  assert.equal(tile.querySelector('.card-export-actions'),null);
+  assert.equal(tile.querySelector('.move-card'),null);
+  assert.equal(tile.querySelector('.card-controls'),null);
+  const trigger=tile.querySelector('[data-card-menu-trigger]');
+  assert.ok(trigger);
+  trigger.click();
+  const menu=s.$('cardActionsMenu');
+  assert.equal(menu.hidden,false);
+  assert.equal(trigger.getAttribute('aria-expanded'),'true');
+  assert.equal(menu.querySelectorAll('[data-card-tool]').length,2);
+  assert.match(menu.textContent,/Dupliquer la carte/);
+  assert.match(menu.textContent,/Passer en WISHLIST/);
+  assert.ok(menu.querySelector('[data-action="edit"]'));
+  assert.ok(menu.querySelector('[data-action="delete"]'));
+  const previous={...s.w.RapliExtrasBridge.cards().find(c=>c.id==='menu-original')};
+  menu.querySelector('[data-action="duplicate"]').click();
+  await new Promise(resolve=>setTimeout(resolve,40));
+  const collection=s.w.RapliExtrasBridge.cards();
+  assert.equal(collection.length,2);
+  assert.deepEqual(collection.find(c=>c.id==='menu-original'),previous);
+  const duplicate=collection.find(c=>c.id!=='menu-original');
+  assert.equal(duplicate.status,'own');
+  assert.equal(duplicate.photo,previous.photo);
+  assert.equal(duplicate.customLegacyField,'preserved');
+  assert.equal(duplicate.demo,false);
+  assert.ok(duplicate.createdAt);
+  assert.ok(duplicate.updatedAt);
+  assert.equal(menu.hidden,true);
+  assert.deepEqual(s.errors,[]);
+ }finally{await new Promise(resolve=>setTimeout(resolve,100));s.dom.window.close();}
+});
+test('card action menu stays export-only for visitors and appears in vignette view',async()=>{
+ const s=await setup(false);
+ try{
+  s.w.RapliModuleBridge.previewState({records:cards,logos:[]});
+  s.w.document.querySelector('#cardGrid [data-card-menu-trigger]').click();
+  const menu=s.$('cardActionsMenu');
+  assert.equal(menu.hidden,false);
+  assert.equal(menu.querySelectorAll('[data-card-tool]').length,2);
+  assert.equal(menu.querySelector('[data-action]'),null);
+  s.w.document.dispatchEvent(new s.w.KeyboardEvent('keydown',{key:'Escape',bubbles:true}));
+  assert.equal(menu.hidden,true);
+  s.change('sportsViewSelect','cards');
+  const tile=s.w.document.querySelector('.sports-gallery-tile');
+  assert.ok(tile?.querySelector('[data-card-menu-trigger]'));
+  tile.querySelector('[data-card-menu-trigger]').click();
+  assert.equal(menu.hidden,false);
+  assert.equal(menu.querySelector('[data-action]'),null);
+  assert.deepEqual(s.errors,[]);
+ }finally{await new Promise(resolve=>setTimeout(resolve,100));s.dom.window.close();}
+});

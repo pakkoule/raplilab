@@ -3010,6 +3010,33 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
  #logoDialog .rainbow-library-entry-actions button{flex:1 1 100px}
 }
 </style>
+
+<style id="rapli-rainbow-consultation-layout">
+/* Retain the view dropdown and profile while the Rainbow tiles are visible. */
+#collectionPanel.is-rainbow-consultation > #sportsGalleryToolbar,
+#collectionPanel.is-rainbow-consultation > #demoBanner,
+#collectionPanel.is-rainbow-consultation > #sportsNavigationReturn,
+#collectionPanel.is-rainbow-consultation > #sportsPaginationTop,
+#collectionPanel.is-rainbow-consultation > #cardGrid,
+#collectionPanel.is-rainbow-consultation > #sportsPaginationBottom,
+#collectionPanel.is-rainbow-consultation > #emptyState{
+ display:none!important;
+}
+#collectionPanel.is-rainbow-consultation .sports-catalogue-search,
+#collectionPanel.is-rainbow-consultation #sortSelect,
+#collectionPanel.is-rainbow-consultation #resultsLabel{
+ display:none!important;
+}
+#collectionPanel.is-rainbow-consultation .sports-catalogue-controls{
+ display:flex!important;flex-wrap:wrap!important;gap:9px!important;
+}
+#collectionPanel.is-rainbow-consultation #sportsViewSelect{
+ flex:0 1 220px!important;width:min(100%,220px)!important;
+ max-width:220px!important;min-width:112px!important;
+}
+#collectionPanel.is-rainbow-consultation .rapli-profile{margin-left:auto}
+#rainbowPanel[hidden]{display:none!important}
+</style>
 </head>
 <body>
   <div class="app-shell">
@@ -3068,10 +3095,10 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         <div id="cardGrid" class="cards-grid" aria-live="polite"></div>
         <div id="sportsPaginationBottom" class="sports-pagination-host" aria-label="Pagination inférieure"></div>
         <div id="emptyState" class="empty hidden"><div class="empty-mark" id="emptyIcon"></div><h3 id="emptyTitle">Aucune carte pour le moment</h3><p id="emptyCopy">Ta collection commence ici.</p><button type="button" class="button button-primary" id="emptyAddBtn">Ajouter une carte</button></div>
-        </div>
         <section id="rainbowPanel" class="sports-rainbow-panel" role="region" aria-label="Consultation des tuiles Rainbow" hidden>
-        <div id="rainbowOverview" aria-live="polite"></div><div id="rainbowList" class="sports-rainbow-list"></div>
-      </section>
+          <div id="rainbowOverview" aria-live="polite"></div><div id="rainbowList" class="sports-rainbow-list"></div>
+        </section>
+        </div>
       <div id="statsPanel" class="stats-panel" role="tabpanel" aria-label="Statistiques de la collection" hidden>
           <div class="stats-export-row"><div class="stats-overview-heading">VUE D’ENSEMBLE · UNIQUEMENT LES CARTES OWN</div>
           <button id="statsExportPngBtn" class="stats-png-button" type="button" disabled aria-label="Exporter toutes les statistiques OWN au format PNG">
@@ -4848,7 +4875,10 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         if(!['own','wishlist'].includes(currentView))currentView='own';
         $('sportsViewSelect').value=sportsGalleryLayout;
         const showStats=false,showRainbow=sportsGalleryLayout==='rainbows';
-        $('collectionPanel').hidden=showStats||showRainbow;
+        // The view picker must remain reachable while browsing Rainbow tiles.
+        // Hide only card-specific controls, not their parent collection panel.
+        $('collectionPanel').hidden=showStats;
+        $('collectionPanel').classList.toggle('is-rainbow-consultation',showRainbow);
         $('statsPanel').hidden=!showStats;
         $('rainbowPanel').hidden=!showRainbow;
         if(showRainbow){

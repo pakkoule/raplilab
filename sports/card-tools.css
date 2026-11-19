@@ -116,7 +116,16 @@
 }
 
 /* PR #4: a single accessible three-dot menu for every card. */
-.cards-grid .card-item .card-top .card-kebab-wrap{flex:0 0 auto;align-self:flex-start}
+/* Bottom-right control belongs to the badge row, not the athlete heading. */
+.cards-grid .card-item .card-bottom{
+ display:flex;align-items:center;flex-wrap:nowrap;min-width:0;gap:7px;
+}
+.cards-grid .card-item .card-bottom>.card-status-badges{
+ flex:1 1 auto;min-width:0;display:flex;flex-wrap:wrap;
+}
+.cards-grid .card-item .card-bottom>.card-kebab-wrap{
+ flex:0 0 auto;align-self:center;margin-left:auto;position:relative;
+}
 .sports-card-menu-trigger{
  display:grid;place-items:center;box-sizing:border-box;
  width:32px;height:32px;min-width:32px;min-height:32px;

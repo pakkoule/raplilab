@@ -4530,7 +4530,6 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
               '" aria-label="Agrandir la photo de '+safeText(entry.label)+'">'+contents+'</button>':
               '<span class="sports-rainbow-variant-unlinked">'+contents+'</span>';
             return '<div class="sports-rainbow-variant is-'+entry.status+(isNegativeRefractorTag(entry.label)?' is-negative-refractor':'')+'">'+row+
-              (entry.status!=='own'?'<button type="button" data-rainbow-sim="'+Math.round((group.owned+1)/group.total*100)+'">Simuler +1</button>':'')+
               (entry.isBase?'<span class="sports-rainbow-base-badge" title="Carte sélectionnée pour illustrer le Rainbow">BASE</span>':'')+
               '<span class="sr-only">'+(entry.status==='own'?'Possédée':entry.status==='wishlist'?'Wishlist':'Manquante')+'</span></div>';
           }).join('');

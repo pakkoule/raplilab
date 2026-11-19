@@ -19,7 +19,9 @@ test('historical logos and arrivals stay visible to a verified editor during tem
   assert.equal(arrivals.hidden,false);
   assert.equal(historic.previousElementSibling.dataset.logoType,'team');
   historic.click();
-  assert.ok(s.w.document.querySelector('.extras-dialog'),'history can be consulted before edits become available');
+  assert.ok(s.$('historyInlinePanel'),'history must appear within the logo library');
+  assert.equal(s.$('logoDialog').dataset.rapliHistoryMode,'true');
+  assert.equal(s.w.document.querySelectorAll('dialog.extras-dialog[open]').length,0,'no nested dialog');
   s.$('historySave').click();
   assert.match(s.$('toast').textContent,/Synchronisation en cours/);
   s.w.RapliSharedCollection.canEdit=()=>true;
@@ -60,4 +62,30 @@ test('historical logo library offers saved variants and searchable public previe
    'previewing and searching must not modify Supabase or local collection state');
   assert.deepEqual(s.errors,[]);
  }finally{await new Promise(resolve=>setTimeout(resolve,100));s.dom.window.close();}
+});
+
+test('historical logos use the same tab bar and switching tabs restores their panels',async()=>{
+ const s=await setup(true);
+ try{
+  const modal=s.$('logoDialog'),tabs=modal.querySelector('.logo-tabs');
+  s.w.document.querySelector('[data-history-open]').click();
+  assert.ok(modal.querySelector('#historyInlinePanel'));
+  assert.equal(modal.querySelectorAll('.logo-tabs .logo-tab.active').length,1);
+  assert.equal(modal.querySelector('.logo-tab.active').textContent,'Logos historiques');
+  assert.equal(modal.querySelector('#historyLibraryForm')!==null,true);
+  assert.equal(tabs.contains(modal.querySelector('.logo-tab.active')),true);
+  const team=modal.querySelector('[data-logo-type="team"]');
+  team.click();
+  assert.equal(modal.hasAttribute('data-rapli-history-mode'),false);
+  assert.equal(modal.querySelector('#historyInlinePanel'),null);
+  assert.equal(team.classList.contains('active'),true);
+  assert.equal(s.$('logoCreatePanel').hidden,false);
+  s.w.document.querySelector('[data-history-open]').click();
+  assert.ok(modal.querySelector('#historyInlinePanel'));
+  assert.equal(modal.querySelectorAll('#historyLibraryForm').length,1);
+  modal.close();
+  assert.equal(modal.hasAttribute('data-rapli-history-mode'),false);
+  assert.equal(modal.querySelector('#historyInlinePanel'),null);
+  assert.deepEqual(s.errors,[]);
+ }finally{await new Promise(r=>setTimeout(r,100));s.dom.window.close();}
 });

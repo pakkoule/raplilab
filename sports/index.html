@@ -3791,8 +3791,14 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         const record=teamLibraryRecord(name);
         if(!record||!value)return '';
         if(value==='main')return imgSafe(record.image)?'main':'';
-        const id=String(value).startsWith('history:')?String(value).slice(8):'';
-        return id&&(record.historical||[]).some(v=>v.id===id&&imgSafe(v.image))?'history:'+id:'';
+        const type=String(value).startsWith('alternative:')?'alternative':
+          String(value).startsWith('history:')?'history':'';
+        const id=type?String(value).slice(type.length+1):'';
+        const variant=(record.historical||[]).find(v=>v.id===id&&imgSafe(v.image));
+        if(!variant)return '';
+        // Old records without a kind remain period-driven.
+        const alternative=variant.kind==='alternative';
+        return type===(alternative?'alternative':'history')?type+':'+id:'';
       }
       function logoFor(type,name,season,override=''){
         if(!name)return '';
@@ -3801,8 +3807,8 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         if(type==='team'){
           const selected=teamLogoSelection(name,override);
           if(selected==='main')return o&&imgSafe(o.image)?o.image:'';
-          if(selected.startsWith('history:')){
-            const chosen=(o?.historical||[]).find(v=>v.id===selected.slice(8));
+          if(selected.startsWith('history:')||selected.startsWith('alternative:')){
+            const chosen=(o?.historical||[]).find(v=>v.id===selected.slice(selected.indexOf(':')+1));
             if(chosen&&imgSafe(chosen.image))return chosen.image;
           }
         }
@@ -4816,8 +4822,12 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         select.replaceChildren(new Option('Automatique selon la saison',''));
         if(imgSafe(record?.image))select.add(new Option('Logo principal · forcer','main'));
         for(const v of variants){
-          const range=String(v.from||'')+(v.to&&v.to!==v.from?' → '+v.to:'');
-          select.add(new Option('Historique · '+range,'history:'+v.id));
+          if(v.kind==='alternative'){
+            select.add(new Option('Alternatif · '+String(v.name||'Logo alternatif'),'alternative:'+v.id));
+          }else{
+            const range=String(v.from||'')+(v.to&&v.to!==v.from?' → '+v.to:'');
+            select.add(new Option('Historique · '+range,'history:'+v.id));
+          }
         }
         const available=variants.length>0;
         $('cardTeamLogoOverrideWrap').hidden=!available;
@@ -4833,7 +4843,8 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         const season=$('cardSeason').value.trim();
         const auto=window.RapliExtras.historicalLogo(record?.historical,season);
         const active=selected==='main'?record?.image:
-          selected.startsWith('history:')?(record?.historical||[]).find(v=>v.id===selected.slice(8))?.image:
+          (selected.startsWith('history:')||selected.startsWith('alternative:'))?
+            (record?.historical||[]).find(v=>v.id===selected.slice(selected.indexOf(':')+1))?.image:
           auto?.image||record?.image;
         const preview=$('cardTeamLogoPreviewImage');
         preview.hidden=!imgSafe(active);

@@ -2899,6 +2899,37 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
   .sports-catalogue-controls>#sortSelect{flex-basis:108px;width:108px!important;min-width:98px!important;max-width:108px!important}
 }
 </style>
+<style id="rapli-pr4-printing-plate-editor">
+/* Printing Plates have their own cool metal treatment, never the gold 1/1 finish. */
+.collector-badge.collector-badge--plate{
+  box-sizing:border-box;min-width:78px;min-height:49px;padding:5px 7px 4px;
+  border:1px solid var(--collector-ink,#1e354a);
+  color:var(--collector-ink,#1e354a);
+  background:var(--collector-gradient,var(--collector-bg,#c4d0dc))!important;
+}
+.collector-badge--plate .collector-badge-main{font-variant-numeric:lining-nums tabular-nums}
+.collector-badge--plate .collector-badge-caption{
+  display:block;white-space:nowrap;
+  margin-top:2px;font:900 7px/1.2 Poppins,system-ui,sans-serif;
+  letter-spacing:.025em;opacity:1;
+}
+.collector-plate-settings{
+  margin:14px 0;padding:14px;min-width:0;
+  border:1px solid #a4c6d0;border-radius:13px;
+  background:linear-gradient(135deg,#eaf5f6,#eff2f9 55%,#f7f7fc);
+}
+.collector-plate-heading{display:flex;flex-direction:column;gap:4px;margin-bottom:11px}
+.collector-plate-heading strong{color:#244c67;font:900 12px Poppins,sans-serif}
+.collector-plate-heading small{color:#657a8b;font:600 10px/1.5 Poppins,sans-serif}
+.collector-plate-settings #collectorPlateGradient[hidden]{display:none!important}
+.collector-plate-preview{display:flex;align-items:center;margin-top:9px;min-height:55px}
+.collector-plate-preview .collector-row{flex:none}
+@media(max-width:750px){
+ .collector-badge.collector-badge--plate{min-width:69px;min-height:44px}
+ .collector-badge--plate .collector-badge-caption{font-size:6px;letter-spacing:0}
+ .collector-plate-settings{padding:10px}
+}
+</style>
 </head>
 <body>
   <div class="app-shell">
@@ -3128,6 +3159,24 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
           <div id="collectorGradientGlobal" hidden></div>
           <p class="collector-tier-intro">15 métaux prédéfinis. Chaque dégradé accepte jusqu’à 8 couleurs modifiables.</p>
         </div>
+        <section class="collector-plate-settings" aria-labelledby="collectorPlateHeading">
+          <div class="collector-plate-heading">
+            <strong id="collectorPlateHeading">PRINTING PLATE · 1/1</strong>
+            <small>Style indépendant des véritables One of One : argent/acier par défaut.</small>
+          </div>
+          <div class="collector-settings-grid">
+            <div class="input-group"><label for="collectorPlateBackground">Fond de la plaque</label><input type="color" id="collectorPlateBackground" value="#c4d0dc"></div>
+            <div class="input-group"><label for="collectorPlateForeground">Texte et bordure</label><input type="color" id="collectorPlateForeground" value="#1e354a"></div>
+          </div>
+          <label class="input-group" for="collectorPlateFinish">Finition du badge
+            <select class="select" id="collectorPlateFinish">
+              <option value="foil">Métal / foil personnalisable</option>
+              <option value="solid">Fond uni</option>
+            </select>
+          </label>
+          <div id="collectorPlateGradient"></div>
+          <div id="collectorPlatePreview" class="collector-plate-preview" aria-label="Aperçu du badge Printing Plate"></div>
+        </section>
         <label class="collector-settings-check"><input id="collectorPremium" type="checkbox" checked> Effet foil / relief premium</label>
         <div class="collector-preview-title">APERÇU DES DIFFÉRENTES NUMÉROTATIONS</div>
         <div id="collectorBadgePreview" aria-label="Aperçu numérotation et Rookie"></div>
@@ -3747,6 +3796,13 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
           premium:saved.premium!==false,
           byPrintRun:saved.byPrintRun===true,
           tierColors:collectorColors(saved.tierColors),
+          plate:{
+            background:validCollectorColor(saved.plate?.background,'#c4d0dc'),
+            foreground:validCollectorColor(saved.plate?.foreground,'#1e354a'),
+            finish:saved.plate?.finish==='solid'?'solid':'foil',
+            gradient:collectorGradientNormalize(saved.plate?.gradient||
+              {preset:'silver',colors:collectorMetal('silver').colors})
+          },
           gradientMode:['uniform','tier'].includes(saved.gradientMode)?saved.gradientMode:'solid',
           gradientGlobal:collectorGradientNormalize(saved.gradientGlobal||{preset:'gold',colors:collectorMetal('gold').colors}),
           gradientTiers:Object.fromEntries(COLLECTOR_TIERS.map((t,i)=>{
@@ -3768,12 +3824,18 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         let badges='';
         if(numbered){
           const tier=collectorTier(card.printRun);
-          const configured=style.byPrintRun&&tier?style.tierColors?.[tier.key]:null;
-          const background=validCollectorColor(configured?.background,style.background);
-          const foreground=validCollectorColor(configured?.foreground,style.foreground);
-          const metallic=style.gradientMode==='uniform'?collectorGradientCss(style.gradientGlobal):
+          const plate=window.RapliExtras.classification(card)==='plate';
+          const configured=!plate&&style.byPrintRun&&tier?style.tierColors?.[tier.key]:null;
+          const background=plate?style.plate.background:validCollectorColor(configured?.background,style.background);
+          const foreground=plate?style.plate.foreground:validCollectorColor(configured?.foreground,style.foreground);
+          const metallic=plate?(style.plate.finish==='foil'?collectorGradientCss(style.plate.gradient):''):
+            style.gradientMode==='uniform'?collectorGradientCss(style.gradientGlobal):
             style.gradientMode==='tier'&&tier?collectorGradientCss(style.gradientTiers[tier.key]):'';
-          badges+=`<span class="collector-badge collector-badge--number ${'font-'+collectorFont(style.numberFont)}" style="--collector-bg:${background};--collector-ink:${foreground};${metallic?'--collector-gradient:'+metallic+';':''}" aria-label="${hasSerial?'Carte numérotée '+safeText(card.serial)+' sur '+safeText(card.printRun):'Tirage limité à '+safeText(card.printRun)+' exemplaires'}"><span class="collector-badge-main">${hasSerial?'<span>'+safeText(card.serial)+'</span>':''}<span class="collector-slash">/</span><span>${safeText(card.printRun)}</span></span><span class="collector-badge-caption">${hasSerial?'SERIAL NUMBER':'TIRAGE LIMITÉ'}</span></span>`;
+          const caption=plate?'PRINTING PLATE':hasSerial?'SERIAL NUMBER':'TIRAGE LIMITÉ';
+          const aria=plate?'Printing Plate, exemplaire unique 1 sur 1':
+            hasSerial?'Carte numérotée '+safeText(card.serial)+' sur '+safeText(card.printRun):
+            'Tirage limité à '+safeText(card.printRun)+' exemplaires';
+          badges+=`<span class="collector-badge collector-badge--number${plate?' collector-badge--plate':''} ${'font-'+collectorFont(style.numberFont)}" style="--collector-bg:${background};--collector-ink:${foreground};${metallic?'--collector-gradient:'+metallic+';':''}" aria-label="${aria}"><span class="collector-badge-main">${hasSerial?'<span>'+safeText(card.serial)+'</span>':''}<span class="collector-slash">/</span><span>${safeText(card.printRun)}</span></span><span class="collector-badge-caption">${caption}</span></span>`;
         }
         if(rookie){
           const logo=logoFor('rookie',card.sport);
@@ -3797,6 +3859,12 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
           background:$('collectorBackground').value,foreground:$('collectorForeground').value,
           premium:$('collectorPremium').checked,byPrintRun:$('collectorByPrintRun').checked,tierColors,
           gradientMode:$('collectorGradientMode').value,
+          plate:{
+            background:$('collectorPlateBackground').value,
+            foreground:$('collectorPlateForeground').value,
+            finish:$('collectorPlateFinish').value,
+            gradient:collectorGradientRead('plate',collectorStyle().plate.gradient)
+          },
           gradientGlobal:collectorGradientRead('global',collectorStyle().gradientGlobal),
           gradientTiers:Object.fromEntries(COLLECTOR_TIERS.map(t=>[t.key,collectorGradientRead(t.key,collectorStyle().gradientTiers[t.key])]))
         });
@@ -3812,6 +3880,10 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         });
         samples.push('<div class="collector-preview-sample"><small>ROOKIE RC</small>'+
           collectorBadgeMarkup({numbered:false,rookie:true,sport:'__preview__'},style)+'</div>');
+        const platePreview=collectorBadgeMarkup({numbered:true,serial:'1',printRun:'1',status:'own',
+          uniqueKind:'plate',rookie:false},style);
+        $('collectorPlatePreview').innerHTML=platePreview;
+        $('collectorPlateGradient').hidden=style.plate.finish==='solid';
         $('collectorBadgePreview').innerHTML='<div class="collector-tier-preview">'+samples.join('')+'</div>';
       }
       function openCollectorSettings(){
@@ -3822,6 +3894,10 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         $('collectorForeground').value=style.foreground;
         $('collectorPremium').checked=style.premium;
         $('collectorByPrintRun').checked=style.byPrintRun;
+        $('collectorPlateBackground').value=style.plate.background;
+        $('collectorPlateForeground').value=style.plate.foreground;
+        $('collectorPlateFinish').value=style.plate.finish;
+        $('collectorPlateGradient').innerHTML=collectorGradientEditor('plate',style.plate.gradient);
         $('collectorGradientMode').value=style.gradientMode;
         $('collectorGradientGlobal').innerHTML=collectorGradientEditor('global',style.gradientGlobal);
         $('collectorTierGrid').innerHTML=COLLECTOR_TIERS.map(tier=>{
@@ -5251,7 +5327,9 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
       });
       ['collectorNumberFont','collectorRookieFont','collectorBackground','collectorForeground','collectorPremium','collectorByPrintRun']
         .forEach(id=>$(id).addEventListener('change',updateCollectorPreview));
-      ['collectorBackground','collectorForeground'].forEach(id=>$(id).addEventListener('input',updateCollectorPreview));
+      ['collectorBackground','collectorForeground','collectorPlateBackground','collectorPlateForeground']
+        .forEach(id=>$(id).addEventListener('input',updateCollectorPreview));
+      $('collectorPlateFinish').addEventListener('change',updateCollectorPreview);
       $('collectorTierGrid').addEventListener('input',event=>{
         if(event.target.matches('[data-collector-color]'))updateCollectorPreview();
       });

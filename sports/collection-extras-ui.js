@@ -48,7 +48,7 @@ function refresh(){
  // The verified account controls visibility; transient cloud hydration can only block writes.
  // B.canEdit() is false while Supabase loads photos and may not trigger a final refresh.
  const editor=window.RapliAdminAccess?.isEditor?.()===true;
- inboxButton.hidden=!editor;historyButton.hidden=!editor;
+ historyButton.hidden=!editor;
 }
 function decorate(container=document){if(!$('emptyState').classList.contains('hidden')&&search.value.trim()){const words=E.norm(search.value).split(/\s+/).filter(Boolean);const related=B.players().filter(n=>words.some(w=>E.norm(n).includes(w))).slice(0,3);$('emptyCopy').textContent=related.length?'Essaie seulement : '+related.join(' · ')+', ou retire le numéro de série.':'Essaie un nom d’athlète, une marque ou un tirage comme /25. La croix efface la recherche.';}for(const tile of container.querySelectorAll('[data-card-id]')){const c=cardIndex.get(tile.dataset.cardId);if(!c)continue;let badges=tile.querySelector('.extras-mini-badges');const labels=[];const count=counts.get(E.identity(c))||0;
  if(c.status==='own'&&count>1)labels.push('<span>×'+esc(count)+' exemplaires</span>');
@@ -286,76 +286,7 @@ historyButton.addEventListener('click',()=>{
  });
  renderSaved();renderSelected();
 });
-// Inbox records and cards share the existing differential storage pipeline.
-const inboxButton=element('button','ARRIVÉES','tab');inboxButton.type='button';document.querySelector('.section-nav .tabs').append(inboxButton);
-function inboxItems(){return B.logos().filter(l=>l.type==='wishlist-inbox');}
-inboxButton.onclick=()=>{if(!B.canEdit())return;const d=modal('Arrivées · préparation Wishlist');const content=d.querySelector('.extras-content');const $=id=>d.querySelector('#'+id);content.innerHTML=`<p>Colle un ou plusieurs liens Vinted, eBay, Cardhobby, Topps ou d'autres sites. Rapli Lab reconnaît la plateforme, nettoie les paramètres de suivi et propose les champs détectables. Les annonces ne sont pas consultées automatiquement : vérifie toujours les informations avant validation.</p><label>Liens d'annonces<textarea id="inboxLink" rows="3" placeholder="Colle ici des liens ou un partage avec son titre…"></textarea></label><label>Titre de l’annonce (facultatif)<input id="inboxTitle" placeholder="Ex. 2024/2025 Panini Prizm Tyrese Maxey Blue Ice /99"></label><button type="button" id="inboxAddLink">Analyser les liens</button><p id="inboxLinkSummary" role="status" class="inbox-link-summary"></p><label>Checklist<textarea id="inboxChecklist" rows="6" placeholder="Tyrese Maxey - Topps Chrome - #41 - Orange Refractor /25"></textarea></label><button type="button" id="inboxParse">Préparer les lignes</button><p role="status" id="inboxState"></p><button type="button" id="inboxImport">Ajouter les fiches cochées à la Wishlist</button><div id="inboxList"></div>`;
-function duplicate(r){
- const cards=B.cards();
- const urlKey=E.listingLink(r.sourceUrl)?.itemKey;
- return cards.some(c=>(urlKey&&E.listingLink(c.sourceUrl)?.itemKey===urlKey)||
-   (r.player&&r.brand&&c.player&&c.brand&&E.norm(c.player)===E.norm(r.player)&&
-    E.norm(c.brand)===E.norm(r.brand)&&r.reference&&c.reference&&
-    E.norm(c.reference).replace(/^#/,'')===E.norm(r.reference).replace(/^#/,'')&&
-    E.norm(c.season||'')===E.norm(r.season||'')&&
-    JSON.stringify((c.tags||[]).map(E.norm).sort())===JSON.stringify((r.tags||[]).map(E.norm).sort())));
-}
-function render(){const pending=inboxItems().filter(r=>!r.completed);$('inboxList').innerHTML=pending.map(r=>`<article class="inbox-row" data-inbox-id="${esc(r.id)}"><label><input type="checkbox" data-import-select> Valider cette fiche</label>${duplicate(r)?'<p class="duplicate-warning">Doublon potentiel : vérifie la référence, la saison et la parallèle avant validation.</p>':''}${r.sourceUrl?'<div class="inbox-link-header"><span>'+esc(r.source||'Annonce')+'</span>'+(r.listingId?'<small>Annonce #'+esc(r.listingId)+'</small>':'')+'<a href="'+esc(r.sourceUrl)+'" target="_blank" rel="noopener noreferrer">Ouvrir l’annonce ↗</a></div>':''}${['name','player','brand','reference','season','source','sourceUrl','price'].map(k=>`<label>${({name:'Nom de la carte',player:'Athlète',brand:'Marque',reference:'Référence',season:'Saison',source:'Site',sourceUrl:'Lien',price:'Prix éventuel'})[k]}<input data-inbox-field="${k}" value="${esc(r[k]||'')}" ${k==='sourceUrl'?'type="url"':''}></label>`).join('')}<label>Édition / parallèle / tags (séparés par des virgules)<input data-inbox-field="tags" value="${esc((r.tags||[]).join(', '))}"></label><label>Tirage<input data-inbox-field="printRun" value="${esc(r.printRun||'')}" inputmode="numeric"></label><label><input type="checkbox" data-keep-source checked> Conserver la provenance sur la carte</label><button type="button" data-import-one>Ajouter à la Wishlist</button><button type="button" data-inbox-remove>Retirer</button></article>`).join('')||'<p>Aucune fiche en attente.</p>';}
-async function add(records){
- const reserved=new Set(inboxItems().map(item=>item.listingKey||E.listingLink(item.sourceUrl)?.itemKey).filter(Boolean));
- const accepted=[],seen=new Set();
- for(const record of records){
-  const key=record.listingKey||E.listingLink(record.sourceUrl)?.itemKey;
-  if(key&&(reserved.has(key)||seen.has(key)))continue;
-  if(key)seen.add(key);
-  accepted.push(record);
- }
- for(const record of accepted)await B.saveLogo({...record,id:'inbox:'+uid(),type:'wishlist-inbox',createdAt:Date.now(),updatedAt:Date.now()});
- render();
- if(accepted.length)notify(accepted.length+' fiche(s) préparée(s)');
- return {added:accepted.length,skipped:records.length-accepted.length};
-}
-$('inboxAddLink').onclick=async()=>{
- const linkInput=$('inboxLink'),value=linkInput.value.trim();
- const found=E.extractListingUrls(value);
- if(!found.length)return notify('Colle un ou plusieurs liens HTTP ou HTTPS valides.');
- if(found.length>100)return notify('Maximum 100 liens par lot.');
- const commonTitle=$('inboxTitle').value.trim();
- const known={players:B.players(),brands:B.brands(),tags:B.tags()};
- const records=[],seen=new Set(),invalid=[];
- for(const item of found){
-  const parsed=E.listingLink(item.url);
-  if(!parsed){invalid.push(item.url);continue;}
-  const key=parsed.itemKey;
-  if(seen.has(key))continue;
-  seen.add(key);
-  const hint=found.length===1?commonTitle||item.hint:item.hint;
-  const record=E.listingCard(parsed,known,hint);
-  if(record)records.push(record);
- }
- if(!records.length)return notify('Aucun lien valide. Vérifie les adresses des annonces.');
- $('inboxAddLink').disabled=true;
- try{
-  const result=await add(records);
-  const parts=[result.added+' annonce(s) préparée(s)'];
-  if(result.skipped)parts.push(result.skipped+' doublon(s) ignoré(s)');
-  if(invalid.length)parts.push(invalid.length+' lien(s) non valides');
-  $('inboxLinkSummary').textContent=parts.join(' · ')+'. Vérifie le titre, l’athlète, la marque et la référence avant l’import.';
-  if(result.added){linkInput.value='';$('inboxTitle').value='';}
- }catch(e){notify(e.message||'Import impossible.');}
- finally{$('inboxAddLink').disabled=false;}
-};
-$('inboxParse').onclick=async()=>{const lines=$('inboxChecklist').value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);if(lines.length>500)return notify('Prépare au maximum 500 lignes à la fois.');try{await add(lines.map(line=>E.parseLine(line,{players:B.players(),brands:B.brands(),tags:B.tags()})));$('inboxChecklist').value='';}catch(e){notify(e.message);}};
-let rowSaveQueue=Promise.resolve();
-function saveRow(row){const run=()=>saveRowNow(row);const pending=rowSaveQueue.then(run,run);rowSaveQueue=pending.catch(()=>{});return pending;}
-async function saveRowNow(row){const record=inboxItems().find(r=>r.id===row.dataset.inboxId);if(!record)throw Error('Fiche introuvable');if(record.completed)return record;const next={...record};for(const input of row.querySelectorAll('[data-inbox-field]'))next[input.dataset.inboxField]=input.dataset.inboxField==='tags'?input.value.split(',').map(x=>x.trim()).filter(Boolean):input.value.trim();next.sourceUrl=E.safeUrl(next.sourceUrl);const parsedLink=E.listingLink(next.sourceUrl);next.listingKey=parsedLink?.itemKey||'';next.listingId=parsedLink?.listingId||'';next.numbered=!!next.printRun;next.updatedAt=Date.now();await B.saveLogo(next);return next;}
-let busy=false;
-async function importRows(rows){if(busy)return;busy=true;$('inboxImport').disabled=true;try{for(const row of rows){const r=await saveRow(row);if(r.completed)continue;if(!r.player||!r.brand){notify('Renseigne au minimum l’athlète et la marque.');continue;}if(r.season&&!E.seasonRange(r.season)){notify('Saison invalide pour '+r.player);continue;}if(r.printRun&&!/^[1-9]\d*$/.test(r.printRun)){notify('Tirage invalide pour '+r.player);continue;}const id='import:'+r.id;const existing=B.cards().find(c=>c.id===id);
-if(!existing&&duplicate(r)){notify('Doublon potentiel : vérifie '+(r.name||r.player)+' avant d’importer.');continue;}
-if(!existing){const keep=row.querySelector('[data-keep-source]').checked;await B.saveCard({id,status:'wishlist',player:r.player,players:[{name:r.player}],brand:r.brand,reference:r.reference||'',season:r.season||'',tags:r.tags||[],numbered:!!r.printRun,printRun:r.printRun||'',serial:'',photo:'',name:r.name||'',price:r.price||'',source:keep?r.source||'':'',sourceUrl:keep?r.sourceUrl||'':'',createdAt:Date.now(),updatedAt:Date.now()});}await B.saveLogo({...r,completed:true,cardId:id,updatedAt:Date.now()});}render();B.render();$('inboxState').textContent='Ajout terminé. Les fiches incomplètes restent à corriger.';}catch(e){notify('Ajout interrompu : '+e.message+'. Les fiches déjà ajoutées ne seront pas dupliquées.');}finally{busy=false;$('inboxImport').disabled=false;}}
-$('inboxImport').onclick=()=>importRows([...content.querySelectorAll('.inbox-row')].filter(row=>row.querySelector('[data-import-select]').checked));
-content.addEventListener('change',async e=>{if(e.target.matches('[data-inbox-field]'))try{await saveRow(e.target.closest('.inbox-row'));}catch(err){notify(err.message);}});
-content.addEventListener('click',async e=>{const row=e.target.closest('.inbox-row');if(!row)return;if(e.target.hasAttribute('data-import-one'))importRows([row]);if(e.target.hasAttribute('data-inbox-remove')){const r=inboxItems().find(r=>r.id===row.dataset.inboxId);try{await B.saveLogo({...r,completed:true,updatedAt:Date.now()});render();}catch(err){notify(err.message);}}});render();};
+// Arrivals UI removed. Saved wishlist-inbox records are intentionally preserved.
 const palette=element('div','','extras-palette');palette.hidden=true;$('logoDialog').querySelector('.modal-body').append(palette);let paletteTarget=null;
 $('logoDialog').addEventListener('focusin',e=>{if(!e.target.matches('input[type="color"]')||e.target.closest('#appearanceSettingsPanel'))return;paletteTarget=e.target;const colors=window.RapliAppearanceBridge.load()?.favorites||[];palette.innerHTML='<p>Couleurs favorites</p>'+colors.map(c=>'<button type="button" data-palette="'+esc(c)+'" style="border-bottom:6px solid '+esc(c)+'">'+esc(c)+'</button>').join('');palette.hidden=!colors.length;e.target.closest('label')?.after(palette);});
 palette.onclick=e=>{const color=e.target.dataset.palette;if(!color||!paletteTarget)return;paletteTarget.value=color;paletteTarget.dispatchEvent(new Event('input',{bubbles:true}));paletteTarget.dispatchEvent(new Event('change',{bubbles:true}));};

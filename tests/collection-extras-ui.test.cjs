@@ -28,3 +28,36 @@ test('historical logos and arrivals stay visible to a verified editor during tem
   assert.deepEqual(s.errors,[]);
  }finally{await new Promise(r=>setTimeout(r,100));s.dom.window.close();}
 });
+
+test('historical logo library offers saved variants and searchable public previews without writing',async()=>{
+ const s=await setup(true);
+ try{
+  const original='data:image/png;base64,iVBORw0KGgo=';
+  s.w.RapliModuleBridge.previewState({records:cards,logos:[
+   {id:'team:sixers',type:'team',name:'Philadelphia 76ers',image:original,
+    historical:[{id:'old',from:'1977/1978',to:'1996/1997',image:original}]},
+   {id:'team:france',type:'team',name:'Équipe de France',image:original}
+  ]});
+  const initial=JSON.stringify(s.w.RapliModuleBridge.getState());
+  s.w.document.querySelector('[data-history-open]').click();
+  assert.ok(s.$('historyLibraryForm'));
+  assert.ok(s.$('historySavedAll'));
+  assert.equal(s.w.document.querySelectorAll('.historical-saved-choice').length,1);
+  assert.ok(s.w.document.querySelectorAll('#historyLibraryFeatured [data-history-use]').length>=1);
+  assert.equal(s.$('historyLogo').value,'team:france');
+  const calls=[];
+  s.w.fetch=async url=>{
+   calls.push(String(url));
+   return {ok:true,json:async()=>({query:{pages:{'1':{pageid:1,title:'File:France national team logo.png',
+     imageinfo:[{mime:'image/png',thumburl:'https://upload.wikimedia.org/example.png'}]}}}})};
+  };
+  s.$('historyLibraryQuery').value='France logo';
+  s.$('historyLibraryForm').dispatchEvent(new s.w.Event('submit',{bubbles:true,cancelable:true}));
+  await new Promise(resolve=>setTimeout(resolve,20));
+  assert.ok(calls.some(url=>url.includes('gsrnamespace=6')));
+  assert.equal(s.w.document.querySelectorAll('#historyLibraryResults [data-history-use]').length,1);
+  assert.equal(JSON.stringify(s.w.RapliModuleBridge.getState()),initial,
+   'previewing and searching must not modify Supabase or local collection state');
+  assert.deepEqual(s.errors,[]);
+ }finally{await new Promise(resolve=>setTimeout(resolve,100));s.dom.window.close();}
+});

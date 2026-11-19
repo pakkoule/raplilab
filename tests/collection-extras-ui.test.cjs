@@ -261,3 +261,23 @@ test('alternative logos are manual only and historical periods keep working',asy
   assert.deepEqual(ctx.errors,[]);
  }finally{await new Promise(resolve=>setTimeout(resolve,100));ctx.dom.window.close();}
 });
+
+test('long athlete names can shrink independently of the card reference',async()=>{
+ const s=await setup(true);
+ try{
+  const longCard={...cards[0],id:'long-athlete',player:'Victor Wembanyama',reference:'ARTBK-16C2S-27TN-0062'};
+  s.w.RapliModuleBridge.previewState({records:[longCard],logos:[]});
+  const row=s.w.document.querySelector('.card-item .player-name-reference');
+  const player=row?.querySelector(':scope > .player');
+  const ref=row?.querySelector(':scope > .card-reference-actions .card-ref-inline');
+  assert.ok(player&&ref,'name and reference remain in separate cells');
+  assert.equal(player.querySelector('.player-primary-name').textContent,'Victor Wembanyama');
+  assert.equal(ref.textContent,'ARTBK-16C2S-27TN-0062');
+  // JSDOM has no layout engine; the actual font fit runs in the browser.
+  // Verify the helper is wired and gracefully ignores unavailable measurements.
+  s.w.dispatchEvent(new s.w.Event('resize'));
+  await new Promise(done=>setTimeout(done,25));
+  assert.equal(ref.textContent,'ARTBK-16C2S-27TN-0062');
+  assert.deepEqual(s.errors,[]);
+ }finally{await new Promise(done=>setTimeout(done,100));s.dom.window.close();}
+});

@@ -281,3 +281,31 @@ test('long athlete names can shrink independently of the card reference',async()
   assert.deepEqual(s.errors,[]);
  }finally{await new Promise(done=>setTimeout(done,100));s.dom.window.close();}
 });
+
+test('Vinted, eBay and Cardhobby link batch produces editable drafts, not immediate Wishlist cards',async()=>{
+ const s=await setup(true);
+ try{
+  s.w.RapliModuleBridge.previewState({records:cards,logos:[]});
+  const tab=[...s.w.document.querySelectorAll('.section-nav .tabs button')].find(x=>x.textContent==='ARRIVÉES');
+  tab.click();
+  const originalCards=s.w.RapliExtrasBridge.cards().length;
+  s.$('inboxLink').value='https://www.vinted.fr/items/123456789-2024-25-panini-prizm-tyrese-maxey-blue-ice-99?utm_source=share\nhttps://www.ebay.com/itm/123456789012\nhttps://cardhobby.com/sale/maxey-topps-chrome';
+  s.$('inboxAddLink').click();
+  await new Promise(resolve=>setTimeout(resolve,50));
+  const rows=s.w.document.querySelectorAll('.inbox-row');
+  assert.equal(rows.length,3);
+  assert.match(s.$('inboxLinkSummary').textContent,/3 annonce/);
+  assert.equal(s.w.RapliExtrasBridge.cards().length,originalCards);
+  assert.equal(rows[0].querySelector('[data-inbox-field="source"]').value,'Vinted');
+  assert.equal(rows[1].querySelector('[data-inbox-field="source"]').value,'eBay');
+  assert.equal(rows[2].querySelector('[data-inbox-field="source"]').value,'Cardhobby');
+  assert.equal(rows[0].querySelector('[data-inbox-field="player"]').value,'Tyrese Maxey');
+  assert.ok(rows[0].querySelector('a[target="_blank"]'));
+  s.$('inboxLink').value='https://www.vinted.fr/items/123456789-again?fbclid=duplicate';
+  s.$('inboxAddLink').click();
+  await new Promise(resolve=>setTimeout(resolve,30));
+  assert.equal(s.w.document.querySelectorAll('.inbox-row').length,3,'same listing ID is not queued twice');
+  assert.match(s.$('inboxLinkSummary').textContent,/doublon/);
+  assert.deepEqual(s.errors,[]);
+ }finally{await new Promise(resolve=>setTimeout(resolve,100));s.dom.window.close();}
+});

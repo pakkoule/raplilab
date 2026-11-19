@@ -2796,7 +2796,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
   .section-nav .sports-lab-brand img{width:42px!important;height:42px!important;max-width:100%;object-fit:contain}
   .section-nav .tabs{
     grid-column:2;grid-row:1;display:grid!important;
-    grid-template-columns:repeat(4,minmax(0,1fr))!important;
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
     grid-auto-flow:column!important;justify-content:stretch!important;
     align-items:stretch!important;flex-wrap:nowrap!important;
     gap:2px!important;width:100%!important;max-width:100%!important;
@@ -2815,8 +2815,6 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
     flex:0 0 auto;font-size:8px!important;line-height:1.2!important;
     padding:2px 3px!important;
   }
-  .section-nav .sports-stats-tab-full{display:none!important}
-  .section-nav .sports-stats-tab-short{display:inline!important}
 
   /* Mobile controls: enforce exactly one shared line for view + search.
      Their combined bases occupy the row; actions/count/sort/profile wrap below. */
@@ -2881,21 +2879,8 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
   html:not([data-rapli-role="editor"]) .sports-catalogue-controls>.nav-actions{display:none!important}
 }
 @media(max-width:520px){
-  /* Readable single-row OWN/WISHLIST/RAINBOW/STATS instead of a second tab line. */
+  /* OWN, WISHLIST, RAINBOW on one mobile row. */
   .section-nav .tabs .tab b{display:none!important}
-}
-/* Five tabs (including admin-only Arrivées) must fit on a single mobile row. */
-@media(max-width:750px){
-  .section-nav .tabs:has(> .tab:nth-child(5):not([hidden])){
-    grid-template-columns:repeat(5,minmax(0,1fr))!important;
-    grid-auto-flow:row!important;
-    overflow:visible!important;
-  }
-  .section-nav .tabs:has(> .tab:nth-child(5):not([hidden])) .tab{
-    font-size:clamp(7px,1.55vw,9px)!important;
-    padding-left:0!important;padding-right:0!important;
-  }
-  .section-nav .tabs .tab[hidden]{display:none!important}
 }
 @media(max-width:390px){
   .section-nav{grid-template-columns:32px minmax(0,1fr)!important;gap:3px!important}
@@ -3009,7 +2994,6 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
             <button type="button" role="tab" aria-selected="true" class="tab active" data-view="own">OWN <b id="tabOwnCount">0</b></button>
             <button type="button" role="tab" aria-selected="false" class="tab" data-view="wishlist">WISHLIST <b id="tabWishCount">0</b></button>
             <button type="button" role="tab" aria-selected="false" class="tab" data-view="rainbow">🌈 RAINBOW <b id="tabRainbowCount">0</b></button>
-            <button type="button" role="tab" aria-selected="false" class="tab" data-view="stats"><span class="sports-stats-tab-full">STATISTIQUES</span><span class="sports-stats-tab-short" aria-hidden="true">STATS</span></button>
           </div>
         </div>
         <section id="rapliSharedLoading" aria-labelledby="rapliSharedLoadingTitle" aria-live="polite" data-status="loading">
@@ -4815,7 +4799,8 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
           t.setAttribute('aria-selected',String(active));
         });
         $('sportsNavigationReturn').hidden=sportsNavigationHistory.length===0;
-        const showStats=currentView==='stats',showRainbow=currentView==='rainbow';
+        if(!['own','wishlist','rainbow'].includes(currentView))currentView='own';
+        const showStats=false,showRainbow=currentView==='rainbow';
         $('collectionPanel').hidden=showStats||showRainbow;
         $('statsPanel').hidden=!showStats;
         $('rainbowPanel').hidden=!showRainbow;

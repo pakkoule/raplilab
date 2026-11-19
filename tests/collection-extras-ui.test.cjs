@@ -413,3 +413,26 @@ test('card action menu stays export-only for visitors and appears in vignette vi
   assert.deepEqual(s.errors,[]);
  }finally{await new Promise(resolve=>setTimeout(resolve,100));s.dom.window.close();}
 });
+
+test('three-dot actions sit at bottom-right alongside numbering and grading',async()=>{
+ const s=await setup(true);
+ try{
+  s.w.RapliModuleBridge.previewState({records:cards,logos:[]});
+  const tile=s.w.document.querySelector('#cardGrid .card-item[data-card-id="a"]');
+  assert.ok(tile);
+  assert.equal(tile.querySelector('.card-top .card-kebab-wrap'),null);
+  const bottom=tile.querySelector('.card-bottom');
+  assert.ok(bottom);
+  assert.equal(bottom.querySelector(':scope > .card-status-badges')!==null,true);
+  const wrap=bottom.querySelector(':scope > .card-kebab-wrap');
+  assert.ok(wrap);
+  assert.equal(bottom.lastElementChild,wrap);
+  assert.equal(wrap.querySelectorAll('[data-card-menu-trigger]').length,1);
+  assert.ok(bottom.querySelector('.collector-badge--number'));
+  assert.ok(bottom.querySelector('.grading-badge, [data-grade-photo], .grading-perfect, .grading-grade, .grading-label')||cards[0].graded);
+  wrap.querySelector('[data-card-menu-trigger]').click();
+  assert.equal(s.$('cardActionsMenu').hidden,false);
+  assert.ok(s.$('cardActionsMenu').querySelector('[data-action="duplicate"]'));
+  assert.deepEqual(s.errors,[]);
+ }finally{await new Promise(resolve=>setTimeout(resolve,100));s.dom.window.close();}
+});

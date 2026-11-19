@@ -60,3 +60,57 @@
  .historical-library-search button{flex:1 0 100%}
  .historical-library-card{padding:6px}
 }
+
+/* History stays inside the existing logo-library dialog with its normal tabs.
+   Hide competing sections only while historical mode is active. */
+#logoDialog[data-rapli-history-mode="true"] .modal-body > :not(.logo-tabs):not(#historyInlinePanel){
+ display:none!important;
+}
+#logoDialog .historical-inline-panel{
+ display:block;box-sizing:border-box;width:100%;max-width:100%;
+ padding:0;margin:0;min-width:0;
+ color:#29465e;font:12px/1.5 Poppins,system-ui,sans-serif;
+}
+#logoDialog .historical-inline-panel > label,
+#logoDialog .historical-inline-panel .extras-fields > label{
+ display:flex;flex-direction:column;gap:6px;margin:10px 0;
+ color:#29465e;font:750 12px/1.4 Poppins,system-ui,sans-serif;
+}
+#logoDialog .historical-inline-panel select,
+#logoDialog .historical-inline-panel input{
+ box-sizing:border-box;max-width:100%;width:100%;min-width:0;
+ padding:10px;border:1px solid #bacdd7;border-radius:9px;
+ background:#fff;color:#29465e;font:500 16px Poppins,system-ui,sans-serif;
+}
+#logoDialog .historical-inline-panel button{cursor:pointer}
+#logoDialog .historical-inline-panel .extras-fields{
+ padding:15px;margin:16px 0;
+ border:1px solid #bacdd7;border-radius:13px;
+ background:linear-gradient(120deg,#f4fbf9,#f7f6fb);
+}
+#logoDialog .historical-inline-panel .extras-fields img{
+ display:block;max-width:190px;max-height:155px;object-fit:contain;margin:9px auto;
+}
+#logoDialog .historical-inline-panel .extras-fields img[hidden]{display:none!important}
+#logoDialog .historical-inline-panel .extras-fields button{
+ border:1px solid #9ebdc4;border-radius:9px;padding:9px 12px;
+ background:linear-gradient(120deg,#d9f1e8,#eef0fb,#f5e3de);
+ color:#29465e;font:800 11px Poppins,system-ui,sans-serif;
+}
+#logoDialog .historical-inline-panel .history-row{
+ display:flex;align-items:center;flex-wrap:wrap;gap:10px;padding:10px;
+ border:1px solid #d3e0e8;border-radius:10px;background:#fff;
+}
+#logoDialog .historical-inline-panel .history-row img{
+ display:block;width:52px;height:52px;object-fit:contain;flex:none;
+}
+#logoDialog .historical-inline-panel .history-row span{flex:1 1 auto;min-width:0}
+#logoDialog .historical-inline-panel #historyList{display:grid;gap:8px}
+#logoDialog .historical-inline-panel .history-row button{padding:8px;border:1px solid #b9d2dc;border-radius:8px;background:#f4f9fa}
+#logoDialog .historical-inline-panel .historical-gallery{max-width:100%;min-width:0}
+#logoDialog .historical-inline-panel .historical-library-search input{flex:1 1 0}
+#logoDialog .historical-inline-panel .historical-library-search button{width:auto;flex:0 0 auto}
+@media(max-width:530px){
+ #logoDialog .historical-inline-panel .historical-library-search button{flex:1 0 100%}
+ #logoDialog .historical-inline-panel .extras-fields{padding:11px}
+}

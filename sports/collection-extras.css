@@ -193,3 +193,24 @@
  border:1px solid #c6dce0;background:linear-gradient(120deg,#edf9f5,#f0f5fd);
  color:#47718a;font:650 11px/1.5 Poppins,system-ui,sans-serif;
 }
+
+/* PR #4: readable marketplace drafts and source confirmation. */
+.inbox-link-summary{
+ display:block;margin:10px 0;padding:9px 12px;border:1px solid #b7d8d4;
+ border-radius:10px;background:linear-gradient(125deg,#ecfaf5,#f1f4ff);
+ color:#315c72;font:700 11px/1.5 Poppins,system-ui,sans-serif;
+}
+.inbox-link-summary:empty{display:none}
+.inbox-link-header{
+ grid-column:1/-1;display:flex;align-items:center;gap:9px;flex-wrap:wrap;
+ min-width:0;padding:9px 11px;border:1px solid #b9d3d8;
+ border-radius:11px;background:linear-gradient(120deg,#ecfaf4,#eef3fd,#fff7ed);
+ color:#245773;font:850 11px Poppins,system-ui,sans-serif;
+}
+.inbox-link-header span{font-weight:900}
+.inbox-link-header small{color:#648093;font-weight:600}
+.inbox-link-header a{margin-left:auto;color:#245b99;font-weight:800;overflow-wrap:anywhere}
+@media(max-width:650px){
+ .inbox-link-header{gap:5px}
+ .inbox-link-header a{margin-left:0;flex:1 0 100%}
+}

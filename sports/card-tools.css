@@ -101,3 +101,12 @@
 .card-summary-navigation button:disabled{opacity:.4;cursor:default}
 .card-summary-navigation span{font:800 11px Poppins,sans-serif;color:#54738b;white-space:nowrap}
 @media(max-width:420px){.card-summary-navigation{gap:5px;padding:7px}.card-summary-navigation button{padding:8px 7px;font-size:10px}}
+
+/* PR #4 — align the reference capsule with the athlete name, not the row top.
+   The player name and the monospace reference have different line boxes. */
+.cards-grid .card-item .card-athlete .player-name-reference{
+  align-items:center;
+}
+.cards-grid .card-item .card-athlete .card-reference-actions{
+  align-self:center;
+}

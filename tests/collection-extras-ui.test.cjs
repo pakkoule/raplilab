@@ -3,7 +3,7 @@ async function setup(editor=true){const html=fs.readFileSync('sports/index.html'
 const cards=[{id:'a',status:'own',player:'Tyrese Maxey',brand:'Topps',team:'Philadelphia 76ers',tags:['Topps Chrome','Orange Refractor'],reference:'#41',numbered:true,serial:'12',printRun:'99',season:'2025',rookie:true,graded:true,gradeScore:'10',gradeOrg:'PSA'},{id:'b',status:'wishlist',player:'Sakina Karchaoui',brand:'Topps',reference:'#12',tags:['Blue Refractor'],dream:true,wishStage:'ordered',legendary:true},{id:'c',status:'own',player:'James Harden',brand:'Panini',numbered:true,serial:'1',printRun:'1',uniqueKind:'plate'}];
 test('full catalogue integration: views, search, editor fields, readonly and gold grading',async()=>{const s=await setup();try{s.w.RapliModuleBridge.previewState({records:cards,logos:[]});s.change('sportsViewSelect','plates');assert.match(s.$('resultsLabel').textContent,/1 carte/);s.change('sportsViewSelect','details');s.$('filterSearch').value='Topps Maxey 12/99';s.$('filterSearch').dispatchEvent(new s.w.Event('input',{bubbles:true}));assert.match(s.$('resultsLabel').textContent,/1 carte/);assert.ok(s.w.document.querySelector('.grading-perfect'));s.$('filterSearch').value='Maxey 2/99';s.$('filterSearch').dispatchEvent(new s.w.Event('input',{bubbles:true}));assert.match(s.$('resultsLabel').textContent,/0 carte/);s.w.RapliExtrasBridge.openCard(cards[0]);assert.ok(s.$('cardDialog').open);assert.equal(s.$('uniqueKind').disabled,true);s.w.RapliExtrasBridge.openCard(cards[1]);assert.equal(s.$('wishStage').value,'ordered');s.change('wishStage','shipping');assert.equal(s.w.RapliExtrasUI.cardFields().wishStage,'shipping');assert.deepEqual(s.errors,[]);}finally{await new Promise(r=>setTimeout(r,100));s.dom.window.close();}});
 test('visitors cannot write new settings',async()=>{const s=await setup(false);try{assert.equal(s.w.document.querySelector('[data-view="stats"]'),null);assert.equal([...s.w.document.querySelectorAll('.section-nav .tabs button')].some(b=>b.textContent==='ARRIVÉES'),false);await assert.rejects(s.w.RapliExtrasBridge.saveCard({id:'bad'}));assert.deepEqual(s.errors,[]);}finally{await new Promise(r=>setTimeout(r,100));s.dom.window.close();}});
-test('historical logos switch per season; editing preserves certification and provenance; rainbow remains read only',async()=>{const s=await setup();try{const png='data:image/png;base64,iVBORw0KGgo=';const record={...cards[0],gradePhoto:png,source:'Topps',sourceUrl:'https://www.topps.com/',customLegacyField:'keep'};const logo={id:'team:sixers',type:'team',name:'Philadelphia 76ers',image:png,historical:[{id:'old',from:'2025',to:'2025',image:png+'AA'}]};const rainbow={id:'rainbow:test',type:'rainbow',name:'Test',variants:[{label:'Base',cardId:'a'},{label:'Blue /99',cardId:'b'}]};s.w.RapliModuleBridge.previewState({records:[record,cards[1]],logos:[logo,rainbow]});assert.equal(s.w.document.querySelector('.team-identity img').getAttribute('src'),png+'AA');s.w.document.querySelector('[data-grade-photo]').click();assert.equal(s.w.document.querySelector('.extras-grade-zoom').getAttribute('src'),png);s.w.document.querySelector('.extras-dialog header button').click();s.w.RapliExtrasBridge.openCard(record);s.$('cardForm').dispatchEvent(new s.w.Event('submit',{bubbles:true,cancelable:true}));await new Promise(r=>setTimeout(r,20));const saved=s.w.RapliExtrasBridge.cards().find(c=>c.id==='a');assert.equal(saved.gradePhoto,png);assert.equal(saved.source,'Topps');assert.equal(saved.customLegacyField,'keep');s.w.document.querySelector('[data-view="rainbow"]').click();const before=JSON.stringify(s.w.RapliModuleBridge.getState());assert.ok(s.w.document.querySelector('.sports-rainbow-variant'));assert.equal(s.w.document.querySelector('[data-rainbow-sim]'),null);assert.equal(s.w.document.querySelector('.simulation-result'),null);assert.equal(JSON.stringify(s.w.RapliModuleBridge.getState()),before);assert.deepEqual(s.errors,[]);}finally{await new Promise(r=>setTimeout(r,100));s.dom.window.close();}});
+test('historical logos switch per season; editing preserves certification and provenance; rainbow remains read only',async()=>{const s=await setup();try{const png='data:image/png;base64,iVBORw0KGgo=';const record={...cards[0],gradePhoto:png,source:'Topps',sourceUrl:'https://www.topps.com/',customLegacyField:'keep'};const logo={id:'team:sixers',type:'team',name:'Philadelphia 76ers',image:png,historical:[{id:'old',from:'2025',to:'2025',image:png+'AA'}]};const rainbow={id:'rainbow:test',type:'rainbow',name:'Test',variants:[{label:'Base',cardId:'a'},{label:'Blue /99',cardId:'b'}]};s.w.RapliModuleBridge.previewState({records:[record,cards[1]],logos:[logo,rainbow]});assert.equal(s.w.document.querySelector('.team-identity img').getAttribute('src'),png+'AA');s.w.document.querySelector('[data-grade-photo]').click();assert.equal(s.w.document.querySelector('.extras-grade-zoom').getAttribute('src'),png);s.w.document.querySelector('.extras-dialog header button').click();s.w.RapliExtrasBridge.openCard(record);s.$('cardForm').dispatchEvent(new s.w.Event('submit',{bubbles:true,cancelable:true}));await new Promise(r=>setTimeout(r,20));const saved=s.w.RapliExtrasBridge.cards().find(c=>c.id==='a');assert.equal(saved.gradePhoto,png);assert.equal(saved.source,'Topps');assert.equal(saved.customLegacyField,'keep');s.change('sportsViewSelect','rainbows');const before=JSON.stringify(s.w.RapliModuleBridge.getState());assert.ok(s.w.document.querySelector('.sports-rainbow-variant'));assert.equal(s.w.document.querySelector('[data-rainbow-sim]'),null);assert.equal(s.w.document.querySelector('.simulation-result'),null);assert.equal(JSON.stringify(s.w.RapliModuleBridge.getState()),before);assert.deepEqual(s.errors,[]);}finally{await new Promise(r=>setTimeout(r,100));s.dom.window.close();}});
 
 test('historical editor remains visible when Supabase temporarily prevents writes',async()=>{
  const s=await setup(true);
@@ -148,8 +148,8 @@ test('search clear starts hidden, follows input value and does not alter tab nav
   assert.equal(s.$('filterSearch').value,'');
   assert.equal(clear.hidden,true);
   const tabs=s.w.document.querySelectorAll('.section-nav .tabs .tab');
-  assert.equal(tabs.length,3);
-  assert.deepEqual([...tabs].map(tab=>tab.dataset.view),['own','wishlist','rainbow']);
+  assert.equal(tabs.length,2);
+  assert.deepEqual([...tabs].map(tab=>tab.dataset.view),['own','wishlist']);
   assert.deepEqual(s.errors,[]);
  }finally{await new Promise(r=>setTimeout(r,100));s.dom.window.close();}
 });
@@ -276,19 +276,21 @@ test('long athlete names can shrink independently of the card reference',async()
 });
 
 
-test('navigation keeps only OWN, WISHLIST and RAINBOW and retains prior arrival records',async()=>{
+test('navigation keeps OWN and WISHLIST with Rainbows in the view selector and retains previous arrival records',async()=>{
  const s=await setup(true);
  try{
   const tabs=[...s.w.document.querySelectorAll('.section-nav .tabs .tab')];
-  assert.deepEqual(tabs.map(t=>t.dataset.view),['own','wishlist','rainbow']);
+  assert.deepEqual(tabs.map(t=>t.dataset.view),['own','wishlist']);
   assert.equal(s.w.document.querySelector('[data-view="stats"]'),null);
   assert.equal(s.$('inboxLink'),null);
   assert.equal([...s.w.document.querySelectorAll('button')].some(b=>b.textContent==='ARRIVÉES'),false);
   const previous={id:'inbox:old',type:'wishlist-inbox',source:'Vinted',completed:false};
   s.w.RapliModuleBridge.previewState({records:[],logos:[previous]});
   assert.ok(s.w.RapliExtrasBridge.logos().some(item=>item.id==='inbox:old'));
-  s.w.document.querySelector('[data-view="rainbow"]').click();
+  s.change('sportsViewSelect','rainbows');
   assert.equal(s.$('statsPanel').hidden,true);
+  assert.equal(s.$('rainbowPanel').hidden,false);
+  assert.equal(s.$('collectionPanel').hidden,false);
   assert.deepEqual(s.errors,[]);
  }finally{await new Promise(r=>setTimeout(r,100));s.dom.window.close();}
 });
@@ -306,6 +308,48 @@ test('1/1 à vérifier is no longer a view; unclassified cards are preserved',as
   assert.ok(s.w.document.querySelector('[data-card-id="legacy-1of1"]'));
   s.change('sportsViewSelect','cards');
   assert.match(s.$('resultsLabel').textContent,/1 carte/);
+  assert.deepEqual(s.errors,[]);
+ }finally{await new Promise(resolve=>setTimeout(resolve,100));s.dom.window.close();}
+});
+
+test('Rainbow manager lives inside the logo library and tile consultation stays accessible',async()=>{
+ const s=await setup(true);
+ try{
+  const rainbow={id:'rainbow:test-manager',type:'rainbow',name:'Maxey Prizm Rainbow',
+    athlete:'Tyrese Maxey',brand:'Panini',baseReferences:['#41'],
+    variants:[{label:'Base NN',cardId:'a',isBase:true},
+      {label:'Silver /99',cardId:'b',isBase:false}],updatedAt:1234567};
+  s.w.RapliModuleBridge.previewState({records:cards,logos:[rainbow]});
+  assert.deepEqual([...s.w.document.querySelectorAll('.section-nav .tabs .tab')]
+    .map(n=>n.dataset.view),['own','wishlist']);
+  const views=[...s.$('sportsViewSelect').options].map(n=>n.value);
+  assert.ok(views.includes('rainbows'));
+  s.$('logosBtn').click();
+  s.w.document.querySelector('.logo-tab[data-logo-type="rainbow"]').click();
+  assert.equal(s.$('rainbowLibraryPanel').hidden,false);
+  assert.equal(s.$('logoCreatePanel').hidden,true);
+  assert.equal(s.$('logoList').hidden,true);
+  assert.match(s.$('rainbowManageOverview').textContent,/1 Rainbow/);
+  const entry=s.w.document.querySelector('#rainbowManageList .rainbow-library-entry');
+  assert.ok(entry);
+  assert.match(entry.textContent,/Maxey Prizm Rainbow/);
+  assert.ok(entry.querySelector('[data-rainbow-edit]'));
+  assert.ok(entry.querySelector('[data-rainbow-delete]'));
+  s.$('viewRainbowTilesBtn').click();
+  assert.equal(s.$('logoDialog').open,false);
+  assert.equal(s.$('sportsViewSelect').value,'rainbows');
+  assert.equal(s.$('rainbowPanel').hidden,false);
+  assert.equal(s.$('collectionPanel').hidden,false,
+    'the view switch remains visible so viewers can leave Rainbow consultation');
+  assert.ok(s.w.document.querySelector('#rainbowList .sports-rainbow-group'));
+  assert.equal(s.w.document.querySelector('#rainbowList [data-rainbow-edit]'),null);
+  assert.equal(s.w.document.querySelector('#rainbowList [data-rainbow-delete]'),null);
+  s.w.document.querySelector('[data-view="wishlist"]').click();
+  assert.equal(s.$('rainbowPanel').hidden,true);
+  assert.equal(s.$('sportsViewSelect').value,'details');
+  assert.equal(s.$('collectionPanel').hidden,false);
+  assert.ok(s.w.RapliExtrasBridge.logos().some(row=>row.id===rainbow.id),
+    'Rainbow records are never migrated or deleted by this navigation change');
   assert.deepEqual(s.errors,[]);
  }finally{await new Promise(resolve=>setTimeout(resolve,100));s.dom.window.close();}
 });

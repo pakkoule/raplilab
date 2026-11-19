@@ -102,11 +102,15 @@
 .card-summary-navigation span{font:800 11px Poppins,sans-serif;color:#54738b;white-space:nowrap}
 @media(max-width:420px){.card-summary-navigation{gap:5px;padding:7px}.card-summary-navigation button{padding:8px 7px;font-size:10px}}
 
-/* PR #4 — align the reference capsule with the athlete name, not the row top.
-   The player name and the monospace reference have different line boxes. */
+/* PR #4 — align the reference with the first line of the athlete name.
+   Never center against the whole block: country flags and multi-player labels
+   can occupy a second line. JavaScript reduces only names that need more room. */
 .cards-grid .card-item .card-athlete .player-name-reference{
-  align-items:center;
+  align-items:start;
 }
 .cards-grid .card-item .card-athlete .card-reference-actions{
-  align-self:center;
+  align-self:start;
+}
+.cards-grid .card-item .card-athlete .player{
+  min-width:0;
 }

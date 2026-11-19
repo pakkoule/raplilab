@@ -90,13 +90,46 @@ historyButton.onclick=()=>{
  const $=id=>content.querySelector('#'+id);
  let editing='',image='';
 const choices=()=>B.logos().filter(l=>l.type==='team'||(l.type==='tag'&&B.tagCategories(l.name).includes('competition')));
-content.innerHTML=`<label>Équipe ou compétition<select id="historyLogo">${choices().map(l=>`<option value="${esc(l.id)}">${esc(l.name)}</option>`).join('')}</select></label><p>Le logo principal reste utilisé hors des périodes définies.</p><div id="historyList"></div><div class="extras-fields"><label>Début (année ou saison)<input id="historyFrom" placeholder="1997 ou 1997/1998"></label><label>Fin (facultative)<input id="historyTo" placeholder="2000 ou 2000/2001"></label><label>Logo de cette période<input type="file" id="historyFile" accept="image/png,image/jpeg,image/webp"></label><img id="historyPreview" alt="Aperçu" hidden><button type="button" id="historySave">Enregistrer la variante</button><button type="button" id="historyCancel">Nouvelle variante</button></div>`;
-const record=()=>B.logos().find(l=>l.id===$('historyLogo').value);function reset(){editing='';image='';$('historyFrom').value='';$('historyTo').value='';$('historyFile').value='';$('historyPreview').hidden=true;}
-function render(){const l=record();$('historyList').innerHTML=(l?.historical||[]).map(v=>`<div class="history-row"><img src="${esc(v.image)}" alt="${esc(l.name)}"><span>${esc(v.from)} — ${esc(v.to||v.from)}</span><button type="button" data-history-edit="${esc(v.id)}">Modifier</button><button type="button" data-history-delete="${esc(v.id)}">Supprimer</button></div>`).join('');}
+content.innerHTML=`<label>Équipe ou compétition<select id="historyLogo">${choices().map(l=>`<option value="${esc(l.id)}">${esc(l.name)}</option>`).join('')}</select></label><p>Les logos historiques s'appliquent automatiquement selon la saison. Les logos alternatifs ne s'affichent que lorsqu'ils sont choisis manuellement sur une carte.</p><div id="historyList"></div><div class="extras-fields"><label>Type de logo<select id="historyKind" class="select"><option value="historical">Logo historique · selon la saison</option><option value="alternative">Logo alternatif · sélection manuelle</option></select></label><div id="historyDateFields"><label>Début (année ou saison)<input id="historyFrom" placeholder="1997 ou 1997/1998"></label><label>Fin (facultative)<input id="historyTo" placeholder="2000 ou 2000/2001"></label></div><label id="historyNameWrap" hidden>Nom du logo alternatif<input id="historyName" maxlength="80" placeholder="Ex. City Edition, maillot rétro…"></label><p id="historyKindHint" class="historical-kind-hint"></p><label>Image du logo<input type="file" id="historyFile" accept="image/png,image/jpeg,image/webp"></label><img id="historyPreview" alt="Aperçu" hidden><button type="button" id="historySave">Enregistrer la variante</button><button type="button" id="historyCancel">Nouvelle variante</button></div>`;
+const record=()=>B.logos().find(l=>l.id===$('historyLogo').value);
+function syncKind(){
+ const alt=$('historyKind').value==='alternative';
+ $('historyDateFields').hidden=alt;
+ $('historyNameWrap').hidden=!alt;
+ $('historyKindHint').textContent=alt?
+   'Aucune période : sélectionne ce logo manuellement depuis la fiche d’une carte.':
+   'Une période est obligatoire et le logo correspondant s’applique automatiquement aux cartes.';
+}
+$('historyKind').addEventListener('change',syncKind);
+function reset(){
+ editing='';image='';$('historyKind').value='historical';$('historyName').value='';
+ $('historyFrom').value='';$('historyTo').value='';$('historyFile').value='';
+ $('historyPreview').hidden=true;$('historyPreview').removeAttribute('src');
+ syncKind();
+}
+function variantLabel(v){return v.kind==='alternative'?
+ 'ALTERNATIF · '+String(v.name||'Logo alternatif'):
+ 'HISTORIQUE · '+String(v.from||'')+' — '+String(v.to||v.from||'');}
+function render(){
+ const l=record();
+ $('historyList').innerHTML=(l?.historical||[]).map(v=>
+  `<div class="history-row"><img src="${esc(v.image)}" alt="${esc(l.name)}"><span>${esc(variantLabel(v))}</span><button type="button" data-history-edit="${esc(v.id)}">Modifier</button><button type="button" data-history-delete="${esc(v.id)}">Supprimer</button></div>`
+ ).join('');
+}
 $('historyLogo').onchange=()=>{reset();render();};$('historyCancel').onclick=reset;
 $('historyFile').onchange=async()=>{const file=$('historyFile').__rapliHistoricalImportFile||$('historyFile').files[0];if(!file)return;$('historySave').disabled=true;try{image=await B.readPhoto(file,1000,.9,'logo');$('historyPreview').src=image;$('historyPreview').hidden=false;}catch(e){notify(e.message);}finally{$('historySave').disabled=false;}};
-$('historySave').onclick=async()=>{if(!B.canEdit())return notify('Synchronisation en cours : la modification des logos est temporairement indisponible.');const l=record();if(!l)return notify('Ajoute d’abord le logo principal dans la bibliothèque.');const v={id:editing||uid(),from:$('historyFrom').value.trim(),to:$('historyTo').value.trim(),image};if(!image||!E.validatePeriod(l.historical,v))return notify('Vérifie les années / saisons : aucune période ne doit se chevaucher.');try{await B.saveLogo({...l,historical:[...(l.historical||[]).filter(x=>x.id!==v.id),v],updatedAt:Date.now()});reset();render();B.render();}catch(e){notify(e.message);}};
-content.onclick=async e=>{const edit=e.target.dataset.historyEdit,del=e.target.dataset.historyDelete;if(del&&!B.canEdit())return notify('Synchronisation en cours : la suppression des logos est temporairement indisponible.');if(edit){const v=record().historical.find(v=>v.id===edit);editing=v.id;image=v.image;$('historyFrom').value=v.from;$('historyTo').value=v.to;$('historyPreview').src=image;$('historyPreview').hidden=false;}if(del){try{await B.saveLogo({...record(),historical:record().historical.filter(v=>v.id!==del),updatedAt:Date.now()});render();B.render();}catch(err){notify(err.message);}}};render();};
+$('historySave').onclick=async()=>{if(!B.canEdit())return notify('Synchronisation en cours : la modification des logos est temporairement indisponible.');const l=record();if(!l)return notify('Ajoute d’abord le logo principal dans la bibliothèque.');const alt=$('historyKind').value==='alternative';
+const v={id:editing||uid(),kind:alt?'alternative':'historical',
+ from:alt?'':$('historyFrom').value.trim(),
+ to:alt?'':$('historyTo').value.trim(),
+ name:alt?$('historyName').value.trim().slice(0,80):'',image};
+if(!image)return notify('Choisis une image pour le logo.');
+if(alt&&!v.name)return notify('Donne un nom au logo alternatif pour pouvoir le retrouver.');
+if(!E.validatePeriod(l.historical,v))
+ return notify('Vérifie les années / saisons : aucune période historique ne doit se chevaucher.');try{await B.saveLogo({...l,historical:[...(l.historical||[]).filter(x=>x.id!==v.id),v],updatedAt:Date.now()});reset();render();B.render();}catch(e){notify(e.message);}};
+content.onclick=async e=>{const edit=e.target.dataset.historyEdit,del=e.target.dataset.historyDelete;if(del&&!B.canEdit())return notify('Synchronisation en cours : la suppression des logos est temporairement indisponible.');if(edit){const v=record().historical.find(v=>v.id===edit);editing=v.id;image=v.image;$('historyKind').value=v.kind==='alternative'?'alternative':'historical';
+$('historyName').value=v.name||'';$('historyFrom').value=v.from||'';$('historyTo').value=v.to||'';
+syncKind();$('historyPreview').src=image;$('historyPreview').hidden=false;}if(del){try{await B.saveLogo({...record(),historical:record().historical.filter(v=>v.id!==del),updatedAt:Date.now()});render();B.render();}catch(err){notify(err.message);}}};render();syncKind();};
 
 // RAPLI HISTORY IMAGE LIBRARY — visually browse saved variants and select source images.
 // External files are previewed only; the existing historySave button controls all writes.
@@ -123,7 +156,7 @@ historyButton.addEventListener('click',()=>{
  const gallery=document.createElement('section');gallery.className='historical-gallery';
  gallery.innerHTML=
   '<h3>BIBLIOTHÈQUE DE LOGOS</h3>'+
-  '<p>Choisis une image parmi les propositions ou explore les archives Wikimedia Commons. Le logo ne sera enregistré qu’après validation de sa période.</p>'+
+  '<p>Choisis une image parmi les propositions ou explore les archives Wikimedia Commons. Tu pourras l’enregistrer comme logo historique avec une période, ou comme logo alternatif sans saison.</p>'+
   '<div id="historyLibraryFeatured" class="historical-gallery-grid"></div>'+
   '<form id="historyLibraryForm" class="historical-library-search" autocomplete="off">'+
     '<label for="historyLibraryQuery">Chercher des logos (équipe, championnat, époque)</label>'+
@@ -149,11 +182,12 @@ historyButton.addEventListener('click',()=>{
  }
  function renderSaved(){
   const variants=allTeams().flatMap(team=>(team.historical||[]).map(v=>({team,v})));
-  get('historyAllSummary').textContent='Tous les logos historiques enregistrés ('+variants.length+')';
+  get('historyAllSummary').textContent='Tous les logos historiques et alternatifs ('+variants.length+')';
   get('historySavedAll').innerHTML=variants.length?variants.map(row=>
    '<button type="button" class="historical-saved-choice" data-history-team="'+esc(row.team.id)+'" data-history-edit-saved="'+esc(row.v.id)+'">'+
    '<img loading="lazy" src="'+esc(row.v.image)+'" alt=""><span>'+esc(row.team.name)+
-   '<small>'+esc(row.v.from)+' — '+esc(row.v.to||row.v.from)+'</small></span></button>'
+   '<small>'+(row.v.kind==='alternative'?'ALTERNATIF · '+esc(row.v.name||'Logo alternatif'):
+     'HISTORIQUE · '+esc(row.v.from)+' — '+esc(row.v.to||row.v.from))+'</small></span></button>'
   ).join(''):'<p class="historical-gallery-status">Aucune variante enregistrée pour le moment.</p>';
  }
  function renderSelected(){
@@ -194,13 +228,19 @@ historyButton.addEventListener('click',()=>{
     throw Error('Image non compatible : ouvre la source et récupère son PNG ou WEBP.');
    const file=new File([blob],'historical-logo.'+(blob.type==='image/png'?'png':blob.type==='image/webp'?'webp':'jpg'),{type:blob.type});
    if(select.value!==team||d.dataset.rapliHistoryMode!=='true'||!d.querySelector('#historyInlinePanel'))return;
-   if(row.from)get('historyFrom').value=row.from;
-   if(row.to)get('historyTo').value=row.to;
+   if(get('historyKind').value!=='alternative'){
+    if(row.from)get('historyFrom').value=row.from;
+    if(row.to)get('historyTo').value=row.to;
+   }else if(!get('historyName').value.trim()){
+    get('historyName').value=row.title.slice(0,80);
+   }
    const input=get('historyFile');
    input.__rapliHistoricalImportFile=file;
    input.dispatchEvent(new Event('change',{bubbles:true}));
    delete input.__rapliHistoricalImportFile;
-   status.textContent='Logo sélectionné. Vérifie les saisons et clique sur « Enregistrer la variante ».';
+   status.textContent=get('historyKind').value==='alternative'?
+    'Logo prêt : confirme son nom puis enregistre-le comme alternatif.':
+    'Logo sélectionné : vérifie les saisons avant de l’enregistrer.';
   }catch(error){status.textContent='Import indisponible : '+(error.message||'erreur réseau')+'. Le bouton Choisir un fichier reste disponible.';}
   finally{inFlight=false;}
  }

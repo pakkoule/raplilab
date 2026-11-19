@@ -138,3 +138,25 @@ test('Printing Plate foil colors are editable independently in collector setting
   assert.deepEqual(s.errors,[]);
  }finally{await new Promise(resolve=>setTimeout(resolve,100));s.dom.window.close();}
 });
+
+test('search clear starts hidden, follows input value and does not alter tab navigation',async()=>{
+ const s=await setup(true);
+ try{
+  const clear=s.w.document.querySelector('.sports-catalogue-search .extras-search-clear');
+  const wrap=s.w.document.querySelector('.sports-catalogue-search .input-wrap');
+  assert.ok(clear,'clear-search button exists');
+  assert.equal(clear.parentElement,wrap,'button belongs to positioning wrapper');
+  assert.equal(clear.hidden,true,'clear control does not appear when search is empty');
+  s.$('filterSearch').value='Maxey';
+  s.$('filterSearch').dispatchEvent(new s.w.Event('input',{bubbles:true}));
+  assert.equal(clear.hidden,false);
+  clear.click();
+  assert.equal(s.$('filterSearch').value,'');
+  assert.equal(clear.hidden,true);
+  const tabs=s.w.document.querySelectorAll('.section-nav .tabs .tab');
+  assert.ok(tabs.length>=5);
+  assert.equal(tabs[4].textContent,'ARRIVÉES');
+  assert.equal(tabs[4].hidden,false);
+  assert.deepEqual(s.errors,[]);
+ }finally{await new Promise(r=>setTimeout(r,100));s.dom.window.close();}
+});

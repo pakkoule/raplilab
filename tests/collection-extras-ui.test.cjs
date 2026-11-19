@@ -198,3 +198,36 @@ test('the existing Étiquettes tab edits seasonal and Wishlist shipment labels, 
   assert.deepEqual(s.errors,[]);
  }finally{await new Promise(resolve=>setTimeout(resolve,100));s.dom.window.close();}
 });
+
+test('manual team logo overrides season for only one card, keeps same team and restores automatic choice',async()=>{
+ const ctx=await setup(true);
+ try{
+  const png='data:image/png;base64,iVBORw0KGgo=';
+  const current=png+'AA',retro=png+'BB',other=png+'CC';
+  const logo={id:'team:sixers',type:'team',name:'Philadelphia 76ers',image:current,
+   historical:[
+    {id:'retro90',from:'1997/1998',to:'2008/2009',image:retro},
+    {id:'retro09',from:'2009/2010',to:'2014/2015',image:other}
+   ]};
+  const base={...cards[0],season:'2025',team:'Philadelphia 76ers'};
+  const forced={...base,id:'force',teamLogoOverride:'history:retro90'};
+  ctx.w.RapliModuleBridge.previewState({records:[base,forced],logos:[logo]});
+  const images=()=>[...ctx.w.document.querySelectorAll('.card-item .team-identity img')].map(img=>img.getAttribute('src'));
+  assert.equal(images()[0],current,'automatic card follows its season');
+  assert.equal(images()[1],retro,'forced card uses historical jersey-era logo');
+  ctx.w.RapliExtrasBridge.openCard(forced);
+  assert.equal(ctx.$('cardTeamLogoOverrideWrap').hidden,false);
+  assert.equal(ctx.$('cardTeamLogoOverride').value,'history:retro90');
+  assert.equal(ctx.$('cardTeamLogoPreviewImage').getAttribute('src'),retro);
+  ctx.change('cardSeason','2012/2013');
+  assert.equal(ctx.$('cardTeamLogoPreviewImage').getAttribute('src'),retro,'manual choice stays fixed across seasons');
+  ctx.change('cardTeamLogoOverride','');
+  assert.equal(ctx.$('cardTeamLogoPreviewImage').getAttribute('src'),other,'automatic choice resumes');
+  ctx.change('cardTeamLogoOverride','main');
+  assert.equal(ctx.$('cardTeamLogoPreviewImage').getAttribute('src'),current,'principal logo can be forced');
+  ctx.change('cardTeam','Autre équipe');
+  assert.equal(ctx.$('cardTeamLogoOverrideWrap').hidden,true,'unknown teams hide the override');
+  assert.equal(ctx.$('cardTeamLogoOverride').value,'');
+  assert.deepEqual(ctx.errors,[]);
+ }finally{await new Promise(done=>setTimeout(done,100));ctx.dom.window.close();}
+});

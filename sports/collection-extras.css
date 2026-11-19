@@ -114,3 +114,35 @@
  #logoDialog .historical-inline-panel .historical-library-search button{flex:1 0 100%}
  #logoDialog .historical-inline-panel .extras-fields{padding:11px}
 }
+
+/* Harmonized option section inside the card editor form column. */
+#cardDialog .form-fields .extras-card-fields{
+ margin:13px 0 0;padding:13px;min-width:0;
+ border:1px solid #c9dce8;border-radius:12px;
+ background:linear-gradient(135deg,#f5fafc,#eef5fb 55%,#f8f6fc);
+ font-family:Poppins,system-ui,sans-serif;color:#264562;
+}
+#cardDialog .extras-fields-heading{margin:0 0 12px;padding:0 0 9px;border-bottom:1px solid #d4e2ee}
+#cardDialog .extras-fields-heading>span{font:900 9px Poppins,sans-serif;letter-spacing:.09em;color:#4b7a99}
+#cardDialog .extras-fields-heading h3{margin:4px 0 0;font:900 14px Poppins,sans-serif;color:#244b70}
+#cardDialog .extras-fields-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+#cardDialog .extras-card-fields .input-group{display:flex;flex-direction:column;gap:6px;margin:0;min-width:0}
+#cardDialog .extras-card-fields .input-group[hidden]{display:none!important}
+#cardDialog .extras-card-fields .input-group label{font:800 10px Poppins,sans-serif;color:#3b5b7d}
+#cardDialog .extras-card-fields select,#cardDialog .extras-card-fields input[type=file]{
+ box-sizing:border-box;width:100%;min-width:0;min-height:40px;
+ padding:8px;border:1px solid #c2d2e4;border-radius:9px;
+ background:#fff;color:#29435e;font:650 12px Poppins,sans-serif;
+}
+#cardDialog .extras-card-fields #gradePhotoWrap{grid-column:1/-1}
+#cardDialog .extras-card-fields #gradePhotoPreview{
+ max-width:100%;max-height:125px;object-fit:contain;align-self:flex-start;border-radius:9px;
+}
+#cardDialog .extras-card-fields #gradePhotoPreview[hidden]{display:none!important}
+#cardDialog .extras-card-fields #gradePhotoRemove{align-self:start}
+#cardDialog .extras-fields-note{display:block;margin-top:9px;color:#657e95;font:600 9px/1.5 Poppins,sans-serif}
+@media(max-width:650px){
+ #cardDialog .form-fields .extras-card-fields{padding:10px;margin-top:9px}
+ #cardDialog .extras-fields-grid{grid-template-columns:1fr}
+ #cardDialog .extras-card-fields select,#cardDialog .extras-card-fields input[type=file]{font-size:16px}
+}

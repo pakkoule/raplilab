@@ -89,3 +89,52 @@ test('historical logos use the same tab bar and switching tabs restores their pa
   assert.deepEqual(s.errors,[]);
  }finally{await new Promise(r=>setTimeout(r,100));s.dom.window.close();}
 });
+
+test('Printing Plate is a single silver two-line badge; settings override gold 1/1 and editor hides irrelevant fields',async()=>{
+ const s=await setup();
+ try{
+  const plate={...cards[2],plateColor:'Black',photo:'data:image/png;base64,iVBORw0KGgo='};
+  const real={...cards[2],id:'real',uniqueKind:'oneofone'};
+  s.w.RapliModuleBridge.previewState({records:[plate,real],logos:[]});
+  const plateTile=s.w.document.querySelector('[data-card-id="c"]');
+  const realTile=s.w.document.querySelector('[data-card-id="real"]');
+  assert.ok(plateTile?.querySelector('.collector-badge--plate'),'Printing Plate uses one combined serial badge');
+  assert.match(plateTile.querySelector('.collector-badge--plate .collector-badge-caption').textContent,/PRINTING PLATE/);
+  assert.equal(plateTile.querySelector('.extras-mini-badges'),null,'duplicate Printing Plate chip is removed');
+  assert.ok(plateTile.classList.contains('card-foil-plate'));
+  assert.ok(!plateTile.classList.contains('card-foil-gold'));
+  assert.ok(realTile.classList.contains('card-foil-gold'));
+  s.w.RapliExtrasBridge.openCard(plate);
+  assert.ok(s.$('cardDialog').querySelector('.form-fields #wishStageWrap'),'options live in card form column');
+  assert.equal(s.$('wishStageWrap').hidden,true);
+  assert.equal(s.$('uniqueKindWrap').hidden,false);
+  assert.equal(s.$('plateColorWrap').hidden,false);
+  assert.equal(s.$('gradePhotoWrap').hidden,true);
+  assert.equal(s.$('cardSource'),null);
+  assert.equal(s.$('cardSourceUrl'),null);
+  s.$('cardNumbered').checked=false;
+  s.$('cardNumbered').dispatchEvent(new s.w.Event('change',{bubbles:true}));
+  assert.equal(s.$('uniqueKindWrap').hidden,true);
+  assert.equal(s.$('plateColorWrap').hidden,true);
+  assert.deepEqual(s.errors,[]);
+ }finally{await new Promise(resolve=>setTimeout(resolve,100));s.dom.window.close();}
+});
+test('Printing Plate foil colors are editable independently in collector settings',async()=>{
+ const s=await setup();
+ try{
+  s.w.RapliModuleBridge.previewState({records:cards,logos:[]});
+  s.$('logosBtn').click();
+  s.w.document.querySelector('[data-logo-type="collector"]').click();
+  assert.equal(s.$('collectorPlateFinish').value,'foil');
+  assert.equal(s.$('collectorPlateBackground').value,'#c4d0dc');
+  assert.ok(s.$('collectorPlatePreview').querySelector('.collector-badge--plate'));
+  s.$('collectorPlateBackground').value='#536b82';
+  s.$('collectorPlateBackground').dispatchEvent(new s.w.Event('input',{bubbles:true}));
+  s.$('collectorPlateFinish').value='solid';
+  s.$('collectorPlateFinish').dispatchEvent(new s.w.Event('change',{bubbles:true}));
+  assert.equal(s.$('collectorPlateGradient').hidden,true);
+  assert.match(s.$('collectorPlatePreview').innerHTML,/#536b82/);
+  assert.ok(s.$('collectorBadgePreview').querySelector('.collector-badge:not(.collector-badge--plate)'));
+  assert.deepEqual(s.errors,[]);
+ }finally{await new Promise(resolve=>setTimeout(resolve,100));s.dom.window.close();}
+});

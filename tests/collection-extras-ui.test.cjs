@@ -2,35 +2,29 @@ const {test}=require('node:test'),assert=require('node:assert/strict'),fs=requir
 async function setup(editor=true){const html=fs.readFileSync('sports/index.html','utf8'),errors=[];const vc=new VirtualConsole();vc.on('jsdomError',e=>{if(e.type!=='css parsing')errors.push(e.message);});const dom=new JSDOM(html,{runScripts:'outside-only',url:'https://test.local/sports/',pretendToBeVisual:true,virtualConsole:vc});const w=dom.window;w.RapliAdminAccess={isEditor:()=>editor};w.RapliSharedCollection={canEdit:()=>editor,changed:()=>{}};w.HTMLElement.prototype.scrollIntoView=function(){};w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};w.HTMLDialogElement.prototype.close=function(){this.open=false;this.dispatchEvent(new w.Event('close'));};w.matchMedia=()=>({matches:false,addEventListener(){},removeEventListener(){}});for(const f of ['collection-extras.js','collection-stats.js','stats-visuals.js','rainbow.js','card-tools.js'])w.eval(fs.readFileSync('sports/'+f,'utf8'));const inline=[...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)].filter(m=>!m[1].includes('src='));for(const m of inline)w.eval(m[2]);for(const f of ['color-theme.js','collection-extras-ui.js'])w.eval(fs.readFileSync('sports/'+f,'utf8'));await new Promise(r=>setTimeout(r,20));const $=id=>w.document.getElementById(id),change=(id,value)=>{$(id).value=value;$(id).dispatchEvent(new w.Event('change',{bubbles:true}));};return {w,dom,$,change,errors};}
 const cards=[{id:'a',status:'own',player:'Tyrese Maxey',brand:'Topps',team:'Philadelphia 76ers',tags:['Topps Chrome','Orange Refractor'],reference:'#41',numbered:true,serial:'12',printRun:'99',season:'2025',rookie:true,graded:true,gradeScore:'10',gradeOrg:'PSA'},{id:'b',status:'wishlist',player:'Sakina Karchaoui',brand:'Topps',reference:'#12',tags:['Blue Refractor'],dream:true,wishStage:'ordered',legendary:true},{id:'c',status:'own',player:'James Harden',brand:'Panini',numbered:true,serial:'1',printRun:'1',uniqueKind:'plate'}];
 test('full catalogue integration: views, search, editor fields, readonly and gold grading',async()=>{const s=await setup();try{s.w.RapliModuleBridge.previewState({records:cards,logos:[]});s.change('sportsViewSelect','plates');assert.match(s.$('resultsLabel').textContent,/1 carte/);s.change('sportsViewSelect','details');s.$('filterSearch').value='Topps Maxey 12/99';s.$('filterSearch').dispatchEvent(new s.w.Event('input',{bubbles:true}));assert.match(s.$('resultsLabel').textContent,/1 carte/);assert.ok(s.w.document.querySelector('.grading-perfect'));s.$('filterSearch').value='Maxey 2/99';s.$('filterSearch').dispatchEvent(new s.w.Event('input',{bubbles:true}));assert.match(s.$('resultsLabel').textContent,/0 carte/);s.w.RapliExtrasBridge.openCard(cards[0]);assert.ok(s.$('cardDialog').open);assert.equal(s.$('uniqueKind').disabled,true);s.w.RapliExtrasBridge.openCard(cards[1]);assert.equal(s.$('wishStage').value,'ordered');s.change('wishStage','shipping');assert.equal(s.w.RapliExtrasUI.cardFields().wishStage,'shipping');assert.deepEqual(s.errors,[]);}finally{await new Promise(r=>setTimeout(r,100));s.dom.window.close();}});
-test('inbox import retains incomplete rows and retry does not duplicate cards',async()=>{const s=await setup();try{s.w.RapliModuleBridge.previewState({records:cards,logos:[]});[...s.w.document.querySelectorAll('button')].find(b=>b.textContent==='ARRIVÉES').click();s.$('inboxChecklist').value='Tyrese Maxey - Topps Chrome - #41 - Orange Refractor /25\nSakina Karchaoui';s.$('inboxParse').click();await new Promise(r=>setTimeout(r,20));assert.equal(s.w.document.querySelectorAll('.inbox-row').length,2);s.w.document.querySelector('[data-import-one]').click();await new Promise(r=>setTimeout(r,20));const imported=s.w.RapliExtrasBridge.cards().filter(c=>c.id.startsWith('import:'));assert.equal(imported.length,1);assert.equal(imported[0].status,'wishlist');assert.equal(imported[0].printRun,'25');assert.equal(s.w.document.querySelectorAll('.inbox-row').length,1);s.w.document.querySelector('[data-import-one]').click();await new Promise(r=>setTimeout(r,20));assert.equal(s.w.RapliExtrasBridge.cards().length,4);assert.deepEqual(s.errors,[]);}finally{await new Promise(r=>setTimeout(r,100));s.dom.window.close();}});
-test('visitors cannot write new settings or open the inbox',async()=>{const s=await setup(false);try{const b=[...s.w.document.querySelectorAll('button')].find(b=>b.textContent==='ARRIVÉES');assert.equal(b.hidden,true);b.click();assert.equal(s.$('inboxList'),null);await assert.rejects(s.w.RapliExtrasBridge.saveCard({id:'bad'}));assert.deepEqual(s.errors,[]);}finally{await new Promise(r=>setTimeout(r,100));s.dom.window.close();}});
+test('visitors cannot write new settings',async()=>{const s=await setup(false);try{assert.equal(s.w.document.querySelector('[data-view="stats"]'),null);assert.equal([...s.w.document.querySelectorAll('.section-nav .tabs button')].some(b=>b.textContent==='ARRIVÉES'),false);await assert.rejects(s.w.RapliExtrasBridge.saveCard({id:'bad'}));assert.deepEqual(s.errors,[]);}finally{await new Promise(r=>setTimeout(r,100));s.dom.window.close();}});
 test('historical logos switch per season; editing preserves certification and provenance; rainbow remains read only',async()=>{const s=await setup();try{const png='data:image/png;base64,iVBORw0KGgo=';const record={...cards[0],gradePhoto:png,source:'Topps',sourceUrl:'https://www.topps.com/',customLegacyField:'keep'};const logo={id:'team:sixers',type:'team',name:'Philadelphia 76ers',image:png,historical:[{id:'old',from:'2025',to:'2025',image:png+'AA'}]};const rainbow={id:'rainbow:test',type:'rainbow',name:'Test',variants:[{label:'Base',cardId:'a'},{label:'Blue /99',cardId:'b'}]};s.w.RapliModuleBridge.previewState({records:[record,cards[1]],logos:[logo,rainbow]});assert.equal(s.w.document.querySelector('.team-identity img').getAttribute('src'),png+'AA');s.w.document.querySelector('[data-grade-photo]').click();assert.equal(s.w.document.querySelector('.extras-grade-zoom').getAttribute('src'),png);s.w.document.querySelector('.extras-dialog header button').click();s.w.RapliExtrasBridge.openCard(record);s.$('cardForm').dispatchEvent(new s.w.Event('submit',{bubbles:true,cancelable:true}));await new Promise(r=>setTimeout(r,20));const saved=s.w.RapliExtrasBridge.cards().find(c=>c.id==='a');assert.equal(saved.gradePhoto,png);assert.equal(saved.source,'Topps');assert.equal(saved.customLegacyField,'keep');s.w.document.querySelector('[data-view="rainbow"]').click();const before=JSON.stringify(s.w.RapliModuleBridge.getState());assert.ok(s.w.document.querySelector('.sports-rainbow-variant'));assert.equal(s.w.document.querySelector('[data-rainbow-sim]'),null);assert.equal(s.w.document.querySelector('.simulation-result'),null);assert.equal(JSON.stringify(s.w.RapliModuleBridge.getState()),before);assert.deepEqual(s.errors,[]);}finally{await new Promise(r=>setTimeout(r,100));s.dom.window.close();}});
 
-test('historical logos and arrivals stay visible to a verified editor during temporary cloud hydration',async()=>{
+test('historical editor remains visible when Supabase temporarily prevents writes',async()=>{
  const s=await setup(true);
  try{
-  // Mirrors Supabase's busyLoading period: editor identity is valid, writes are paused.
   s.w.RapliSharedCollection.canEdit=()=>false;
   s.w.RapliExtrasUI.refresh();
-  const historic=s.w.document.querySelector('[data-history-open]');
-  const arrivals=[...s.w.document.querySelectorAll('button')].find(b=>b.textContent==='ARRIVÉES');
-  assert.ok(historic,'historical logos entry must exist');
-  assert.equal(historic.hidden,false);
-  assert.equal(arrivals.hidden,false);
-  assert.equal(historic.previousElementSibling.dataset.logoType,'team');
-  historic.click();
-  assert.ok(s.$('historyInlinePanel'),'history must appear within the logo library');
+  const historical=s.w.document.querySelector('[data-history-open]');
+  assert.ok(historical);
+  assert.equal(historical.hidden,false);
+  assert.equal(historical.previousElementSibling.dataset.logoType,'team');
+  historical.click();
+  assert.ok(s.$('historyInlinePanel'));
   assert.equal(s.$('logoDialog').dataset.rapliHistoryMode,'true');
-  assert.equal(s.w.document.querySelectorAll('dialog.extras-dialog[open]').length,0,'no nested dialog');
   s.$('historySave').click();
   assert.match(s.$('toast').textContent,/Synchronisation en cours/);
   s.w.RapliSharedCollection.canEdit=()=>true;
   s.w.RapliExtrasUI.refresh();
-  assert.equal(historic.hidden,false);
+  assert.equal(historical.hidden,false);
   assert.deepEqual(s.errors,[]);
  }finally{await new Promise(r=>setTimeout(r,100));s.dom.window.close();}
 });
-
 test('historical logo library offers saved variants and searchable public previews without writing',async()=>{
  const s=await setup(true);
  try{
@@ -154,9 +148,8 @@ test('search clear starts hidden, follows input value and does not alter tab nav
   assert.equal(s.$('filterSearch').value,'');
   assert.equal(clear.hidden,true);
   const tabs=s.w.document.querySelectorAll('.section-nav .tabs .tab');
-  assert.ok(tabs.length>=5);
-  assert.equal(tabs[4].textContent,'ARRIVÉES');
-  assert.equal(tabs[4].hidden,false);
+  assert.equal(tabs.length,3);
+  assert.deepEqual([...tabs].map(tab=>tab.dataset.view),['own','wishlist','rainbow']);
   assert.deepEqual(s.errors,[]);
  }finally{await new Promise(r=>setTimeout(r,100));s.dom.window.close();}
 });
@@ -282,30 +275,20 @@ test('long athlete names can shrink independently of the card reference',async()
  }finally{await new Promise(done=>setTimeout(done,100));s.dom.window.close();}
 });
 
-test('Vinted, eBay and Cardhobby link batch produces editable drafts, not immediate Wishlist cards',async()=>{
+
+test('navigation keeps only OWN, WISHLIST and RAINBOW and retains prior arrival records',async()=>{
  const s=await setup(true);
  try{
-  s.w.RapliModuleBridge.previewState({records:cards,logos:[]});
-  const tab=[...s.w.document.querySelectorAll('.section-nav .tabs button')].find(x=>x.textContent==='ARRIVÉES');
-  tab.click();
-  const originalCards=s.w.RapliExtrasBridge.cards().length;
-  s.$('inboxLink').value='https://www.vinted.fr/items/123456789-2024-25-panini-prizm-tyrese-maxey-blue-ice-99?utm_source=share\nhttps://www.ebay.com/itm/123456789012\nhttps://cardhobby.com/sale/maxey-topps-chrome';
-  s.$('inboxAddLink').click();
-  await new Promise(resolve=>setTimeout(resolve,50));
-  const rows=s.w.document.querySelectorAll('.inbox-row');
-  assert.equal(rows.length,3);
-  assert.match(s.$('inboxLinkSummary').textContent,/3 annonce/);
-  assert.equal(s.w.RapliExtrasBridge.cards().length,originalCards);
-  assert.equal(rows[0].querySelector('[data-inbox-field="source"]').value,'Vinted');
-  assert.equal(rows[1].querySelector('[data-inbox-field="source"]').value,'eBay');
-  assert.equal(rows[2].querySelector('[data-inbox-field="source"]').value,'Cardhobby');
-  assert.equal(rows[0].querySelector('[data-inbox-field="player"]').value,'Tyrese Maxey');
-  assert.ok(rows[0].querySelector('a[target="_blank"]'));
-  s.$('inboxLink').value='https://www.vinted.fr/items/123456789-again?fbclid=duplicate';
-  s.$('inboxAddLink').click();
-  await new Promise(resolve=>setTimeout(resolve,30));
-  assert.equal(s.w.document.querySelectorAll('.inbox-row').length,3,'same listing ID is not queued twice');
-  assert.match(s.$('inboxLinkSummary').textContent,/doublon/);
+  const tabs=[...s.w.document.querySelectorAll('.section-nav .tabs .tab')];
+  assert.deepEqual(tabs.map(t=>t.dataset.view),['own','wishlist','rainbow']);
+  assert.equal(s.w.document.querySelector('[data-view="stats"]'),null);
+  assert.equal(s.$('inboxLink'),null);
+  assert.equal([...s.w.document.querySelectorAll('button')].some(b=>b.textContent==='ARRIVÉES'),false);
+  const previous={id:'inbox:old',type:'wishlist-inbox',source:'Vinted',completed:false};
+  s.w.RapliModuleBridge.previewState({records:[],logos:[previous]});
+  assert.ok(s.w.RapliExtrasBridge.logos().some(item=>item.id==='inbox:old'));
+  s.w.document.querySelector('[data-view="rainbow"]').click();
+  assert.equal(s.$('statsPanel').hidden,true);
   assert.deepEqual(s.errors,[]);
- }finally{await new Promise(resolve=>setTimeout(resolve,100));s.dom.window.close();}
+ }finally{await new Promise(r=>setTimeout(r,100));s.dom.window.close();}
 });

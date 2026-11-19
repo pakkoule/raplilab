@@ -52,9 +52,158 @@ content.innerHTML=`<label>Équipe ou compétition<select id="historyLogo">${choi
 const record=()=>B.logos().find(l=>l.id===$('historyLogo').value);function reset(){editing='';image='';$('historyFrom').value='';$('historyTo').value='';$('historyFile').value='';$('historyPreview').hidden=true;}
 function render(){const l=record();$('historyList').innerHTML=(l?.historical||[]).map(v=>`<div class="history-row"><img src="${esc(v.image)}" alt="${esc(l.name)}"><span>${esc(v.from)} — ${esc(v.to||v.from)}</span><button type="button" data-history-edit="${esc(v.id)}">Modifier</button><button type="button" data-history-delete="${esc(v.id)}">Supprimer</button></div>`).join('');}
 $('historyLogo').onchange=()=>{reset();render();};$('historyCancel').onclick=reset;
-$('historyFile').onchange=async()=>{const file=$('historyFile').files[0];if(!file)return;$('historySave').disabled=true;try{image=await B.readPhoto(file,1000,.9,'logo');$('historyPreview').src=image;$('historyPreview').hidden=false;}catch(e){notify(e.message);}finally{$('historySave').disabled=false;}};
+$('historyFile').onchange=async()=>{const file=$('historyFile').__rapliHistoricalImportFile||$('historyFile').files[0];if(!file)return;$('historySave').disabled=true;try{image=await B.readPhoto(file,1000,.9,'logo');$('historyPreview').src=image;$('historyPreview').hidden=false;}catch(e){notify(e.message);}finally{$('historySave').disabled=false;}};
 $('historySave').onclick=async()=>{if(!B.canEdit())return notify('Synchronisation en cours : la modification des logos est temporairement indisponible.');const l=record();if(!l)return notify('Ajoute d’abord le logo principal dans la bibliothèque.');const v={id:editing||uid(),from:$('historyFrom').value.trim(),to:$('historyTo').value.trim(),image};if(!image||!E.validatePeriod(l.historical,v))return notify('Vérifie les années / saisons : aucune période ne doit se chevaucher.');try{await B.saveLogo({...l,historical:[...(l.historical||[]).filter(x=>x.id!==v.id),v],updatedAt:Date.now()});reset();render();B.render();}catch(e){notify(e.message);}};
 content.onclick=async e=>{const edit=e.target.dataset.historyEdit,del=e.target.dataset.historyDelete;if(del&&!B.canEdit())return notify('Synchronisation en cours : la suppression des logos est temporairement indisponible.');if(edit){const v=record().historical.find(v=>v.id===edit);editing=v.id;image=v.image;$('historyFrom').value=v.from;$('historyTo').value=v.to;$('historyPreview').src=image;$('historyPreview').hidden=false;}if(del){try{await B.saveLogo({...record(),historical:record().historical.filter(v=>v.id!==del),updatedAt:Date.now()});render();B.render();}catch(err){notify(err.message);}}};render();};
+
+// RAPLI HISTORY IMAGE LIBRARY — visually browse saved variants and select source images.
+// External files are previewed only; the existing historySave button controls all writes.
+historyButton.addEventListener('click',()=>{
+ const d=[...document.querySelectorAll('dialog.extras-dialog[open]')].find(node=>node.querySelector('#historyLogo'));
+ if(!d)return;
+ const get=id=>d.querySelector('#'+id),select=get('historyLogo'),saved=get('historyList');
+ let inFlight=false,searchSerial=0;
+ const known=new Map();
+ const presets=[
+  {id:'featured:1977',team:'Philadelphia 76ers',title:'76ers · logo classique 1977–1997',
+   file:'Philadelphia-76ers-Logo-1977-1996.png',from:'1977/1978',to:'1996/1997'},
+  {id:'featured:2009',team:'Philadelphia 76ers',title:'76ers · logo bleu et rouge 2009–2015',
+   file:'Philadelphia 76ers Logo.svg',from:'2009/2010',to:'2014/2015'}
+ ];
+ const sourcePage=file=>'https://commons.wikimedia.org/wiki/File:'+encodeURIComponent(file);
+ const previewPath=file=>'https://commons.wikimedia.org/wiki/Special:FilePath/'+encodeURIComponent(file)+'?width=330';
+ const selected=()=>window.RapliExtrasBridge.logos().find(r=>r.id===select.value);
+ const allTeams=()=>window.RapliExtrasBridge.logos().filter(r=>r.type==='team'||(r.type==='tag'&&window.RapliExtrasBridge.tagCategories(r.name).includes('competition')));
+ const savedPanel=document.createElement('details');
+ savedPanel.className='historical-all-saved';
+ savedPanel.innerHTML='<summary id="historyAllSummary">Tous les logos enregistrés</summary><div id="historySavedAll" class="historical-saved-list"></div>';
+ saved.after(savedPanel);
+ const gallery=document.createElement('section');gallery.className='historical-gallery';
+ gallery.innerHTML=
+  '<h3>BIBLIOTHÈQUE DE LOGOS</h3>'+
+  '<p>Choisis une image parmi les propositions ou explore les archives Wikimedia Commons. Le logo ne sera enregistré qu’après validation de sa période.</p>'+
+  '<div id="historyLibraryFeatured" class="historical-gallery-grid"></div>'+
+  '<form id="historyLibraryForm" class="historical-library-search" autocomplete="off">'+
+    '<label for="historyLibraryQuery">Chercher des logos (équipe, championnat, époque)</label>'+
+    '<div><input type="search" id="historyLibraryQuery" placeholder="Ex. Philadelphia 76ers logo">'+
+    '<button id="historyLibraryFetch" type="submit">Rechercher</button></div>'+
+  '</form>'+
+  '<p id="historyLibraryStatus" class="historical-gallery-status" role="status"></p>'+
+  '<div id="historyLibraryResults" class="historical-gallery-grid"></div>'+
+  '<small>Sources : Wikimedia Commons. Vérifie la licence et les droits de marque avant réutilisation. Les archives peuvent être incomplètes.</small>';
+ const editor=d.querySelector('.extras-fields');
+ if(editor)editor.before(gallery);else d.querySelector('.extras-content').append(gallery);
+ const grid=get('historyLibraryResults'),featured=get('historyLibraryFeatured'),status=get('historyLibraryStatus');
+ function cardMarkup(item){
+  known.set(item.id,item);
+  return '<article class="historical-library-card">'+
+   '<div class="historical-library-picture"><img loading="lazy" decoding="async" src="'+esc(item.preview)+'" alt="'+esc(item.title)+'"></div>'+
+   '<strong>'+esc(item.title)+'</strong>'+
+   (item.from?'<small>'+esc(item.from)+' — '+esc(item.to||item.from)+'</small>':'')+
+   '<div class="historical-library-card-actions">'+
+   '<button type="button" data-history-use="'+esc(item.id)+'">Choisir</button>'+
+   '<a href="'+esc(item.source)+'" target="_blank" rel="noopener noreferrer">Source ↗</a>'+
+   '</div></article>';
+ }
+ function renderSaved(){
+  const variants=allTeams().flatMap(team=>(team.historical||[]).map(v=>({team,v})));
+  get('historyAllSummary').textContent='Tous les logos historiques enregistrés ('+variants.length+')';
+  get('historySavedAll').innerHTML=variants.length?variants.map(row=>
+   '<button type="button" class="historical-saved-choice" data-history-team="'+esc(row.team.id)+'" data-history-edit-saved="'+esc(row.v.id)+'">'+
+   '<img loading="lazy" src="'+esc(row.v.image)+'" alt=""><span>'+esc(row.team.name)+
+   '<small>'+esc(row.v.from)+' — '+esc(row.v.to||row.v.from)+'</small></span></button>'
+  ).join(''):'<p class="historical-gallery-status">Aucune variante enregistrée pour le moment.</p>';
+ }
+ function renderSelected(){
+  searchSerial++;
+  known.clear();grid.replaceChildren();
+  const team=selected();
+  featured.innerHTML=presets.filter(row=>team&&window.RapliExtras.norm(row.team)===window.RapliExtras.norm(team.name))
+   .map(row=>cardMarkup({...row,preview:previewPath(row.file),source:sourcePage(row.file)})).join('');
+  get('historyLibraryQuery').value=team?team.name+' logo':'';
+  status.textContent=team?'Recherche prête pour '+team.name+'.':'Ajoute d’abord un logo principal dans Équipes.';
+ }
+ select.addEventListener('change',renderSelected);
+ new MutationObserver(renderSaved).observe(saved,{childList:true});
+ function queryURL(params){return 'https://commons.wikimedia.org/w/api.php?'+new URLSearchParams(params).toString();}
+ async function resolveImage(row){
+  if(!row.file)return row.download;
+  const url=queryURL({action:'query',titles:'File:'+row.file,
+   prop:'imageinfo',iiprop:'url|mime',iiurlwidth:'800',format:'json',origin:'*'});
+  const response=await fetch(url,{mode:'cors',credentials:'omit'});
+  if(!response.ok)throw Error('Source momentanément inaccessible.');
+  const data=await response.json();
+  const info=Object.values(data.query?.pages||{})[0]?.imageinfo?.[0];
+  if(!info)throw Error('Image introuvable.');
+  return info.thumburl||info.url;
+ }
+ async function choose(key){
+  if(inFlight)return;
+  const row=known.get(key),team=select.value;
+  if(!row)return;
+  inFlight=true;status.textContent='Préparation du logo…';
+  try{
+   const url=await resolveImage(row);
+   if(!/^https:\/\/upload\.wikimedia\.org\//.test(url))throw Error('Hébergement de fichier non accepté.');
+   const response=await fetch(url,{mode:'cors',credentials:'omit'});
+   if(!response.ok)throw Error('Impossible de charger le logo.');
+   const blob=await response.blob();
+   if(!['image/png','image/jpeg','image/webp'].includes(blob.type)||blob.size>12*1024*1024)
+    throw Error('Image non compatible : ouvre la source et récupère son PNG ou WEBP.');
+   const file=new File([blob],'historical-logo.'+(blob.type==='image/png'?'png':blob.type==='image/webp'?'webp':'jpg'),{type:blob.type});
+   if(select.value!==team||!d.open)return;
+   if(row.from)get('historyFrom').value=row.from;
+   if(row.to)get('historyTo').value=row.to;
+   const input=get('historyFile');
+   input.__rapliHistoricalImportFile=file;
+   input.dispatchEvent(new Event('change',{bubbles:true}));
+   delete input.__rapliHistoricalImportFile;
+   status.textContent='Logo sélectionné. Vérifie les saisons et clique sur « Enregistrer la variante ».';
+  }catch(error){status.textContent='Import indisponible : '+(error.message||'erreur réseau')+'. Le bouton Choisir un fichier reste disponible.';}
+  finally{inFlight=false;}
+ }
+ gallery.addEventListener('click',event=>{
+  const button=event.target.closest('[data-history-use]');
+  if(button)void choose(button.dataset.historyUse);
+ });
+ savedPanel.addEventListener('click',event=>{
+  const b=event.target.closest('[data-history-team]');if(!b)return;
+  select.value=b.dataset.historyTeam;
+  select.dispatchEvent(new Event('change',{bubbles:true}));
+  const edit=saved.querySelector('[data-history-edit="'+CSS.escape(b.dataset.historyEditSaved)+'"]');
+  if(edit)edit.click();
+ });
+ get('historyLibraryForm').addEventListener('submit',async event=>{
+  event.preventDefault();
+  const search=get('historyLibraryQuery').value.trim(),team=select.value;
+  if(!search){status.textContent='Saisis un nom d’équipe.';return;}
+  const serial=++searchSerial,button=get('historyLibraryFetch');
+  button.disabled=true;status.textContent='Recherche dans les archives Wikimedia Commons…';
+  grid.replaceChildren();
+  try{
+   const url=queryURL({action:'query',generator:'search',gsrsearch:search,
+    gsrnamespace:'6',gsrlimit:'30',prop:'imageinfo',iiprop:'url|mime',
+    iiurlwidth:'360',format:'json',origin:'*'});
+   const response=await fetch(url,{mode:'cors',credentials:'omit'});
+   if(!response.ok)throw Error('Le service ne répond pas.');
+   const data=await response.json();
+   if(serial!==searchSerial||team!==select.value||!d.open)return;
+   const items=Object.values(data.query?.pages||{}).map(page=>{
+    const info=page.imageinfo?.[0],file=String(page.title||'').replace(/^File:/,'');
+    if(!info||!/^image\/(?:png|jpeg|webp|svg\+xml)$/.test(info.mime||'')||
+       !/logo|crest|badge|emblem|blason|escudo|écusson|wappen/i.test(file))return null;
+    return {id:'commons:'+page.pageid,title:file.replace(/[_-]+/g,' ').replace(/\.(png|jpe?g|webp|svg)$/i,''),
+     preview:info.thumburl||info.url,download:info.thumburl||info.url,
+     source:'https://commons.wikimedia.org/wiki/'+encodeURIComponent(page.title)};
+   }).filter(Boolean);
+   grid.innerHTML=items.map(cardMarkup).join('');
+   status.textContent=items.length?items.length+' résultat(s) : sélectionne un logo.':
+    'Aucun logo correspondant. Essaie le nom complet de l’équipe (éventuellement en anglais).';
+  }catch(error){if(serial===searchSerial)status.textContent='Recherche indisponible : '+(error.message||'erreur réseau')+'. Utilise l’import manuel si besoin.';}
+  finally{button.disabled=false;}
+ });
+ renderSaved();renderSelected();
+});
 // Inbox records and cards share the existing differential storage pipeline.
 const inboxButton=element('button','ARRIVÉES','tab');inboxButton.type='button';document.querySelector('.section-nav .tabs').append(inboxButton);
 function inboxItems(){return B.logos().filter(l=>l.type==='wishlist-inbox');}

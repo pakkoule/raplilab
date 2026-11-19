@@ -50,7 +50,15 @@ function refresh(){
  const editor=window.RapliAdminAccess?.isEditor?.()===true;
  inboxButton.hidden=!editor;historyButton.hidden=!editor;
 }
-function decorate(container=document){if(!$('emptyState').classList.contains('hidden')&&search.value.trim()){const words=E.norm(search.value).split(/\s+/).filter(Boolean);const related=B.players().filter(n=>words.some(w=>E.norm(n).includes(w))).slice(0,3);$('emptyCopy').textContent=related.length?'Essaie seulement : '+related.join(' · ')+', ou retire le numéro de série.':'Essaie un nom d’athlète, une marque ou un tirage comme /25. La croix efface la recherche.';}for(const tile of container.querySelectorAll('[data-card-id]')){const c=cardIndex.get(tile.dataset.cardId);if(!c)continue;let badges=tile.querySelector('.extras-mini-badges');const labels=[];const count=counts.get(E.identity(c))||0;if(c.status==='own'&&count>1)labels.push('×'+count+' exemplaires');if(c.status==='wishlist'&&c.wishStage)labels.push(c.wishStage==='ordered'?'Commandée':'En attente de livraison');/* Printing Plate is displayed within the 1/1 collector badge. */if(E.classification(c)==='review')labels.push('1/1 · à vérifier');if(!labels.length)continue;if(!badges){badges=element('div','','extras-mini-badges');(tile.querySelector('.card-status-badges')||tile).append(badges);}const html=labels.map(t=>'<span>'+esc(t)+'</span>').join('');if(badges.innerHTML!==html)badges.innerHTML=html;}}
+function decorate(container=document){if(!$('emptyState').classList.contains('hidden')&&search.value.trim()){const words=E.norm(search.value).split(/\s+/).filter(Boolean);const related=B.players().filter(n=>words.some(w=>E.norm(n).includes(w))).slice(0,3);$('emptyCopy').textContent=related.length?'Essaie seulement : '+related.join(' · ')+', ou retire le numéro de série.':'Essaie un nom d’athlète, une marque ou un tirage comme /25. La croix efface la recherche.';}for(const tile of container.querySelectorAll('[data-card-id]')){const c=cardIndex.get(tile.dataset.cardId);if(!c)continue;let badges=tile.querySelector('.extras-mini-badges');const labels=[];const count=counts.get(E.identity(c))||0;
+ if(c.status==='own'&&count>1)labels.push('<span>×'+esc(count)+' exemplaires</span>');
+ if(c.status==='wishlist'&&['ordered','shipping'].includes(c.wishStage))
+  labels.push(B.labelBadge('wishlist:'+c.wishStage));
+ /* Printing Plate is displayed within the 1/1 collector badge. */
+ if(E.classification(c)==='review')labels.push('<span>1/1 · à vérifier</span>');
+ if(!labels.length){if(badges)badges.remove();continue;}
+ if(!badges){badges=element('div','','extras-mini-badges');(tile.querySelector('.card-status-badges')||tile).append(badges);}
+ const html=labels.join('');if(badges.innerHTML!==html)badges.innerHTML=html;}}
 let queued=false;new MutationObserver(()=>{if(queued)return;queued=true;queueMicrotask(()=>{queued=false;decorate();});}).observe($('cardGrid'),{childList:true,subtree:true});
 // Historical variants stay inside the original logo record.
 const historyButton=element('button','Logos historiques','logo-tab');

@@ -165,3 +165,17 @@
 .sports-catalogue-search .input.with-icon{padding-right:43px}
 .sports-catalogue-search input[type=search]::-webkit-search-cancel-button{display:none}
 .sports-catalogue-search .extras-search-clear:focus-visible{outline:2px solid #58baa8;outline-offset:2px}
+
+/* Customizable Wishlist status badge – the saved label styling overrides legacy pill defaults. */
+.extras-mini-badges .extras-mini-badge.is-custom-label{
+ display:inline-flex;align-items:center;justify-content:center;
+ box-sizing:border-box;max-width:100%;min-height:28px;
+ padding:5px 9px;
+ background:var(--sports-label-gradient,var(--sports-label-bg))!important;
+ color:var(--sports-label-text)!important;
+ border:1px solid var(--sports-label-border)!important;
+ border-radius:var(--sports-label-radius,6px)!important;
+ box-shadow:inset 0 1px 0 #ffffff6b,0 2px 5px #071f2e18;
+ font:850 10px/1.25 Poppins,system-ui,sans-serif;
+ text-align:center;white-space:normal;overflow-wrap:anywhere;
+}

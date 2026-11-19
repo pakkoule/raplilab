@@ -292,3 +292,20 @@ test('navigation keeps only OWN, WISHLIST and RAINBOW and retains prior arrival 
   assert.deepEqual(s.errors,[]);
  }finally{await new Promise(r=>setTimeout(r,100));s.dom.window.close();}
 });
+
+test('1/1 à vérifier is no longer a view; unclassified cards are preserved',async()=>{
+ const s=await setup(true);
+ try{
+  const unclassified={...cards[2],id:'legacy-1of1',status:'own',numbered:true,printRun:'1',uniqueKind:''};
+  s.w.RapliModuleBridge.previewState({records:[unclassified],logos:[]});
+  const layouts=[...s.$('sportsViewSelect').options].map(o=>o.value);
+  assert.equal(layouts.includes('unique-review'),false);
+  assert.ok(layouts.includes('oneofone'));
+  assert.ok(layouts.includes('plates'));
+  assert.equal(s.w.RapliExtras.classification(unclassified),'review');
+  assert.ok(s.w.document.querySelector('[data-card-id="legacy-1of1"]'));
+  s.change('sportsViewSelect','cards');
+  assert.match(s.$('resultsLabel').textContent,/1 carte/);
+  assert.deepEqual(s.errors,[]);
+ }finally{await new Promise(resolve=>setTimeout(resolve,100));s.dom.window.close();}
+});

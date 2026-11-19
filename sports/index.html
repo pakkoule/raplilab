@@ -4895,9 +4895,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         $('sportsViewSelect').value=sportsGalleryLayout;
         const selectedGroup=sportsGallerySelected?sportsGalleryGroups(match,sportsGalleryLayout).find(g=>g.key===sportsGallerySelected):null;
         const visibleCount=selectedGroup?selectedGroup.items.length:match.length;
-        $('resultsLabel').innerHTML='<strong>'+visibleCount+'</strong> carte'+(visibleCount>1?'s':'')+
-          (currentView==='own'?' possédée':' recherchée')+(visibleCount>1?'s':'')+
-          (currentView==='wishlist'&&$('filterDream').checked?' · Dreamlist':'');
+        $('resultsLabel').innerHTML='<strong>'+visibleCount+'</strong> carte'+(visibleCount!==1?'s':'');
         document.querySelectorAll('[data-sports-layout]').forEach(button=>{
           button.setAttribute('aria-pressed',String(button.dataset.sportsLayout===sportsGalleryLayout));
         });

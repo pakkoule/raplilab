@@ -2796,7 +2796,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
   .section-nav .sports-lab-brand img{width:42px!important;height:42px!important;max-width:100%;object-fit:contain}
   .section-nav .tabs{
     grid-column:2;grid-row:1;display:grid!important;
-    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
     grid-auto-flow:column!important;justify-content:stretch!important;
     align-items:stretch!important;flex-wrap:nowrap!important;
     gap:2px!important;width:100%!important;max-width:100%!important;
@@ -2879,7 +2879,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
   html:not([data-rapli-role="editor"]) .sports-catalogue-controls>.nav-actions{display:none!important}
 }
 @media(max-width:520px){
-  /* OWN, WISHLIST, RAINBOW on one mobile row. */
+  /* OWN and WISHLIST are the two main tabs; Rainbow tiles use the view picker. */
   .section-nav .tabs .tab b{display:none!important}
 }
 @media(max-width:390px){
@@ -2982,6 +2982,34 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
  #cardDialog .card-team-logo-override{padding:9px}
 }
 </style>
+
+<style id="rapli-rainbow-library-management">
+#logoDialog #rainbowLibraryPanel[hidden]{display:none!important}
+#logoDialog .rainbow-library-panel{display:grid;gap:12px;min-width:0;color:#254864}
+#logoDialog .rainbow-library-intro{padding:13px 14px;border:1px solid #b3d8d4;border-radius:12px;background:linear-gradient(125deg,#e9faf2,#e9effe 60%,#f7eef6)}
+#logoDialog .rainbow-library-intro strong{font:900 12px/1.3 Poppins,sans-serif;letter-spacing:.045em}
+#logoDialog .rainbow-library-intro p{margin:6px 0 0;font:650 11px/1.5 Poppins,sans-serif;color:#4d7086}
+#logoDialog .rainbow-library-toolbar{display:flex;flex-wrap:wrap;gap:8px}
+#logoDialog .rainbow-library-toolbar button{min-height:40px}
+#logoDialog .rainbow-library-summary{font:800 11px Poppins,sans-serif;color:#4a6a7e}
+#logoDialog .rainbow-library-list{display:grid;gap:9px;min-width:0}
+#logoDialog .rainbow-library-entry{display:grid;grid-template-columns:65px minmax(0,1fr);gap:10px;align-items:center;padding:10px;border-radius:13px;border:1px solid #b9d3dc;background:linear-gradient(130deg,#fff,#f3f9fd,#f8f5fb)}
+#logoDialog .rainbow-library-thumb{width:65px;height:74px;display:grid;place-items:center;overflow:hidden;border:1px solid #ccdce6;border-radius:9px;background:#fff}
+#logoDialog .rainbow-library-thumb img{width:100%;height:100%;object-fit:contain}
+#logoDialog .rainbow-library-placeholder{color:#69879a}
+#logoDialog .rainbow-library-entry-info{display:grid;gap:4px;min-width:0}
+#logoDialog .rainbow-library-entry-info strong{font:850 12px/1.35 Poppins,sans-serif;overflow-wrap:anywhere}
+#logoDialog .rainbow-library-entry-info small{font:650 10px/1.4 Poppins,sans-serif;color:#668096}
+#logoDialog .rainbow-library-entry-info>span{font:800 10px Poppins,sans-serif;color:#277d70}
+#logoDialog .rainbow-library-entry-actions{grid-column:1/-1;display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+#logoDialog .rainbow-library-entry-actions button{border-radius:9px;min-height:35px;padding:8px 12px;font:850 10px Poppins,sans-serif}
+#logoDialog .rainbow-library-empty{font:650 11px/1.5 Poppins,sans-serif;color:#597b90}
+@media(max-width:540px){
+ #logoDialog .rainbow-library-entry{grid-template-columns:53px minmax(0,1fr);gap:8px;padding:8px}
+ #logoDialog .rainbow-library-thumb{width:53px;height:65px}
+ #logoDialog .rainbow-library-entry-actions button{flex:1 1 100px}
+}
+</style>
 </head>
 <body>
   <div class="app-shell">
@@ -2993,7 +3021,6 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
           <div class="tabs" role="tablist" aria-label="Collection">
             <button type="button" role="tab" aria-selected="true" class="tab active" data-view="own">OWN <b id="tabOwnCount">0</b></button>
             <button type="button" role="tab" aria-selected="false" class="tab" data-view="wishlist">WISHLIST <b id="tabWishCount">0</b></button>
-            <button type="button" role="tab" aria-selected="false" class="tab" data-view="rainbow">🌈 RAINBOW <b id="tabRainbowCount">0</b></button>
           </div>
         </div>
         <section id="rapliSharedLoading" aria-labelledby="rapliSharedLoadingTitle" aria-live="polite" data-status="loading">
@@ -3010,7 +3037,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
             <button id="logosBtn" type="button" class="button button-soft sports-icon-action rapli-personalize-action" aria-label="Gérer les logos" title="Gérer les logos"><svg class="rapli-personalize-gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M10.3 2.4h3.4l.5 1.9 1.7.7 1.7-1 2.4 2.4-1 1.7.7 1.7 1.9.5v3.4l-1.9.5-.7 1.7 1 1.7-2.4 2.4-1.7-1-1.7.7-.5 1.9h-3.4l-.5-1.9-1.7-.7-1.7 1-2.4-2.4 1-1.7-.7-1.7-1.9-.5v-3.4l1.9-.5.7-1.7-1-1.7 2.4-2.4 1.7 1 1.7-.7z"/></svg></button>
             <button id="addCardBtn" type="button" class="button button-primary sports-icon-action" aria-label="Ajouter une carte" title="Ajouter une carte"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
           </div>
-        <select id="sportsViewSelect" aria-label="Vue des cartes"><option value="details">FICHES</option><option value="cards">VIGNETTES</option><option value="brand">MARQUE</option><option value="team">TEAM</option><option value="athlete">ATHLÈTE</option><option value="nationality">PAYS</option><option value="tag">TAG</option><option value="competition">LIGUE</option><option value="edition">ÉDITION</option><option value="insert">INSERT</option><option value="parallel">PARALLÈLE</option><option value="sport">SPORT</option><option value="grading">GRADING</option><option value="recent">DERNIERS AJOUTS</option><option value="legendary">LÉGENDAIRES</option><option value="rookies">ROOKIES</option><option value="graded">CARTES GRADÉES</option><option value="season">PAR SAISON</option><option value="dreammuseum">MUSÉE DREAMLIST</option><option value="oneofone">ONE OF ONE</option><option value="plates">PRINTING PLATES</option></select>
+        <select id="sportsViewSelect" aria-label="Vue des cartes"><option value="details">FICHES</option><option value="cards">VIGNETTES</option><option value="brand">MARQUE</option><option value="team">TEAM</option><option value="athlete">ATHLÈTE</option><option value="nationality">PAYS</option><option value="tag">TAG</option><option value="competition">LIGUE</option><option value="edition">ÉDITION</option><option value="insert">INSERT</option><option value="parallel">PARALLÈLE</option><option value="sport">SPORT</option><option value="grading">GRADING</option><option value="recent">DERNIERS AJOUTS</option><option value="legendary">LÉGENDAIRES</option><option value="rookies">ROOKIES</option><option value="graded">CARTES GRADÉES</option><option value="season">PAR SAISON</option><option value="dreammuseum">MUSÉE DREAMLIST</option><option value="oneofone">ONE OF ONE</option><option value="plates">PRINTING PLATES</option><option value="rainbows">🌈 RAINBOWS</option></select>
         <span class="results-label sports-count-foil" id="resultsLabel" aria-live="polite">0 carte</span>
         <input id="filterDream" type="checkbox" hidden aria-label="Afficher uniquement la Dreamlist">
         <div class="field search-field sports-catalogue-search"><label class="field-label" for="filterSearch">RECHERCHE</label><div class="input-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input class="input with-icon" id="filterSearch" type="search" autocomplete="off" placeholder="Rechercher une carte…" aria-label="Rechercher dans toutes les informations des cartes"></div></div>
@@ -3042,8 +3069,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         <div id="sportsPaginationBottom" class="sports-pagination-host" aria-label="Pagination inférieure"></div>
         <div id="emptyState" class="empty hidden"><div class="empty-mark" id="emptyIcon"></div><h3 id="emptyTitle">Aucune carte pour le moment</h3><p id="emptyCopy">Ta collection commence ici.</p><button type="button" class="button button-primary" id="emptyAddBtn">Ajouter une carte</button></div>
         </div>
-        <section id="rainbowPanel" class="sports-rainbow-panel" role="tabpanel" aria-label="Suivi des Rainbow de cartes sportives" hidden>
-        <div class="sports-rainbow-head"><button id="newRainbowBtn" class="button button-primary" type="button">＋ CRÉER UN RAINBOW</button></div>
+        <section id="rainbowPanel" class="sports-rainbow-panel" role="region" aria-label="Consultation des tuiles Rainbow" hidden>
         <div id="rainbowOverview" aria-live="polite"></div><div id="rainbowList" class="sports-rainbow-list"></div>
       </section>
       <div id="statsPanel" class="stats-panel" role="tabpanel" aria-label="Statistiques de la collection" hidden>
@@ -3132,8 +3158,9 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
   <dialog id="logoDialog" class="modal small" aria-labelledby="logoDialogTitle">
     <div class="modal-header"><div><span class="modal-kicker">RAPLI SPORTS / IDENTITÉS VISUELLES</span><h2 id="logoDialogTitle" class="modal-title">Bibliothèque de logos</h2></div><button type="button" class="close-modal" data-close="logoDialog" aria-label="Fermer">×</button></div>
     <div class="modal-body">
-      <div class="logo-tabs"><button type="button" class="logo-tab" id="appearanceSettingsBtn" data-logo-type="appearance">Couleurs &amp; variations</button><button type="button" class="logo-tab active" data-logo-type="brand">Marques</button><button type="button" class="logo-tab" data-logo-type="team">Équipes</button><button type="button" class="logo-tab" data-logo-type="rookie">Rookie / RC</button><button type="button" class="logo-tab" data-logo-type="athlete">Portraits athlètes</button><button type="button" class="logo-tab" data-logo-type="nationality">Pays</button><button type="button" class="logo-tab" data-logo-type="sport">Sports</button><button type="button" class="logo-tab" data-logo-type="grading">Organismes de grading</button><button type="button" class="logo-tab" data-logo-type="tag">Tags / variations</button><button type="button" class="logo-tab" data-logo-type="labels">Étiquettes</button><button type="button" class="logo-tab" data-logo-type="collector">Style des badges</button></div>
+      <div class="logo-tabs"><button type="button" class="logo-tab" id="appearanceSettingsBtn" data-logo-type="appearance">Couleurs &amp; variations</button><button type="button" class="logo-tab active" data-logo-type="brand">Marques</button><button type="button" class="logo-tab" data-logo-type="team">Équipes</button><button type="button" class="logo-tab" data-logo-type="rainbow">Rainbows</button><button type="button" class="logo-tab" data-logo-type="rookie">Rookie / RC</button><button type="button" class="logo-tab" data-logo-type="athlete">Portraits athlètes</button><button type="button" class="logo-tab" data-logo-type="nationality">Pays</button><button type="button" class="logo-tab" data-logo-type="sport">Sports</button><button type="button" class="logo-tab" data-logo-type="grading">Organismes de grading</button><button type="button" class="logo-tab" data-logo-type="tag">Tags / variations</button><button type="button" class="logo-tab" data-logo-type="labels">Étiquettes</button><button type="button" class="logo-tab" data-logo-type="collector">Style des badges</button></div>
       <section id="appearanceSettingsPanel" class="appearance-dialog" aria-label="Couleurs et variations" hidden></section>
+      <section id="rainbowLibraryPanel" class="rainbow-library-panel" aria-label="Gestion des Rainbows" hidden><div class="rainbow-library-intro"><strong>GÉRER LES RAINBOWS</strong><p>Crée et modifie les checklists ici. Les tuiles restent consultables depuis la vue 🌈 RAINBOWS de la collection.</p></div><div class="rainbow-library-toolbar"><button id="newRainbowBtn" class="button button-primary" type="button">＋ CRÉER UN RAINBOW</button><button id="viewRainbowTilesBtn" class="button button-soft" type="button">VOIR LES TUILES ↗</button></div><div id="rainbowManageOverview" class="rainbow-library-summary" aria-live="polite"></div><div id="rainbowManageList" class="rainbow-library-list"></div></section>
       <div class="logo-create" id="logoCreatePanel"><p class="logo-help" id="logoCreateHelp">Associe une image à une marque ou une équipe : son logo s'affichera automatiquement sur toutes les cartes correspondantes.</p><div class="logo-create-row"><div class="input-group"><label id="logoNameLabel" for="logoName">Nom de la marque</label><select id="logoAthletePicker" class="select saved-value-picker" aria-label="Choisir un athlète déjà présent dans la collection" hidden><option value="">Choisir un athlète enregistré…</option></select><select id="logoTeamPicker" class="select saved-value-picker" aria-label="Choisir une équipe enregistrée" hidden><option value="">Choisir une équipe…</option></select><select id="logoTagPicker" class="select saved-value-picker" aria-label="Choisir un tag enregistré" hidden><option value="">Choisir un tag…</option></select><select id="logoGroupPicker" class="select saved-value-picker" aria-label="Choisir un pays ou un sport" hidden><option value="">Choisir une catégorie…</option></select><input class="input" id="logoName" list="logoNamesList" maxlength="100" placeholder="Topps"><datalist id="logoNamesList"></datalist></div><div class="input-group"><label id="logoImageLabel">Image du logo</label><label class="logo-file" id="logoFileLabel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 16V4m-5 5 5-5 5 5M4 17v4h16v-4"/></svg><span id="logoFileText">Choisir</span><input type="file" id="logoFileInput" accept="image/png,image/jpeg,image/webp"></label></div><button id="cropPortraitBtn" type="button" class="button button-soft" hidden>✂ Recadrer</button><button id="saveLogoBtn" type="button" class="button button-primary">Ajouter</button></div>
       <label id="athleteNationalityWrap" class="sports-athlete-country-editor" for="athleteNationality" hidden>
         PAYS DE L’ATHLÈTE
@@ -3296,7 +3323,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
       let db=null, cards=[], logos=[], currentView='own', currentTags=[], currentPhoto='', editingId=null, logoType='brand', pendingLogoPhoto='', toastTimer=null;
       let pendingPortraitCrop={scale:1,x:0,y:0},portraitCropEditing=null,portraitCropPointer=null;
       let countryDraft={tileImage:null,catalogImage:null};
-      const SPORTS_GALLERY_LAYOUTS=Object.freeze(['details','cards','brand','team','athlete','nationality','tag','competition','edition','insert','parallel','sport','grading','recent','legendary','rookies','graded','season','dreammuseum','oneofone','plates']);
+      const SPORTS_GALLERY_LAYOUTS=Object.freeze(['details','cards','brand','team','athlete','nationality','tag','competition','edition','insert','parallel','sport','grading','recent','legendary','rookies','graded','season','dreammuseum','oneofone','plates','rainbows']);
       const SPORTS_GALLERY_LAYOUT_KEY='rapli-sports-gallery-layout-v1';
       function savedSportsGalleryLayout(){
         try{const value=localStorage.getItem(SPORTS_GALLERY_LAYOUT_KEY);return SPORTS_GALLERY_LAYOUTS.includes(value)?value:'details';}
@@ -4580,9 +4607,29 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
               '<span class="sports-rainbow-stat-icon" aria-hidden="true">○</span>'+
               '<span class="sports-rainbow-stat-info"><strong>'+group.missing+'</strong><small>MANQUANTES</small></span></span></div>'+
             '</div></div><details class="sports-rainbow-disclosure" data-rainbow-disclosure="'+safeText(group.id)+'"'+(expanded.has(group.id)?' open':'')+'><summary>Variations · '+group.total+'</summary><div class="sports-rainbow-variants">'+variants+'</div></details>'+
-            '<div class="sports-rainbow-actions"><button type="button" class="button button-soft" data-rainbow-pdf="'+safeText(group.id)+'">↓ CHECKLIST PDF</button><button type="button" class="button button-soft" data-rainbow-edit="'+safeText(group.id)+'">MODIFIER</button>'+
-            '<button type="button" class="button button-ghost" data-rainbow-delete="'+safeText(group.id)+'">SUPPRIMER LE RAINBOW</button></div></article>';
+            '<div class="sports-rainbow-actions"><button type="button" class="button button-soft" data-rainbow-pdf="'+safeText(group.id)+'">↓ CHECKLIST PDF</button></div></article>';
         }).join(''):'<div class="sports-rainbow-empty">Aucun Rainbow créé pour le moment.<p>Définis une checklist des parallèles d’une même carte, puis associe tes fiches OWN et Wishlist pour suivre ta progression.</p></div>';
+      }
+      // Management lives in the logo library. Public Rainbow tiles stay
+      // available in the view picker, without edit/delete actions.
+      function renderRainbowManager(){
+        const panel=$('rainbowLibraryPanel'),list=$('rainbowManageList');
+        if(!panel||panel.hidden||!list)return;
+        const groups=savedRainbows().map(group=>rainbowEngine.progress(group,cards));
+        $('rainbowManageOverview').textContent=groups.length+' Rainbow'+(groups.length!==1?'s':'')+' dans la bibliothèque';
+        list.innerHTML=groups.length?groups.map(group=>{
+          const base=rainbowBaseEntry(group);
+          const image=base?.card?.photo;
+          const preview=imgSafe(image)?
+            '<img src="'+safeText(image)+'" alt="" loading="lazy" decoding="async">':
+            '<span class="rainbow-library-placeholder">'+ico('layers')+'</span>';
+          return '<article class="rainbow-library-entry"><div class="rainbow-library-thumb">'+preview+'</div>'+
+            '<div class="rainbow-library-entry-info"><strong>'+safeText(group.name||'Rainbow sans nom')+'</strong>'+
+            '<small>'+safeText([group.athlete,group.brand].filter(Boolean).join(' · '))+'</small>'+
+            '<span>'+group.owned+' / '+group.total+' OWN · '+group.percent+' %</span></div>'+
+            '<div class="rainbow-library-entry-actions"><button type="button" class="button button-soft" data-rainbow-edit="'+safeText(group.id)+'">MODIFIER</button>'+
+            '<button type="button" class="button button-ghost" data-rainbow-delete="'+safeText(group.id)+'">SUPPRIMER</button></div></article>';
+        }).join(''):'<p class="rainbow-library-empty">Aucun Rainbow enregistré. Crée ta première checklist pour commencer.</p>';
       }
       function readRainbowAssigned(){
         $('rainbowVariantLinks').querySelectorAll('[data-rainbow-variant-select]').forEach(el=>{
@@ -4787,7 +4834,6 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         refreshCataloguePickers();
         $('tabOwnCount').textContent=cards.filter(x=>x.status==='own').length;
         $('tabWishCount').textContent=cards.filter(x=>x.status==='wishlist').length;
-        $('tabRainbowCount').textContent=logos.filter(x=>x.type==='rainbow').length;
         $('wishlistViews').hidden=currentView!=='wishlist';
         $('dreamlistCount').textContent=cards.filter(x=>x.status==='wishlist'&&x.dream===true).length;
         document.querySelectorAll('[data-wishlist-dream]').forEach(button=>{
@@ -4799,20 +4845,22 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
           t.setAttribute('aria-selected',String(active));
         });
         $('sportsNavigationReturn').hidden=sportsNavigationHistory.length===0;
-        if(!['own','wishlist','rainbow'].includes(currentView))currentView='own';
-        const showStats=false,showRainbow=currentView==='rainbow';
+        if(!['own','wishlist'].includes(currentView))currentView='own';
+        $('sportsViewSelect').value=sportsGalleryLayout;
+        const showStats=false,showRainbow=sportsGalleryLayout==='rainbows';
         $('collectionPanel').hidden=showStats||showRainbow;
         $('statsPanel').hidden=!showStats;
         $('rainbowPanel').hidden=!showRainbow;
         if(showRainbow){
           $('sportsPaginationTop').replaceChildren();$('sportsPaginationBottom').replaceChildren();
-          renderRainbows();return;
+          renderRainbows();renderRainbowManager();return;
         }
         
         if(showStats){
           $('sportsPaginationTop').replaceChildren();$('sportsPaginationBottom').replaceChildren();
           const ownData=statsEngine.calculate(cards);updateOwnedSummary(ownData);renderOwnedStatistics(ownData);return;
         }
+        renderRainbowManager();
         const match=filterCards();
         $('sportsViewSelect').value=sportsGalleryLayout;
         const selectedGroup=sportsGallerySelected?sportsGalleryGroups(match,sportsGalleryLayout).find(g=>g.key===sportsGallerySelected):null;
@@ -5019,7 +5067,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         savedCountryTags().forEach(item=>list.append(new Option(item,item)));
       }
       function setLogoType(type){
-        if(!['brand','team','rookie','athlete','nationality','sport','grading','tag','labels','collector','appearance'].includes(type))type='brand';
+        if(!['brand','team','rainbow','rookie','athlete','nationality','sport','grading','tag','labels','collector','appearance'].includes(type))type='brand';
         if(type==='appearance'&&!isRapliEditor())return;
         $('appearanceSettingsPanel').hidden=type!=='appearance';
         if(type==='appearance')window.RapliAppearance?.open();else window.RapliAppearance?.leave();
@@ -5038,7 +5086,8 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         if(type==='tag')renderTagBrandOptions();
         document.querySelectorAll('#tagCategoryPanel [data-tag-category]').forEach(box=>box.checked=false);
         $('logoImageLabel').textContent=['tag','grading'].includes(type)?'Image du logo (facultative)':'Image du logo';
-        const styleTab=type==='collector',labelsTab=type==='labels',customTab=styleTab||labelsTab||type==='appearance';
+        const styleTab=type==='collector',labelsTab=type==='labels',rainbowTab=type==='rainbow',customTab=styleTab||labelsTab||rainbowTab||type==='appearance';
+        $('rainbowLibraryPanel').hidden=!rainbowTab;
         $('logoCreatePanel').hidden=customTab;$('logoList').hidden=customTab;
         $('collectorSettingsPanel').hidden=!styleTab;$('labelSettingsPanel').hidden=!labelsTab;
         $('logoNameLabel').textContent=type==='rookie'?'Sport concerné':type==='team'?'Nom de l’équipe':type==='athlete'?'Nom de l’athlète':type==='nationality'?'Tag de pays':type==='sport'?'Nom du sport':type==='grading'?'Organisme de grading':type==='tag'?'Nom du tag':'Nom de la marque';
@@ -5053,7 +5102,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
           : 'Associe un logo à une marque ou une équipe pour l’afficher sur les cartes correspondantes.';
         $('saveLogoBtn').textContent=type==='rookie'?'Enregistrer le logo RC':type==='athlete'?'Enregistrer le portrait':(type==='nationality'?'Enregistrer le tag pays':type==='sport'?'Enregistrer l’icône':type==='grading'?'Enregistrer le style du grading':type==='tag'?'Enregistrer le tag':'Ajouter');
         document.querySelectorAll('.logo-tab').forEach(b=>b.classList.toggle('active',b.dataset.logoType===type));
-        if(styleTab)openCollectorSettings();else if(labelsTab)renderLabelEditors();else if(type!=='appearance')renderLogos();
+        if(styleTab)openCollectorSettings();else if(labelsTab)renderLabelEditors();else if(rainbowTab)renderRainbowManager();else if(type!=='appearance')renderLogos();
         if(type==='grading')syncGradingEditor(true);
         if(type==='nationality')syncCountryIconEditor(true);
         if(type==='athlete')syncAthleteCountry();
@@ -5209,7 +5258,11 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         sportsNavigationHistory.length=0;
         currentView=t.dataset.view;sportsGallerySelected=null;sportsGalleryPage=1;renderAll();
       }));
-      $('newRainbowBtn').addEventListener('click',()=>openRainbow());
+      $('newRainbowBtn').addEventListener('click',()=>{if(requireRapliEditor())openRainbow();});
+      $('viewRainbowTilesBtn').addEventListener('click',()=>{
+        closeModal('logoDialog');chooseSportsGalleryLayout('rainbows');
+        $('rainbowPanel').scrollIntoView?.({behavior:'smooth',block:'start'});
+      });
       $('rainbowForm').addEventListener('submit',submitRainbow);
       $('rainbowVariants').addEventListener('input',()=>{readRainbowAssigned();renderRainbowLinks();});
       $('rainbowBaseRef').addEventListener('input',()=>{readRainbowAssigned();renderRainbowLinks();});
@@ -5225,7 +5278,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         const selected=event.target.closest('[data-rainbow-variant-select]');
         if(selected)rainbowAssignments.set(selected.dataset.rainbowVariantSelect,selected.value);
       });
-      $('rainbowList').addEventListener('click',async event=>{
+      for(const rainbowTarget of [$('rainbowList'),$('rainbowManageList')])rainbowTarget.addEventListener('click',async event=>{
         const open=event.target.closest('[data-rainbow-open-card]');
         if(open){
           const linked=cards.find(c=>c.id===open.dataset.rainbowOpenCard);
@@ -5237,9 +5290,9 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
           return;
         }
         const edit=event.target.closest('[data-rainbow-edit]');
-        if(edit){const group=savedRainbows().find(r=>r.id===edit.dataset.rainbowEdit);if(group)openRainbow(group);return;}
+        if(edit){if(!requireRapliEditor())return;const group=savedRainbows().find(r=>r.id===edit.dataset.rainbowEdit);if(group)openRainbow(group);return;}
         const del=event.target.closest('[data-rainbow-delete]');
-        if(!del)return;
+        if(!del||!requireRapliEditor())return;
         const group=savedRainbows().find(r=>r.id===del.dataset.rainbowDelete);
         if(!group||!confirm('Supprimer le Rainbow « '+group.name+' » ? Les cartes associées seront conservées.'))return;
         try{await removeLogo(group.id);renderAll();showToast('Rainbow supprimé. Toutes les cartes sont conservées.');}

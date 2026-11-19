@@ -175,6 +175,7 @@
     const link=event.target.closest('#cardGrid [data-card-group], .rainbow-versions-dialog [data-card-group]');
     if(link){event.preventDefault();event.stopImmediatePropagation();if(rainbowDialog?.open)rainbowDialog.close();bridge.navigate(link.dataset.cardGroup,link.dataset.groupLabel);return;}
     const action=event.target.closest('[data-card-tool], [data-rainbow-pdf]');if(!action)return;
+    if(action.closest('#cardActionsMenu'))root.RapliCardMenu?.close?.(true);
     event.preventDefault();event.stopImmediatePropagation();if(action.disabled)return;action.disabled=true;
     try{
       if(action.hasAttribute('data-rainbow-pdf')){const group=bridge.rainbow(action.dataset.rainbowPdf);if(group)await pdfDownload(group);}

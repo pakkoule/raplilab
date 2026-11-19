@@ -172,7 +172,7 @@ historyButton.addEventListener('click',()=>{
    if(!['image/png','image/jpeg','image/webp'].includes(blob.type)||blob.size>12*1024*1024)
     throw Error('Image non compatible : ouvre la source et récupère son PNG ou WEBP.');
    const file=new File([blob],'historical-logo.'+(blob.type==='image/png'?'png':blob.type==='image/webp'?'webp':'jpg'),{type:blob.type});
-   if(select.value!==team||!d.open)return;
+   if(select.value!==team||d.dataset.rapliHistoryMode!=='true'||!d.querySelector('#historyInlinePanel'))return;
    if(row.from)get('historyFrom').value=row.from;
    if(row.to)get('historyTo').value=row.to;
    const input=get('historyFile');
@@ -208,7 +208,7 @@ historyButton.addEventListener('click',()=>{
    const response=await fetch(url,{mode:'cors',credentials:'omit'});
    if(!response.ok)throw Error('Le service ne répond pas.');
    const data=await response.json();
-   if(serial!==searchSerial||team!==select.value||!d.open)return;
+   if(serial!==searchSerial||team!==select.value||d.dataset.rapliHistoryMode!=='true'||!d.querySelector('#historyInlinePanel'))return;
    const items=Object.values(data.query?.pages||{}).map(page=>{
     const info=page.imageinfo?.[0],file=String(page.title||'').replace(/^File:/,'');
     if(!info||!/^image\/(?:png|jpeg|webp|svg\+xml)$/.test(info.mime||'')||

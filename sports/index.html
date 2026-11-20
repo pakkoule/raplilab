@@ -3364,7 +3364,8 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
       const sportsNavigationHistory=[];
       const rainbowEngine=window.RapliSportsRainbow;
       let rainbowEditingId=null,rainbowAssignments=new Map(),rainbowBaseVariant='';
-      const SPORTS_GALLERY_PAGE_SIZE=30;
+      // Safari iPhone is memory-limited during image hydration; keep desktop at 30.
+      const SPORTS_GALLERY_PAGE_SIZE=/iP(?:hone|ad|od)/.test(navigator.userAgent)&&window.innerWidth<=820?12:30;
       const collator=new Intl.Collator('fr',{sensitivity:'base',numeric:true});
 
       const MAX_CARD_PLAYERS=5;
@@ -4766,8 +4767,21 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
       // Preserve already decoded photos while cloud images arrive progressively.
       // The Supabase bridge can publish several image-only snapshots per second:
       // rebuilding the entire grid on each snapshot makes iOS Safari flash.
-      let lastGridMarkup=null,lastGridLayout=null,lastGridSelection=null;
-      const renderedTileMarkup=new WeakMap();
+      // Only short checksums are retained. Previously lastGridMarkup and the
+      // WeakMap held *entire base64 photo URLs* for every tile and every refresh,
+      // multiplying collection memory use until iPhone Safari terminated the tab.
+      let lastGridSignature=null,lastGridLayout=null,lastGridSelection=null;
+      const renderedTileSignature=new WeakMap();
+      function gridMarkupSignature(value){
+        // Two independent 32-bit rolling checksums plus length (small memory).
+        let a=2166136261,b=0x9e3779b9;
+        for(let i=0;i<value.length;i++){
+          const code=value.charCodeAt(i);
+          a=Math.imul(a^code,16777619);
+          b=Math.imul(b^code,2246822519);
+        }
+        return value.length+':'+(a>>>0).toString(36)+':'+(b>>>0).toString(36);
+      }
       function tileIdentity(element){
         const id=element.getAttribute('data-card-id');
         if(id)return 'card:'+id;
@@ -4806,7 +4820,8 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
       }
 
       function patchCardGrid(markup){
-        if(markup===lastGridMarkup)return false;
+        const signature=gridMarkupSignature(markup);
+        if(signature===lastGridSignature)return false;
         const host=$('cardGrid'),fragment=document.createElement('template');
         fragment.innerHTML=markup;
         const oldGallery=host.querySelector(':scope > .sports-gallery-grid');
@@ -4816,7 +4831,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         const before=[...existingList.children];
         const after=[...incomingList.children];
         const keysBefore=before.map(tileIdentity),keysAfter=after.map(tileIdentity);
-        const compatible=lastGridMarkup!==null &&
+        const compatible=lastGridSignature!==null &&
           lastGridLayout===sportsGalleryLayout &&
           lastGridSelection===sportsGallerySelected &&
           Boolean(oldGallery)===Boolean(nextGallery) &&
@@ -4826,18 +4841,21 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         if(!compatible){
           host.replaceChildren(fragment.content);
           const list=host.querySelector(':scope > .sports-gallery-grid')||host;
-          for(const tile of list.children)if(tileIdentity(tile))renderedTileMarkup.set(tile,tile.outerHTML);
+          for(const tile of list.children)if(tileIdentity(tile))
+            renderedTileSignature.set(tile,gridMarkupSignature(tile.outerHTML));
         }else{
           const previous=new Map(before.map((node,index)=>[keysBefore[index],node]));
           const wanted=after.map((node,index)=>{
             const current=previous.get(keysAfter[index]);
             const html=node.outerHTML;
+            const nextSignature=gridMarkupSignature(html);
             if(current){
-              if(renderedTileMarkup.get(current)!==html)updateStableTile(current,node);
-              renderedTileMarkup.set(current,html);
+              if(renderedTileSignature.get(current)!==nextSignature)
+                updateStableTile(current,node);
+              renderedTileSignature.set(current,nextSignature);
               return current;
             }
-            renderedTileMarkup.set(node,html);
+            renderedTileSignature.set(node,nextSignature);
             return node;
           });
           // Move only genuinely reordered/new tiles; leave unchanged IMG nodes mounted.
@@ -4855,7 +4873,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
             for(const node of newExtras)host.insertBefore(node,oldGallery);
           }
         }
-        lastGridMarkup=markup;
+        lastGridSignature=signature;
         lastGridLayout=sportsGalleryLayout;
         lastGridSelection=sportsGallerySelected;
         return true;
@@ -5836,6 +5854,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
       document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();if(!document.querySelector('dialog[open]')){$('filterSearch').focus();$('filterSearch').select()}}});
 
 // Shared cloud bridge: independent local state, synced through the RapliLab session.
+let previewPaintTimer=null,previewLastPaint=0;
 const rapliBridge = window.RapliModuleBridge = {
  module:'sports',
  ready:false,
@@ -5844,7 +5863,28 @@ const rapliBridge = window.RapliModuleBridge = {
    if(!next||!Array.isArray(next.records)||!Array.isArray(next.logos))throw Error('Collection publique invalide');
    cards=next.records.map(x=>({...x}));
    logos=next.logos.map(x=>({...x}));
-   renderAll();
+   // During progressive cloud media hydration, at most one repaint every 650 ms
+   // on iPhone; the last update is always flushed. Normal edits remain immediate.
+   const progress=document.getElementById('rapliSharedProgress');
+   const percent=Number(progress?.getAttribute('aria-valuenow'));
+   const hydrating=/iP(?:hone|ad|od)/.test(navigator.userAgent)&&
+     progress?.dataset.indeterminate==='false'&&
+     Number.isFinite(percent)&&percent<100;
+   if(!hydrating){
+     clearTimeout(previewPaintTimer);previewPaintTimer=null;
+     previewLastPaint=Date.now();renderAll();
+   }else{
+     const now=Date.now();
+     if(!previewLastPaint||now-previewLastPaint>=650){
+       clearTimeout(previewPaintTimer);previewPaintTimer=null;
+       previewLastPaint=now;renderAll();
+     }else{
+       clearTimeout(previewPaintTimer);
+       previewPaintTimer=setTimeout(()=>{
+         previewPaintTimer=null;previewLastPaint=Date.now();renderAll();
+       },650-(now-previewLastPaint));
+     }
+   }
  },
  notify:msg=>showToast(msg),
  replaceState:async next=>{

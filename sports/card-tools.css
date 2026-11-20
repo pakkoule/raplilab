@@ -176,3 +176,7 @@
  .sports-gallery-tile>.card-summary-button{right:43px}
  .sports-card-actions-menu button[role="menuitem"]{min-height:42px;font-size:12px}
 }
+
+/* Stable, deferred card photos: fallback remains until its image decodes. */
+#cardGrid img[data-card-photo][hidden],
+#cardGrid [data-card-photo-fallback][hidden]{display:none!important}

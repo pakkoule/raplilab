@@ -3365,7 +3365,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
       const rainbowEngine=window.RapliSportsRainbow;
       let rainbowEditingId=null,rainbowAssignments=new Map(),rainbowBaseVariant='';
       // Safari iPhone is memory-limited during image hydration; keep desktop at 30.
-      const SPORTS_GALLERY_PAGE_SIZE=/iP(?:hone|ad|od)/.test(navigator.userAgent)&&window.innerWidth<=820?12:30;
+      const SPORTS_GALLERY_PAGE_SIZE=30; // Preserve 30/page; defer image decoding instead.
       const collator=new Intl.Collator('fr',{sensitivity:'base',numeric:true});
 
       const MAX_CARD_PLAYERS=5;
@@ -4334,9 +4334,12 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         return kind==='oneofone'?'card-foil-gold':kind==='plate'?'card-foil-plate':'card-foil-silver'+cardParallelAccentClass(card);
       }
       function sportsGalleryCard(item){
-        const photo=imgSafe(item.photo)?
-          '<img src="'+item.photo+'" alt="Carte de '+safeText(item.player||'cet athlète')+'" loading="lazy" decoding="async">':
-          '<span class="sports-gallery-placeholder">'+ico('layers')+'</span>';
+        // Lazy attach from the current card record, rather than copying photo
+        // data URLs into the complete grid markup during every cloud update.
+        const photo='<img data-card-photo="'+safeText(item.id)+
+          '" alt="Carte de '+safeText(item.player||'cet athlète')+
+          '" loading="lazy" decoding="async" hidden>'+
+          '<span class="sports-gallery-placeholder" data-card-photo-fallback>'+ico('layers')+'</span>';
         const athlete=cardPlayers(item).map(p=>p.name).filter(Boolean).join(' / ')||item.player||'Athlète non renseigné';
         return '<article class="sports-gallery-tile '+cardTileFoilClass(item)+(item.rookie===true?' is-rookie-card':'')+
           (item.status==='wishlist'&&item.dream?' is-dream-gallery':'')+'" data-card-id="'+safeText(item.id)+'">'+
@@ -4424,7 +4427,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
           const pages=Math.max(1,Math.ceil(items.length/SPORTS_GALLERY_PAGE_SIZE));
           sportsGalleryPage=Math.max(1,Math.min(sportsGalleryPage,pages));
           const offset=(sportsGalleryPage-1)*SPORTS_GALLERY_PAGE_SIZE;
-          return items.slice(offset,offset+SPORTS_GALLERY_PAGE_SIZE).map(cardMarkup).join('');
+          return items.slice(offset,offset+SPORTS_GALLERY_PAGE_SIZE).map(card=>cardMarkup(card,true)).join('');
         }
         if(['cards','recent','legendary','rookies','graded','dreammuseum','oneofone','plates'].includes(sportsGalleryLayout))return sportsGalleryPageMarkup(items,sportsGalleryCard);
         const groups=sportsGalleryGroups(items,sportsGalleryLayout);
@@ -4470,7 +4473,14 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
           '" aria-haspopup="menu" aria-expanded="false" aria-controls="cardActionsMenu" aria-label="Actions de la carte de '+
           safeText(card.player||'cet athlète')+'" title="Actions de la carte"><span aria-hidden="true">⋯</span></button>';
       }
-      function cardMarkup(c){const photo=imgSafe(c.photo)?`<img src="${c.photo}" alt="Carte de ${safeText(c.player)}" loading="lazy">`:`<div class="placeholder"><span class="mini-logo">RAPLI / SPORTS</span><div class="place-center">${ico('layers')}</div><span class="place-foot">COLLECTOR'S CARD</span></div>`;const tags=orderedCardTags(c.tags).slice(0,8).map(tag=>'<span class="card-tag-entry">'+cardTagMarkup(tag,c.season)+'</span>').join('')+
+      function cardMarkup(c,deferPhoto=false){
+        const placeholder=`<div class="placeholder" data-card-photo-fallback><span class="mini-logo">RAPLI / SPORTS</span><div class="place-center">${ico('layers')}</div><span class="place-foot">COLLECTOR'S CARD</span></div>`;
+        // The collection grid never serializes the full data URI into HTML.
+        // Card-tools calls this function normally for Rainbow modal previews.
+        const photo=deferPhoto?
+          `<img data-card-photo="${safeText(c.id)}" alt="Carte de ${safeText(c.player)}" loading="lazy" decoding="async" hidden>`+placeholder:
+          imgSafe(c.photo)?`<img src="${c.photo}" alt="Carte de ${safeText(c.player)}" loading="lazy" decoding="async">`:
+          placeholder;const tags=orderedCardTags(c.tags).slice(0,8).map(tag=>'<span class="card-tag-entry">'+cardTagMarkup(tag,c.season)+'</span>').join('')+
         ((c.tags||[]).length>8?`<span class="card-tag-entry"><span class="tag more">+${c.tags.length-8}</span></span>`:'');return `<article class="card-item ${cardTileFoilClass(c)}${c.rookie===true?' is-rookie-card':''}${c.status==='wishlist'&&c.dream?' is-dream-card':''}" data-id="${safeText(c.id)}" data-card-id="${safeText(c.id)}"><span class="sports-tile-corners" aria-hidden="true"></span><div class="photo-side"><div class="card-photo" style="${sportFrameStyle(c.sport)}">${photo}${c.demo?'<span class="photo-flag">DÉMO</span>':''}${recentCard(c)?'<span class="sports-new-flag">NEW</span>':''}</div></div><div class="card-info"><div class="card-top"><div class="card-athlete">${playerCardSummary(c)}</div></div><div class="identity-row"><div class="identity-logos"><div class="brand-lockup">${brandBadge('brand',c.brand)}${logoFor('brand',c.brand)?'':'<span>'+safeText(c.brand||'Sans marque')+'</span>'}</div><div class="team-identity">${c.team?brandBadge('team',c.team,c.season,c.teamLogoOverride):''}${logoFor('team',c.team,c.season,c.teamLogoOverride)?'':'<span>'+safeText(c.team||'Équipe non renseignée')+'</span>'}</div></div></div><div class="tags">${tags||'<span class="blank-tag">Aucune variation</span>'}</div><div class="card-bottom"><div class="card-status-badges">${sportsSportBadge(c.sport)}${collectorBadgeMarkup(c)}${seasonBadge(c)}${gradingBadgeMarkup(c)}${c.status==='wishlist'&&c.dream?'<span class="card-dream-badge"><span class="dream-sparkle" aria-hidden="true">✨</span> DANS MES RÊVES</span>':''}</div><div class="card-kebab-wrap">${cardMenuTriggerMarkup(c)}</div></div></div></article>`}
       const statsEngine=window.RapliSportsStats;
       const statsVisuals=window.RapliSportsStatsVisuals;
@@ -4801,12 +4811,17 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
           return current;
         }
         if(current.nodeType!==Node.ELEMENT_NODE)return current;
+        const isLivePhoto=current.hasAttribute('data-card-photo')||
+          current.hasAttribute('data-card-photo-fallback');
         for(const attribute of [...current.attributes]){
-          // Appearance annotations are runtime-only; the card model owns their values.
-          if(attribute.name.startsWith('data-appearance-'))continue;
+          // Runtime annotations, loaded photo source and fallback visibility do
+          // not belong to HTML reconciliation.
+          if(attribute.name.startsWith('data-appearance-')||
+             (isLivePhoto&&['src','hidden'].includes(attribute.name)))continue;
           if(!next.hasAttribute(attribute.name))current.removeAttribute(attribute.name);
         }
         for(const attribute of next.attributes){
+          if(isLivePhoto&&['src','hidden'].includes(attribute.name))continue;
           if(current.getAttribute(attribute.name)!==attribute.value)
             current.setAttribute(attribute.name,attribute.value);
         }
@@ -4819,9 +4834,72 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         return current;
       }
 
+      // Image payloads remain in the collection store, not in repeated HTML
+      // strings. Safari only decodes photos close to the viewport; a weak
+      // observer prevents retaining detached image nodes after pagination.
+      const activeCardPhotoSources=new WeakMap();
+      const activeCardPhotoVisibility=new WeakSet();
+      const registeredCardPhotoNodes=new WeakSet();
+      function loadDeferredCardPhoto(img){
+        if(!img.isConnected)return;
+        const card=cards.find(row=>row.id===img.dataset.cardPhoto);
+        const source=imgSafe(card?.photo)?card.photo:'';
+        const fallback=img.parentElement?.querySelector('[data-card-photo-fallback]');
+        if(!source){
+          if(activeCardPhotoSources.get(img)){
+            activeCardPhotoSources.delete(img);
+            img.removeAttribute('src');
+          }
+          img.hidden=true;
+          if(fallback)fallback.hidden=false;
+          return;
+        }
+        if(activeCardPhotoSources.get(img)===source){
+          if(img.complete&&img.naturalWidth>0){
+            img.hidden=false;
+            if(fallback)fallback.hidden=true;
+          }
+          return;
+        }
+        activeCardPhotoSources.set(img,source);
+        img.hidden=true;
+        if(fallback)fallback.hidden=false;
+        img.onload=()=>{
+          if(activeCardPhotoSources.get(img)!==source)return;
+          img.hidden=false;
+          if(fallback)fallback.hidden=true;
+        };
+        img.onerror=()=>{
+          if(activeCardPhotoSources.get(img)!==source)return;
+          img.hidden=true;
+          if(fallback)fallback.hidden=false;
+        };
+        img.src=source;
+        if(img.complete&&img.naturalWidth>0)img.onload();
+      }
+      const cardPhotoObserver='IntersectionObserver' in window?
+        new IntersectionObserver(entries=>{
+          for(const entry of entries){
+            if(entry.isIntersecting){
+              activeCardPhotoVisibility.add(entry.target);
+              loadDeferredCardPhoto(entry.target);
+            }else activeCardPhotoVisibility.delete(entry.target);
+          }
+        },{rootMargin:'400px 0px'}):null;
+      function syncDeferredCardPhotos(){
+        for(const img of $('cardGrid').querySelectorAll('img[data-card-photo]')){
+          if(!cardPhotoObserver){loadDeferredCardPhoto(img);continue;}
+          if(!registeredCardPhotoNodes.has(img)){
+            registeredCardPhotoNodes.add(img);
+            cardPhotoObserver.observe(img);
+          }
+          if(activeCardPhotoVisibility.has(img))loadDeferredCardPhoto(img);
+        }
+      }
+
       function patchCardGrid(markup){
         const signature=gridMarkupSignature(markup);
-        if(signature===lastGridSignature)return false;
+        if(signature===lastGridSignature){syncDeferredCardPhotos();return false;}
         const host=$('cardGrid'),fragment=document.createElement('template');
         fragment.innerHTML=markup;
         const oldGallery=host.querySelector(':scope > .sports-gallery-grid');
@@ -4876,6 +4954,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         lastGridSignature=signature;
         lastGridLayout=sportsGalleryLayout;
         lastGridSelection=sportsGallerySelected;
+        syncDeferredCardPhotos();
         return true;
       }
 

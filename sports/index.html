@@ -4877,23 +4877,27 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         img.src=source;
         if(img.complete&&img.naturalWidth>0)img.onload();
       }
+      // Observe the *tile*, not the hidden IMG: a display:none IMG has no
+      // intersection rectangle and would never start loading on Safari.
       const cardPhotoObserver='IntersectionObserver' in window?
         new IntersectionObserver(entries=>{
           for(const entry of entries){
             if(entry.isIntersecting){
               activeCardPhotoVisibility.add(entry.target);
-              loadDeferredCardPhoto(entry.target);
+              const img=entry.target.querySelector('img[data-card-photo]');
+              if(img)loadDeferredCardPhoto(img);
             }else activeCardPhotoVisibility.delete(entry.target);
           }
         },{rootMargin:'400px 0px'}):null;
       function syncDeferredCardPhotos(){
         for(const img of $('cardGrid').querySelectorAll('img[data-card-photo]')){
-          if(!cardPhotoObserver){loadDeferredCardPhoto(img);continue;}
-          if(!registeredCardPhotoNodes.has(img)){
-            registeredCardPhotoNodes.add(img);
-            cardPhotoObserver.observe(img);
+          const tile=img.closest('[data-card-id]');
+          if(!cardPhotoObserver||!tile){loadDeferredCardPhoto(img);continue;}
+          if(!registeredCardPhotoNodes.has(tile)){
+            registeredCardPhotoNodes.add(tile);
+            cardPhotoObserver.observe(tile);
           }
-          if(activeCardPhotoVisibility.has(img))loadDeferredCardPhoto(img);
+          if(activeCardPhotoVisibility.has(tile))loadDeferredCardPhoto(img);
         }
       }
 

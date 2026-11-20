@@ -436,3 +436,25 @@ test('three-dot actions sit at bottom-right alongside numbering and grading',asy
   assert.deepEqual(s.errors,[]);
  }finally{await new Promise(resolve=>setTimeout(resolve,100));s.dom.window.close();}
 });
+
+test('collection card images are deferred without removing original source or exports',async()=>{
+ const s=await setup(true);
+ try{
+  const photo='data:image/png;base64,iVBORw0KGgo=';
+  const source={...cards[0],id:'deferred-photo',photo};
+  s.w.RapliModuleBridge.previewState({records:[source],logos:[]});
+  const tile=s.w.document.querySelector('#cardGrid .card-item[data-card-id="deferred-photo"]');
+  assert.ok(tile);
+  const img=tile.querySelector('[data-card-photo="deferred-photo"]');
+  assert.ok(img,'the collection markup reserves a persistent IMG element');
+  assert.ok(tile.querySelector('[data-card-photo-fallback]'));
+  assert.equal(s.w.RapliExtrasBridge.cards()[0].photo,photo,
+    'actual photo remains in data model for PNG/photo downloads');
+  const imageNode=img;
+  s.w.RapliModuleBridge.previewState({records:[{...source,reference:'#42'}],logos:[]});
+  const next=s.w.document.querySelector('#cardGrid .card-item[data-card-id="deferred-photo"]');
+  assert.equal(next.querySelector('[data-card-photo]'),imageNode,
+    'existing image nodes survive changes to non-photo metadata');
+  assert.deepEqual(s.errors,[]);
+ }finally{await new Promise(resolve=>setTimeout(resolve,100));s.dom.window.close();}
+});

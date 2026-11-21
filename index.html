@@ -487,7 +487,14 @@ html[data-rapli-role="editor"] #rapli-admin-login{display:none}
     const frames=Object.fromEntries(projects.map(n=>[n,document.getElementById('frame-'+n)]));
     const names={sports:'Sports',regatta:'Regatta'};
     let current='sports';
-    const fromHash=()=>visibleProjects.includes(location.hash.slice(1).toLowerCase())?location.hash.slice(1).toLowerCase():'sports';
+    const fromHash=()=>location.hash.slice(1).toLowerCase()==='regatta'?'regatta':'sports';
+    const sportsViewFromHash=()=>location.hash.slice(1).toLowerCase()==='wishlist'?'wishlist':'own';
+    function routeSportsView(){
+      const frame=frames.sports;
+      if(frame?.src&&frame.contentWindow)frame.contentWindow.postMessage({
+        type:'RAPLI_LAB_NAVIGATION',view:sportsViewFromHash()
+      },location.origin);
+    }
     function activity(name,active){
       const frame=frames[name];
       if(frame?.contentWindow&&frame.src)try{frame.contentWindow.postMessage({type:'RAPLI_APP_ACTIVITY',active},location.origin)}catch(_){}
@@ -507,6 +514,7 @@ html[data-rapli-role="editor"] #rapli-admin-login{display:none}
       }
       document.title='Rapli Lab';
       if(hash&&location.hash!=='#'+name)history.pushState({project:name},'','#'+name);
+      if(name==='sports')routeSportsView();
       if(focus)tabs[name].focus();
     }
     for(const name of projects){
@@ -519,7 +527,7 @@ html[data-rapli-role="editor"] #rapli-admin-login{display:none}
         if(event.key==='End')next=projects[projects.length-1];
         if(next){event.preventDefault();select(next,true,true);}
       });
-      frames[name].addEventListener('load',()=>activity(name,name===current));
+      frames[name].addEventListener('load',()=>{activity(name,name===current);if(name==='sports')routeSportsView();});
     }
     window.addEventListener('popstate',()=>select(fromHash()));
     window.addEventListener('hashchange',()=>select(fromHash()));

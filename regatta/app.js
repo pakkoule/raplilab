@@ -1431,7 +1431,8 @@ function renderVsrHeaderRanking(){
   }
  }else{
   trend.dataset.direction='flat';
-  if(current){trendLabel='1er relevé';trendDescription='premier relevé enregistré';}
+  // Without a previous measurement, only the VSR rank is displayed.
+  // Avoid implying any progression before two readings exist.
  }
  trend.textContent=trendLabel;
  trend.hidden=!trendLabel;

@@ -3038,6 +3038,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
 #rainbowPanel[hidden]{display:none!important}
 </style>
   <link rel="stylesheet" href="regatta-palette.css">
+<link rel="stylesheet" href="jersey-fonts.css">
   <link rel="stylesheet" href="../shared/collection-navigation.css">
 </head>
 <body>
@@ -3189,7 +3190,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
   <dialog id="logoDialog" class="modal small" aria-labelledby="logoDialogTitle">
     <div class="modal-header"><div><span class="modal-kicker">RAPLI SPORTS / IDENTITÉS VISUELLES</span><h2 id="logoDialogTitle" class="modal-title">Bibliothèque de logos</h2></div><button type="button" class="close-modal" data-close="logoDialog" aria-label="Fermer">×</button></div>
     <div class="modal-body">
-      <div class="logo-tabs"><button type="button" class="logo-tab" id="appearanceSettingsBtn" data-logo-type="appearance">Couleurs &amp; variations</button><button type="button" class="logo-tab" data-logo-type="regatta">⛵ Regatta</button><button type="button" class="logo-tab active" data-logo-type="brand">Marques</button><button type="button" class="logo-tab" data-logo-type="team">Équipes</button><button type="button" class="logo-tab" data-logo-type="rainbow">Rainbows</button><button type="button" class="logo-tab" data-logo-type="rookie">Rookie / RC</button><button type="button" class="logo-tab" data-logo-type="athlete">Portraits athlètes</button><button type="button" class="logo-tab" data-logo-type="nationality">Pays</button><button type="button" class="logo-tab" data-logo-type="sport">Sports</button><button type="button" class="logo-tab" data-logo-type="grading">Organismes de grading</button><button type="button" class="logo-tab" data-logo-type="tag">Tags / variations</button><button type="button" class="logo-tab" data-logo-type="labels">Étiquettes</button><button type="button" class="logo-tab" data-logo-type="collector">Style des badges</button></div>
+      <div class="logo-tabs"><button type="button" class="logo-tab" id="appearanceSettingsBtn" data-logo-type="appearance">Couleurs &amp; variations</button><button type="button" class="logo-tab" data-logo-type="regatta">⛵ Regatta</button><button type="button" class="logo-tab" data-logo-type="jersey-font">👕 Polices de flocage</button><button type="button" class="logo-tab active" data-logo-type="brand">Marques</button><button type="button" class="logo-tab" data-logo-type="team">Équipes</button><button type="button" class="logo-tab" data-logo-type="rainbow">Rainbows</button><button type="button" class="logo-tab" data-logo-type="rookie">Rookie / RC</button><button type="button" class="logo-tab" data-logo-type="athlete">Portraits athlètes</button><button type="button" class="logo-tab" data-logo-type="nationality">Pays</button><button type="button" class="logo-tab" data-logo-type="sport">Sports</button><button type="button" class="logo-tab" data-logo-type="grading">Organismes de grading</button><button type="button" class="logo-tab" data-logo-type="tag">Tags / variations</button><button type="button" class="logo-tab" data-logo-type="labels">Étiquettes</button><button type="button" class="logo-tab" data-logo-type="collector">Style des badges</button></div>
       <section id="appearanceSettingsPanel" class="appearance-dialog" aria-label="Couleurs et variations" hidden></section>
       <section id="regattaPalettePanel" aria-label="Identité visuelle de Rapli Regatta" hidden>
         <div class="regatta-palette-hero">
@@ -3215,6 +3216,38 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
           <h3>CATÉGORIES VSR</h3>
           <p>Hors Catégorie, VSR 1, VSR 2 et VSR 3 : l'ordre de priorité reste inchangé.</p>
           <div id="regattaPaletteVsr"></div>
+        </div>
+      </section>
+      <section id="jerseyFontPanel" class="jersey-font-panel" aria-label="Bibliothèque des polices de flocage" hidden>
+        <div class="jersey-font-intro">
+          <strong>POLICES DE FLOCAGE · JERSEYS</strong>
+          <p>Importe les vraies polices de tes maillots pour afficher le nom et le numéro au dos des tuiles Jerseys.</p>
+          <small>WOFF2, WOFF, TTF, OTF · 5 Mo maximum · utilise uniquement des polices dont tu détiens les droits.</small>
+        </div>
+        <div class="jersey-font-manager">
+          <form id="jerseyFontForm" class="jersey-font-form" autocomplete="off">
+            <label>NOM DE LA POLICE<input id="jerseyFontLabel" type="text" maxlength="100" placeholder="Ex. France 2006 · Flocage" required></label>
+            <label>FICHIER DE POLICE (.woff2, .woff, .ttf, .otf)
+              <input id="jerseyFontFile" type="file" accept=".woff2,.woff,.ttf,.otf,font/woff2,font/woff,font/ttf,font/otf">
+            </label>
+            <div class="jersey-font-test-fields">
+              <label>NOM D’ESSAI<input id="jerseyFontExampleName" type="text" maxlength="40" value="JOUEUR"></label>
+              <label>NUMÉRO<input id="jerseyFontExampleNumber" type="text" inputmode="numeric" maxlength="3" value="10"></label>
+            </div>
+            <div class="jersey-font-test" aria-label="Aperçu des caractères de flocage">
+              <span id="jerseyFontNamePreview">JOUEUR</span>
+              <strong id="jerseyFontNumberPreview">10</strong>
+            </div>
+            <div id="jerseyFontStatus" class="jersey-font-status" role="status" aria-live="polite">Sélectionne un fichier de police.</div>
+            <div class="jersey-font-actions">
+              <button id="jerseyFontSave" class="button button-primary" type="submit">IMPORTER LA POLICE</button>
+              <button id="jerseyFontClear" class="button button-soft" type="button">ANNULER</button>
+            </div>
+          </form>
+          <section class="jersey-font-collection" aria-label="Polices disponibles">
+            <h3>POLICES IMPORTÉES <span id="jerseyFontCount">0</span></h3>
+            <div id="jerseyFontList" class="jersey-font-list"></div>
+          </section>
         </div>
       </section>
       <section id="rainbowLibraryPanel" class="rainbow-library-panel" aria-label="Gestion des Rainbows" hidden><div class="rainbow-library-intro"><strong>GÉRER LES RAINBOWS</strong><p>Crée et modifie les checklists ici. Les tuiles restent consultables depuis la vue 🌈 RAINBOWS de la collection.</p></div><div class="rainbow-library-toolbar"><button id="newRainbowBtn" class="button button-primary" type="button">＋ CRÉER UN RAINBOW</button><button id="viewRainbowTilesBtn" class="button button-soft" type="button">VOIR LES TUILES ↗</button></div><div id="rainbowManageOverview" class="rainbow-library-summary" aria-live="polite"></div><div id="rainbowManageList" class="rainbow-library-list"></div></section>
@@ -4993,6 +5026,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
       }
 
       function renderAll(){
+        window.RapliJerseyFontsUI?.refresh?.();
         window.RapliAppearance?.refresh();
         window.RapliExtrasUI?.refresh();
         refreshCataloguePickers();
@@ -5339,11 +5373,13 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         savedCountryTags().forEach(item=>list.append(new Option(item,item)));
       }
       function setLogoType(type){
-        if(!['brand','team','rainbow','rookie','athlete','nationality','sport','grading','tag','labels','collector','appearance','regatta'].includes(type))type='brand';
+        if(!['brand','team','rainbow','rookie','athlete','nationality','sport','grading','tag','labels','collector','appearance','regatta','jersey-font'].includes(type))type='brand';
         if(type==='appearance'&&!isRapliEditor())return;
         $('appearanceSettingsPanel').hidden=type!=='appearance';
         if(type==='appearance')window.RapliAppearance?.open();else window.RapliAppearance?.leave();
         $('regattaPalettePanel').hidden=type!=='regatta';
+        $('jerseyFontPanel').hidden=type!=='jersey-font';
+        if(type==='jersey-font')window.RapliJerseyFontsUI?.open();else window.RapliJerseyFontsUI?.leave();
         if(type==='regatta')window.RapliRegattaPalette?.open();else window.RapliRegattaPalette?.close();
         logoType=type;pendingLogoPhoto='';countryDraft={tileImage:null,catalogImage:null};pendingPortraitCrop={...PORTRAIT_CROP_DEFAULT};$('athleteNationality').value='';$('logoName').value='';$('logoFileInput').value='';$('logoFileText').textContent='Choisir';
         $('logoAthletePicker').hidden=type!=='athlete';$('logoAthletePicker').value='';
@@ -5360,7 +5396,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         if(type==='tag')renderTagBrandOptions();
         document.querySelectorAll('#tagCategoryPanel [data-tag-category]').forEach(box=>box.checked=false);
         $('logoImageLabel').textContent=['tag','grading'].includes(type)?'Image du logo (facultative)':'Image du logo';
-        const styleTab=type==='collector',labelsTab=type==='labels',rainbowTab=type==='rainbow',customTab=styleTab||labelsTab||rainbowTab||type==='appearance'||type==='regatta';
+        const styleTab=type==='collector',labelsTab=type==='labels',rainbowTab=type==='rainbow',customTab=styleTab||labelsTab||rainbowTab||type==='appearance'||type==='regatta'||type==='jersey-font';
         $('rainbowLibraryPanel').hidden=!rainbowTab;
         $('logoCreatePanel').hidden=customTab;$('logoList').hidden=customTab;
         $('collectorSettingsPanel').hidden=!styleTab;$('labelSettingsPanel').hidden=!labelsTab;
@@ -5376,7 +5412,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
           : 'Associe un logo à une marque ou une équipe pour l’afficher sur les cartes correspondantes.';
         $('saveLogoBtn').textContent=type==='rookie'?'Enregistrer le logo RC':type==='athlete'?'Enregistrer le portrait':(type==='nationality'?'Enregistrer le tag pays':type==='sport'?'Enregistrer l’icône':type==='grading'?'Enregistrer le style du grading':type==='tag'?'Enregistrer le tag':'Ajouter');
         document.querySelectorAll('.logo-tab').forEach(b=>b.classList.toggle('active',b.dataset.logoType===type));
-        if(styleTab)openCollectorSettings();else if(labelsTab)renderLabelEditors();else if(rainbowTab)renderRainbowManager();else if(!['appearance','regatta'].includes(type))renderLogos();
+        if(styleTab)openCollectorSettings();else if(labelsTab)renderLabelEditors();else if(rainbowTab)renderRainbowManager();else if(!['appearance','regatta','jersey-font'].includes(type))renderLogos();
         if(type==='grading')syncGradingEditor(true);
         if(type==='nationality')syncCountryIconEditor(true);
         if(type==='athlete')syncAthleteCountry();
@@ -6057,7 +6093,7 @@ function rapliModuleReady(){
       function brandBadge(type,name,season,override=''){return groupLink(type,name,brandBadgeRaw(type,name,season,override));}
       function cardTagMarkup(name,season){return groupLink('tag',name,cardTagMarkupRaw(name,season));}
       function sportsSportBadge(name){return groupLink('sport',name,sportsSportBadgeRaw(name));}
-      window.RapliExtrasBridge={cards:()=>cards,logos:()=>logos,saveCard,saveLogo,render:renderAll,canEdit:isRapliEditor,notify:showToast,readPhoto,tagCategories,players:savedPlayers,brands:savedBrands,tags:savedTags,openCard,labelBadge:collectionLabelMarkup};
+      window.RapliExtrasBridge={cards:()=>cards,logos:()=>logos,saveCard,saveLogo,removeLogo,render:renderAll,canEdit:isRapliEditor,notify:showToast,readPhoto,tagCategories,players:savedPlayers,brands:savedBrands,tags:savedTags,openCard,labelBadge:collectionLabelMarkup};
       window.RapliAppearanceBridge={
         card:id=>cards.find(card=>card.id===id),
         canEdit:isRapliEditor,notify:showToast,
@@ -6111,6 +6147,8 @@ function rapliModuleReady(){
   </script>
 <script src="../shared/jerseys-logo-library.js" defer></script>
 <script src="jerseys-logo-service.js" defer></script>
+<script src="../shared/jersey-fonts.js" defer></script>
+<script src="jersey-fonts.js" defer></script>
 <script src="regatta-palette.js" defer></script>
 <script src="card-tools.js" defer></script>
 <script src="color-theme.js" defer></script>

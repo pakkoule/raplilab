@@ -121,3 +121,11 @@ Module autonome et seul espace actif de Rapli Lab dans la PR #4.
 - **#79 Type de parcours** : champ facultatif parmi Tour du monde, Transatlantique, Côtier, Course à étapes, Record de distance et Autre parcours. Stockage dans la fiche existante, libellé visible sur la tuile et texte pris en compte dans la recherche.
 - Aucun changement de barème VSR, d’historique de notes, de classement ou de politique Supabase.
 - Tests de syntaxe et présence des contrôles réalisés ; mise en page PC/iPhone et synchronisation restent à valider sur la Deploy Preview.
+
+## Barre d'actions et présentation des fiches (PR #4)
+
+- Le premier bouton **↻** de la barre des courses déclenche une synchronisation manuelle Supabase (envoi des modifications locales en attente pour l'administrateur, ou récupération des nouveautés). Le bouton **calculatrice** distinct ouvre le recalcul des notes ; il n'est pas lié à la synchronisation.
+- Les messages Cloud apparaissent en **surimpression translucide** sur tous les onglets ; disparition automatique après environ 3,6 secondes pour une confirmation, 4,8 secondes pour un chargement et 6,5 secondes pour une erreur. Aucun statut permanent ni deuxième bouton ↻ sous la recherche.
+- Une **flèche** relie Départ → Arrivée quand les deux dates existent sur une course non abandonnée ; les courses sans arrivée et les records restent inchangés.
+- Les tags horaires, équipements, gains et les cinq classements utilisent un **foil clair premium** en reprenant leurs couleurs existantes (bleu pétrole, bleu, menthe, lavande, champagne, or et vert). La note circulaire reste indépendante.
+- Suppression du titre « MES COURSES / RACE ARCHIVE », mais conservation du nombre de résultats et de la pagination.

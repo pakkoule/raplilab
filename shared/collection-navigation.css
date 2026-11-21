@@ -1,0 +1,169 @@
+/* Rapli Lab — one navigation language across Sports, Regatta and Jerseys.
+ * This stylesheet is intentionally loaded after the module styles.
+ * No layout shift when switching tabs; four equally sized slots on iPhone. */
+.section-nav .tabs,
+.regatta-collection-tabs,
+.jerseys-collection-tabs{
+  box-sizing:border-box;
+  display:grid!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  grid-auto-flow:row!important;
+  align-items:stretch!important;
+  justify-content:stretch!important;
+  flex-wrap:nowrap!important;
+  gap:6px!important;
+  width:100%!important;
+  max-width:680px!important;
+  min-width:0!important;
+  margin:0 auto!important;
+  padding:0!important;
+  border:0;
+  overflow:visible;
+}
+.section-nav .tabs .tab,
+.regatta-collection-tabs .regatta-collection-tab,
+.jerseys-collection-tabs .jerseys-collection-tab{
+  box-sizing:border-box;
+  position:relative;
+  display:flex!important;
+  flex:initial!important;
+  flex-flow:row nowrap!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  min-height:44px;
+  gap:4px!important;
+  padding:11px 5px 13px!important;
+  border:0!important;
+  border-radius:8px 8px 0 0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  text-decoration:none!important;
+  text-shadow:none;
+  color:#366b76!important;
+  font:800 12px/1.2 Poppins,system-ui,sans-serif!important;
+  letter-spacing:.025em!important;
+  opacity:1!important;
+  white-space:nowrap!important;
+  text-align:center;
+  cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;
+  transition:background-color .2s ease,color .2s ease,box-shadow .2s ease!important;
+}
+.section-nav .tabs .tab:hover,
+.regatta-collection-tabs .regatta-collection-tab:hover,
+.jerseys-collection-tabs .jerseys-collection-tab:hover{
+  color:#165a6c!important;
+  background:rgba(211,247,235,.38)!important;
+}
+.section-nav .tabs .tab.active,
+.regatta-collection-tabs .regatta-collection-tab.is-active,
+.jerseys-collection-tabs .jerseys-collection-tab.is-active{
+  color:#174f61!important;
+  background:linear-gradient(118deg,rgba(228,252,241,.65),rgba(226,243,253,.50),rgba(253,238,246,.42))!important;
+}
+.section-nav .tabs .tab.active::after,
+.regatta-collection-tabs .regatta-collection-tab.is-active::after,
+.jerseys-collection-tabs .jerseys-collection-tab.is-active::after{
+  content:"";
+  position:absolute!important;
+  bottom:0!important;
+  left:12px!important;
+  right:12px!important;
+  height:3px!important;
+  width:auto!important;
+  border-radius:4px;
+  background:linear-gradient(90deg,#8bdfc5,#75bad7 70%,#b6c4ed)!important;
+  box-shadow:0 2px 8px rgba(80,175,176,.14)!important;
+  transform:none!important;
+}
+.section-nav .tabs .tab:focus-visible,
+.regatta-collection-tabs .regatta-collection-tab:focus-visible,
+.jerseys-collection-tabs .jerseys-collection-tab:focus-visible{
+  outline:2px solid #4badac!important;
+  outline-offset:2px!important;
+}
+.section-nav .tabs .tab span[aria-hidden],
+.regatta-collection-tabs .regatta-collection-tab span[aria-hidden],
+.jerseys-collection-tabs .jerseys-collection-tab span[aria-hidden]{font-size:12px;line-height:1}
+.section-nav .tabs .tab b{font-size:10px!important;padding:2px 5px!important}
+.regatta-collection-header,
+.jerseys-collection-header{
+  display:grid;
+  grid-template-columns:108px minmax(0,1fr) 108px;
+  gap:14px;
+  align-items:center;
+  width:100%;
+  min-width:0;
+  padding:2px 0 8px;
+  margin:0 0 12px;
+  border-bottom:1px solid #d6e4ea;
+}
+.regatta-collection-header .rapli-collection-brand,
+.jerseys-collection-header .rapli-collection-brand{
+  display:flex;justify-content:flex-start;align-items:center;
+  width:108px;min-width:0;grid-column:1;
+}
+.regatta-collection-header .rapli-collection-brand img,
+.jerseys-collection-header .rapli-collection-brand img{
+  display:block;width:102px;height:72px;
+  object-fit:contain;object-position:left center;
+}
+.regatta-collection-header .regatta-collection-tabs,
+.jerseys-collection-header .jerseys-collection-tabs{grid-column:2;justify-self:center}
+@media(max-width:899px) and (min-width:751px){
+ .regatta-collection-header,.jerseys-collection-header{grid-template-columns:108px minmax(0,1fr)}
+}
+@media(max-width:750px){
+ .section-nav .tabs,
+ .regatta-collection-tabs,
+ .jerseys-collection-tabs{
+   grid-template-columns:repeat(4,minmax(0,1fr))!important;
+   gap:3px!important;
+ }
+ .section-nav .tabs .tab,
+ .regatta-collection-tabs .regatta-collection-tab,
+ .jerseys-collection-tabs .jerseys-collection-tab{
+   min-height:39px;
+   gap:2px!important;
+   padding:10px 1px 11px!important;
+   font-size:clamp(8px,2vw,11px)!important;
+   letter-spacing:0!important;
+   overflow:visible!important;
+ }
+ .section-nav .tabs .tab b{display:none!important}
+ .regatta-collection-header,.jerseys-collection-header{
+   grid-template-columns:42px minmax(0,1fr)!important;
+   gap:5px!important;padding:3px 0 7px!important;margin-bottom:12px;
+ }
+ .regatta-collection-header .rapli-collection-brand,
+ .jerseys-collection-header .rapli-collection-brand{
+   width:42px!important;grid-column:1!important;
+ }
+ .regatta-collection-header .rapli-collection-brand img,
+ .jerseys-collection-header .rapli-collection-brand img{width:42px!important;height:42px!important}
+ .regatta-collection-header .regatta-collection-tabs,
+ .jerseys-collection-header .jerseys-collection-tabs{
+   grid-column:2!important;grid-row:1!important;
+ }
+}
+@media(max-width:390px){
+ .regatta-collection-header,.jerseys-collection-header{
+   grid-template-columns:32px minmax(0,1fr)!important;gap:3px!important;
+ }
+ .regatta-collection-header .rapli-collection-brand,
+ .jerseys-collection-header .rapli-collection-brand{width:32px!important}
+ .regatta-collection-header .rapli-collection-brand img,
+ .jerseys-collection-header .rapli-collection-brand img{width:32px!important;height:36px!important}
+ .section-nav .tabs .tab,
+ .regatta-collection-tabs .regatta-collection-tab,
+ .jerseys-collection-tabs .jerseys-collection-tab{font-size:8px!important}
+}
+@media(prefers-reduced-motion:reduce){
+ .section-nav .tabs .tab,
+ .regatta-collection-tabs .regatta-collection-tab,
+ .jerseys-collection-tabs .jerseys-collection-tab{transition:none!important}
+}

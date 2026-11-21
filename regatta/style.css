@@ -1226,3 +1226,111 @@ button.close{min-width:40px;min-height:40px}
   text-shadow:0 1px 3px rgba(8,19,35,.46);
 }
 .regatta-topbar .workspace-tab:not(.active){color:#e0edf5}
+
+
+/* Compact race tile: artwork becomes a small thumbnail beside the course
+   identity; ranks and useful data remain the visual focus. */
+.card .card-content{padding:14px 15px 15px}
+.card .card-intro{
+ display:grid;grid-template-columns:clamp(92px,28%,128px) minmax(0,1fr);
+ align-items:start;gap:13px;min-width:0;margin:0 0 10px
+}
+.card .card-intro .card-top{
+ position:relative;align-self:start;overflow:hidden;
+ width:100%;aspect-ratio:16/11;
+ border:1.5px solid #c8dfe5;border-radius:11px;
+ background:linear-gradient(145deg,#e7f4f5,#dcebf1 50%,#f9fafc);
+ box-shadow:0 3px 11px #1d4a6220
+}
+.card .card-intro .race-icon{
+ width:100%;height:100%;aspect-ratio:auto;
+ min-height:0;background:transparent
+}
+.card .card-intro .race-icon img{
+ width:100%;height:100%;object-fit:contain;object-position:center;
+ cursor:zoom-in
+}
+.card .card-intro .icon-placeholder{font-size:27px}
+.card .card-intro-info{display:flex;flex-direction:column;min-width:0;align-self:stretch}
+.card .card-intro .card-title-row{
+ display:flex;flex-direction:column;align-items:stretch;gap:7px;
+ margin:0 0 5px;min-width:0
+}
+.card .card-intro .card-title-row h2{
+ flex:none;width:100%;margin:0;
+ font-size:clamp(15px,1.45vw,19px);line-height:1.26
+}
+.card .card-intro .card-tag-row{
+ display:flex;justify-content:flex-start;align-items:center;
+ flex-wrap:wrap;flex:0 0 auto;gap:5px;
+ width:100%;max-width:100%;margin:0
+}
+.card .card-intro .card-tag-row .class-tag{max-width:100%;flex:0 1 auto}
+.card .card-intro .card-tag-row .vsr-badge{max-width:100%;flex:0 0 auto}
+.card .card-intro .card-boat{
+ min-height:0;margin:0;
+ font-size:10px;line-height:1.45;overflow-wrap:anywhere
+}
+.card .card-intro .card-status-row{
+ display:flex;align-items:center;justify-content:flex-start;
+ flex-wrap:wrap;gap:6px;margin-top:8px;min-width:0
+}
+.card .card-intro .badge-status,
+.card .card-intro .start-today-flag{
+ position:static;left:auto;top:auto;right:auto;bottom:auto;
+ max-width:100%;width:max-content;margin:0;
+ font-size:8px;line-height:1.3;overflow-wrap:anywhere
+}
+.card .card-intro .start-today-flag{padding:5px 7px}
+.card .card-stats{margin-top:10px}
+.card .rank-grid{margin-top:12px}
+/* Secondary screenshots no longer dominate the bottom of a completed tile. */
+.card .card-footer{display:flex;flex-direction:column;gap:10px;margin-top:12px;min-width:0}
+.card .card-footer.with-shots{
+ display:grid;grid-template-columns:minmax(0,206px) minmax(0,1fr);
+ align-items:end;gap:12px
+}
+.card .card-footer .shots{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+ width:100%;max-width:100%;gap:7px;margin:0;min-width:0
+}
+.card .card-footer .shot{display:flex;flex-direction:column;gap:4px;min-width:0}
+.card .card-footer .shot label{
+ display:block;margin:0;min-height:18px;
+ color:#597d8b;font-size:8px;line-height:1.15
+}
+.card .card-footer .shot-box{
+ aspect-ratio:auto;height:74px;min-height:0;max-height:74px;
+ border:1.5px solid #cee0e7;border-radius:9px;
+ background:linear-gradient(140deg,#f2f8fa,#e8f1f5)
+}
+.card .card-footer .shot-box img{
+ width:100%;height:100%;object-fit:contain;cursor:zoom-in
+}
+.card .card-footer .shot-empty{font-size:8px;text-align:center;padding:4px}
+.card .card-footer .card-actions{
+ display:flex;align-items:flex-end;justify-content:flex-end;
+ flex-wrap:wrap;gap:6px;margin:0;min-width:0
+}
+.card .card-footer .card-actions .btn{flex:1 1 79px;min-width:0}
+@media(max-width:1000px){
+ .card .card-footer.with-shots{grid-template-columns:minmax(0,1fr);gap:10px}
+ .card .card-footer .shots{max-width:238px}
+ .card .card-footer .card-actions{justify-content:stretch}
+}
+@media(max-width:580px){
+ .card .card-content{padding:12px 13px 13px}
+ .card .card-intro{grid-template-columns:clamp(90px,27%,114px) minmax(0,1fr);gap:11px;margin-bottom:8px}
+ .card .card-intro .card-title-row h2{font-size:16px}
+ .card .card-intro .card-boat{font-size:10px}
+ .card .card-intro .card-status-row{margin-top:7px}
+ .card .card-footer .shot-box{height:68px;max-height:68px}
+ .card .card-footer .shots{max-width:224px}
+}
+@media(max-width:360px){
+ .card .card-intro{grid-template-columns:83px minmax(0,1fr);gap:9px}
+ .card .card-intro .card-title-row h2{font-size:15px}
+ .card .card-intro .card-tag-row{gap:4px}
+ .card .card-intro .card-tag-row .class-tag{font-size:8px;padding:4px 5px}
+ .card .card-intro .card-tag-row .vsr-badge{font-size:8px;padding:4px 5px}
+}

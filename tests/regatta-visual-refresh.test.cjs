@@ -185,7 +185,10 @@ test('header VSR ranking uses the latest saved entry, progression and empty stat
   context.classSettings.vsrRankingHistory=[{date:'2026-11-19T13:00',rank:4820}];
   update();
   assert.equal(doc.getElementById('vsr-header-ranking-value').textContent,'#4\u202f820');
-  assert.equal(doc.getElementById('vsr-header-ranking-trend').textContent,'1er relevé');
+  assert.equal(doc.getElementById('vsr-header-ranking-trend').textContent,'');
+  assert.equal(doc.getElementById('vsr-header-ranking-trend').hidden,true);
+  assert.equal(doc.getElementById('vsr-header-ranking-trend').dataset.direction,'flat');
+  assert.ok(!button.getAttribute('aria-label').includes('premier relevé'));
   context.classSettings.vsrRankingHistory.push({date:'2026-11-20T13:00',rank:4700});
   update();
   const trend=doc.getElementById('vsr-header-ranking-trend');
@@ -214,6 +217,9 @@ test('the compact foil VSR ranking shortcut navigates to the existing statistics
   assert.equal(doc.querySelector('#vsr-header-ranking-value').textContent,'—');
   assert.ok(css.includes('--vr-button-border'));
   assert.ok(css.includes('.regatta-topbar #vsr-header-ranking.vsr-header-ranking'));
+  assert.ok(css.includes('grid-template-columns:auto minmax(0,1fr) auto'));
+  assert.ok(css.includes('grid-column:2;'));
+  assert.ok(css.includes('justify-self:center;'));
   assert.ok(css.includes('@media(max-width:365px)'));
   assert.ok(js.includes("$('vsr-header-ranking').addEventListener('click'"));
   assert.ok(js.includes("selectWorkspace('stats')"));

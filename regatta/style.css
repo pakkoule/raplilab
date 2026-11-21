@@ -3,7 +3,7 @@
 html{scroll-behavior:smooth}body{margin:0;min-width:320px;min-height:100vh;background:radial-gradient(circle at 95% -4%,#c9f4f0 0,transparent 32%),radial-gradient(circle at -12% 36%,#f9e0ed 0,transparent 28%),#f2f7f8;color:#193449;font-size:13px}
 button,input,select,textarea{font:inherit}button{cursor:pointer}button:disabled{opacity:.5;cursor:wait}input,select,textarea{min-width:0}a{color:inherit}
 button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #00a8b8;outline-offset:2px}
-.shell{position:relative;width:min(1120px,calc(100% - 48px));margin:26px auto 44px;border:1px solid #d2e6e8;border-radius:20px;overflow:hidden;background:linear-gradient(90deg,#174f7c 0%,#258fc7 26%,#e04da8 62%,#0c1018 100%);box-shadow:0 24px 70px #264b571a}
+.shell{position:relative;width:min(1120px,calc(100% - 48px));margin:26px auto 44px;border:1px solid #d2e6e8;border-radius:20px;overflow:hidden;background:linear-gradient(180deg,#163a59 0%,#215575 28%,#2a607c 53%,#284f6c 70%,#6c536a 86%,#141922 100%);box-shadow:0 24px 70px #264b571a}
 .topline{height:5px;background:linear-gradient(90deg,var(--pink),var(--pink) 21%,var(--teal) 21%,#16ccd1 80%,#142d40 80%)}
 .utility{padding:14px 26px;display:flex;justify-content:space-between;gap:14px;align-items:center;border-bottom:1px solid var(--stroke);background:#fafdfe}
 .utility-title{white-space:nowrap;font-size:13px;font-weight:900;letter-spacing:.04em;color:#174457}.utility-title small{font-size:10px;letter-spacing:.09em;color:#8ca5ae;font-weight:700}
@@ -485,22 +485,20 @@ dialog form{border-radius:18px;background:#fff;display:flex;flex-direction:colum
 .regatta-pagination{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:7px;
  padding:10px 25px 14px;min-width:0}
 #regatta-pagination-bottom .regatta-pagination{padding-top:17px;padding-bottom:20px}
-.regatta-pagination button{display:grid;place-items:center;min-width:35px;min-height:35px;
- padding:7px 10px;background:#fff;color:#176784;border:1px solid #b4d8df;border-radius:8px;
+.regatta-pagination button{display:flex;align-items:center;justify-content:center;min-width:35px;min-height:35px;
+ padding:0;background:#fff;color:#176784;border:1px solid #b4d8df;border-radius:8px;
  font:900 11px/1 Poppins,sans-serif;font-variant-numeric:tabular-nums;cursor:pointer;
  transition:background .16s,transform .16s}
 .regatta-pagination button:not(:disabled):hover{background:#e9f8fa}
 .regatta-pagination button:focus-visible{outline:3px solid #3cb8d2;outline-offset:2px}
 .regatta-pagination button[aria-current=page]{position:relative;color:#fff;background:#0d728c;border-color:#0d728c;
- box-shadow:0 0 0 3px #31b5c13d,0 3px 12px #08738a33;transform:translateY(-1px);cursor:default}
-.regatta-pagination button[aria-current=page]::after{content:"";width:5px;height:5px;border-radius:50%;
- background:#fff;margin:2px auto -3px;display:block}
+ box-shadow:0 0 0 3px #31b5c13d,0 3px 12px #08738a33;cursor:default}
 .regatta-pagination button:disabled{opacity:.35;cursor:default}
 .regatta-page-ellipsis{font:750 11px Poppins,sans-serif;color:#7b98a6;padding:0 3px}
 .regatta-page-caption{width:100%;text-align:center;color:#507985;font:750 10px Poppins,sans-serif;
  padding-top:3px}
 @media(max-width:580px){.regatta-pagination{padding:8px 11px 12px;gap:5px}
- .regatta-pagination button{min-width:32px;min-height:32px;padding:6px 8px}
+ .regatta-pagination button{min-width:32px;min-height:32px;padding:0}
 }
 
 .race-live-clock{display:flex;align-items:center;gap:9px;flex-wrap:wrap;padding:9px 12px;margin:8px 0;
@@ -791,7 +789,7 @@ dialog form{border-radius:18px;background:#fff;display:flex;flex-direction:colum
 }
 .regatta-catalogue-controls{
  display:grid;grid-template-columns:minmax(0,1fr) auto auto;
- align-items:center;gap:8px;margin:0 26px 13px;min-width:0
+ align-items:center;gap:8px;margin:0 26px 8px;min-width:0
 }
 .regatta-catalogue-controls>.regatta-search{
  grid-column:1!important;grid-row:1;min-width:0;width:100%
@@ -1113,12 +1111,6 @@ button.close{min-width:40px;min-height:40px}
 .regatta-catalogue-controls .regatta-inline-actions #recalculate-scores:focus-visible{
  outline:2px solid #258fc7;outline-offset:2px
 }
-.collection-head-results{
- display:flex;justify-content:flex-end;align-items:center;
- min-height:20px;padding:2px 0 8px;margin-top:0;
- border:0!important
-}
-.collection-head-results #result-count{font-size:10px;color:#7c93a1;font-weight:750}
 /* Departure and arrival are a visual pair, without changing the stored dates. */
 .card .journey-timeline{
  display:inline-flex;align-items:center;gap:7px;min-width:0;max-width:100%;
@@ -1220,14 +1212,13 @@ button.close{min-width:40px;min-height:40px}
  .card .journey-arrow svg{width:20px}
  .card .stat-chip{padding:7px 9px}
  .card .rank-grid .rank-plate{border-radius:11px!important}
- .collection-head-results{min-height:15px;padding-bottom:5px}
 }
 @media(prefers-reduced-motion:reduce){
  .regatta-cloud-status{transition:none}
 }
 
 
-/* Legibility on the horizontal blue / pink / black shell gradient.
+/* Legibility on the vertical, blue-dominant / muted rose / charcoal shell gradient.
    Cards, dialogs and inputs keep their existing light backgrounds. */
 .regatta-topbar .workspace-tab,
 .regatta-topbar .workspace-tab.active{
@@ -1235,4 +1226,3 @@ button.close{min-width:40px;min-height:40px}
   text-shadow:0 1px 3px rgba(8,19,35,.46);
 }
 .regatta-topbar .workspace-tab:not(.active){color:#e0edf5}
-.collection-head-results #result-count{color:#f4f9fd;text-shadow:0 1px 2px #14203480}

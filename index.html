@@ -519,7 +519,13 @@ html[data-rapli-role="editor"] #rapli-admin-login{display:none}
       if(!visibleProjects.includes(name))name='sports';
       current=name;
       const frame=frames[name];
-      if(!frame.src&&frame.dataset.src){frame.src=frame.dataset.src;delete frame.dataset.src;}
+      if(!frame.getAttribute('src')&&frame.dataset.src){frame.src=frame.dataset.src;delete frame.dataset.src;}
+      // Jerseys borrows Sports' logo library: mount Sports invisibly on direct
+      // #jerseys entry as well, without making Sports the active workspace.
+      if(name==='jerseys'&&!frames.sports.getAttribute('src')&&frames.sports.dataset.src){
+        frames.sports.src=frames.sports.dataset.src;
+        delete frames.sports.dataset.src;
+      }
       document.body.dataset.active=name;
       for(const project of projects){
         const active=project===name;
@@ -543,7 +549,14 @@ html[data-rapli-role="editor"] #rapli-admin-login{display:none}
         if(event.key==='End')next=projects[projects.length-1];
         if(next){event.preventDefault();select(next,true,true);}
       });
-      frames[name].addEventListener('load',()=>{activity(name,name===current);if(name==='sports')routeSportsView();});
+      frames[name].addEventListener('load',()=>{
+        activity(name,name===current);
+        if(name==='sports'){
+          if(current==='sports')routeSportsView();
+          // In case Jerseys asked before Sports' bridge initialized.
+          frames.jerseys?.contentWindow?.postMessage({type:'RAPLI_JERSEYS_LOGOS_UPDATED'},location.origin);
+        }
+      });
     }
     window.addEventListener('popstate',()=>select(fromHash()));
     window.addEventListener('hashchange',()=>select(fromHash()));

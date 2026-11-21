@@ -50,15 +50,20 @@ html:not([data-rapli-role="editor"]) #rapli-module-cloud-save{display:none!impor
 .rapli-profile-message[data-error=true]{color:#af4050}
 @media(max-width:520px){.regatta-navigation{gap:5px}.regatta-sports-back{font-size:9px;padding:8px}#rapli-shared-status-regatta{font-size:9px}.rapli-profile-toggle{width:36px;height:36px}}
 </style>
+<link rel="stylesheet" href="../shared/collection-navigation.css">
 </head>
 <body>
 <main class="shell">
   <div class="topline" aria-hidden="true"></div>
-  <nav class="regatta-collection-tabs" role="tablist" aria-label="Collections Rapli Lab">
-    <a class="regatta-collection-tab" href="../#own" target="_top" role="tab" aria-selected="false">OWN</a>
-    <a class="regatta-collection-tab" href="../#wishlist" target="_top" role="tab" aria-selected="false">WISHLIST</a>
-    <span class="regatta-collection-tab is-active" role="tab" aria-selected="true" tabindex="0">REGATTA <span aria-hidden="true">⛵</span></span>
-  </nav>
+  <header class="regatta-collection-header">
+    <div class="rapli-collection-brand" aria-label="Rapli Lab"><img src="../assets/rapli-archives-logo-header-transparent.webp" alt="Rapli Lab" width="102" height="72"></div>
+    <nav class="regatta-collection-tabs" role="tablist" aria-label="Collections Rapli Lab">
+      <a class="regatta-collection-tab" href="../#own" target="_top" role="tab" aria-selected="false">OWN</a>
+      <a class="regatta-collection-tab" href="../#wishlist" target="_top" role="tab" aria-selected="false">WISHLIST</a>
+      <span class="regatta-collection-tab is-active" role="tab" aria-selected="true" tabindex="0">REGATTA</span>
+      <a class="regatta-collection-tab" href="../#jerseys" target="_top" role="tab" aria-selected="false">JERSEYS</a>
+    </nav>
+  </header>
   <nav class="workspace-tabs" role="tablist" aria-label="Vues Rapli Regatta">
     <button type="button" id="view-races" class="workspace-tab active" role="tab" aria-selected="true" aria-controls="races-panel">COURSES</button>
     <button type="button" id="view-stats" class="workspace-tab" role="tab" aria-selected="false" aria-controls="stats-panel" tabindex="-1">STATISTIQUES</button>

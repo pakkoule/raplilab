@@ -37,6 +37,23 @@
    const id=event.data.id;
    if(!Number.isSafeInteger(id)||id<1)return;
    const action=event.data.action;
+   if(action==='font-list'){
+     const fonts=window.RapliJerseyFonts;
+     const current=state();
+     send({type:'RAPLI_JERSEYS_LOGOS_RESPONSE',id,action,
+       entries:fonts?.metadata?.(bridge.logos())||[],ready:current.ready,synced:current.synced});
+     return;
+   }
+   if(action==='font-resolve'){
+     const fonts=window.RapliJerseyFonts;
+     const requested=String(event.data.fontId||'').slice(0,180);
+     const selected=fonts?.find?.(bridge.logos(),requested);
+     send({type:'RAPLI_JERSEYS_LOGOS_RESPONSE',id,action,
+       fontId:requested,format:selected?.format||'',
+       data:fonts?.safeData?.(selected?.fontData)?selected.fontData:'',
+       ready:state().ready});
+     return;
+   }
    if(action==='list'){
      const current=state();
      send({type:'RAPLI_JERSEYS_LOGOS_RESPONSE',id,action,entries:current.entries,

@@ -26,7 +26,7 @@
   };
   add(r.name,r.boat,r.boatClass,context.status,context.routeType,context.vsr,
       context.timezone);
-  add(context.kind);
+  add(context.kind,context.vsrCode,context.clockLabel);
   if(context.today) add('départ aujourd’hui');
   if(r.kind!=='record'){
    if(r.start){add('départ');date(r.start);add(r.startTime);}
@@ -49,6 +49,11 @@
     const totalValue=String(r[total]??'');
     add(label,place,number(place));
     if(totalValue)add(totalValue,number(totalValue),place+' / '+number(totalValue));
+    if(normalize(context.status)==='terminee'){
+     const medal={1:'podium première place médaille or',2:'podium deuxième place médaille argent',
+      3:'podium troisième place médaille bronze'}[Number(place)];
+     if(medal)add(medal);
+    }
    }
   }
   if(context.score!==null&&context.score!==undefined&&context.score!=='')

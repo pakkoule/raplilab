@@ -68,6 +68,15 @@ test('record attempt details include starts, aborts and best recorded time',()=>
    assert.ok(search.matches(record,q,info),q);
  }
 });
+test('VSR abbreviations, departure clocks and podium medals are searchable',()=>{
+ const winner={...base,rank:'1'};
+ assert.equal(search.matches(winner,'medaille or',context),true);
+ assert.equal(search.matches(winner,'podium premiere place',context),true);
+ const live={...base,vsr:'vsr1',rank:''};
+ const liveContext={...context,vsr:'VSR 1',vsrCode:'vsr1',status:'COURSE EN COURS',clockLabel:'en course depuis'};
+ assert.equal(search.matches(live,'vsr1 en course depuis',liveContext),true);
+ assert.equal(search.matches(live,'podium',liveContext),false);
+});
 test('no image binary content or hidden notes enter the search index',()=>{
  const race={...base,
   notes:'secret-unpublished-note',

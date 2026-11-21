@@ -259,11 +259,26 @@
       console.warn('Rapli Regatta : marque de sauvegarde locale inaccessible', error);
     }
   }
+  let statusHideTimer = null;
   function status(message, level = 'ok') {
     const element = document.getElementById('rapli-shared-status-' + MODULE);
     if (element) {
       element.textContent = message;
       element.dataset.status = level;
+      // A glass notification replaces the old permanent status line.
+      // It auto-dismisses even if the network stays offline or a request stalls.
+      const overlay = document.getElementById('regatta-cloud-overlay');
+      if (overlay) {
+        if (statusHideTimer !== null) clearTimeout(statusHideTimer);
+        overlay.dataset.visible = 'true';
+        overlay.dataset.status = level;
+        overlay.setAttribute('aria-hidden', 'false');
+        statusHideTimer = setTimeout(() => {
+          overlay.dataset.visible = 'false';
+          overlay.setAttribute('aria-hidden', 'true');
+          statusHideTimer = null;
+        }, level === 'error' ? 6500 : level === 'pending' ? 4800 : 3600);
+      }
     }
     if (window.parent !== window)
       window.parent.postMessage({type: 'RAPLI_SHARED_STATUS', module: MODULE, message, level}, location.origin);
@@ -544,18 +559,19 @@
     });
     return bootPromise;
   }
-  window.RapliSharedCollection={changed,canEdit,refresh:()=>refresh(true),
-    getStatus:()=>({initialized,revision,dirty,blocked,busy,mediaIncomplete,busyLoading})};
-  // Explicit refresh rather than full polling or an always-on Realtime connection.
-  const statusElement=document.getElementById('rapli-shared-status-'+MODULE);
-  if(statusElement){
-    const button=document.createElement('button');
-    button.type='button';button.textContent='↻';button.title='Vérifier les nouveautés';
-    button.setAttribute('aria-label','Actualiser la collection');
-    button.style.cssText='margin-left:8px;border:1px solid #b8c8c9;border-radius:50%;width:28px;height:28px;cursor:pointer;background:linear-gradient(120deg,#d2f2e6,#dbe6f9,#f3dfd8);color:#182b3b';
-    button.onclick=()=>{lastCheck=0;if(dirty && !mediaIncomplete)void saveNow();else void refresh(true);};
-    statusElement.after(button);
+  async function syncNow() {
+    lastCheck=0;
+    if(dirty && !mediaIncomplete) {
+      if(isEditor())return saveNow();
+      status('Modifications en attente · connecte-toi comme administrateur pour les envoyer.','error');
+      return;
+    }
+    return refresh(true);
   }
+  window.RapliSharedCollection={changed,canEdit,refresh:()=>refresh(true),syncNow,
+    getStatus:()=>({initialized,revision,dirty,blocked,busy,mediaIncomplete,busyLoading})};
+  // Manual sync has a dedicated, permanent icon in the Regatta toolbar.
+  // No second button is appended next to the transient status overlay.
   window.addEventListener('rapli-module-ready',()=>{void boot();},{once:true});
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)scheduleRefresh();});
   window.addEventListener('focus',scheduleRefresh);

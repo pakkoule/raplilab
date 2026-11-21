@@ -432,7 +432,7 @@ function raceSearchContext(r){
   capture:record?'capture du record tracé':'classement final tracé'
  };
 }
-function render(){
+function render({searchOnly=false}={}){
  const query=$('search').value.trim();
  const filtered=query?rows.filter(r=>searchEngine.matches(r,query,raceSearchContext(r))):rows;
  const out=[...filtered];
@@ -464,7 +464,9 @@ function render(){
    (rows.length?'<p class="regatta-search-empty">Aucune course ne correspond à ta recherche.</p>':'');
  scheduleRankingFit();updateRaceClocks();
  $('empty').hidden=rows.length!==0;
- renderStatistics();renderHonors();renderClassColors();
+ // Search and pagination only change the gallery, not statistics or class settings.
+ // Avoid recalculating all charts while typing on iPhone.
+ if(!searchOnly){renderStatistics();renderHonors();renderClassColors();}
 }
 const statInt=n=>Number(n).toLocaleString('fr-FR');
 const statDecimal=(n,digits=1)=>Number(n).toLocaleString('fr-FR',{minimumFractionDigits:0,maximumFractionDigits:digits});
@@ -1434,17 +1436,17 @@ $('new-race').addEventListener('click',()=>openEditor());$('empty-add').addEvent
 const searchInput=$('search'),clearSearch=$('regatta-search-clear');
 searchInput.addEventListener('input',()=>{
  regattaPage=1;clearSearch.hidden=!searchInput.value;
- render();
+ render({searchOnly:true});
 });
 clearSearch.addEventListener('click',()=>{
  searchInput.value='';clearSearch.hidden=true;regattaPage=1;
- render();searchInput.focus();
+ render({searchOnly:true});searchInput.focus();
 });
 searchInput.addEventListener('keydown',event=>{
  if(event.key==='Escape'&&searchInput.value){
   event.preventDefault();
   searchInput.value='';clearSearch.hidden=true;regattaPage=1;
-  render();
+  render({searchOnly:true});
  }
 });
 for(const id of ['regatta-pagination-top','regatta-pagination-bottom'])$(id).addEventListener('click',event=>{
@@ -1453,7 +1455,7 @@ for(const id of ['regatta-pagination-top','regatta-pagination-bottom'])$(id).add
  const next=Number(control.dataset.regattaPage);
  const pageCount=Math.ceil(regattaResultsCount/REGATTA_PAGE_SIZE);
  if(!Number.isInteger(next)||next<1||next>pageCount)return;
- regattaPage=next;render();
+ regattaPage=next;render({searchOnly:true});
  $('regatta-pagination-top').scrollIntoView?.({behavior:'smooth',block:'start'});
 });
 $('recalculate-scores').addEventListener('click',openScoreRecalc);

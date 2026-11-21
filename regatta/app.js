@@ -1017,7 +1017,7 @@ function updateKindFields(){
  $('arrival-feedback').hidden=isRecord;
  $('race-participant-count').closest('label').hidden=isRecord;
  $('race-participant-help').hidden=isRecord;
- $('race-vsr').closest('label').hidden=isRecord;
+ $('race-vsr').closest('label').hidden=false; // VSR level applies to regular races and records.
  $('race-equipment-group').hidden=isRecord;
  $('race-gain-points').closest('fieldset').hidden=isRecord;
  $('race-rank').closest('fieldset').hidden=isRecord&&!isClosedRecord;
@@ -1099,7 +1099,7 @@ async function saveEditor(e){
   r.start=earliest.date;r.startTime=earliest.time;
   r.scoreSnapshot=null;
   if(!r.recordClosed)for(const [place,total] of rankPairs){r[place]='';r[total]='';}
-  for(const key of ['duration','durationDays','durationHours','durationMinutes','durationSeconds','end','endTime','vsr','gainPoints','gainCredits','participantCount'])r[key]='';
+  for(const key of ['duration','durationDays','durationHours','durationMinutes','durationSeconds','end','endTime','gainPoints','gainCredits','participantCount'])r[key]='';
   r.equipment='';
  }else{r.attempts=[];r.recordClosed=false;}
  if(r.kind!=='record'&&!old?.scoreSnapshot){const initial=scoreEngine.scoreFor(r,[...rows.filter(x=>x.id!==r.id),r],raceStatus);if(initial.available)r.scoreSnapshot={...initial,signature:scoreEngine.signature(r),calculatedAt:now()};}

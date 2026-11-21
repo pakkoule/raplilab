@@ -449,7 +449,7 @@ function raceCardMenu(r,status){
   '<button type="button" data-action="'+id+'"'+extra+'><span aria-hidden="true">'+icon+
   '</span>'+title+'</button>';
  return '<details class="race-actions-menu">'+
-  '<summary aria-label="Options pour '+safe(r.name)+'" title="Options de la course">•••</summary>'+
+  '<summary aria-label="Options pour '+safe(r.name)+'" title="Options de la course">⋯</summary>'+
   '<div class="race-actions-popover" role="group" aria-label="Actions de '+safe(r.name)+'">'+
   (showImages&&validImage(r.result)?action('view-result',r.kind==='record'?'Voir la capture du record':'Voir le classement final','▣'):'')+
   (showImages&&validImage(r.route)?action('view-route','Voir le tracé','⌁'):'')+

@@ -227,3 +227,31 @@ test('the compact foil VSR ranking shortcut navigates to the existing statistics
   assert.ok(js.includes('renderVsrHeaderRanking();'));
  }finally{dom.window.close();}
 });
+
+test('record race retains selectable VSR level through edit/save and keeps the category badge',()=>{
+ const doc=new JSDOM(html).window.document;
+ const vsr=doc.getElementById('race-vsr');
+ assert.ok(vsr,'the race editor must have a VSR selector');
+ assert.deepEqual([...vsr.options].map(option=>option.value),['','hc','vsr1','vsr2','vsr3']);
+ assert.ok(/function updateKindFields\(\)[\s\S]*?getElementById|function updateKindFields\(\)/.test(js));
+ const kindStart=js.indexOf('function updateKindFields(){');
+ const kindEnd=js.indexOf('function openEditor(',kindStart);
+ const kindBody=js.slice(kindStart,kindEnd);
+ assert.ok(kindBody.includes("$('race-vsr').closest('label').hidden=false"),
+   'VSR selector should remain visible when the kind is record');
+ const saveStart=js.indexOf('async function saveEditor(');
+ const saveEnd=js.indexOf('async function closeRecord(',saveStart);
+ const saveBody=js.slice(saveStart,saveEnd);
+ assert.ok(saveBody.includes("r.vsr=VSR[r.vsr]?r.vsr:''"),
+   'selected VSR category should be validated');
+ const cleanup=saveBody.match(/for\(const key of \[([^\]]+)\]\)r\[key\]='';/);
+ assert.ok(cleanup,'record cleanup block expected');
+ assert.equal(cleanup[1].includes("'vsr'"),false,
+   'record cleanup must not erase the selected VSR category');
+ assert.ok(js.includes("mode=VSR[r.vsr]||''"),
+   'record tiles should show the selected VSR badge');
+ const normalizeStart=js.indexOf('function normal(');
+ const normalizeEnd=js.indexOf('let rows=[]',normalizeStart);
+ assert.ok(js.slice(normalizeStart,normalizeEnd).includes("r.vsr=VSR[r.vsr]?r.vsr:''"),
+   'record data should preserve VSR values after reload');
+});

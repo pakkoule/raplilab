@@ -36,7 +36,7 @@ function raceTileHarness(){
   statusTitle:{live:'COURSE EN COURS',planned:'À VENIR',finished:'TERMINÉE',
    dnf:'DNF',record:'COURSE RECORD','record-live':'RECORD EN COURS',
    'record-closed':'RECORD CLÔTURÉ'},
-  scoreView:r=>r.kind==='record'?{available:false,reason:'Not applicable'}:
+  scoreView:r=>r.kind==='record'||r.mockStatus==='dnf'?{available:false,reason:'Not applicable'}:
    {available:Boolean(r.mockScore),value:r.mockScore||0,reason:''},
   rankHtml:(icon,label,value,total,cls)=>value?
    '<div class="rank-plate '+cls+'"><strong>'+value+'</strong></div>':'',
@@ -84,7 +84,8 @@ test('search, note recalc, settings, create and profile occupy the same toolbar'
   assert.ok(bar.querySelector('#search'));
   for(const id of ['recalculate-scores','manage-class-colors','new-race','rapliProfileToggle'])
    assert.ok(bar.querySelector('#'+id),id);
-  assert.ok(bar.querySelector('#rapli-shared-status-regatta'));
+  assert.ok(doc.querySelector('#regatta-cloud-overlay #rapli-shared-status-regatta'));
+  assert.equal(bar.querySelector('#rapli-shared-status-regatta'),null);
   assert.equal(doc.querySelector('#compact-cards'),null);
   assert.equal(js.includes('regattaCompact'),false);
   assert.ok(css.includes('grid-template-columns:minmax(0,1fr) auto auto'));

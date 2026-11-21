@@ -398,6 +398,17 @@ html[data-rapli-role="editor"] #rapli-admin-login{display:none}
  #rapli-admin-message{max-width:150px}
  .portal-footer .global-cloud-controls{margin-left:0}
 }
+/* Switching iframes does not recreate them: user input and scroll stay in memory. */
+.frame-wrap>section:not([hidden]){
+  animation:rapli-workspace-enter .18s cubic-bezier(.2,.65,.3,1) both;
+}
+@keyframes rapli-workspace-enter{
+  from{opacity:.62;transform:translateY(3px)}
+  to{opacity:1;transform:translateY(0)}
+}
+@media(prefers-reduced-motion:reduce){
+  .frame-wrap>section:not([hidden]){animation:none}
+}
 /* Rapli Lab single-workspace presentation: Regatta stays in DOM and cloud sync. */
 /* Removing the header must not remove the backing tabs used by cloud sync. */
 .portal-hidden-navigation{display:none!important}
@@ -464,6 +475,7 @@ html[data-rapli-role="editor"] #rapli-admin-login{display:none}
           <button type="button" id="tab-regatta" class="product-tab" data-product="regatta" role="tab" aria-selected="false" aria-controls="panel-regatta" tabindex="-1" title="Rapli Regatta — journal de courses">
             <img src="regatta/assets/logo.webp" alt="Rapli Regatta" draggable="false">
           </button>
+          <button type="button" id="tab-jerseys" class="product-tab" data-product="jerseys" role="tab" aria-selected="false" aria-controls="panel-jerseys" tabindex="-1" title="Rapli Jerseys — collection de maillots">Jerseys</button>
         </nav>
     </div>
     <div class="frame-wrap">
@@ -473,21 +485,24 @@ html[data-rapli-role="editor"] #rapli-admin-login{display:none}
       <section id="panel-regatta" role="tabpanel" aria-labelledby="tab-regatta" hidden>
         <iframe id="frame-regatta" class="app-frame" data-src="regatta/index.html" title="Rapli Regatta — journal de courses" allow="clipboard-read; clipboard-write" loading="lazy"></iframe>
       </section>
+      <section id="panel-jerseys" role="tabpanel" aria-labelledby="tab-jerseys" hidden>
+        <iframe id="frame-jerseys" class="app-frame" data-src="jerseys/index.html" title="Rapli Jerseys — collection de maillots" loading="lazy"></iframe>
+      </section>
     </div>
 
   </div>
   <script>
   (() => {
     'use strict';
-    const projects=['sports','regatta'];
-    // Both workspaces are available to visitors and verified editors via Profile navigation.
-    const visibleProjects=['sports','regatta'];
+    const projects=['sports','regatta','jerseys'];
+    // Jerseys is currently an informational workspace, with no collection writes.
+    const visibleProjects=['sports','regatta','jerseys'];
     const tabs=Object.fromEntries(projects.map(n=>[n,document.getElementById('tab-'+n)]));
     const panels=Object.fromEntries(projects.map(n=>[n,document.getElementById('panel-'+n)]));
     const frames=Object.fromEntries(projects.map(n=>[n,document.getElementById('frame-'+n)]));
-    const names={sports:'Sports',regatta:'Regatta'};
+    const names={sports:'Sports',regatta:'Regatta',jerseys:'Jerseys'};
     let current='sports';
-    const fromHash=()=>location.hash.slice(1).toLowerCase()==='regatta'?'regatta':'sports';
+    const fromHash=()=>{const route=location.hash.slice(1).toLowerCase();return route==='regatta'?'regatta':route==='jerseys'?'jerseys':'sports';};
     const sportsViewFromHash=()=>location.hash.slice(1).toLowerCase()==='wishlist'?'wishlist':'own';
     function routeSportsView(){
       const frame=frames.sports;

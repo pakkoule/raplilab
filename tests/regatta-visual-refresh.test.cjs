@@ -9,6 +9,60 @@ const js=fs.readFileSync('regatta/app.js','utf8');
 const css=fs.readFileSync('regatta/style.css','utf8');
 const search=fs.readFileSync('regatta/search.js','utf8');
 
+function raceTileHarness(){
+ const start=js.indexOf('function recordHasFutureStart(r){');
+ const end=js.indexOf('/* Ajustement dynamique',start);
+ assert.ok(start>0&&end>start,'race tile helpers not found');
+ const ctx={
+  raceStatus:r=>r.mockStatus,
+  recordEngine:{
+   latestStart:attempts=>attempts?.[0]||{date:'',time:''},
+   summary:()=>({bestSeconds:93600}),
+   format:seconds=>Math.floor(seconds/3600)+' h'
+  },
+  localDateTime:(date,time)=>new Date(date+'T'+time+':00+01:00').getTime(),
+  timeEngine:{wallAt:()=>({date:'2026-11-21'})},
+  raceClockInfo:r=>['live','record-live','planned'].includes(r.mockStatus)?
+   {mode:r.mockStatus==='planned'?'countdown':'elapsed',
+    start:r.mockStatus==='planned'?Date.now()+3600000:Date.now()-120000}:null,
+  formatRaceClock:sec=>Math.floor(sec)+' sec',
+  tagAppearance:(kind)=>({
+   primary:'#008fa1',secondary:'#e5fcfb',accent:'#ffe7f0',
+   border:'#287cb5',text:'#14395d',
+   label:kind==='class'?'IMOCA FOIL':'VSR FOIL'
+  }),
+  foilVariables:(value,kind)=>'--'+kind+'-tag:'+value.primary,
+  VSR:{hc:'HORS CATÉGORIE'},VSR_PRIORITY:()=>0,
+  statusTitle:{live:'COURSE EN COURS',planned:'À VENIR',finished:'TERMINÉE',
+   dnf:'DNF',record:'COURSE RECORD','record-live':'RECORD EN COURS',
+   'record-closed':'RECORD CLÔTURÉ'},
+  scoreView:r=>r.kind==='record'?{available:false,reason:'Not applicable'}:
+   {available:Boolean(r.mockScore),value:r.mockScore||0,reason:''},
+  rankHtml:(icon,label,value,total,cls)=>value?
+   '<div class="rank-plate '+cls+'"><strong>'+value+'</strong></div>':'',
+  podiumMedalFor:()=>'',rankPairs:[['rank','rankTotal']],
+  safe:value=>String(value??''),validImage:value=>String(value??'').startsWith('data:image'),
+  imageTag:(src,alt)=>'<img src="'+src+'" alt="'+alt+'">',
+  recordCardContent:()=>'<div class="record-card">RECORD ATTEMPTS</div>',
+  equipmentModes:{fp:'FULL PACK'},ROUTE_TYPES:{transat:'Transatlantique'},
+  moneyNumber:value=>value!==''&&value!==undefined&&value!==null,
+  validEquipment:value=>value==='fp',
+  dateTimeFR:(day,time)=>day+(time?' · '+time:''),
+ };
+ const methods=new Function('ctx','with(ctx){'+js.slice(start,end)+
+  ';return {card,raceCardSchedule,raceCardMenu,recordHasFutureStart,canExportRaceCalendar};}')(ctx);
+ return {...methods,ctx};
+}
+const testRace={
+ name:'Transat Rapli',boat:'Rapli LPDB',boatClass:'IMOCA',vsr:'hc',
+ start:'2026-11-01',startTime:'13:02',end:'2026-11-11',endTime:'04:34',
+ duration:'10 j 15 h',rank:'123',rankTotal:'10000',
+ rankNational:'19',rankDepartment:'8',rankCity:'3',rankTeam:'21',
+ gainPoints:250,gainCredits:150,equipment:'fp',routeType:'transat',
+ icon:'data:image/png;base64,AAAA',result:'data:image/png;base64,BBBB',
+ route:'data:image/png;base64,CCCC'
+};
+
 test('site logo and Courses/Statistics/Palmares tabs share one compact header',()=>{
  const dom=new JSDOM(html);
  try{
@@ -38,17 +92,21 @@ test('search, note recalc, settings, create and profile occupy the same toolbar'
   assert.ok(css.includes('#rapliProfileToggle.rapli-profile-toggle'));
  }finally{dom.window.close();}
 });
-test('unfinished races and records do not render captured ranking or route images',()=>{
- const expression=js.match(/const showShots=([^;]+);/);
- assert.ok(expression);
- const show=new Function('status','return '+expression[1]+';');
- for(const status of ['live','record-live','planned','record'])assert.equal(show(status),false,status);
- for(const status of ['finished','dnf','record-closed'])assert.equal(show(status),true,status);
- assert.ok(js.includes("(showShots?'<div class=\"shots\">"));
+test('unfinished races hide result/route menu actions but keep saved images intact',()=>{
+ const {raceCardMenu}=raceTileHarness();
+ for(const status of ['live','record-live','planned','record','finished','dnf','record-closed']){
+  const menu=raceCardMenu(testRace,status);
+  const canView=!['live','record-live','planned','record'].includes(status);
+  assert.equal(menu.includes('data-action="view-result"'),canView,status);
+  assert.equal(menu.includes('data-action="view-route"'),canView,status);
+  assert.ok(menu.includes('data-action="edit"'));
+  assert.ok(menu.includes('data-action="png"'));
+ }
  assert.ok(js.includes("hideUnfinishedShots?'':r[k]"));
- assert.ok(js.includes("const showShots="));
  assert.ok(js.includes("const imageKeys=['icon','result','route']"));
+ assert.ok(js.includes("window.RapliPhotoZoom?.openSource?.(src,label)"));
 });
+
 test('live race broadcast icon pulses neon, while reduced-motion remains accessible',()=>{
  assert.ok(js.includes('class="live-neon"'));
  assert.ok(js.includes("status==='live'||status==='record-live'"));
@@ -123,41 +181,25 @@ test('persistent Regatta collection and search continue unchanged',()=>{
  assert.ok(js.includes("boatDisplay:tagAppearance('class'"));
 });
 
-test('actual tile markup omits screenshots for all unfinished statuses, but shows finished captures',()=>{
- const start=js.indexOf('function card(r){');
- const stop=js.indexOf('/* Ajustement dynamique',start);
- assert.ok(start>0&&stop>start);
- const context={
-  raceStatus:r=>r.mockStatus,
-  tagAppearance:(kind)=>({
-   primary:'#008fa1',secondary:'#e5fcfb',accent:'#ffe7f0',border:'#287cb5',
-   text:'#14395d',label:kind==='class'?'IMOCA FOIL':'VSR FOIL'
-  }),
-  foilVariables:(a,k)=>'--'+k+'-tag:'+a.primary,
-  VSR:{hc:'HORS CATÉGORIE'},VSR_PRIORITY:()=>0,
-  statusTitle:{live:'COURSE EN COURS',planned:'À VENIR',finished:'TERMINÉE',
-   dnf:'DNF',record:'COURSE RECORD','record-live':'RECORD EN COURS','record-closed':'RECORD CLÔTURÉ'},
-  timeEngine:{wallAt:()=>({date:'2001-01-01'})},
-  recordEngine:{latestStart:()=>({date:''})},
-  scoreView:()=>({available:false,reason:''}),
-  rankHtml:()=>'',podiumMedalFor:()=>'',rankPairs:[],
-  safe:v=>String(v??''),validImage:v=>String(v??'').startsWith('data:image'),
-  imageTag:()=>'<img class="capture">',recordCardContent:()=>'<div class="record">REC</div>',
-  equipmentModes:{},ROUTE_TYPES:{},moneyNumber:()=>false,validEquipment:()=>false,
-  dateTimeFR:()=>'',raceClockMarkup:()=>''
- };
- const card=new Function('ctx','with(ctx){'+js.slice(start,stop)+';return card;}')(context);
+test('rendered tiles use menu-only image actions, preserving live status and foil labels',()=>{
+ const {card}=raceTileHarness();
  for(const status of ['live','record-live','planned','record','finished','dnf','record-closed']){
-  const race={mockStatus:status,kind:status.startsWith('record')?'record':'race',
-   recordClosed:status==='record-closed',name:'Course',boatClass:'IMOCA',vsr:'hc',
-   boat:'Sail',result:'data:image/png;base64,ABC',route:'data:image/png;base64,ABC'};
+  const record=status.startsWith('record');
+  const race={...testRace,mockStatus:status,kind:record?'record':'race',
+   recordClosed:status==='record-closed',live:status==='record-live',
+   attempts:[{date:'2026-11-22',time:'08:00'}]};
   const markup=card(race);
-  const ongoing=['live','record-live','planned','record'].includes(status);
-  assert.equal(markup.includes('<div class="shots">'),!ongoing,status);
+  const canView=!['live','record-live','planned','record'].includes(status);
+  assert.equal(markup.includes('data-action="view-result"'),canView,status);
+  assert.equal(markup.includes('data-action="view-route"'),canView,status);
   assert.equal(markup.includes('class="live-neon"'),
    ['live','record-live'].includes(status),status);
   assert.ok(markup.includes('IMOCA FOIL')&&markup.includes('VSR FOIL'),status);
   assert.equal(markup.includes('🌐'),false,status);
+  assert.ok(!markup.includes('<div class="shots">'));
+  assert.equal(markup.includes('race-card-rewards'),!record,status);
+  assert.equal(markup.includes('data-action="calendar"'),
+   status==='planned'||status==='record',status);
  }
 });
 
@@ -292,47 +334,31 @@ test('Cloud sync notices are overlaid, transient, and not followed by a duplicat
   assert.equal(bridge.includes("statusElement.after(button)"),false);
  }finally{dom.window.close();}
 });
-test('departures show a directional arrow to arrivals without affecting records',()=>{
- const dom=new JSDOM(html);
- try{
-  const doc=dom.window.document;
-  assert.ok(!doc.body.textContent.includes('MES COURSES / RACE ARCHIVE'));
-  const start=js.indexOf('function card(r){');
-  const end=js.indexOf('/* Ajustement dynamique',start);
-  assert.ok(start>=0&&end>start);
-  const helpers={
-   raceStatus:row=>row.mockStatus,
-   tagAppearance:(kind)=>({
-    primary:'#008fa1',secondary:'#e5fcfb',accent:'#ffe7f0',
-    border:'#287cb5',text:'#14395d',label:kind==='class'?'IMOCA FOIL':'VSR FOIL'
-   }),
-   foilVariables:(a,k)=>'--'+k+'-tag:'+a.primary,
-   VSR:{hc:'HORS CATÉGORIE'},VSR_PRIORITY:()=>0,
-   statusTitle:{live:'COURSE EN COURS',planned:'À VENIR',finished:'TERMINÉE',
-    dnf:'DNF',record:'COURSE RECORD','record-live':'RECORD EN COURS',
-    'record-closed':'RECORD CLÔTURÉ'},
-   timeEngine:{wallAt:()=>({date:'2000-01-01'})},
-   recordEngine:{latestStart:()=>({date:''})},
-   scoreView:()=>({available:false,reason:''}),
-   rankHtml:()=>'',podiumMedalFor:()=>'',rankPairs:[],
-   safe:value=>String(value??''),validImage:value=>String(value??'').startsWith('data:image'),
-   imageTag:()=>'',recordCardContent:()=>'',equipmentModes:{},ROUTE_TYPES:{},
-   moneyNumber:()=>false,validEquipment:()=>false,dateTimeFR:(d,t)=>d+' '+t,
-   raceClockMarkup:()=>''
-  };
-  const card=new Function('ctx','with(ctx){'+js.slice(start,end)+';return card;}')(helpers);
-  const common={mockStatus:'finished',kind:'race',name:'Course',boatClass:'IMOCA',
-   vsr:'hc',boat:'Sail',start:'2026-11-01',startTime:'13:02',
-   end:'2026-11-11',endTime:'04:34'};
-  const completed=card(common);
-  assert.ok(completed.includes('class="journey-arrow"'));
-  assert.ok(completed.indexOf('DÉPART 2026-11-01')<completed.indexOf('class="journey-arrow"'));
-  assert.ok(completed.indexOf('class="journey-arrow"')<completed.indexOf('ARRIVÉE 2026-11-11'));
-  assert.ok(!card({...common,end:'',endTime:''}).includes('class="journey-arrow"'));
-  assert.ok(!card({...common,mockStatus:'dnf'}).includes('class="journey-arrow"'));
-  assert.ok(!card({...common,kind:'record',mockStatus:'record-closed'}).includes('class="journey-arrow"'));
- }finally{dom.window.close();}
+test('left column displays departure then arrival then finished duration or active timer',()=>{
+ const {raceCardSchedule}=raceTileHarness();
+ const completed=raceCardSchedule({...testRace,mockStatus:'finished'},'finished');
+ assert.ok(completed.includes('race-card-schedule'));
+ assert.ok(completed.includes('DÉPART'));
+ assert.ok(completed.includes('ARRIVÉE'));
+ assert.ok(completed.includes('10 j 15 h'));
+ assert.ok(completed.indexOf('2026-11-01')<completed.indexOf('2026-11-11'));
+ assert.ok(completed.indexOf('2026-11-11')<completed.indexOf('10 j 15 h'));
+ const current=raceCardSchedule({...testRace,mockStatus:'live'},'live');
+ assert.ok(current.includes('EN COURS'));
+ assert.ok(current.includes('data-race-clock="elapsed"'));
+ assert.equal(current.includes('10 j 15 h'),false);
+ const upcoming=raceCardSchedule({...testRace,mockStatus:'planned'},'planned');
+ assert.ok(upcoming.includes('À VENIR'));
+ assert.ok(upcoming.includes('data-race-clock="countdown"'));
+ const closed=raceCardSchedule({...testRace,kind:'record',mockStatus:'record-closed',
+  recordClosed:true,attempts:[{date:'2026-11-08',time:'10:00'}]},'record-closed');
+ assert.ok(closed.includes('RECORD CLÔTURÉ'));
+ assert.ok(closed.includes('MEILLEUR TEMPS'));
+ assert.equal(closed.includes('data-race-clock='),false);
+ assert.ok(!closed.includes('race-card-rewards'));
+ assert.ok(!js.includes('class="journey-arrow"'));
 });
+
 test('premium gradients preserve meaning of original ranking and chip colors',()=>{
  const tokens=[
   '.card .rank-grid .rank-plate.rank-main',
@@ -352,59 +378,44 @@ test('premium gradients preserve meaning of original ranking and chip colors',()
 });
 
 
-test('compact Regatta card uses a thumbnail beside the race identity while preserving zoom and photo status',()=>{
- const start=js.indexOf('function card(r){');
- const end=js.indexOf('/* Ajustement dynamique',start);
- assert.ok(start>0&&end>start);
- const context={
-  raceStatus:r=>r.mockStatus,
-  tagAppearance:kind=>({primary:'#008fa1',secondary:'#e5fcfb',accent:'#ffe7f0',
-   border:'#287cb5',text:'#14395d',label:kind==='class'?'IMOCA':'HORS CATÉGORIE'}),
-  foilVariables:(value,kind)=>'--'+kind+'-tag:'+value.primary,
-  VSR:{hc:'HORS CATÉGORIE'},VSR_PRIORITY:()=>0,
-  statusTitle:{live:'COURSE EN COURS',planned:'À VENIR',finished:'TERMINÉE',
-   dnf:'DNF',record:'COURSE RECORD','record-live':'RECORD EN COURS',
-   'record-closed':'RECORD CLÔTURÉ'},
-  timeEngine:{wallAt:()=>({date:'1900-01-01'})},
-  recordEngine:{latestStart:()=>({date:''})},
-  scoreView:()=>({available:false,reason:''}),
-  rankHtml:()=>'',podiumMedalFor:()=>'',rankPairs:[],
-  safe:value=>String(value??''),validImage:value=>String(value??'').startsWith('data:image'),
-  imageTag:(src,alt)=>'<img src="'+src+'" alt="'+alt+'">',
-  recordCardContent:()=>'<div>RECORD</div>',
-  equipmentModes:{},ROUTE_TYPES:{},moneyNumber:()=>false,validEquipment:()=>false,
-  dateTimeFR:()=>'',raceClockMarkup:()=>''
- };
- const card=new Function('context','with(context){'+js.slice(start,end)+';return card;}')(context);
- const input={name:'Transat Rapli',boat:'Rapli LPDB',boatClass:'IMOCA',vsr:'hc',
-  icon:'data:image/png;base64,AAAA',result:'data:image/png;base64,BBBB',
-  route:'data:image/png;base64,CCCC'};
+test('two-column race, record and stage cards preserve details, menu and media zoom',()=>{
+ const {card}=raceTileHarness();
  for(const [status,kind,closed] of [
   ['live','race',false],['planned','race',false],['finished','race',false],
-  ['dnf','race',false],['record-live','record',false],['record-closed','record',true]
+  ['dnf','race',false],['record-live','record',false],['record-closed','record',true],
+  ['finished','event',false]
  ]){
-  const rendered=card({...input,kind,mockStatus:status,recordClosed:closed});
-  const tile=new JSDOM(rendered).window.document;
-  const intro=tile.querySelector('.card-intro');
-  assert.ok(intro,'missing compact introduction: '+status);
-  assert.ok(intro.querySelector('.card-top .race-icon.card-photo img'));
-  assert.ok(intro.querySelector('.card-intro-info .card-title-row h2'));
-  assert.ok(intro.querySelector('.card-status-row .badge-status'));
+  const rendered=card({...testRace,kind,mockStatus:status,recordClosed:closed,
+   live:status==='record-live',mockScore:kind==='record'?0:87,
+   attempts:[{date:'2026-11-22',time:'08:00'}]});
+  const document=new JSDOM(rendered).window.document;
+  const tile=document.querySelector('article.card--columns');
+  assert.ok(tile,status);
+  const layout=tile.querySelector('.race-card-layout');
+  assert.ok(layout.querySelector('.race-card-left .card-top .race-icon.card-photo img'));
+  assert.ok(layout.querySelector('.race-card-left .card-title-row h2'));
+  assert.ok(layout.querySelector('.race-card-left .race-card-schedule'));
+  assert.ok(layout.querySelector('.race-card-right .race-card-meta-tags .class-tag'));
+  assert.ok(layout.querySelector('.race-card-right .race-card-meta-tags .vsr-badge'));
+  assert.ok(layout.querySelector('.race-card-left .card-title-row .race-actions-menu>summary'));
+  assert.ok(tile.querySelector('.race-card-right .rank-plate.rank-main')||status==='dnf'||
+    (kind==='record'&&!closed));
+  assert.equal(Boolean(tile.querySelector('.race-card-right .score-orb')),
+   kind!=='record'&&status!=='dnf',status);
+  assert.equal(Boolean(tile.querySelector('.race-card-right .race-card-rewards')),
+   kind!=='record',status);
+  assert.ok(tile.querySelector('.race-actions-popover [data-action="edit"]'));
+  assert.ok(tile.querySelector('.race-actions-popover [data-action="png"]'));
   assert.equal(tile.querySelectorAll('.card-content').length,1);
-  const photo=tile.querySelector('.card-top img');
-  assert.ok(photo.alt.startsWith('Affiche '));
-  const shots=tile.querySelector('.card-footer .shots');
-  const unfinished=['live','planned','record-live'].includes(status);
-  assert.equal(Boolean(shots),!unfinished,status);
-  assert.ok(tile.querySelector('.card-footer .card-actions [data-action="edit"]'));
-  if(shots)assert.equal(shots.querySelectorAll('.shot-box.image-preview img').length,2);
+  if(kind==='event')assert.ok(rendered.includes('COURSE À ÉTAPES'));
  }
- assert.ok(css.includes('.card .card-intro{'));
- assert.ok(css.includes('grid-template-columns:clamp(92px,28%,128px) minmax(0,1fr)'));
- assert.ok(css.includes('.card .card-footer.with-shots{'));
- assert.ok(css.includes('height:74px;min-height:0;max-height:74px'));
- assert.ok(css.includes('@media(max-width:580px)'));
+ assert.ok(css.includes('.cards .card.card--columns .race-card-layout{'));
+ assert.ok(css.includes('grid-template-columns:minmax(0,.85fr) minmax(0,1.18fr)'));
+ assert.ok(css.includes('.cards .card.card--columns .race-card-meta-tags{'));
+ assert.ok(css.includes('.cards .card.card--columns .race-actions-popover{'));
+ assert.ok(css.includes('@media(max-width:360px)'));
  const viewer=fs.readFileSync('shared/photo-zoom.js','utf8');
  assert.ok(viewer.includes('.card-photo img'));
- assert.ok(viewer.includes('.image-preview img'));
+ assert.ok(viewer.includes('openSource(src,alt='));
 });
+

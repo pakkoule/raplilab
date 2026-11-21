@@ -1,9 +1,9 @@
-# Rapli Regatta — journal de courses (PR #1)
+# Rapli Regatta — journal de courses
 
-Module intégré à la PR #1 de RapliLab, non fusionnée.
+Module autonome et seul espace actif de Rapli Lab dans la PR #4.
 
-- Onglet : `#regatta` ; page directe : `regatta/index.html`.
-- Deploy Preview attendue : https://deploy-preview-1--raplilab.netlify.app/#regatta
+- Accueil : `/` ; module direct : `regatta/index.html`.
+- Deploy Preview attendue : https://deploy-preview-4--raplilab.netlify.app/
 - Logo fourni intégré en WebP transparent ; charte turquoise/rose ; Poppins.
 - Bloc du module limité à **1 120 px**, portail limité à **1 360 px** ; 11 onglets sur une seule ligne défilante sur iPhone. Sur bureau : dégradé latéral teinté et répétitions discrètes du logo en noir et blanc.
 - Affiche de course **16:9 intégrale sans rognage** ; captures de classement et de tracé indépendantes, affichées sans déformation, zoom partagé.

@@ -1,4 +1,4 @@
-/* Rapli Lab — compact profile menu in Rapli Sports toolbar.
+/* Rapli Regatta — compact profile menu in the courses toolbar.
  * Authentication is provided by the existing Supabase admin client.
  * Never infer privileges from this menu: RLS remains the authority.
  */

@@ -3843,8 +3843,8 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
       async function saveFallback(nextCards=cards,nextLogos=logos){try{localStorage.setItem('rapli-sports-fallback',JSON.stringify({cards:nextCards,logos:nextLogos,initialized:true}))}catch(e){console.warn('Stockage local indisponible',e);showToast('Enregistrement impossible : stockage local indisponible.');throw Error('Stockage local indisponible');}}
       async function saveCard(record){if(!isRapliEditor())throw Error('Modification réservée à l’administrateur.');const next=cards.filter(x=>x.id!==record.id);next.push(record);if(db)await transactionPut('cards',record);else await saveFallback(next,logos);cards=next;window.RapliSharedCollection?.changed?.()}
       async function removeCard(id){if(!isRapliEditor())throw Error('Modification réservée à l’administrateur.');const next=cards.filter(x=>x.id!==id);if(db)await transactionDelete('cards',id);else await saveFallback(next,logos);cards=next;window.RapliSharedCollection?.changed?.()}
-      async function saveLogo(record){if(!isRapliEditor())throw Error('Modification réservée à l’administrateur.');const next=logos.filter(x=>x.id!==record.id);next.push(record);if(db)await transactionPut('logos',record);else await saveFallback(cards,next);logos=next;window.RapliSharedCollection?.changed?.()}
-      async function removeLogo(id){if(!isRapliEditor())throw Error('Modification réservée à l’administrateur.');const next=logos.filter(x=>x.id!==id);if(db)await transactionDelete('logos',id);else await saveFallback(cards,next);logos=next;window.RapliSharedCollection?.changed?.()}
+      async function saveLogo(record){if(!isRapliEditor())throw Error('Modification réservée à l’administrateur.');const next=logos.filter(x=>x.id!==record.id);next.push(record);if(db)await transactionPut('logos',record);else await saveFallback(cards,next);logos=next;window.RapliSharedCollection?.changed?.();window.RapliJerseysLogoService?.notify?.()}
+      async function removeLogo(id){if(!isRapliEditor())throw Error('Modification réservée à l’administrateur.');const next=logos.filter(x=>x.id!==id);if(db)await transactionDelete('logos',id);else await saveFallback(cards,next);logos=next;window.RapliSharedCollection?.changed?.();window.RapliJerseysLogoService?.notify?.()}
       function sampleCards(){let ts=Date.now();return [
         {id:'demo-maxey',status:'wishlist',brand:'Topps',player:'Tyrese Maxey',sport:'Basketball',team:'Philadelphia 76ers',reference:'2025–26 · Chrome · #EXEMPLE',tags:['Chrome','Refractor'],numbered:false,serial:'',printRun:'',photo:'',demo:true,createdAt:ts-15000,updatedAt:ts-15000},
         {id:'demo-embiid',status:'own',brand:'Panini',player:'Joel Embiid',sport:'Basketball',team:'Philadelphia 76ers',reference:'Prizm · #EXEMPLE',tags:['Prizm','Silver'],numbered:true,serial:'12',printRun:'99',photo:'',demo:true,createdAt:ts-13000,updatedAt:ts-13000},
@@ -5982,6 +5982,7 @@ const rapliBridge = window.RapliModuleBridge = {
    if(!next||!Array.isArray(next.records)||!Array.isArray(next.logos))throw Error('Collection publique invalide');
    cards=next.records.map(x=>({...x}));
    logos=next.logos.map(x=>({...x}));
+   window.RapliJerseysLogoService?.notify?.();
    // During progressive cloud media hydration, at most one repaint every 650 ms
    // on iPhone; the last update is always flushed. Normal edits remain immediate.
    const progress=document.getElementById('rapliSharedProgress');
@@ -6028,6 +6029,7 @@ const rapliBridge = window.RapliModuleBridge = {
    const nextLogos=next.logos.map(x=>({...x}));
    if(!db)await saveFallback(nextCards,nextLogos);
    cards=nextCards;logos=nextLogos;
+   window.RapliJerseysLogoService?.notify?.();
    renderAll();
  }
 };
@@ -6107,6 +6109,8 @@ function rapliModuleReady(){
       initialize().then(rapliModuleReady).catch(err=>console.warn('Rapli module startup',err));
     })();
   </script>
+<script src="../shared/jerseys-logo-library.js" defer></script>
+<script src="jerseys-logo-service.js" defer></script>
 <script src="regatta-palette.js" defer></script>
 <script src="card-tools.js" defer></script>
 <script src="color-theme.js" defer></script>

@@ -1461,6 +1461,69 @@ const bridge=window.RapliModuleBridge={module:'regatta',ready:false,
   await replaceRows(next);
   storeClassSettings(data.logos[0]||defaultClassSettings(),{notifyCloud:false});
  }};
+/* The visual library in Rapli Sports edits Regatta's existing settings in place.
+   All messages come from the same-origin Sports iframe; Regatta remains the sole
+   authority for data, admin rights and its cloud/IndexedDB synchronization. */
+function paletteSnapshot(){
+ const labels=new Map();
+ const add=name=>{
+  const label=String(name||'').trim().slice(0,100),key=classKey(label);
+  if(key&&!labels.has(key))labels.set(key,label);
+ };
+ for(const name of ['IMOCA','ULTIM','Class40','Ocean Fifty','Mini 6.50'])add(name);
+ for(const race of rows)add(race.boatClass);
+ for(const key of Object.keys(classSettings.classColors))add(key);
+ return {
+  ready:bridge.ready===true&&!storageRecoveryBlocked,
+  editable:bridge.ready===true&&!storageRecoveryBlocked&&window.RapliSharedCollection?.canEdit?.()===true,
+  defaultColor:classSettings.defaultColor,compact:regattaCompact,
+  classes:[...labels.entries()].sort(([a],[b])=>a.localeCompare(b,'fr')).map(([key,label])=>({
+   key,label,color:getClassTagColor(key),
+   count:rows.filter(r=>classKey(r.boatClass)===key).length,
+   custom:Object.hasOwn(classSettings.classColors,key)
+  })),
+  vsr:VSR_ORDER.map(key=>({
+   key,color:getVSRTagColor(key),count:rows.filter(r=>r.vsr===key).length
+  }))
+ };
+}
+window.addEventListener('message',event=>{
+ if(event.origin!==location.origin||event.data?.type!=='RAPLI_REGATTA_PALETTE_REQUEST')return;
+ let sportsFrame;
+ try{sportsFrame=window.parent.document.getElementById('frame-sports')?.contentWindow;}catch(_){return;}
+ if(event.source!==sportsFrame)return;
+ const id=Number(event.data.id),action=event.data.action;
+ if(!Number.isSafeInteger(id)||id<0||!['read','update'].includes(action))return;
+ let error='';
+ try{
+  if(action==='update'){
+   if(!paletteSnapshot().editable)throw Error('Connexion administrateur et synchronisation nécessaires pour modifier Regatta.');
+   const kind=event.data.kind,value=event.data.value;
+   if(kind==='compact'){
+    if(typeof value!=='boolean')throw Error('Affichage compact invalide.');
+    regattaCompact=value;
+    try{localStorage.setItem('rapli-regatta-compact-v1',value?'1':'0');}catch(_){}
+    $('compact-cards').setAttribute('aria-pressed',String(value));
+    render();
+   }else if(!/^#[a-f0-9]{6}$/i.test(value||'')){
+    throw Error('Couleur HEX invalide.');
+   }else if(kind==='default'){
+    storeClassSettings({...classSettings,defaultColor:value,classColors:{}});
+   }else if(kind==='class'){
+    const key=classKey(event.data.key);
+    const allowed=paletteSnapshot().classes.some(item=>item.key===key);
+    if(!allowed)throw Error('Classe de bateau inconnue.');
+    changeSpecificClassColor(key,value);
+   }else if(kind==='vsr'){
+    if(!VSR[event.data.key])throw Error('Catégorie VSR inconnue.');
+    changeVSRColor(event.data.key,value);
+   }else throw Error('Réglage Regatta inconnu.');
+  }
+ }catch(e){error=e.message||'Modification impossible.';}
+ event.source.postMessage({
+  type:'RAPLI_REGATTA_PALETTE_RESPONSE',id,state:paletteSnapshot(),error
+ },location.origin);
+});
 window.RapliRegatta={getCount:()=>rows.length};
 (async()=>{try{await openDB();rows=await load();render();}catch(err){
  console.warn('Regatta : IndexedDB indisponible',err);db=null;

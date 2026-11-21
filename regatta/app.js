@@ -15,7 +15,6 @@ const props={name:180,boatClass:100,start:20,startTime:8,end:20,endTime:8,rank:4
 const imageKeys=['icon','result','route'];
 const ROUTE_TYPES=Object.freeze({'tour-du-monde':'Tour du monde','transatlantique':'Transatlantique','cotier':'Côtier','etapes':'Course à étapes','record-distance':'Record de distance','autre':'Autre parcours'});
 const routeType=v=>Object.prototype.hasOwnProperty.call(ROUTE_TYPES,v)?v:'';
-let regattaCompact=false;try{regattaCompact=localStorage.getItem('rapli-regatta-compact-v1')==='1';}catch(_){/* stockage indisponible */}
 
 /* A date and clock time represent the course's own civil time.
    UTC-based calendar arithmetic avoids differences between users' browser timezones. */
@@ -106,7 +105,7 @@ const colorSafe=v=>/^#[a-f0-9]{6}$/i.test(v||'')?v:'#008fa1';
 const COLOR_SETTINGS_ID='regatta-class-colors-v1';
 const COLOR_STORAGE_KEY='rapli-regatta-class-colors-v1';
 const DEFAULT_TAG_COLOR='#008fa1';
-const defaultClassSettings=()=>({id:COLOR_SETTINGS_ID,defaultColor:DEFAULT_TAG_COLOR,classColors:{},vsrColors:{...DEFAULT_VSR_COLORS},vsrRankingHistory:[]});
+const defaultClassSettings=()=>({id:COLOR_SETTINGS_ID,defaultColor:DEFAULT_TAG_COLOR,classColors:{},vsrColors:{...DEFAULT_VSR_COLORS},classFoils:{},vsrFoils:{},vsrRankingHistory:[]});
 function normalizeVsrRankingHistory(value){
  if(!Array.isArray(value))return [];
  const seen=new Set(),points=[];
@@ -135,7 +134,26 @@ function normalizeClassSettings(input){
  }
  const vsrColors=Object.create(null);
  for(const key of VSR_ORDER)vsrColors[key]=/^#[a-f0-9]{6}$/i.test(source.vsrColors?.[key]||'')?colorSafe(source.vsrColors[key]):DEFAULT_VSR_COLORS[key];
- return {id:COLOR_SETTINGS_ID,defaultColor:colorSafe(source.defaultColor),classColors,vsrColors,vsrRankingHistory:normalizeVsrRankingHistory(source.vsrRankingHistory)};
+ const normalizeMap=(sourceMap,keys)=>{
+  const result=Object.create(null);
+  if(sourceMap&&typeof sourceMap==='object'&&!Array.isArray(sourceMap)){
+   let count=0;
+   for(const [raw,style] of Object.entries(sourceMap)){
+    const key=keys==='vsr'?(VSR[raw]?raw:''):classKey(raw);
+    if(!key||!style||typeof style!=='object'||Array.isArray(style)||count++>=300)continue;
+    const value={};
+    for(const field of ['secondary','accent','border','text']){
+     if(/^#[a-f0-9]{6}$/i.test(style[field]||''))value[field]=colorSafe(style[field]);
+    }
+    if(typeof style.label==='string'&&style.label.trim())value.label=clean(style.label,keys==='vsr'?28:80);
+    if(Object.keys(value).length)result[key]=value;
+   }
+  }
+  return result;
+ };
+ return {id:COLOR_SETTINGS_ID,defaultColor:colorSafe(source.defaultColor),classColors,vsrColors,
+   classFoils:normalizeMap(source.classFoils,'class'),vsrFoils:normalizeMap(source.vsrFoils,'vsr'),
+   vsrRankingHistory:normalizeVsrRankingHistory(source.vsrRankingHistory)};
 }
 function readClassSettings(){
  try{
@@ -150,9 +168,35 @@ function getClassTagColor(boatClass){
   classSettings.classColors[key]:classSettings.defaultColor;
 }
 function getVSRTagColor(key){return classSettings.vsrColors?.[key]||DEFAULT_VSR_COLORS[key]||'#e8f2fa';}
+/* Foil properties affect appearance only. Race classification and VSR priority stay intact. */
+function foilMix(base,target,amount){
+ const a=colorSafe(base).slice(1),b=colorSafe(target).slice(1);
+ const channel=i=>Math.round(parseInt(a.slice(i,i+2),16)*(1-amount)+parseInt(b.slice(i,i+2),16)*amount)
+   .toString(16).padStart(2,'0');
+ return '#'+channel(0)+channel(2)+channel(4);
+}
+function tagAppearance(kind,key,label){
+ const isVsr=kind==='vsr',id=isVsr?key:classKey(key);
+ const primary=isVsr?getVSRTagColor(id):getClassTagColor(id);
+ const override=(isVsr?classSettings.vsrFoils:classSettings.classFoils)?.[id]||{};
+ return {
+  primary,secondary:override.secondary||foilMix(primary,'#ffffff',.40),
+  accent:override.accent||foilMix(primary,'#f9dced',.62),
+  border:override.border||foilMix(primary,'#122e53',.26),
+  text:override.text||classTextColor(primary),
+  label:override.label||label
+ };
+}
+function foilVariables(appearance,kind){
+ const prefix=kind==='vsr'?'vsr':'class';
+ return '--'+prefix+'-tag:'+appearance.primary+';--'+prefix+'-foil:'+appearance.secondary+
+  ';--'+prefix+'-accent:'+appearance.accent+';--'+prefix+'-border:'+appearance.border+
+  ';--'+prefix+'-ink:'+appearance.text;
+}
 function settingsAreCustom(){
  return classSettings.defaultColor!==DEFAULT_TAG_COLOR||Object.keys(classSettings.classColors).length>0||
    VSR_ORDER.some(key=>getVSRTagColor(key)!==DEFAULT_VSR_COLORS[key])||
+   Object.keys(classSettings.classFoils||{}).length>0||Object.keys(classSettings.vsrFoils||{}).length>0||
    classSettings.vsrRankingHistory.length>0;
 }
 function colorSettingsState(){
@@ -463,9 +507,6 @@ function render({searchOnly=false}={}){
  const controls=regattaPager(out.length);
  $('regatta-pagination-top').innerHTML=controls;
  $('regatta-pagination-bottom').innerHTML=controls;
- $('cards').classList.toggle('regatta-compact',regattaCompact);
-  $('compact-cards').setAttribute('aria-pressed',String(regattaCompact));
-  $('compact-cards').title=regattaCompact?'Afficher les fiches complètes':'Afficher les fiches compactes';
   $('cards').innerHTML=out.slice(pageStart,pageStart+REGATTA_PAGE_SIZE).map(card).join('')||
    (rows.length?'<p class="regatta-search-empty">Aucune course ne correspond à ta recherche.</p>':'');
  scheduleRankingFit();updateRaceClocks();
@@ -1437,7 +1478,6 @@ $('vsr-colors-list').addEventListener('change',event=>{
  const el=event.target;
  if(el.matches?.('input[data-vsr-key]'))changeVSRColor(el.dataset.vsrKey,el.value);
 });
-$('compact-cards').addEventListener('click',()=>{regattaCompact=!regattaCompact;try{localStorage.setItem('rapli-regatta-compact-v1',regattaCompact?'1':'0');}catch(_){/* mode éphémère */}render();});
 $('new-race').addEventListener('click',()=>openEditor());$('empty-add').addEventListener('click',()=>openEditor());$('race-form').addEventListener('submit',saveEditor);$('delete-race').addEventListener('click',()=>{if(editId)deleteRace(editId);});
 const searchInput=$('search'),clearSearch=$('regatta-search-clear');
 searchInput.addEventListener('input',()=>{

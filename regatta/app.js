@@ -1392,7 +1392,7 @@ $('race-kind').addEventListener('change',updateKindFields);
 $('race-event-id').addEventListener('change',updateKindFields);
 for(const view of ['races','stats','honors','colors'])$('view-'+view).addEventListener('click',()=>selectWorkspace(view));
 // Palette des classes: disponible dans la barre d'actions de Courses, sans troisième onglet encombrant.
-$('manage-class-colors').addEventListener('click',()=>selectWorkspace('colors'));
+$('manage-class-colors').addEventListener('click',()=>{window.top.location.hash='regatta-appearance';});
 $('colors-back-races').addEventListener('click',()=>selectWorkspace('races'));
 $('default-class-color').addEventListener('change',event=>changeDefaultClassColor(event.target.value));
 $('class-colors-list').addEventListener('change',event=>{

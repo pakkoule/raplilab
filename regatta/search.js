@@ -24,7 +24,7 @@
     iso.slice(8)+'/'+iso.slice(5,7)+'/'+iso.slice(0,4):'';
    add(iso,human);
   };
-  add(r.name,r.boat,r.boatClass,context.status,context.routeType,context.vsr,
+  add(r.name,r.boat,r.boatClass,context.boatDisplay,context.status,context.routeType,context.vsr,
       context.timezone);
   add(context.kind,context.vsrCode,context.clockLabel);
   if(context.today) add('départ aujourd’hui');

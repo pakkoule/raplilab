@@ -112,6 +112,7 @@
   display:block;width:102px;height:72px;
   object-fit:contain;object-position:left center;
 }
+.regatta-collection-header{padding:2px 26px 8px}
 .regatta-collection-header .regatta-collection-tabs,
 .jerseys-collection-header .jerseys-collection-tabs{grid-column:2;justify-self:center}
 @media(max-width:899px) and (min-width:751px){
@@ -139,6 +140,7 @@
    grid-template-columns:42px minmax(0,1fr)!important;
    gap:5px!important;padding:3px 0 7px!important;margin-bottom:12px;
  }
+ .regatta-collection-header{padding:3px 11px 7px!important}
  .regatta-collection-header .rapli-collection-brand,
  .jerseys-collection-header .rapli-collection-brand{
    width:42px!important;grid-column:1!important;

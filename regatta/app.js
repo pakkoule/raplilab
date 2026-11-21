@@ -7,6 +7,8 @@ const uid=()=>crypto.randomUUID?crypto.randomUUID():'race-'+Date.now().toString(
 const now=()=>new Date().toISOString();
 const timeEngine=window.RapliRegattaTime;
 if(!timeEngine)throw Error('Moteur de fuseaux horaires non chargé.');
+const searchEngine=window.RapliRegattaSearch;
+if(!searchEngine)throw Error('Moteur de recherche Regatta non chargé.');
 const zoneName=r=>timeEngine.ZONES[timeEngine.normalize(r?.timezone)]||timeEngine.ZONES[timeEngine.DEFAULT];
 const BOAT_NAME='Rapli LPDB';
 const props={name:180,boatClass:100,start:20,startTime:8,end:20,endTime:8,rank:40,rankTotal:12,rankDepartment:40,rankDepartmentTotal:12,rankNational:40,rankNationalTotal:12,rankCity:40,rankCityTotal:12,rankTeam:40,rankTeamTotal:12,duration:100,durationDays:4,durationHours:2,durationMinutes:2,durationSeconds:2,vsr:5,participantCount:12,gainPoints:9,gainCredits:9};
@@ -396,29 +398,53 @@ function scheduleRankingFit(){
  if(typeof requestAnimationFrame==='function')requestAnimationFrame(fitRankingNumbers);
 }
 
+function raceSearchContext(r){
+ const status=raceStatus(r),record=r.kind==='record',showRecordRanking=record&&r.recordClosed;
+ const attempts=record?recordEngine.normalize(r.attempts):[];
+ const recordStats=record?recordEngine.summary(attempts):null;
+ const note=!record?scoreView(r):null;
+ const ranksVisible=status!=='dnf'&&(!record||showRecordRanking);
+ const scored=note?.available&&ranksVisible&&!!r.rank;
+ const showReason=!record&&!note?.available&&(status==='dnf'||status==='finished');
+ const first=record?recordEngine.latestStart(attempts)?.date:r.start;
+ const today=timeEngine.wallAt(Date.now(),r.timezone)?.date;
+ return {
+  status:statusTitle[status]||status,
+  kind:record?'course record':r.kind==='event'?'compétition':
+    r.eventId?'étape'+(r.joker?' joker':''):'',
+  routeType:ROUTE_TYPES[r.routeType]||'',
+  vsr:VSR[r.vsr]||'',
+  timezone:zoneName(r),
+  equipment:equipmentModes[r.equipment]||'',
+  ranksVisible,
+  score:scored?note.value:null,
+  scoreReason:showReason?note.reason:'',
+  today:!!today&&first===today,
+  attempts:attempts.map(a=>({
+   ...a,
+   timeText:a.aborted?'AVORTÉE':a.seconds!==null?recordEngine.format(a.seconds):'EN ATTENTE',
+   timeLabel:a.seconds!==null?'temps de course':''
+  })),
+  recordSummary:recordStats?
+   recordStats.total+' tentatives '+recordStats.aborted+' avortées '+
+   (recordStats.bestSeconds!==null?'meilleur temps '+recordEngine.format(recordStats.bestSeconds):'aucun temps validé')+
+   (showRecordRanking&&!rankPairs.some(([key])=>r[key])?' record clôturé classement final':''):'',
+  capture:record?'capture du record tracé':'classement final tracé'
+ };
+}
 function render(){
- const selected=$('filter-class').value;
- const classes=[...new Set(rows.map(x=>x.boatClass).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'fr'));
- $('filter-class').innerHTML='<option value="">Toutes les classes</option>'+classes.map(x=>'<option value="'+safe(x)+'">'+safe(x)+'</option>').join('');
- if(classes.includes(selected))$('filter-class').value=selected;
- const q=$('search').value.toLocaleLowerCase('fr').trim(),status=$('filter-status').value,cls=$('filter-class').value,vsr=$('filter-vsr').value;
- const filtered=rows.filter(r=>(!status||(status==='record'?r.kind==='record':status==='live'?['live','record-live'].includes(raceStatus(r)):status==='finished'?['finished','record-closed'].includes(raceStatus(r)):raceStatus(r)===status))&&(!cls||r.boatClass===cls)&&(!vsr||r.vsr===vsr)&&
-   (!q||[r.name,r.boatClass,r.boat,r.rank,r.rankNational,r.rankDepartment,r.rankCity,r.rankTeam,
-           r.startTime,r.end,r.endTime,ROUTE_TYPES[r.routeType]||'',...(r.kind==='record'?recordEngine.normalize(r.attempts).map(x=>x.startDate+' '+x.startTime):[]),VSR[r.vsr]||'',equipmentModes[r.equipment]||''].some(v=>String(v||'').toLocaleLowerCase('fr').includes(q))));
- const out=[...filtered],sort=$('sort').value;
- const noFilters=!q&&!status&&!cls&&!vsr;
+ const query=$('search').value.trim();
+ const filtered=query?rows.filter(r=>searchEngine.matches(r,query,raceSearchContext(r))):rows;
+ const out=[...filtered];
  const statusPriority=item=>{
-   const state=raceStatus(item);
-   return state==='live'||state==='record-live'?0:state==='planned'?1:2;
+  const state=raceStatus(item);
+  return state==='live'||state==='record-live'?0:state==='planned'?1:2;
  };
  const chronological=r=>{const start=r.kind==='record'?recordEngine.latestStart(r.attempts):{date:r.start,time:r.startTime};return start.date?start.date+'T'+(start.time||'00:00'):r.createdAt||'';};
- out.sort((a,b)=>noFilters&&statusPriority(a)!==statusPriority(b)?
+ out.sort((a,b)=>!query&&statusPriority(a)!==statusPriority(b)?
    statusPriority(a)-statusPriority(b):
-   sort==='name'?a.name.localeCompare(b.name,'fr'):
-  sort==='old'?a.createdAt.localeCompare(b.createdAt):
-  sort==='recent'?b.updatedAt.localeCompare(a.updatedAt):
-  sort==='vsr'?VSR_PRIORITY(a.vsr)-VSR_PRIORITY(b.vsr)||chronological(b).localeCompare(chronological(a)):
-  chronological(b).localeCompare(chronological(a))||b.createdAt.localeCompare(a.createdAt));
+   chronological(b).localeCompare(chronological(a))||
+   b.createdAt.localeCompare(a.createdAt));
  const raceRows=rows.filter(r=>r.kind==='race');
  $('count-total').textContent=raceRows.length;$('count-live').textContent=rows.filter(r=>['live','record-live'].includes(raceStatus(r))).length;
  $('count-finished').textContent=raceRows.filter(r=>raceStatus(r)==='finished').length;
@@ -435,7 +461,7 @@ function render(){
   $('compact-cards').setAttribute('aria-pressed',String(regattaCompact));
   $('compact-cards').title=regattaCompact?'Afficher les fiches complètes':'Afficher les fiches compactes';
   $('cards').innerHTML=out.slice(pageStart,pageStart+REGATTA_PAGE_SIZE).map(card).join('')||
-   (rows.length?'<p>Aucune course ne correspond aux filtres.</p>':'');
+   (rows.length?'<p class="regatta-search-empty">Aucune course ne correspond à ta recherche.</p>':'');
  scheduleRankingFit();updateRaceClocks();
  $('empty').hidden=rows.length!==0;
  renderStatistics();renderHonors();renderClassColors();
@@ -1405,8 +1431,21 @@ $('vsr-colors-list').addEventListener('change',event=>{
 });
 $('compact-cards').addEventListener('click',()=>{regattaCompact=!regattaCompact;try{localStorage.setItem('rapli-regatta-compact-v1',regattaCompact?'1':'0');}catch(_){/* mode éphémère */}render();});
 $('new-race').addEventListener('click',()=>openEditor());$('empty-add').addEventListener('click',()=>openEditor());$('race-form').addEventListener('submit',saveEditor);$('delete-race').addEventListener('click',()=>{if(editId)deleteRace(editId);});
-for(const id of ['search','filter-status','filter-vsr','filter-class','sort'])$(id).addEventListener(id==='search'?'input':'change',()=>{
- regattaPage=1;render();
+const searchInput=$('search'),clearSearch=$('regatta-search-clear');
+searchInput.addEventListener('input',()=>{
+ regattaPage=1;clearSearch.hidden=!searchInput.value;
+ render();
+});
+clearSearch.addEventListener('click',()=>{
+ searchInput.value='';clearSearch.hidden=true;regattaPage=1;
+ render();searchInput.focus();
+});
+searchInput.addEventListener('keydown',event=>{
+ if(event.key==='Escape'&&searchInput.value){
+  event.preventDefault();
+  searchInput.value='';clearSearch.hidden=true;regattaPage=1;
+  render();
+ }
 });
 for(const id of ['regatta-pagination-top','regatta-pagination-bottom'])$(id).addEventListener('click',event=>{
  const control=event.target.closest('[data-regatta-page]');

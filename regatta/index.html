@@ -59,7 +59,7 @@ html:not([data-rapli-role="editor"]) #rapli-module-cloud-save{display:none!impor
   </header>
   <button type="button" id="vsr-header-ranking" class="vsr-header-ranking"
     title="Ouvrir l’évolution de mon classement VSR" aria-label="Voir mon classement VSR dans Statistiques"
-    aria-controls="vsr-ranking-title">
+    aria-controls="stats-panel">
     <span class="vsr-header-ranking-symbol" aria-hidden="true">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"
         stroke-linecap="round" stroke-linejoin="round">
@@ -136,7 +136,7 @@ html:not([data-rapli-role="editor"]) #rapli-module-cloud-save{display:none!impor
     <div class="stats-intro"><strong>STATISTIQUES DE MES COURSES</strong><span id="stats-summary">Collection personnelle</span></div>
     <section class="vsr-ranking-section" aria-labelledby="vsr-ranking-title">
       <header class="vsr-ranking-heading">
-        <div><span class="vsr-ranking-kicker">VIRTUAL REGATTA · CLASSEMENT PERSONNEL</span><h2 id="vsr-ranking-title">ÉVOLUTION DE MON CLASSEMENT VSR</h2><p>Enregistre chaque mise à jour de ton rang VSR pour suivre ta progression. Plus la courbe monte, meilleur est ton classement.</p></div>
+        <div><span class="vsr-ranking-kicker">VIRTUAL REGATTA · CLASSEMENT PERSONNEL</span><h2 id="vsr-ranking-title" tabindex="-1">ÉVOLUTION DE MON CLASSEMENT VSR</h2><p>Enregistre chaque mise à jour de ton rang VSR pour suivre ta progression. Plus la courbe monte, meilleur est ton classement.</p></div>
         <div class="vsr-ranking-current" aria-live="polite"><span>DERNIER CLASSEMENT</span><strong id="vsr-ranking-current-value">—</strong><small id="vsr-ranking-change">Aucun relevé</small></div>
       </header>
       <form id="vsr-ranking-form" class="vsr-ranking-form" autocomplete="off">

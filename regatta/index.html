@@ -82,6 +82,9 @@ html:not([data-rapli-role="editor"]) #rapli-module-cloud-save{display:none!impor
     <button type="button" id="view-colors" class="workspace-tab regatta-settings-tab" role="tab" aria-selected="false" aria-controls="colors-panel" tabindex="-1" hidden>COULEURS DES CLASSES</button>
   </nav>
   </div>
+  <div class="regatta-cloud-status" id="regatta-cloud-overlay" role="status" aria-live="polite" aria-atomic="true" aria-hidden="true">
+    <span id="rapli-shared-status-regatta">Chargement de la collection…</span>
+  </div>
   <div id="races-panel" role="tabpanel" aria-labelledby="view-races">
   <div class="regatta-catalogue-controls">
     <div class="regatta-search" role="search" aria-label="Recherche dans toutes les informations des courses">
@@ -118,9 +121,6 @@ html:not([data-rapli-role="editor"]) #rapli-module-cloud-save{display:none!impor
         </div>
       </div>
     </div>
-  </div>
-  <div class="regatta-cloud-status" id="regatta-cloud-overlay" role="status" aria-live="polite" aria-atomic="true" aria-hidden="true">
-    <span id="rapli-shared-status-regatta">Chargement de la collection…</span>
   </div>
   <div class="collection-head collection-head-results"><span id="result-count" role="status" aria-live="polite" aria-atomic="true"></span></div>
   <div class="regatta-pagination-host" id="regatta-pagination-top" aria-label="Pagination supérieure des courses"></div>

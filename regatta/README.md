@@ -37,8 +37,8 @@ Module autonome et seul espace actif de Rapli Lab dans la PR #4.
 
 ## Navigation, statistiques et exports
 
-- **Tri par défaut : date de départ récente → ancienne**, avec possibilité de classer par importance VSR (Hors Catégorie, VSR 1, VSR 2, VSR 3), puis départ récent.
-- Filtres par statut, classe de bateau, **catégorie VSR** ; recherche texte.
+- **Ordre automatique** : courses en cours, puis à venir, puis autres courses ; à l'intérieur de chaque groupe, départ le plus récent d'abord. Plus de barre de filtres ou de sélecteur de tri.
+- **Recherche universelle** plein format : nom de course, bateau, classe, type de parcours, statut, VSR, équipement, dates/heures, fuseau, durée, rangs et effectifs, note visible, gains VSR/VR et détails des tentatives de record. Accents et casse ignorés, mots combinables, pagination et raccourci Ctrl/Cmd+K conservés. Le contenu textuel *à l'intérieur des images* n'est pas indexé.
 - Onglet interne **STATISTIQUES** enrichi, calculé directement à partir des courses de la collection :
   - **Tableau de bord** : total, terminées, en cours, à venir.
   - **Palmarès** : victoires, podiums, Top 10, Top 100, taux de podiums/Top 10 parmi les courses classées, meilleur classement général, moyenne et médiane des places, meilleur et moyen « Top % » (place / participants), records nationaux, départementaux, ville et team.

@@ -89,6 +89,22 @@
             <label>Logo équipe<select id="jerseyTeamVariant" aria-label="Variante du logo équipe"><option value="auto">Automatique</option></select></label>
             <label>Logo compétition<select id="jerseyCompetitionVariant" aria-label="Variante du logo compétition"><option value="auto">Automatique</option></select></label>
           </div>
+          <div class="jerseys-controls-title">FLOCAGE · NOM ET NUMÉRO</div>
+          <div class="jerseys-variant-grid">
+            <label>NOM AU DOS<input id="jerseyLetteringName" type="text" maxlength="40" value="JOUEUR" aria-label="Nom du flocage"></label>
+            <label>NUMÉRO<input id="jerseyLetteringNumber" type="text" inputmode="numeric" maxlength="3" value="10" aria-label="Numéro du flocage"></label>
+          </div>
+          <label>POLICE DU NOM
+            <select id="jerseyLetteringFont" aria-label="Police du nom"><option value="">Par défaut · Poppins</option></select>
+          </label>
+          <label>POLICE DU NUMÉRO
+            <select id="jerseyLetteringNumberFont" aria-label="Police du numéro"><option value="same">Même police que le nom</option></select>
+          </label>
+          <label>COULEUR DU FLOCAGE
+            <input id="jerseyLetteringColor" type="color" value="#ffffff" aria-label="Couleur du flocage">
+          </label>
+          <a class="jerseys-library-link" href="../#jersey-fonts" target="_top">＋ IMPORTER UNE POLICE DANS LA BIBLIOTHÈQUE</a>
+          <div class="jerseys-font-status" id="jerseysFontStatus" role="status" aria-live="polite">Chargement des polices de flocage…</div>
           <button id="jerseysLogoRefresh" type="button">↻ ACTUALISER LA BIBLIOTHÈQUE</button>
         </form>
         <div class="jerseys-card-preview" role="group" aria-label="Aperçu d’une tuile Jerseys">
@@ -104,7 +120,13 @@
               <span id="jerseyCompetitionFallback" class="jerseys-logo-fallback">—</span>
             </div>
           </header>
-          <div class="jerseys-preview-illustration" aria-hidden="true"><span>👕</span></div>
+          <div class="jerseys-preview-illustration" aria-label="Aperçu du flocage au dos du maillot">
+              <div class="jerseys-shirt-back" id="jerseyShirtBack">
+                <div class="jerseys-shirt-neck" aria-hidden="true"></div>
+                <span class="jerseys-flocage-name" id="jerseyLetteringNamePreview">JOUEUR</span>
+                <strong class="jerseys-flocage-number" id="jerseyLetteringNumberPreview">10</strong>
+              </div>
+            </div>
           <footer>
             <strong id="jerseyPreviewTeam">Équipe à sélectionner</strong>
             <span id="jerseyPreviewCompetition">Compétition à sélectionner</span>
@@ -118,5 +140,6 @@
   </main>
   <script src="../shared/jerseys-logo-library.js" defer></script>
   <script src="app.js" defer></script>
+  <script src="font-preview.js" defer></script>
 </body>
 </html>

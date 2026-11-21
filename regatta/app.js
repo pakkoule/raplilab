@@ -796,26 +796,78 @@ function renderClassColors(){
  for(const label of defaults)addClass(label);
  for(const r of rows)addClass(r.boatClass);
  for(const key of Object.keys(classSettings.classColors))addClass(key);
+ for(const key of Object.keys(classSettings.classFoils||{}))addClass(key);
  const list=[...labels.entries()].sort(([a],[b])=>a.localeCompare(b,'fr'));
  $('default-class-color').value=classSettings.defaultColor;
  $('colors-class-count').textContent=list.length+' classes';
+ const fields=(kind,key,appearance)=>{
+  const input=(field,value,label)=>'<label class="foil-color-picker"><span>'+label+'</span>'+
+   '<input type="color" data-foil-kind="'+kind+'" data-foil-key="'+safe(key)+
+   '" data-foil-field="'+field+'" value="'+value+'" aria-label="'+label+' de '+safe(key)+'"></label>';
+  const base='<label class="foil-color-picker"><span>PRINCIPALE</span><input type="color" value="'+appearance.primary+'" '+
+   (kind==='vsr'?'data-vsr-key="'+key+'"':'data-class-key="'+safe(key)+'"')+
+   ' aria-label="Couleur principale de '+safe(key)+'"></label>';
+  return '<div class="foil-style-edit"><div class="foil-color-grid">'+base+
+   input('secondary',appearance.secondary,'REFLET')+
+   input('accent',appearance.accent,'IRISÉ')+
+   input('border',appearance.border,'BORDURE')+
+   input('text',appearance.text,'TEXTE')+
+   '</div><div class="foil-text-row"><label>LIBELLÉ AFFICHÉ'+
+   '<input type="text" data-foil-kind="'+kind+'" data-foil-key="'+safe(key)+
+   '" data-foil-field="label" maxlength="'+(kind==='vsr'?28:80)+'" value="'+safe(appearance.label)+
+   '" aria-label="Libellé affiché pour '+safe(key)+'"></label>'+
+   '<button type="button" class="btn subtle tiny" data-foil-reset="'+kind+'" data-foil-key="'+safe(key)+'">↺ STYLE PAR DÉFAUT</button>'+
+   '</div></div>';
+ };
  $('class-colors-list').innerHTML=list.map(([key,label])=>{
-  const selected=getClassTagColor(key);
+  const appearance=tagAppearance('class',key,label);
   const count=rows.filter(r=>classKey(r.boatClass)===key).length;
-  const customized=Object.prototype.hasOwnProperty.call(classSettings.classColors,key);
-  return '<div class="class-color-row"><span class="class-color-preview" style="--class-tag:'+selected+';--class-ink:'+classTextColor(selected)+'">'+safe(label)+'</span>'+
-   '<span class="class-color-count">'+count+' course'+(count===1?'':'s')+'</span>'+
-   '<label class="class-color-control"><span class="color-control-label">'+(customized?'PERSONNALISÉE':'PAR DÉFAUT')+'</span>'+
-   '<input type="color" value="'+selected+'" data-class-key="'+safe(key)+'" aria-label="Couleur de la classe '+safe(label)+'"></label></div>';
+  const customized=Object.hasOwn(classSettings.classColors,key)||Object.hasOwn(classSettings.classFoils||{},key);
+  return '<div class="class-color-row foil-editor-row"><div class="foil-editor-summary">'+
+   '<span class="class-color-preview class-tag foil-preview" style="'+foilVariables(appearance,'class')+'">'+
+   '<span class="foil-symbol" aria-hidden="true">⛵</span>'+safe(appearance.label)+'</span>'+
+   '<span class="class-color-count">'+count+' course'+(count===1?'':'s')+
+   (customized?' · Personnalisé':'')+'</span></div>'+
+   fields('class',key,appearance)+'</div>';
  }).join('');
  $('vsr-colors-list').innerHTML=VSR_ORDER.map((key,i)=>{
-  const color=getVSRTagColor(key),count=rows.filter(r=>r.vsr===key).length;
-  return '<div class="class-color-row vsr-color-row">'+
-   '<span class="vsr-badge '+(key==='hc'?'hc ':'')+'vsr-'+key+'" style="--vsr-color:'+color+';--vsr-ink:'+classTextColor(color)+'" title="Priorité '+(i+1)+' sur 4">'+safe(VSR[key])+'</span>'+
-   '<span class="class-color-count">'+count+' course'+(count===1?'':'s')+'</span>'+
-   '<label class="class-color-control"><span class="color-control-label">PRIORITÉ '+(i+1)+'</span>'+
-   '<input type="color" value="'+color+'" data-vsr-key="'+key+'" aria-label="Couleur de '+safe(VSR[key])+'"></label></div>';
+  const appearance=tagAppearance('vsr',key,VSR[key]);
+  const count=rows.filter(r=>r.vsr===key).length;
+  return '<div class="class-color-row vsr-color-row foil-editor-row">'+
+   '<div class="foil-editor-summary"><span class="vsr-badge foil-preview vsr-'+key+
+   '" style="'+foilVariables(appearance,'vsr')+'" title="Priorité '+(i+1)+' sur 4">'+
+   '<span class="foil-symbol" aria-hidden="true">✧</span>'+safe(appearance.label)+'</span>'+
+   '<span class="class-color-count">'+count+' course'+(count===1?'':'s')+
+   ' · Priorité '+(i+1)+'</span></div>'+fields('vsr',key,appearance)+'</div>';
  }).join('');
+}
+function changeFoilStyle(kind,key,field,value){
+ const isVsr=kind==='vsr',id=isVsr?key:classKey(key);
+ if(!(isVsr?Boolean(VSR[id]):Boolean(id)))return;
+ if(!['secondary','accent','border','text','label'].includes(field))return;
+ const mapKey=isVsr?'vsrFoils':'classFoils';
+ const styles={...(classSettings[mapKey]||{})};
+ const current={...(styles[id]||{})};
+ if(field==='label'){
+  const text=clean(value,isVsr?28:80);
+  if(text)current.label=text;
+  else delete current.label;
+ }else{
+  if(!/^#[a-f0-9]{6}$/i.test(value||''))return;
+  current[field]=colorSafe(value);
+ }
+ if(Object.keys(current).length)styles[id]=current;
+ else delete styles[id];
+ storeClassSettings({...classSettings,[mapKey]:styles});
+ toast('Style foil mis à jour sur toutes les courses ✓');
+}
+function resetFoilStyle(kind,key){
+ const id=kind==='vsr'?key:classKey(key);
+ if(!(kind==='vsr'?Boolean(VSR[id]):Boolean(id)))return;
+ const mapKey=kind==='vsr'?'vsrFoils':'classFoils',styles={...(classSettings[mapKey]||{})};
+ delete styles[id];
+ storeClassSettings({...classSettings,[mapKey]:styles});
+ toast('Style foil par défaut restauré ✓');
 }
 function changeDefaultClassColor(value){
  const next=colorSafe(value);
@@ -1475,14 +1527,22 @@ for(const view of ['races','stats','honors','colors'])$('view-'+view).addEventLi
 $('manage-class-colors').addEventListener('click',()=>selectWorkspace('colors'));
 $('colors-back-races').addEventListener('click',()=>selectWorkspace('races'));
 $('default-class-color').addEventListener('change',event=>changeDefaultClassColor(event.target.value));
-$('class-colors-list').addEventListener('change',event=>{
- const el=event.target;
- if(el.matches?.('input[data-class-key]'))changeSpecificClassColor(el.dataset.classKey,el.value);
-});
-$('vsr-colors-list').addEventListener('change',event=>{
- const el=event.target;
- if(el.matches?.('input[data-vsr-key]'))changeVSRColor(el.dataset.vsrKey,el.value);
-});
+for(const [elementId,kind] of [['class-colors-list','class'],['vsr-colors-list','vsr']]){
+ const container=$(elementId);
+ container.addEventListener('change',event=>{
+  const el=event.target;
+  if(el.matches?.('input[data-foil-field]')){
+   changeFoilStyle(kind,el.dataset.foilKey,el.dataset.foilField,el.value);
+   return;
+  }
+  if(kind==='class'&&el.matches?.('input[data-class-key]'))changeSpecificClassColor(el.dataset.classKey,el.value);
+  if(kind==='vsr'&&el.matches?.('input[data-vsr-key]'))changeVSRColor(el.dataset.vsrKey,el.value);
+ });
+ container.addEventListener('click',event=>{
+  const button=event.target.closest('button[data-foil-reset]');
+  if(button&&button.dataset.foilReset===kind)resetFoilStyle(kind,button.dataset.foilKey);
+ });
+}
 $('new-race').addEventListener('click',()=>openEditor());$('empty-add').addEventListener('click',()=>openEditor());$('race-form').addEventListener('submit',saveEditor);$('delete-race').addEventListener('click',()=>{if(editId)deleteRace(editId);});
 const searchInput=$('search'),clearSearch=$('regatta-search-clear');
 searchInput.addEventListener('input',()=>{

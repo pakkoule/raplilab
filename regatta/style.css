@@ -1073,3 +1073,155 @@ button.close{min-width:40px;min-height:40px}
  .regatta-topbar .regatta-brand-logo{max-width:54px;max-height:39px}
  .regatta-topbar .workspace-tab{font-size:7.5px;padding:8px 1px}
 }
+
+/* PR #4 — non-intrusive Cloud overlay and uniform glass/foil Regatta tile accents. */
+.regatta-cloud-status{
+ position:fixed!important;
+ top:calc(env(safe-area-inset-top,0px) + 64px);
+ right:clamp(10px,3vw,30px);
+ z-index:120;
+ width:max-content;max-width:min(355px,calc(100vw - 26px));
+ padding:11px 15px;
+ border:1.5px solid transparent;border-radius:13px;
+ background:linear-gradient(125deg,rgba(250,254,255,.91),rgba(232,245,255,.88) 52%,rgba(255,241,249,.88)) padding-box,
+  linear-gradient(115deg,#67c9df,#529bd2,#e28ebd,#9fd8dc) border-box;
+ backdrop-filter:blur(17px) saturate(1.22);-webkit-backdrop-filter:blur(17px) saturate(1.22);
+ box-shadow:0 13px 32px #174a7230,inset 0 1px 0 #ffffffd8;
+ color:#17415f;font:800 11px/1.5 Poppins,system-ui,sans-serif;
+ opacity:0;visibility:hidden;transform:translateY(-9px);
+ pointer-events:none;
+ transition:opacity .24s ease,transform .24s ease,visibility .24s ease;
+}
+.regatta-cloud-status[data-visible="true"]{
+ opacity:1;visibility:visible;transform:translateY(0)
+}
+.regatta-cloud-status[data-status="error"]{
+ background:linear-gradient(120deg,rgba(255,251,252,.94),rgba(255,232,239,.9)) padding-box,
+  linear-gradient(110deg,#e9828c,#cc4c85,#a0ccde) border-box;color:#8f315c
+}
+.regatta-cloud-status[data-status="pending"]{
+ color:#245b88;
+}
+.regatta-cloud-status #rapli-shared-status-regatta{
+ font:inherit;white-space:normal;overflow-wrap:anywhere;max-width:100%;display:block
+}
+.regatta-catalogue-controls .regatta-inline-actions #regatta-sync svg,
+.regatta-catalogue-controls .regatta-inline-actions #recalculate-scores svg{
+ width:19px;height:19px
+}
+.regatta-catalogue-controls .regatta-inline-actions #regatta-sync:focus-visible,
+.regatta-catalogue-controls .regatta-inline-actions #recalculate-scores:focus-visible{
+ outline:2px solid #258fc7;outline-offset:2px
+}
+.collection-head-results{
+ display:flex;justify-content:flex-end;align-items:center;
+ min-height:20px;padding:2px 0 8px;margin-top:0;
+ border:0!important
+}
+.collection-head-results #result-count{font-size:10px;color:#7c93a1;font-weight:750}
+/* Departure and arrival are a visual pair, without changing the stored dates. */
+.card .journey-timeline{
+ display:inline-flex;align-items:center;gap:7px;min-width:0;max-width:100%;
+ flex-wrap:wrap
+}
+.card .journey-arrow{
+ display:inline-flex;align-items:center;justify-content:center;
+ width:27px;min-height:28px;flex:0 0 27px;
+ color:#3790a6;filter:drop-shadow(0 1px 3px #50c6d13e)
+}
+.card .journey-arrow svg{display:block;width:25px;height:18px}
+/* Foil chips preserve the established visual semantics:
+   slate for times, mint for arrival, turquoise for equipment, gold/green for rewards. */
+.card .stat-chip{
+ border:1.6px solid transparent!important;border-radius:10px!important;
+ background:linear-gradient(117deg,#f8fbfd,#edf3f6 45%,#fafdff 65%,#e9f0f4) padding-box,
+  linear-gradient(113deg,#c9d9e0,#eaf9fc,#a7cadb,#e2ebee) border-box!important;
+ color:#466475;
+ box-shadow:inset 0 1px 0 #ffffffcc,0 2px 6px #1e5c7110!important;
+ font-weight:800;padding:8px 11px
+}
+.card .stat-chip.departure-chip{
+ background:linear-gradient(112deg,#f5f9fb,#eaf1f5 45%,#ffffff 71%,#eef6f7) padding-box,
+  linear-gradient(117deg,#c2dce4,#e5f3f9,#bfd6e2) border-box!important;
+ color:#466777
+}
+.card .stat-chip.arrival-chip{
+ background:linear-gradient(112deg,#e8f9f5,#d7f3ec 48%,#f7fffd 73%,#e1f6f0) padding-box,
+  linear-gradient(112deg,#7dcabb,#d1f0e8,#7acbbd) border-box!important;
+ color:#206e63
+}
+.card .stat-chip.duration-chip{
+ background:linear-gradient(112deg,#f1f6f8,#e5eef1 43%,#ffffff 67%,#eaf1f4) padding-box,
+  linear-gradient(111deg,#b4cdd8,#eaf8f9,#a2c4d0) border-box!important;
+ color:#345c73
+}
+.card .stat-chip.equipment{
+ background:linear-gradient(110deg,#e3f8f8,#cdefef 44%,#f5ffff 69%,#daf5f3) padding-box,
+  linear-gradient(113deg,#63c5cd,#b5edf0,#5cbbc8) border-box!important;
+ color:#067388
+}
+.card .stat-chip.reward-points{
+ background:linear-gradient(112deg,#fff5ce,#f6e5ae 42%,#fffdf2 65%,#f9e7b4) padding-box,
+  linear-gradient(111deg,#cfab43,#fff0a5,#dfb956) border-box!important;
+ color:#7f5d13
+}
+.card .stat-chip.reward-credits{
+ background:linear-gradient(112deg,#e9f8e8,#d4efd2 43%,#fbfffa 65%,#e2f5dc) padding-box,
+  linear-gradient(111deg,#8fc98e,#def5cb,#95c89a) border-box!important;
+ color:#3b744d
+}
+/* Premium foil on ranking plates with the same blue/green/lavender/champagne mapping. */
+.card .rank-grid .rank-plate{
+ position:relative;isolation:isolate;
+ border:2px solid transparent!important;border-radius:13px!important;
+ box-shadow:0 4px 12px #1d537013,inset 0 1px 0 #ffffffa8!important
+}
+.card .rank-grid .rank-plate::before{
+ content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+ background:linear-gradient(111deg,transparent 18%,#ffffff38 45%,transparent 68%);
+ z-index:-1
+}
+.card .rank-grid .rank-plate.rank-main{
+ background:linear-gradient(115deg,#093b56,#126a81 52%,#0b6075 85%,#10465c) padding-box,
+  linear-gradient(105deg,#369dc9,#78d6e7 33%,#f1a1d5 68%,#24b0c0) border-box!important;
+ box-shadow:0 5px 17px #117aa12d,inset 0 1px 0 #ffffff36!important
+}
+.card .rank-grid .rank-plate.rank-national{
+ background:linear-gradient(115deg,#f0f6fd,#e3effc 46%,#fbfdff 69%,#e8f3fc) padding-box,
+  linear-gradient(113deg,#9fbde6,#d7eaff,#a8c8e9) border-box!important
+}
+.card .rank-grid .rank-plate.rank-department{
+ background:linear-gradient(115deg,#eaf8f2,#d9f1e6 46%,#fbfffc 70%,#e4f5ed) padding-box,
+  linear-gradient(113deg,#9bcfb6,#d6f5e8,#a1d3bc) border-box!important
+}
+.card .rank-grid .rank-plate.rank-city{
+ background:linear-gradient(115deg,#f7f2fa,#eae3f2 43%,#fffdff 68%,#f0e9f7) padding-box,
+  linear-gradient(113deg,#cbb5d7,#f2e2f8,#ccb5df) border-box!important
+}
+.card .rank-grid .rank-plate.rank-team{
+ background:linear-gradient(115deg,#faf6ef,#f1eadc 42%,#fffdf8 67%,#f5eddf) padding-box,
+  linear-gradient(112deg,#d5c2a7,#fff1d6,#d7bea1) border-box!important
+}
+.card .rank-grid .rank-plate.rank-main .rank-type{color:#c2edf3}
+.card .rank-grid .rank-plate.rank-main strong{color:#ffffff}
+.card .rank-grid .rank-plate.rank-national strong,
+.card .rank-grid .rank-plate.rank-department strong,
+.card .rank-grid .rank-plate.rank-city strong,
+.card .rank-grid .rank-plate.rank-team strong{color:#183c57}
+.card .rank-grid .rank-plate .rank-type{text-shadow:0 1px 0 #ffffff2a}
+.card .badge-status{
+ border:1px solid #ffffff59;backdrop-filter:blur(5px);
+ box-shadow:inset 0 1px 0 #ffffff2c,0 3px 9px #0a32572c
+}
+@media(max-width:580px){
+ .regatta-cloud-status{top:calc(env(safe-area-inset-top,0px) + 52px);right:9px;padding:10px 12px;font-size:10px}
+ .card .journey-timeline{gap:5px}
+ .card .journey-arrow{width:22px;flex-basis:22px}
+ .card .journey-arrow svg{width:20px}
+ .card .stat-chip{padding:7px 9px}
+ .card .rank-grid .rank-plate{border-radius:11px!important}
+ .collection-head-results{min-height:15px;padding-bottom:5px}
+}
+@media(prefers-reduced-motion:reduce){
+ .regatta-cloud-status{transition:none}
+}

@@ -489,6 +489,7 @@ function raceSearchContext(r){
  };
 }
 function render({searchOnly=false}={}){
+ renderVsrHeaderRanking();
  const query=$('search').value.trim();
  const filtered=query?rows.filter(r=>searchEngine.matches(r,query,raceSearchContext(r))):rows;
  const out=[...filtered];
@@ -1408,6 +1409,39 @@ function rankDateDisplay(value){
  const [day,clock]=value.split('T');
  return day.split('-').reverse().join('/')+' · '+clock;
 }
+function renderVsrHeaderRanking(){
+ const entries=classSettings.vsrRankingHistory;
+ const current=entries.at(-1),previous=entries.at(-2);
+ const button=$('vsr-header-ranking'),value=$('vsr-header-ranking-value'),trend=$('vsr-header-ranking-trend');
+ if(!button||!value||!trend)return;
+ value.textContent=current?'#'+current.rank.toLocaleString('fr-FR'):'—';
+ button.dataset.available=String(Boolean(current));
+ let trendLabel='',trendDescription='';
+ if(current&&previous){
+  const difference=previous.rank-current.rank;
+  trend.dataset.direction=difference>0?'up':difference<0?'down':'flat';
+  if(difference){
+   trendLabel=(difference>0?'▲ ':'▼ ')+Math.abs(difference).toLocaleString('fr-FR');
+   trendDescription=Math.abs(difference).toLocaleString('fr-FR')+' place'+
+    (Math.abs(difference)>1?'s':'')+(difference>0?' gagnée':' perdue')+
+    (Math.abs(difference)>1?'s':'');
+  }else{
+   trendLabel='=';
+   trendDescription='classement inchangé';
+  }
+ }else{
+  trend.dataset.direction='flat';
+  if(current){trendLabel='1er relevé';trendDescription='premier relevé enregistré';}
+ }
+ trend.textContent=trendLabel;
+ trend.hidden=!trendLabel;
+ const date=current?rankDateDisplay(current.date):'';
+ const summary=current?'Classement VSR : '+current.rank.toLocaleString('fr-FR')+
+  (trendDescription?', '+trendDescription:'')+(date?', relevé du '+date:''):
+  'Classement VSR : aucun relevé enregistré';
+ button.setAttribute('aria-label',summary+'. Voir le suivi dans Statistiques.');
+ button.title=summary+' — Voir le suivi des classements';
+}
 function renderVsrRankingHistory(){
  const entries=classSettings.vsrRankingHistory;
  const current=entries.at(-1),previous=entries.at(-2);
@@ -1462,6 +1496,13 @@ function resetVsrRankingForm(){
  $('vsr-ranking-save').textContent='＋ AJOUTER LE RELEVÉ';
  $('vsr-ranking-cancel').hidden=true;
 }
+$('vsr-header-ranking').addEventListener('click',()=>{
+ selectWorkspace('stats');
+ const heading=$('vsr-ranking-title');
+ const reduceMotion=window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+ heading?.scrollIntoView?.({behavior:reduceMotion?'auto':'smooth',block:'start'});
+ heading?.focus?.({preventScroll:true});
+});
 $('vsr-ranking-form').addEventListener('submit',event=>{
  event.preventDefault();
  if(!window.RapliSharedCollection?.canEdit?.()){toast('Connecte-toi en administrateur pour modifier le classement VSR.',true);return;}

@@ -47,6 +47,7 @@
   }
   </style>
   <link rel="stylesheet" href="../shared/collection-navigation.css">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <main class="app-shell">
@@ -61,12 +62,61 @@
       </nav>
     </header>
     <section class="jerseys-start" aria-labelledby="jerseys-title">
-      <div class="jerseys-symbol" aria-hidden="true">👕</div>
-      <span class="jerseys-kicker">RAPLI LAB · NOUVELLE COLLECTION</span>
-      <h1 id="jerseys-title">JERSEYS</h1>
-      <p>Ton futur espace dédié à la collection de maillots. La navigation est prête et adopte exactement le style des onglets OWN et WISHLIST.</p>
-      <div class="jerseys-note">La gestion des maillots, leurs photos et leurs fiches seront ajoutées ultérieurement. Les cartes, les Rainbows et les courses Regatta restent inchangés.</div>
+      <div class="jerseys-start-header">
+        <div class="jerseys-symbol" aria-hidden="true">👕</div>
+        <div>
+          <span class="jerseys-kicker">RAPLI LAB · JERSEYS</span>
+          <h1 id="jerseys-title">COLLECTION DE MAILLOTS</h1>
+          <p>Les logos des équipes et des compétitions sont partagés avec Rapli Sports. Un écusson historique peut être choisi automatiquement selon la saison du maillot.</p>
+        </div>
+      </div>
+      <div class="jerseys-logo-note" id="jerseysLogoStatus" role="status" aria-live="polite">Connexion à la bibliothèque de logos Sports…</div>
+      <div class="jerseys-preview-layout">
+        <form class="jerseys-preview-controls" id="jerseysPreviewForm" autocomplete="off" onsubmit="return false">
+          <h2>PERSONNALISER UNE TUILE</h2>
+          <p>Prévisualisation uniquement. Les sélections réutilisent directement les logos Sports et ne créent pas de nouvelle fiche de maillot.</p>
+          <label>ÉQUIPE
+            <select id="jerseyTeam" aria-label="Équipe pour le maillot"><option value="">Chargement des équipes…</option></select>
+          </label>
+          <label>COMPÉTITION
+            <select id="jerseyCompetition" aria-label="Compétition pour le maillot"><option value="">Chargement des compétitions…</option></select>
+          </label>
+          <label>SAISON
+            <input id="jerseySeason" type="text" inputmode="numeric" maxlength="9" placeholder="2024/2025" aria-label="Saison du maillot">
+          </label>
+          <div class="jerseys-controls-title">VARIANTES DE LOGO (FACULTATIVES)</div>
+          <div class="jerseys-variant-grid">
+            <label>Logo équipe<select id="jerseyTeamVariant" aria-label="Variante du logo équipe"><option value="auto">Automatique</option></select></label>
+            <label>Logo compétition<select id="jerseyCompetitionVariant" aria-label="Variante du logo compétition"><option value="auto">Automatique</option></select></label>
+          </div>
+          <button id="jerseysLogoRefresh" type="button">↻ ACTUALISER LA BIBLIOTHÈQUE</button>
+        </form>
+        <div class="jerseys-card-preview" role="group" aria-label="Aperçu d’une tuile Jerseys">
+          <header>
+            <div class="jerseys-logo-slot">
+              <img id="jerseyTeamLogo" alt="" hidden>
+              <span id="jerseyTeamFallback" class="jerseys-logo-fallback">—</span>
+              <small id="jerseyTeamLabel">ÉQUIPE</small>
+            </div>
+            <div class="jerseys-logo-slot">
+              <small id="jerseyCompetitionLabel">COMPÉTITION</small>
+              <img id="jerseyCompetitionLogo" alt="" hidden>
+              <span id="jerseyCompetitionFallback" class="jerseys-logo-fallback">—</span>
+            </div>
+          </header>
+          <div class="jerseys-preview-illustration" aria-hidden="true"><span>👕</span></div>
+          <footer>
+            <strong id="jerseyPreviewTeam">Équipe à sélectionner</strong>
+            <span id="jerseyPreviewCompetition">Compétition à sélectionner</span>
+            <span id="jerseyPreviewSeason">SAISON À DÉFINIR</span>
+          </footer>
+          <p class="jerseys-card-flag">APERÇU · AUCUN MAILLOT ENREGISTRÉ</p>
+        </div>
+      </div>
+      <div class="jerseys-implementation-note">Les équipes, les compétitions et leurs variantes historiques restent administrées dans la bibliothèque de Rapli Sports. Les futures fiches Jerseys pourront enregistrer leurs références sans dupliquer les images. Aucune donnée Sports ou Regatta n’est modifiée ici.</div>
     </section>
   </main>
+  <script src="../shared/jerseys-logo-library.js" defer></script>
+  <script src="app.js" defer></script>
 </body>
 </html>

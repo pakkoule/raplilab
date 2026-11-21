@@ -115,7 +115,7 @@ test('Portal routes Jerseys without touching the two existing module frames',()=
  const portal=fs.readFileSync('index.html','utf8');
  const dom=new JSDOM(portal,{runScripts:'outside-only',url:'https://rapli.test/#jerseys'});
  try{
-  const inline=[...portal.matchAll(/<script\\b([^>]*)>([\\s\\S]*?)<\\/script>/gi)]
+  const inline=[...portal.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)]
    .filter(m=>!m[1].includes('src='));
   assert.equal(inline.length,1);
   dom.window.eval(inline[0][2]);

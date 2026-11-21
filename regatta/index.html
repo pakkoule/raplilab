@@ -83,15 +83,18 @@ html:not([data-rapli-role="editor"]) #rapli-module-cloud-save{display:none!impor
       <button type="button" class="btn primary tiny regatta-icon-action" id="new-race" aria-label="Ajouter une course" title="Ajouter une course">＋</button>
       <button type="button" class="btn subtle tiny regatta-icon-action rapli-personalize-action" id="manage-class-colors" aria-label="Gérer les couleurs des classes" title="Gérer les couleurs des classes"><svg class="rapli-personalize-gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M10.3 2.4h3.4l.5 1.9 1.7.7 1.7-1 2.4 2.4-1 1.7.7 1.7 1.9.5v3.4l-1.9.5-.7 1.7 1 1.7-2.4 2.4-1.7-1-1.7.7-.5 1.9h-3.4l-.5-1.9-1.7-.7-1.7 1-2.4-2.4 1-1.7-.7-1.7-1.9-.5v-3.4l1.9-.5.7-1.7-1-1.7 2.4-2.4 1.7 1 1.7-.7z"/></svg></button>
     </div>
-  <details class="regatta-filter-disclosure" id="regattaFilterDisclosure"><summary>☷ FILTRES ET TRI <span>Afficher les options de recherche</span></summary>
-  <section class="filters" aria-label="Filtres de la collection">
-    <label class="search">RECHERCHE<input id="search" type="search" placeholder="Course, bateau, année…" autocomplete="off"></label>
-    <label>STATUT<select id="filter-status"><option value="">Toutes les courses</option><option value="live">En cours</option><option value="finished">Terminées</option><option value="planned">À venir</option><option value="dnf">DNF · Abandon</option><option value="record">Courses record</option></select></label>
-    <label>CATÉGORIE VSR<select id="filter-vsr"><option value="">Toutes les catégories</option><option value="hc">Hors Catégorie</option><option value="vsr1">VSR 1</option><option value="vsr2">VSR 2</option><option value="vsr3">VSR 3</option></select></label>
-    <label>CLASSE<select id="filter-class"><option value="">Toutes les classes</option></select></label>
-    <label>TRIER PAR<select id="sort"><option value="start">Départ récent → ancien</option><option value="vsr">VSR · importance</option><option value="recent">Modifications récentes</option><option value="old">Ajout ancien</option><option value="name">Nom A → Z</option></select></label>
-  </section>
-  </details></div>
+  <div class="regatta-search" role="search" aria-label="Recherche dans toutes les informations des courses">
+    <label class="regatta-search-field" for="search">
+      <svg aria-hidden="true" viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.8" cy="10.8" r="7.2"/><path d="m16.3 16.3 5 5"/></svg>
+      <span class="sr-only">Rechercher une course par toutes les informations présentes sur sa tuile</span>
+      <input id="search" type="search" enterkeyhint="search" autocomplete="off" spellcheck="false"
+        placeholder="Rechercher une course, un bateau, une date, un classement, une note…" aria-controls="cards"
+        aria-describedby="regatta-search-help">
+    </label>
+    <button type="button" id="regatta-search-clear" class="regatta-search-clear" aria-label="Effacer la recherche" title="Effacer la recherche" hidden>×</button>
+    <span class="sr-only" id="regatta-search-help">Recherchez aussi les catégories VSR, statuts, équipements, points, crédits et tentatives. Plusieurs mots peuvent être combinés.</span>
+  </div>
+</div>
   <div class="collection-head"><strong>MES COURSES <span class="mini-accent">/ RACE ARCHIVE</span></strong><span id="result-count"></span></div>
   <div class="regatta-pagination-host" id="regatta-pagination-top" aria-label="Pagination supérieure des courses"></div>
   <section id="cards" class="cards" aria-live="polite"></section>
@@ -244,6 +247,7 @@ html:not([data-rapli-role="editor"]) #rapli-module-cloud-save{display:none!impor
 <script defer src="score.js"></script>
 <script defer src="timezone.js"></script>
 <script defer src="honors.js"></script>
+<script defer src="search.js"></script>
 <script defer src="app.js"></script>
 <script defer src="../shared/photo-zoom.js"></script>
 <script defer src="../shared/admin-access.js"></script>

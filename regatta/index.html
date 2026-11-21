@@ -57,6 +57,24 @@ html:not([data-rapli-role="editor"]) #rapli-module-cloud-save{display:none!impor
   <header class="regatta-brand-header" aria-label="Rapli Regatta">
     <img class="regatta-brand-logo" src="assets/logo.webp" alt="Rapli Regatta" width="216" height="94" loading="eager">
   </header>
+  <button type="button" id="vsr-header-ranking" class="vsr-header-ranking"
+    title="Ouvrir l’évolution de mon classement VSR" aria-label="Voir mon classement VSR dans Statistiques"
+    aria-controls="vsr-ranking-title">
+    <span class="vsr-header-ranking-symbol" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"
+        stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 19V7l4 3 4-6 4 6 4-3v12H4Z"/>
+        <path d="M4 15h16"/>
+      </svg>
+    </span>
+    <span class="vsr-header-ranking-body">
+      <span class="vsr-header-ranking-label">CLASSEMENT VSR</span>
+      <span class="vsr-header-ranking-bottom">
+        <strong id="vsr-header-ranking-value">—</strong>
+        <small id="vsr-header-ranking-trend" hidden></small>
+      </span>
+    </span>
+  </button>
   <nav class="workspace-tabs" role="tablist" aria-label="Vues Rapli Regatta">
     <button type="button" id="view-races" class="workspace-tab active" role="tab" aria-selected="true" aria-controls="races-panel">COURSES</button>
     <button type="button" id="view-stats" class="workspace-tab" role="tab" aria-selected="false" aria-controls="stats-panel" tabindex="-1">STATISTIQUES</button>

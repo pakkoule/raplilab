@@ -18,6 +18,8 @@
   const CHECK_TTL = 60000;
   const CHECK_KEY = 'rapli-last-check-v1-'+OWNER_ID+'-'+MODULE;
   const MAX_IMAGE = 10 * 1024 * 1024;
+  const MAX_FONT = 1024 * 1024; // Uploaded typography is intentionally smaller than photos.
+  const FONT_MIMES = Object.freeze({'font/woff2':'woff2','font/woff':'woff','font/ttf':'ttf','font/otf':'otf'});
   const Diff = window.RapliCollectionDiff;
   const emptyState = () => ({records:[], logos:[]});
   let remoteState = emptyState(), baseDisplay = emptyState(), hashes = {};
@@ -79,7 +81,7 @@
         request.onsuccess = () => resolve(request.result || null);
         request.onerror = () => reject(request.error);
       });
-      return blob instanceof Blob ? await blobAsDataURI(blob) : null;
+      return blob instanceof Blob ? normaliseFontURI(ref,await blobAsDataURI(blob)) : null;
     } catch (_) { return null; }
   }
   async function rememberImage(ref, blob) {
@@ -295,16 +297,25 @@
 
   const isImage = value => typeof value === 'string' &&
     /^data:image\/(png|jpeg|webp|gif);base64,[A-Za-z0-9+/=]+$/i.test(value);
+  const isFont = value => typeof value === 'string' &&
+    /^data:font\/(woff2|woff|ttf|otf);base64,[A-Za-z0-9+/=]+$/i.test(value);
+  // Supabase may return a font Blob as application/octet-stream.
+  // Restore the exact validated font MIME using its hashed file extension.
+  function normaliseFontURI(ref,value) {
+    const match=String(ref).match(/\.(woff2|woff|ttf|otf)$/);
+    return match ? String(value).replace(/^data:[^,]*;base64,/i,'data:font/'+match[1]+';base64,') : value;
+  }
   const isReference = value => typeof value === 'string' && value.startsWith(IMAGE_PREFIX);
   async function uploadImage(value) {
     if (uploaded.has(value)) return uploaded.get(value);
     const response = await fetch(value);
     if (!response.ok) throw Error('Image locale illisible.');
     const blob = await response.blob();
-    if (blob.size > MAX_IMAGE) throw Error('Une image dépasse 10 Mo.');
     const mime = (blob.type || '').toLowerCase();
-    const ext = {'image/png':'png','image/jpeg':'jpg','image/webp':'webp','image/gif':'gif'}[mime];
-    if (!ext) throw Error('Format image non pris en charge.');
+    const ext = {'image/png':'png','image/jpeg':'jpg','image/webp':'webp','image/gif':'gif',...FONT_MIMES}[mime];
+    if (!ext) throw Error('Format de ressource non pris en charge.');
+    if (mime.startsWith('font/') && blob.size > MAX_FONT) throw Error('Police de flocage trop volumineuse (1 Mo max).');
+    if (!mime.startsWith('font/') && blob.size > MAX_IMAGE) throw Error('Une image dépasse 10 Mo.');
     const digest = await crypto.subtle.digest('SHA-256', await blob.arrayBuffer());
     const hex = [...new Uint8Array(digest)].map(x => x.toString(16).padStart(2, '0')).join('');
     const path = OWNER_ID + '/' + MODULE + '/' + hex + '.' + ext;
@@ -320,13 +331,13 @@
     const path = value.slice(IMAGE_PREFIX.length);
     const prefix = OWNER_ID + '/' + MODULE + '/';
     if (!path.startsWith(prefix) ||
-        !/^[a-f0-9]{64}\.(png|jpg|webp|gif)$/.test(path.slice(prefix.length)))
+        !/^[a-f0-9]{64}\.(png|jpg|webp|gif|woff2|woff|ttf|otf)$/.test(path.slice(prefix.length)))
       throw Error('Référence image en dehors de la collection commune.');
     return path;
   }
   async function transfer(value, direction) {
     if (typeof value === 'string') {
-      if (direction === 'upload' && isImage(value)) return uploadImage(value);
+      if (direction === 'upload' && (isImage(value)||isFont(value))) return uploadImage(value);
       if ((direction === 'download' || direction === 'cached') && isReference(value)) {
         const path = safeImagePath(value);
         if (downloaded.has(value)) {
@@ -343,7 +354,7 @@
         if (direction === 'cached') return value; // Retain the reference while its image is still pending.
         const {data, error} = await (await supabase()).storage.from(BUCKET).download(path);
         if (error) throw error;
-        const dataUri = await blobAsDataURI(data);
+        const dataUri = normaliseFontURI(value,await blobAsDataURI(data));
         downloaded.set(value, dataUri);
         uploaded.set(dataUri, value);
         markImageLoaded(value);

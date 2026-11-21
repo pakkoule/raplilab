@@ -97,6 +97,6 @@ test('Regatta only displays a universal search and keeps pagination / keyboard s
   assert.ok(app.includes("event.key.toLowerCase()==='k'"));
   assert.equal(/filter-status|filter-class|filter-vsr|\$\('sort'\)/.test(app),false);
   assert.ok(css.includes('.regatta-search-field'));
-  assert.equal(css.includes('.regatta-filter-disclosure'),false);
+  assert.ok(css.includes('.regatta-catalogue-controls>.regatta-search'));
  }finally{dom.window.close();}
 });

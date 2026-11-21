@@ -66,8 +66,6 @@
    btn('APERÇU',()=>{
      const saved=fonts.find(bridge.logos(),font.id);
      if(!saved)return inform('Police introuvable.',true);
-     editing='';upload=null;file.value='';label.value=saved.name;
-     $('jerseyFontSave').textContent='IMPORTER LA POLICE';
      void preview(saved.fontData);
    });
    if(editable){
@@ -129,6 +127,9 @@
    if(!canEdit())return inform('Connexion administrateur et synchronisation nécessaires.',true);
    const name=label.value.trim();
    if(!name||name.length>100)return inform('Indique un nom de police (100 caractères max).',true);
+   const duplicate=fonts.fonts(bridge.logos()).find(row=>
+     row.id!==editing&&row.name.trim().toLocaleLowerCase('fr')===name.toLocaleLowerCase('fr'));
+   if(duplicate)return inform('Une police porte déjà ce nom. Modifie-la plutôt que de la dupliquer.',true);
    const current=editing?fonts.find(bridge.logos(),editing):null;
    const chosen=upload||(current?{
      data:current.fontData,size:current.size,fileName:current.fileName,format:current.format
@@ -138,7 +139,7 @@
    busy=true;draw(true);
    try{
      await bridge.saveLogo({
-       id:editing||'jersey-font:'+crypto.randomUUID(),type:'jersey-font',
+       id:editing||'jersey-font:'+(crypto.randomUUID?.()||Date.now().toString(36)+'-'+Math.random().toString(36).slice(2)),type:'jersey-font',
        name,format:chosen.format,fontData:chosen.data,
        fileName:String(chosen.fileName||'').slice(0,140),size:chosen.size,updatedAt:Date.now()
      });

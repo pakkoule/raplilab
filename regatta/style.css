@@ -1038,3 +1038,38 @@ button.close{min-width:40px;min-height:40px}
  .regatta-topbar .vsr-header-ranking-bottom strong{font-size:16px}
  .regatta-topbar .vsr-header-ranking-bottom small{font-size:7px}
 }
+
+/* Keep the VSR rank precisely centred in the free space between branding and tabs. */
+.regatta-topbar{
+ display:grid;
+ grid-template-columns:auto minmax(0,1fr) auto;
+ align-items:center;
+ justify-content:stretch;
+}
+.regatta-topbar .regatta-brand-header{
+ grid-column:1;
+ justify-self:start;
+}
+.regatta-topbar #vsr-header-ranking.vsr-header-ranking{
+ grid-column:2;
+ justify-self:center;
+ margin:0;
+}
+.regatta-topbar .workspace-tabs{
+ grid-column:3;
+ justify-self:end;
+ flex:0 0 auto;
+ width:max-content;
+}
+.regatta-topbar .workspace-tab{flex:0 0 auto}
+@media(max-width:780px){
+ .regatta-topbar{grid-template-columns:auto minmax(0,1fr) auto}
+}
+@media(max-width:540px){
+ .regatta-topbar{grid-template-columns:auto minmax(0,1fr) auto}
+ .regatta-topbar .workspace-tabs{max-width:100%}
+}
+@media(max-width:365px){
+ .regatta-topbar .regatta-brand-logo{max-width:54px;max-height:39px}
+ .regatta-topbar .workspace-tab{font-size:7.5px;padding:8px 1px}
+}

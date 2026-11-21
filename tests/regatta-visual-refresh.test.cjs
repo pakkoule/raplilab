@@ -420,3 +420,45 @@ test('two-column race, record and stage cards preserve details, menu and media z
  assert.ok(viewer.includes('openSource(src,alt='));
 });
 
+
+
+test('future course, stage and record attempts are exportable to iOS Calendar from the menu',()=>{
+ const {raceCardMenu,canExportRaceCalendar,ctx}=raceTileHarness();
+ const calendarStart=js.indexOf('function calendarText(r){');
+ const calendarEnd=js.indexOf('function exportCalendar(r){',calendarStart);
+ assert.ok(calendarStart>0&&calendarEnd>calendarStart);
+ const env={
+  canExportRaceCalendar,
+  recordEngine:ctx.recordEngine,
+  timeEngine:{
+   fromWall:(date,time)=>new Date(date+'T'+time+':00+01:00').getTime(),
+   utcIcs:value=>new Date(value).toISOString().replace(/[-:]/g,'')
+    .replace(/\.\d{3}Z/,'Z')
+  },
+  parseRaceDuration:()=>({status:'empty'}),
+  calendarEscape:value=>String(value).replace(/\n/g,'\\n'),
+  foldCalendarLine:value=>value
+ };
+ const calendarText=new Function('env','with(env){'+js.slice(calendarStart,calendarEnd)+
+  ';return calendarText;}')(env);
+ const entries=[
+  {...testRace,kind:'race',mockStatus:'planned',start:'2026-11-23',startTime:'12:10'},
+  {...testRace,kind:'event',mockStatus:'planned',start:'2026-11-23',startTime:'12:10'},
+  {...testRace,kind:'race',eventId:'stage-03',mockStatus:'planned',
+   start:'2026-11-23',startTime:'12:10'},
+  {...testRace,kind:'record',mockStatus:'record',live:false,recordClosed:false,
+   attempts:[{date:'2026-11-22',time:'10:05'}]}
+ ];
+ for(const race of entries){
+  assert.ok(canExportRaceCalendar(race));
+  assert.ok(raceCardMenu(race,race.mockStatus).includes('data-action="calendar"'));
+  const text=calendarText(race);
+  assert.ok(text.includes('BEGIN:VCALENDAR'));
+  assert.ok(text.includes('DTSTART:'));
+  assert.ok(text.includes('END:VCALENDAR'));
+ }
+ const record={...entries.at(-1),live:true,mockStatus:'record-live'};
+ assert.equal(canExportRaceCalendar(record),false);
+ assert.ok(!raceCardMenu(record,'record-live').includes('data-action="calendar"'));
+ assert.throws(()=>calendarText(record),/à venir/);
+});

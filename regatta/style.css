@@ -1334,3 +1334,260 @@ button.close{min-width:40px;min-height:40px}
  .card .card-intro .card-tag-row .class-tag{font-size:8px;padding:4px 5px}
  .card .card-intro .card-tag-row .vsr-badge{font-size:8px;padding:4px 5px}
 }
+
+
+/* PR #4 — Two-column race cards: left story/timing, right performance. 
+   Only presentation changes; the collection's saved schema is unchanged. */
+.cards .card.card--columns{overflow:hidden;isolation:isolate}
+.cards .card.card--columns:has(.race-actions-menu[open]){
+ overflow:visible;isolation:auto;z-index:25
+}
+.cards .card.card--columns .card-content{padding:14px;min-width:0}
+.cards .card.card--columns .race-card-layout{
+ display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.18fr);
+ gap:14px;align-items:start;min-width:0;margin:0
+}
+.cards .card.card--columns .race-card-left,
+.cards .card.card--columns .race-card-right{display:flex;flex-direction:column;min-width:0}
+.cards .card.card--columns .race-card-left .card-top{
+ width:100%;height:auto;aspect-ratio:16/10;min-height:0;
+ border:1.5px solid #c9dfe5;border-radius:11px;
+ overflow:hidden;position:relative;box-shadow:0 3px 12px #173c5b26;
+ background:linear-gradient(137deg,#e5f3f8,#dce8f1 60%,#f5eff9)
+}
+.cards .card.card--columns .race-card-left .race-icon{
+ width:100%;height:100%;aspect-ratio:auto;min-height:0
+}
+.cards .card.card--columns .race-card-left .race-icon img{
+ display:block;width:100%;height:100%;object-fit:contain;cursor:zoom-in
+}
+.cards .card.card--columns .race-card-left .icon-placeholder{font-size:30px}
+.cards .card.card--columns .card-top .card-status-row{
+ position:absolute;bottom:6px;left:6px;right:6px;z-index:2;
+ display:flex;flex-wrap:wrap;gap:5px;margin:0;align-items:center
+}
+.cards .card.card--columns .card-top .badge-status{
+ position:static;display:inline-flex;align-items:center;gap:4px;
+ width:auto;max-width:100%;padding:5px 7px;border-radius:7px;
+ font:900 8px/1.25 Poppins,sans-serif;letter-spacing:.01em;
+ background:#143c59d9;color:#fff;backdrop-filter:blur(7px);
+ box-shadow:0 2px 8px #12304452
+}
+.cards .card.card--columns .card-top .badge-status .live-neon{
+ width:15px;height:15px;flex:0 0 15px
+}
+.cards .card.card--columns .card-top .badge-status .live-neon svg{
+ width:15px;height:15px
+}
+.cards .card.card--columns.live .card-top .badge-status{
+ background:#9b296ddc;color:white
+}
+.cards .card.card--columns .card-intro-info{
+ display:flex;flex-direction:column;min-width:0;align-self:stretch;
+ gap:0;margin-top:11px
+}
+.cards .card.card--columns .card-title-row{
+ display:grid;grid-template-columns:34px minmax(0,1fr);
+ gap:7px;align-items:start;justify-content:initial;
+ margin:0 0 5px;min-width:0
+}
+.cards .card.card--columns .card-title-row h2{
+ grid-column:2;grid-row:1;min-width:0;width:auto;margin:0;
+ font-size:clamp(14px,1.45vw,18px);line-height:1.27;
+ overflow-wrap:anywhere;color:#193c5b
+}
+.cards .card.card--columns .race-card-subtype{
+ color:#7291a4;font:800 9px/1.45 Poppins,sans-serif;
+ letter-spacing:.055em;margin:2px 0 6px
+}
+.cards .card.card--columns .start-today-flag{
+ display:inline-flex;align-self:flex-start;position:static;
+ margin:1px 0 5px;padding:5px 7px;max-width:100%;
+ font-size:8px;white-space:normal
+}
+.cards .card.card--columns .race-actions-menu{
+ position:relative;grid-column:1;grid-row:1;
+ min-width:0;margin:0;padding:0;z-index:8
+}
+.cards .card.card--columns .race-actions-menu>summary{
+ display:flex;align-items:center;justify-content:center;
+ list-style:none;cursor:pointer;width:34px;height:34px;
+ padding:0;border-radius:10px;border:2px solid transparent;
+ background:linear-gradient(110deg,#f4fbff,#e5f2fa 53%,#f8eaf5) padding-box,
+  linear-gradient(110deg,#55b7d9,#a1dcea,#e79bc6,#3579b3) border-box;
+ color:#18476c;font:900 22px/1 Poppins,sans-serif;
+ box-shadow:inset 0 1px 0 #ffffffdd,0 2px 7px #2460851c;
+ user-select:none;-webkit-tap-highlight-color:transparent
+}
+.cards .card.card--columns .race-actions-menu>summary::-webkit-details-marker{display:none}
+.cards .card.card--columns .race-actions-menu>summary::marker{content:""}
+.cards .card.card--columns .race-actions-menu>summary:focus-visible{
+ outline:2px solid #238ec2;outline-offset:2px
+}
+.cards .card.card--columns .race-actions-menu[open]>summary{
+ background:linear-gradient(120deg,#e8f7fb,#f8e6f3) padding-box,
+  linear-gradient(113deg,#1488bd,#e76fac,#245c94) border-box
+}
+.cards .card.card--columns .race-actions-popover{
+ position:absolute;top:39px;left:0;z-index:55;
+ display:flex;flex-direction:column;gap:4px;
+ width:max-content;min-width:205px;max-width:min(245px,calc(100vw - 45px));
+ padding:8px;border:1.5px solid #b4d4e3;border-radius:12px;
+ background:linear-gradient(135deg,rgba(250,254,255,.97),rgba(244,250,255,.98) 50%,rgba(255,246,251,.97));
+ box-shadow:0 15px 32px #143a5961,inset 0 1px 0 #ffffff;
+ backdrop-filter:blur(13px);-webkit-backdrop-filter:blur(13px)
+}
+.cards .card.card--columns .race-actions-popover button{
+ display:flex;align-items:center;justify-content:flex-start;
+ gap:9px;width:100%;min-height:36px;padding:8px 10px!important;
+ border:1px solid #cee0e9!important;border-radius:8px!important;
+ text-align:left;white-space:normal;
+ background:linear-gradient(120deg,#f8fcfe,#e8f3fa 58%,#faf2f8)!important;
+ color:#184664!important;font:750 10px/1.3 Poppins,sans-serif!important
+}
+.cards .card.card--columns .race-actions-popover button>span{
+ font-size:15px;flex:0 0 17px;text-align:center
+}
+.cards .card.card--columns .race-actions-popover button.is-danger{
+ color:#a33468!important
+}
+.cards .card.card--columns .race-actions-divider{height:1px;background:#d8e6ec;margin:2px 0}
+.cards .card.card--columns .race-card-schedule{
+ display:flex;flex-direction:column;gap:7px;margin-top:10px;min-width:0
+}
+.cards .card.card--columns .race-card-date-item{
+ display:flex;flex-direction:column;gap:3px;min-width:0;
+ border:1.5px solid transparent;border-radius:9px;padding:8px 9px;
+ background:linear-gradient(115deg,#f8fcfe,#edf5f8 65%,#faf9fd) padding-box,
+  linear-gradient(110deg,#c3dae6,#e7f4f8,#b6d5e3) border-box;
+ box-shadow:0 2px 6px #245a7610
+}
+.cards .card.card--columns .race-card-field-label{
+ color:#648697;font:900 8px/1.35 Poppins,sans-serif;letter-spacing:.04em
+}
+.cards .card.card--columns .race-card-date-item strong{
+ color:#285774;font:800 11px/1.35 Poppins,sans-serif;overflow-wrap:anywhere
+}
+.cards .card.card--columns .race-card-date-item strong.is-live{color:#c23380}
+.cards .card.card--columns .race-card-date-item strong.is-upcoming{color:#386cba}
+.cards .card.card--columns .race-card-clock{
+ background:linear-gradient(112deg,#e6f6f6,#dbf2f5 58%,#faf2fa) padding-box,
+  linear-gradient(115deg,#7ac3d4,#f2bfdc,#74b8d4) border-box
+}
+.cards .card.card--columns .race-card-clock .race-card-time-value{
+ color:#146680;font:900 clamp(13px,1.75vw,18px)/1.3 'Courier Prime','Courier New',monospace;
+ font-variant-numeric:tabular-nums;overflow-wrap:anywhere
+}
+.cards .card.card--columns .race-card-clock .race-card-time-value.is-empty{
+ color:#70899b;font:800 10px/1.4 Poppins,sans-serif
+}
+.cards .card.card--columns .race-card-right .race-card-meta{
+ display:flex;flex-direction:column;gap:7px;min-width:0;
+ padding-bottom:9px;border-bottom:1px solid #dbe9ee
+}
+.cards .card.card--columns .race-card-meta-tags{
+ display:flex;align-items:center;justify-content:flex-start;
+ gap:5px;flex-wrap:wrap;min-width:0
+}
+.cards .card.card--columns .race-card-meta-tags .class-tag,
+.cards .card.card--columns .race-card-meta-tags .vsr-badge{
+ flex:0 1 auto;max-width:100%;font-size:9px;padding:6px 8px
+}
+.cards .card.card--columns .race-card-meta-tags .stat-chip.equipment{
+ font-size:9px;padding:6px 8px;max-width:100%;overflow-wrap:anywhere
+}
+.cards .card.card--columns .race-card-right .card-boat{
+ color:#748fa0;font:650 10px/1.5 Poppins,sans-serif;min-height:0;
+ overflow-wrap:anywhere
+}
+.cards .card.card--columns .race-card-rankings{margin-top:10px;min-width:0}
+.cards .card.card--columns .rank-main-row{
+ display:flex;align-items:center;gap:7px;min-width:0
+}
+.cards .card.card--columns .rank-main-row .rank-plate.rank-main{
+ flex:1 1 0;width:0;min-width:0;padding:8px
+}
+.cards .card.card--columns .rank-main-row .rank-main .rank-icon{font-size:18px}
+.cards .card.card--columns .rank-main-row .rank-main .rank-type{font-size:8px}
+.cards .card.card--columns .rank-main-row .rank-main strong{font-size:clamp(22px,2.5vw,30px)}
+.cards .card.card--columns .rank-main-row .score-orb{
+ flex:0 0 53px;width:53px;height:53px;font-size:19px
+}
+.cards .card.card--columns .race-rank-placeholder{
+ flex:1;min-width:0;padding:10px 7px;border-radius:8px;
+ border:1px dashed #c2dce5;background:#edf7fa;
+ color:#5e8999;font:800 9px/1.4 Poppins,sans-serif
+}
+.cards .card.card--columns .race-alt-ranks.rank-grid{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+ gap:6px;margin:8px 0 0;min-width:0
+}
+.cards .card.card--columns .race-alt-ranks .rank-plate{
+ min-width:0;gap:5px;padding:7px 6px;border-radius:9px
+}
+.cards .card.card--columns .race-alt-ranks .rank-icon{font-size:15px}
+.cards .card.card--columns .race-alt-ranks .rank-type{font-size:7px}
+.cards .card.card--columns .race-alt-ranks strong{font-size:18px}
+.cards .card.card--columns .race-card-rewards{
+ display:flex;flex-wrap:wrap;align-items:center;
+ gap:6px;margin-top:11px;min-width:0
+}
+.cards .card.card--columns .race-card-rewards .stat-chip{
+ flex:1 1 116px;min-width:0;font-size:9px;
+ text-align:center;padding:8px 7px;overflow-wrap:anywhere
+}
+.cards .card.card--columns .race-card-rank-empty{
+ padding:11px 9px;margin:11px 0 0;border:1px dashed #cfdee8;
+ border-radius:9px;background:#f3f8fa;color:#698798;
+ font:700 10px/1.5 Poppins,sans-serif
+}
+.cards .card.card--columns .record-card{
+ margin-top:10px;min-width:0
+}
+.cards .card.card--columns .record-card-summary{
+ padding:8px;gap:6px
+}
+.cards .card.card--columns .record-card-summary strong{overflow-wrap:anywhere}
+.cards .card.card--columns .record-attempt-chips{
+ max-height:230px;overflow-y:auto;overscroll-behavior:contain
+}
+.cards .card.card--columns .score-pending{margin-top:8px}
+@media(max-width:780px){
+ .cards .card.card--columns .race-card-layout{grid-template-columns:minmax(0,.9fr) minmax(0,1.28fr);gap:11px}
+ .cards .card.card--columns .card-content{padding:12px}
+ .cards .card.card--columns .race-card-meta-tags .class-tag,
+ .cards .card.card--columns .race-card-meta-tags .vsr-badge{padding:5px 6px}
+}
+@media(max-width:580px){
+ .cards .card.card--columns .race-card-layout{grid-template-columns:minmax(0,.85fr) minmax(0,1.27fr);gap:9px}
+ .cards .card.card--columns .card-content{padding:11px}
+ .cards .card.card--columns .card-title-row{grid-template-columns:30px minmax(0,1fr);gap:5px}
+ .cards .card.card--columns .card-title-row h2{font-size:15px}
+ .cards .card.card--columns .race-actions-menu>summary{width:30px;height:30px;font-size:19px}
+ .cards .card.card--columns .race-actions-popover{top:34px}
+ .cards .card.card--columns .race-card-schedule{gap:6px}
+ .cards .card.card--columns .race-card-date-item{padding:7px 6px}
+ .cards .card.card--columns .race-card-date-item strong{font-size:10px}
+ .cards .card.card--columns .race-card-clock .race-card-time-value{font-size:14px}
+ .cards .card.card--columns .race-card-meta-tags{gap:4px}
+ .cards .card.card--columns .race-card-meta-tags .class-tag,
+ .cards .card.card--columns .race-card-meta-tags .vsr-badge,
+ .cards .card.card--columns .race-card-meta-tags .stat-chip.equipment{font-size:8px}
+ .cards .card.card--columns .rank-main-row .rank-main strong{font-size:22px}
+ .cards .card.card--columns .rank-main-row .score-orb{flex-basis:45px;width:45px;height:45px;font-size:17px}
+ .cards .card.card--columns .race-alt-ranks .rank-plate{padding:6px 4px;gap:3px}
+ .cards .card.card--columns .race-alt-ranks strong{font-size:17px}
+ .cards .card.card--columns .race-card-rewards .stat-chip{flex-basis:100%;font-size:9px}
+}
+@media(max-width:360px){
+ .cards .card.card--columns .race-card-layout{grid-template-columns:minmax(0,.82fr) minmax(0,1.18fr);gap:7px}
+ .cards .card.card--columns .card-title-row{grid-template-columns:27px minmax(0,1fr);gap:4px}
+ .cards .card.card--columns .race-actions-menu>summary{width:27px;height:29px}
+ .cards .card.card--columns .card-title-row h2{font-size:14px}
+ .cards .card.card--columns .race-alt-ranks.rank-grid{grid-template-columns:minmax(0,1fr)}
+ .cards .card.card--columns .race-card-date-item strong{font-size:9px}
+ .cards .card.card--columns .rank-main-row .score-orb{flex-basis:40px;width:40px;height:40px}
+}
+@media(prefers-reduced-motion:reduce){
+ .cards .card.card--columns .race-actions-menu>summary{transition:none}
+}

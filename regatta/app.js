@@ -381,56 +381,146 @@ function recordCardContent(r){
  const line=attempts.map((item,i)=>'<div class="record-attempt-chip'+(item.aborted?' is-aborted':item.id===stats.bestId?' is-best':'')+'"><span>TENTATIVE '+(i+1)+'<small>'+safe(item.startDate?'DÉPART · '+dateTimeFR(item.startDate,item.startTime):'DÉPART À RENSEIGNER')+'</small></span><strong>'+safe(item.aborted?'AVORTÉE':item.seconds!==null?recordEngine.format(item.seconds):'EN ATTENTE')+'</strong></div>').join('');
  return '<section class="record-card" aria-label="Tentatives de record"><div class="record-card-summary"><span>'+stats.total+' TENTATIVE'+(stats.total>1?'S':'')+' · '+stats.aborted+' AVORTÉE'+(stats.aborted>1?'S':'')+'</span><strong>'+safe(stats.bestSeconds!==null?'MEILLEUR TEMPS · '+recordEngine.format(stats.bestSeconds):'AUCUN TEMPS VALIDÉ')+'</strong></div><div class="record-attempt-chips">'+line+'</div></section>';
 }
+/* Both columns are rendered from existing race data; no new persistent fields. */
+function raceCardSchedule(r,status){
+ const isRecord=r.kind==='record';
+ const latest=isRecord?recordEngine.latestStart(r.attempts):null;
+ const startDate=latest?.date||r.start,startTime=latest?.time||r.startTime;
+ const startInstant=startDate&&startTime?localDateTime(startDate,startTime,r.timezone):null;
+ const live=status==='live'||status==='record-live';
+ const futureRecord=isRecord&&status==='record'&&startInstant!==null&&startInstant>Date.now();
+ const planned=status==='planned'||futureRecord;
+ const startLabel=isRecord?'DÉPART · DERNIÈRE TENTATIVE':'DÉPART';
+ const startValue=startDate?dateTimeFR(startDate,startTime):'À renseigner';
+ const finishLabel=isRecord?'STATUT DU RECORD':'ARRIVÉE';
+ const finishText=live?'EN COURS':planned?'À VENIR':
+  status==='dnf'?'DNF · ABANDON':status==='record-closed'?'RECORD CLÔTURÉ':
+  isRecord?'EN ATTENTE':r.end?dateTimeFR(r.end,r.endTime):'À renseigner';
+ let timeLabel='DURÉE TOTALE',timeDisplay='';
+ if(live||planned){
+  const base=raceClockInfo(r);
+  const clock=base||(futureRecord?{mode:'countdown',start:startInstant}:null);
+  timeLabel=planned?'COMPTE À REBOURS':'CHRONO EN COURS';
+  if(clock?.start!==null&&Number.isFinite(clock?.start)){
+   const seconds=(clock.mode==='countdown'?clock.start-Date.now():Date.now()-clock.start)/1000;
+   timeDisplay='<strong class="race-card-time-value" data-race-clock="'+clock.mode+
+     '" data-start="'+clock.start+'">'+
+     safe(seconds<0&&clock.mode==='countdown'?'DÉPART IMMINENT':formatRaceClock(seconds))+'</strong>';
+  }else timeDisplay='<strong class="race-card-time-value is-empty">DÉPART À RENSEIGNER</strong>';
+ }else if(isRecord){
+  const best=recordEngine.summary(r.attempts).bestSeconds;
+  timeLabel='MEILLEUR TEMPS';
+  timeDisplay='<strong class="race-card-time-value'+(best===null?' is-empty':'')+'">'+
+    safe(best===null?'AUCUN TEMPS VALIDÉ':recordEngine.format(best))+'</strong>';
+ }else{
+  timeDisplay='<strong class="race-card-time-value'+(r.duration?'':' is-empty')+'">'+
+   safe(r.duration||'—')+'</strong>';
+ }
+ return '<div class="race-card-schedule">'+
+  '<div class="race-card-date-item"><span class="race-card-field-label">'+startLabel+'</span><strong>'+
+   safe(startValue)+'</strong></div>'+
+  '<div class="race-card-date-item"><span class="race-card-field-label">'+finishLabel+'</span>'+
+   '<strong class="'+(live?'is-live':planned?'is-upcoming':'')+'">'+safe(finishText)+'</strong></div>'+
+  '<div class="race-card-date-item race-card-clock"><span class="race-card-field-label">'+timeLabel+'</span>'+
+   timeDisplay+'</div></div>';
+}
+function raceCardMenu(r,status){
+ const showImages=!['live','record-live','planned','record'].includes(status);
+ const canCalendar=(r.upcoming&&!!r.start)||
+   (r.kind==='event'&&status==='planned'&&!!r.start)||
+   (r.kind==='record'&&status==='record'&&!!recordEngine.latestStart(r.attempts)?.date);
+ const action=(id,title,icon,extra='')=>
+  '<button type="button" data-action="'+id+'"'+extra+'><span aria-hidden="true">'+icon+
+  '</span>'+title+'</button>';
+ return '<details class="race-actions-menu">'+
+  '<summary aria-label="Options pour '+safe(r.name)+'" title="Options de la course">•••</summary>'+
+  '<div class="race-actions-popover" role="group" aria-label="Actions de '+safe(r.name)+'">'+
+  (showImages&&validImage(r.result)?action('view-result',r.kind==='record'?'Voir la capture du record':'Voir le classement final','▣'):'')+
+  (showImages&&validImage(r.route)?action('view-route','Voir le tracé','⌁'):'')+
+  action('edit','Modifier la tuile','✎')+
+  action('png','Exporter en PNG','↓')+
+  (canCalendar?action('calendar','Ajouter au calendrier iOS','▦'):'')+
+  (r.kind==='record'&&!r.recordClosed?action('record-close','Clôturer le record','✓'):'')+
+  '<div class="race-actions-divider" aria-hidden="true"></div>'+
+  action('delete','Supprimer la tuile','×',' class="is-danger"')+
+  '</div></details>';
+}
 function card(r){
  const status=raceStatus(r),tag=tagAppearance('class',r.boatClass,r.boatClass||'VIRTUAL REGATTA'),
-  vsrTag=tagAppearance('vsr',r.vsr,VSR[r.vsr]||''),mode=VSR[r.vsr]||'';
+   vsrTag=tagAppearance('vsr',r.vsr,VSR[r.vsr]||''),mode=VSR[r.vsr]||'';
  const isLive=status==='live'||status==='record-live';
- const showShots=!['live','record-live','planned','record'].includes(status);
+ const record=r.kind==='record',showRecordRanking=record&&r.recordClosed;
+ const score=scoreView(r),scoreRing=score.available?
+  '<button type="button" class="score-orb'+(score.value>=95?' score-epic':'')+
+  (score.value===0?' score-zero':'')+'" style="--score-sweep:'+
+   (Math.min(100,Math.max(0,score.value))*3.6)+'deg;--score-glow:'+(score.value/100)+
+   '" data-action="score" aria-label="Voir le détail de la note Rapli : '+
+   safe(score.value)+' sur 100"><span>'+safe(score.value)+'</span></button>':'';
+ const rankingsAllowed=status!=='dnf'&&(!record||showRecordRanking);
+ const generalRank=rankingsAllowed?
+   rankHtml('🏆','CLASSEMENT GÉNÉRAL',r.rank,r.rankTotal,'rank-main',
+    podiumMedalFor(r,'rank','rankTotal')):'';
+ const alt=rankingsAllowed?[
+   rankHtml('🇫🇷','NATIONAL',r.rankNational,r.rankNationalTotal,'rank-national',podiumMedalFor(r,'rankNational','rankNationalTotal')),
+   rankHtml('🇨🇶','DÉPARTEMENTAL',r.rankDepartment,r.rankDepartmentTotal,'rank-department',podiumMedalFor(r,'rankDepartment','rankDepartmentTotal')),
+   rankHtml('🏙️','VILLE',r.rankCity,r.rankCityTotal,'rank-city',podiumMedalFor(r,'rankCity','rankCityTotal')),
+   rankHtml('🏴‍☠️','TEAM',r.rankTeam,r.rankTeamTotal,'rank-team',podiumMedalFor(r,'rankTeam','rankTeamTotal'))
+  ].join(''):'';
+ const mainRow=generalRank||scoreRing?'<div class="rank-main-row">'+
+  (generalRank||'<div class="race-rank-placeholder">CLASSEMENT GÉNÉRAL · EN ATTENTE</div>')+
+  (showRecordRanking?'':scoreRing)+'</div>':'';
+ const rankContent=mainRow||alt?
+  '<div class="race-card-rankings">'+mainRow+
+  (alt?'<div class="rank-grid race-alt-ranks">'+alt+'</div>':'')+'</div>':
+  '<p class="race-card-rank-empty">'+(status==='dnf'?'DNF · sans classement':
+   record&&!showRecordRanking?'Classements disponibles après clôture du record':
+   'Classements à venir')+'</p>';
+ const rewardPoints=!record&&moneyNumber(r.gainPoints);
+ const rewardCredits=!record&&moneyNumber(r.gainCredits);
+ const gains=!record?'<div class="race-card-rewards">'+
+  '<span class="stat-chip reward-points">⭐ '+(rewardPoints?'+'+safe(Number(r.gainPoints).toLocaleString('fr-FR')):'—')+' POINTS VSR</span>'+
+  '<span class="stat-chip reward-credits">🪙 '+(rewardCredits?'+'+safe(Number(r.gainCredits).toLocaleString('fr-FR')):'—')+' CRÉDITS VR</span>'+
+  '</div>':'';
+ const subtype=record?'COURSE RECORD':r.kind==='event'?'COURSE À ÉTAPES':
+   r.eventId?'ÉTAPE'+(r.joker?' JOKER':''):'';
+ const statusBadge='<span class="badge-status">'+
+  (isLive?'<span class="live-neon" role="img" aria-label="En direct"><svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2.5" aria-hidden="true"><path d="M8.7 7.4a9.6 9.6 0 0 0 0 13.2M19.3 7.4a9.6 9.6 0 0 1 0 13.2M5.2 3.5a15 15 0 0 0 0 21M22.8 3.5a15 15 0 0 1 0 21" /><circle cx="14" cy="14" r="2" fill="currentColor" stroke="none"/></svg></span>':'')+
+  statusTitle[status]+'</span>';
  const today=timeEngine.wallAt(Date.now(),r.timezone)?.date;
- const recordStart=r.kind==='record'?recordEngine.latestStart(r.attempts)?.date:'';
- const departsToday=(recordStart||r.start)===today&&!!today;
- const score=scoreView(r);
- // La note n'a ni cartouche ni mention, elle est placée à droite du classement général.
- const scoreRing=score.available?
-  '<button type="button" class="score-orb'+(score.value>=95?' score-epic':'')+(score.value===0?' score-zero':'')+'" style="--score-sweep:'+(Math.min(100,Math.max(0,score.value))*3.6)+'deg;--score-glow:'+(score.value/100)+'" data-action="score" aria-label="Voir le détail de la note Rapli : '+safe(score.value)+' sur 100"><span>'+safe(score.value)+'</span></button>':'';
- const showRecordRanking=r.kind==='record'&&r.recordClosed;
- const generalRank=(status==='dnf'||(r.kind==='record'&&!showRecordRanking))?'':rankHtml('🏆','CLASSEMENT GÉNÉRAL',r.rank,r.rankTotal,'rank-main',podiumMedalFor(r,'rank','rankTotal'));
- const rankBlocks=(status==='dnf'||(r.kind==='record'&&!showRecordRanking)?'':(generalRank?'<div class="rank-main-row">'+generalRank+(showRecordRanking?'':scoreRing)+'</div>':'')+
-   rankHtml('🇫🇷','NATIONAL',r.rankNational,r.rankNationalTotal,'rank-national',podiumMedalFor(r,'rankNational','rankNationalTotal'))+
-   rankHtml('🇨🇶','DÉPARTEMENTAL',r.rankDepartment,r.rankDepartmentTotal,'rank-department',podiumMedalFor(r,'rankDepartment','rankDepartmentTotal'))+
-   rankHtml('🏙️','VILLE',r.rankCity,r.rankCityTotal,'rank-city',podiumMedalFor(r,'rankCity','rankCityTotal'))+
-   rankHtml('🏴‍☠️','TEAM',r.rankTeam,r.rankTeamTotal,'rank-team',podiumMedalFor(r,'rankTeam','rankTeamTotal')));
- return '<article class="card'+(isLive?' live':'')+(status==='planned'&&r.upcoming?' upcoming':'')+(status==='dnf'?' dnf':'')+(r.kind==='event'?' event':'')+(r.kind==='record'?' record':'')+(showRecordRanking?' record-closed':'')+'" data-id="'+safe(r.id)+'" style="'+foilVariables(tag,'class')+';'+foilVariables(vsrTag,'vsr')+'">'+
- '<div class="card-content"><div class="card-intro">'+
- '<div class="card-top"><div class="race-icon card-photo">'+(validImage(r.icon)?imageTag(r.icon,'Affiche '+r.name):'<div class="icon-placeholder">⛵</div>')+'</div></div>'+
- '<div class="card-intro-info"><div class="card-title-row"><h2 title="'+safe(r.name)+'">'+safe(r.name)+'</h2>'+
- '<div class="card-tag-row"><span class="class-tag" title="'+safe(r.boatClass||'VIRTUAL REGATTA')+'"><span class="foil-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v15M12 4 5 16h7M12 7l6 9h-6M3 19c3 2 6 2 9 0 3 2 6 2 9 0"/></svg></span>'+safe(tag.label)+'</span>'+
- (mode?'<span class="vsr-badge vsr-'+r.vsr+(r.vsr==='hc'?' hc':'')+'" title="Importance VSR : '+(VSR_PRIORITY(r.vsr)+1)+' sur 4"><span class="foil-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 9 10-9 10-9-10zM3 12h18M12 2l3 10-3 10-3-10z"/></svg></span>'+safe(vsrTag.label)+'</span>':'')+'</div></div>'+
- '<div class="card-boat">'+safe(r.boat)+(r.routeType?' · '+safe(ROUTE_TYPES[r.routeType]):'')+(r.kind==='record'?' · COURSE RECORD':r.kind==='event'?' · COMPÉTITION':r.eventId?' · ÉTAPE'+(r.joker?' JOKER':''):'')+'</div>'+
- '<div class="card-status-row"><span class="badge-status">'+
- (isLive?'<span class="live-neon" role="img" aria-label="En direct"><svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2.5" aria-hidden="true"><path d="M8.7 7.4a9.6 9.6 0 0 0 0 13.2M19.3 7.4a9.6 9.6 0 0 1 0 13.2M5.2 3.5a15 15 0 0 0 0 21M22.8 3.5a15 15 0 0 1 0 21" /><circle cx="14" cy="14" r="2" fill="currentColor" stroke="none"/></svg></span>':'')+
- statusTitle[status]+'</span>'+(departsToday?'<span class="start-today-flag" title="Départ aujourd’hui, dans le fuseau de la course">🏁 DÉPART AUJOURD’HUI</span>':'')+'</div></div></div>'+
- raceClockMarkup(r)+'<div class="card-stats">'+
- (r.kind!=='record'&&(r.start||r.end)&&status!=='dnf'?'<span class="journey-timeline">'+
- (r.start?'<span class="stat-chip departure-chip">DÉPART '+safe(dateTimeFR(r.start,r.startTime))+'</span>':'')+
- (r.start&&r.end?'<span class="journey-arrow" aria-hidden="true"><svg viewBox="0 0 28 20" width="25" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 10h23m-8-7 8 7-8 7"/></svg></span>':'')+
- (r.end?'<span class="stat-chip arrival-chip">ARRIVÉE '+safe(dateTimeFR(r.end,r.endTime))+'</span>':'')+
- '</span>':'')+
- (r.kind!=='record'&&r.duration?'<span class="stat-chip duration-chip">⏱ '+safe(r.duration)+'</span>':'')+
- (r.kind!=='record'&&validEquipment(r.equipment)?'<span class="stat-chip equipment">ÉQUIPEMENT · '+safe(equipmentModes[r.equipment])+'</span>':'')+
- (r.kind!=='record'&&moneyNumber(r.gainPoints)?'<span class="stat-chip reward-points">⭐ +'+safe(Number(r.gainPoints).toLocaleString('fr-FR'))+' POINTS VSR</span>':'')+
- (r.kind!=='record'&&moneyNumber(r.gainCredits)?'<span class="stat-chip reward-credits">🪙 +'+safe(Number(r.gainCredits).toLocaleString('fr-FR'))+' CRÉDITS VR</span>':'')+'</div>'+
- (r.kind==='record'?recordCardContent(r):'')+
- (!score.available&&r.kind!=='record'&&(status==='dnf'||status==='finished')?'<p class="score-pending">'+safe(score.reason||'Note en attente')+'</p>':'')+
- (showRecordRanking&&!rankPairs.some(([key])=>r[key])?'<p class="score-pending">Record clôturé · renseigne les classements finaux avec MODIFIER.</p>':'')+
- (rankBlocks?'<div class="rank-grid">'+rankBlocks+'</div>':'')+
- '<div class="card-footer'+(showShots?' with-shots':'')+'">'+
- (showShots?'<div class="shots"><div class="shot"><label>'+(r.kind==='record'?'CAPTURE DU RECORD':'CLASSEMENT FINAL')+'</label><div class="shot-box image-preview">'+imageTag(r.result,'Classement '+r.name)+'</div></div>'+
- '<div class="shot"><label>TRACÉ</label><div class="shot-box image-preview">'+imageTag(r.route,'Tracé '+r.name)+'</div></div></div>':'')+
- '<div class="card-actions"><button type="button" class="btn secondary" data-action="edit">MODIFIER</button><button type="button" class="btn subtle" data-action="png">↓ PNG</button>'+
- (r.kind==='record'&&!r.recordClosed?'<button type="button" class="btn record-close-btn" data-action="record-close" title="Clôturer le record et débloquer les classements finaux">✓ CLÔTURER LE RECORD</button>':'')+
- (r.upcoming?'<button type="button" class="btn calendar-btn" data-action="calendar" title="Ajouter cette course à Apple Calendrier">📅 CALENDRIER</button>':'')+
- '<button type="button" class="btn subtle" data-action="delete">×</button></div></div></div></article>';
+ const attemptStart=record?recordEngine.latestStart(r.attempts)?.date:'';
+ const departsToday=(attemptStart||r.start)===today&&!!today;
+ const classBadge='<span class="class-tag" title="'+safe(r.boatClass||'VIRTUAL REGATTA')+'"><span class="foil-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v15M12 4 5 16h7M12 7l6 9h-6M3 19c3 2 6 2 9 0 3 2 6 2 9 0"/></svg></span>'+safe(tag.label)+'</span>';
+ const vsrBadge=mode?'<span class="vsr-badge vsr-'+r.vsr+(r.vsr==='hc'?' hc':'')+
+  '" title="Importance VSR : '+(VSR_PRIORITY(r.vsr)+1)+' sur 4"><span class="foil-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="m12 2 9 10-9 10-9-10zM3 12h18M12 2l3 10-3 10-3-10z"/></svg></span>'+safe(vsrTag.label)+'</span>':'';
+ return '<article class="card card--columns'+(isLive?' live':'')+
+  (status==='planned'&&r.upcoming?' upcoming':'')+(status==='dnf'?' dnf':'')+
+  (r.kind==='event'?' event':'')+(record?' record':'')+
+  (showRecordRanking?' record-closed':'')+'" data-id="'+safe(r.id)+'" style="'+
+  foilVariables(tag,'class')+';'+foilVariables(vsrTag,'vsr')+'">'+
+  '<div class="card-content"><div class="race-card-layout card-intro">'+
+  '<section class="race-card-left" aria-label="Course, visuel et chronologie">'+
+  '<div class="card-top"><div class="race-icon card-photo">'+
+   (validImage(r.icon)?imageTag(r.icon,'Affiche '+r.name):
+    '<div class="icon-placeholder">⛵</div>')+'</div>'+
+    '<div class="card-status-row">'+statusBadge+'</div></div>'+
+  '<div class="card-intro-info"><div class="card-title-row">'+raceCardMenu(r,status)+
+   '<h2 title="'+safe(r.name)+'">'+safe(r.name)+'</h2></div>'+
+   (subtype?'<div class="race-card-subtype">'+subtype+'</div>':'')+
+   (departsToday?'<span class="start-today-flag" title="Départ aujourd’hui, dans le fuseau de la course">🏁 DÉPART AUJOURD’HUI</span>':'')+
+   raceCardSchedule(r,status)+'</div></section>'+
+  '<section class="race-card-right" aria-label="Caractéristiques, classements et gains">'+
+  '<div class="race-card-meta"><div class="race-card-meta-tags">'+classBadge+
+   (validEquipment(r.equipment)?'<span class="stat-chip equipment">ÉQUIPEMENT · '+
+    safe(equipmentModes[r.equipment])+'</span>':'')+vsrBadge+'</div>'+
+   '<div class="card-boat">'+safe(r.boat)+(r.routeType?' · '+
+    safe(ROUTE_TYPES[r.routeType]):'')+'</div></div>'+
+   rankContent+
+   (record?recordCardContent(r):'')+
+   (!score.available&&!record&&(status==='dnf'||status==='finished')?
+    '<p class="score-pending">'+safe(score.reason||'Note en attente')+'</p>':'')+
+   (showRecordRanking&&!rankPairs.some(([key])=>r[key])?
+    '<p class="score-pending">Record clôturé · renseigne les classements finaux avec MODIFIER.</p>':'')+
+   gains+'</section></div></div></article>';
 }
 
 /* Ajustement dynamique après mise en page : une ligne même pour > 100 000 joueurs. */

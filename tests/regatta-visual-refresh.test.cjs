@@ -255,3 +255,98 @@ test('record race retains selectable VSR level through edit/save and keeps the c
  assert.ok(js.slice(normalizeStart,normalizeEnd).includes("r.vsr=VSR[r.vsr]?r.vsr:''"),
    'record data should preserve VSR values after reload');
 });
+
+test('toolbar offers one manual sync control and a separate score recalculation control',()=>{
+ const dom=new JSDOM(html);
+ try{
+  const doc=dom.window.document;
+  const toolbar=doc.querySelector('.regatta-catalogue-controls .regatta-inline-actions');
+  assert.ok(toolbar);
+  const sync=toolbar.querySelector('#regatta-sync');
+  const recalc=toolbar.querySelector('#recalculate-scores');
+  assert.ok(sync&&recalc);
+  assert.ok(sync.querySelector('svg'));
+  assert.ok(recalc.querySelector('svg'));
+  assert.notEqual(sync.getAttribute('aria-label'),recalc.getAttribute('aria-label'));
+  assert.ok(js.includes("$('regatta-sync').addEventListener('click'"));
+  assert.ok(js.includes("void cloud.syncNow()"));
+  assert.ok(js.includes("$('recalculate-scores').addEventListener('click',openScoreRecalc)"));
+ }finally{dom.window.close();}
+});
+test('Cloud sync notices are overlaid, transient, and not followed by a duplicate button',()=>{
+ const dom=new JSDOM(html);
+ try{
+  const doc=dom.window.document;
+  const overlay=doc.getElementById('regatta-cloud-overlay');
+  assert.ok(overlay);
+  assert.ok(overlay.querySelector('#rapli-shared-status-regatta'));
+  assert.equal(overlay.closest('.regatta-catalogue-controls'),null);
+  assert.equal(overlay.getAttribute('aria-hidden'),'true');
+  assert.ok(css.includes('.regatta-cloud-status[data-visible="true"]'));
+  assert.ok(css.includes('backdrop-filter:blur(17px)'));
+  const bridge=fs.readFileSync('shared/shared-collection.js','utf8');
+  assert.ok(bridge.includes('statusHideTimer = setTimeout'));
+  assert.ok(bridge.includes("level === 'error' ? 6500 : level === 'pending' ? 4800 : 3600"));
+  assert.ok(bridge.includes('async function syncNow()'));
+  assert.ok(bridge.includes('window.RapliSharedCollection={changed,canEdit,refresh:()=>refresh(true),syncNow'));
+  assert.equal(bridge.includes("statusElement.after(button)"),false);
+ }finally{dom.window.close();}
+});
+test('departures show a directional arrow to arrivals without affecting records',()=>{
+ const dom=new JSDOM(html);
+ try{
+  const doc=dom.window.document;
+  assert.ok(!doc.body.textContent.includes('MES COURSES / RACE ARCHIVE'));
+  const start=js.indexOf('function card(r){');
+  const end=js.indexOf('/* Ajustement dynamique',start);
+  assert.ok(start>=0&&end>start);
+  const helpers={
+   raceStatus:row=>row.mockStatus,
+   tagAppearance:(kind)=>({
+    primary:'#008fa1',secondary:'#e5fcfb',accent:'#ffe7f0',
+    border:'#287cb5',text:'#14395d',label:kind==='class'?'IMOCA FOIL':'VSR FOIL'
+   }),
+   foilVariables:(a,k)=>'--'+k+'-tag:'+a.primary,
+   VSR:{hc:'HORS CATÉGORIE'},VSR_PRIORITY:()=>0,
+   statusTitle:{live:'COURSE EN COURS',planned:'À VENIR',finished:'TERMINÉE',
+    dnf:'DNF',record:'COURSE RECORD','record-live':'RECORD EN COURS',
+    'record-closed':'RECORD CLÔTURÉ'},
+   timeEngine:{wallAt:()=>({date:'2000-01-01'})},
+   recordEngine:{latestStart:()=>({date:''})},
+   scoreView:()=>({available:false,reason:''}),
+   rankHtml:()=>'',podiumMedalFor:()=>'',rankPairs:[],
+   safe:value=>String(value??''),validImage:value=>String(value??'').startsWith('data:image'),
+   imageTag:()=>'',recordCardContent:()=>'',equipmentModes:{},ROUTE_TYPES:{},
+   moneyNumber:()=>false,validEquipment:()=>false,dateTimeFR:(d,t)=>d+' '+t,
+   raceClockMarkup:()=>''
+  };
+  const card=new Function('ctx','with(ctx){'+js.slice(start,end)+';return card;}')(helpers);
+  const common={mockStatus:'finished',kind:'race',name:'Course',boatClass:'IMOCA',
+   vsr:'hc',boat:'Sail',start:'2026-11-01',startTime:'13:02',
+   end:'2026-11-11',endTime:'04:34'};
+  const completed=card(common);
+  assert.ok(completed.includes('class="journey-arrow"'));
+  assert.ok(completed.indexOf('DÉPART 2026-11-01')<completed.indexOf('class="journey-arrow"'));
+  assert.ok(completed.indexOf('class="journey-arrow"')<completed.indexOf('ARRIVÉE 2026-11-11'));
+  assert.ok(!card({...common,end:'',endTime:''}).includes('class="journey-arrow"'));
+  assert.ok(!card({...common,mockStatus:'dnf'}).includes('class="journey-arrow"'));
+  assert.ok(!card({...common,kind:'record',mockStatus:'record-closed'}).includes('class="journey-arrow"'));
+ }finally{dom.window.close();}
+});
+test('premium gradients preserve meaning of original ranking and chip colors',()=>{
+ const tokens=[
+  '.card .rank-grid .rank-plate.rank-main',
+  '.card .rank-grid .rank-plate.rank-national',
+  '.card .rank-grid .rank-plate.rank-department',
+  '.card .rank-grid .rank-plate.rank-city',
+  '.card .rank-grid .rank-plate.rank-team',
+  '.card .stat-chip.departure-chip','.card .stat-chip.arrival-chip',
+  '.card .stat-chip.duration-chip','.card .stat-chip.equipment',
+  '.card .stat-chip.reward-points','.card .stat-chip.reward-credits'
+ ];
+ for(const token of tokens)assert.ok(css.includes(token),token);
+ assert.ok(css.includes('background:linear-gradient(115deg,#093b56'));
+ assert.ok(css.includes('linear-gradient(113deg,#9bcfb6'));
+ assert.ok(css.includes('linear-gradient(112deg,#fff5ce'));
+ assert.ok(css.includes('linear-gradient(112deg,#e9f8e8'));
+});

@@ -467,7 +467,8 @@ function raceSearchContext(r){
   kind:record?'course record':r.kind==='event'?'compétition':
     r.eventId?'étape'+(r.joker?' joker':''):'',
   routeType:ROUTE_TYPES[r.routeType]||'',
-  vsr:VSR[r.vsr]||'',
+  vsr:tagAppearance('vsr',r.vsr,VSR[r.vsr]||'').label,
+  boatDisplay:tagAppearance('class',r.boatClass,r.boatClass||'VIRTUAL REGATTA').label,
   timezone:zoneName(r),
   equipment:equipmentModes[r.equipment]||'',
   ranksVisible,
@@ -1153,7 +1154,8 @@ function wrap(ctx,text,width,n){let result=[],line='';for(const word of String(t
 async function exportPNG(r){
  try{
   if(document.fonts?.ready)await document.fonts.ready;
-  const [im,ranking,route]=await Promise.all(imageKeys.map(k=>picture(r[k])));
+  const hideUnfinishedShots=['live','record-live','planned','record'].includes(raceStatus(r));
+  const [im,ranking,route]=await Promise.all(imageKeys.map((k,i)=>picture(i>0&&hideUnfinishedShots?'':r[k])));
   // Compact editorial export: only the colour strip, poster and race information.
   // Images keep their own ratio; the main artwork stays inside a 16:9 area.
   const W=1200,STRIP=8,PHOTO=675,SHOT_H=(ranking||route)?434:0;
@@ -1164,14 +1166,15 @@ async function exportPNG(r){
   const left=46,right=1154;
   // Exporter la même note que sur la tuile (snapshot figé si disponible).
   const pngScore=scoreView(r),pngHasScore=pngScore.available&&!!r.rank;
-  const tag=getClassTagColor(r.boatClass);
-  const boatLabel=(r.boatClass||'VIRTUAL REGATTA').toUpperCase().slice(0,28);
+  const tag=tagAppearance('class',r.boatClass,r.boatClass||'VIRTUAL REGATTA');
+  const vsrTag=tagAppearance('vsr',r.vsr,VSR[r.vsr]||'');
+  const boatLabel=tag.label.toUpperCase().slice(0,35);
   ctx.font='800 18px Poppins,sans-serif';
   const tagWidth=Math.min(295,Math.max(110,ctx.measureText(boatLabel).width+28));
   let vsrWidth=0;
   if(VSR[r.vsr]){
    ctx.font='900 16px Poppins,sans-serif';
-   vsrWidth=Math.min(230,Math.max(80,ctx.measureText(VSR[r.vsr]).width+29));
+   vsrWidth=Math.min(230,Math.max(80,ctx.measureText(vsrTag.label).width+29));
   }
   const tagsWidth=tagWidth+(vsrWidth?10+vsrWidth:0);
   // Place class + VSR immediately next to a short title. Longer titles wrap
@@ -1207,16 +1210,17 @@ async function exportPNG(r){
   const y=STRIP+PHOTO;
   ctx.fillStyle='#123648';ctx.font='900 39px Poppins,sans-serif';
   titleLines.forEach((line,i)=>ctx.fillText(line,left,y+titleBase+i*titleStep,right-left));
-  ctx.fillStyle=tag;ctx.fillRect(tagsX,y+tagsTop,tagWidth,39);
-  ctx.fillStyle=classTextColor(tag);ctx.font='800 18px Poppins,sans-serif';
-  ctx.fillText(boatLabel,tagsX+12,y+tagsTop+26,tagWidth-24);
-  if(vsrWidth){
-   const vsrLabel=VSR[r.vsr],vsrX=tagsX+tagWidth+10;
-   const vsrColor=getVSRTagColor(r.vsr);
-   ctx.fillStyle=vsrColor;ctx.fillRect(vsrX,y+tagsTop,vsrWidth,39);
-   ctx.fillStyle=classTextColor(vsrColor);ctx.font='900 16px Poppins,sans-serif';
-   ctx.fillText(vsrLabel,vsrX+12,y+tagsTop+26,vsrWidth-23);
-  }
+  const paintFoil=(appearance,x,width,label,fontSize)=>{
+   ctx.fillStyle=appearance.border;ctx.fillRect(x,y+tagsTop,width,39);
+   const foil=ctx.createLinearGradient(x,0,x+width,0);
+   foil.addColorStop(0,appearance.primary);foil.addColorStop(.32,appearance.secondary);
+   foil.addColorStop(.69,appearance.accent);foil.addColorStop(1,appearance.primary);
+   ctx.fillStyle=foil;ctx.fillRect(x+2,y+tagsTop+2,width-4,35);
+   ctx.fillStyle=appearance.text;ctx.font='900 '+fontSize+'px Poppins,sans-serif';
+   ctx.fillText(label,x+12,y+tagsTop+26,width-24);
+  };
+  paintFoil(tag,tagsX,tagWidth,boatLabel,18);
+  if(vsrWidth)paintFoil(vsrTag,tagsX+tagWidth+10,vsrWidth,vsrTag.label,16);
   if(r.boat){
    ctx.fillStyle='#728995';ctx.font='700 18px Poppins,sans-serif';
    wrap(ctx,r.boat,right-left,1).forEach(t=>ctx.fillText(t,left,y+boatY));

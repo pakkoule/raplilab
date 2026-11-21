@@ -9,6 +9,7 @@
   <link rel="icon" type="image/x-icon" sizes="16x16 32x32" href="/assets/rapli-archives-favicon.ico">
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=20261117">
   <link rel="manifest" href="/site.webmanifest">
+  <link rel="stylesheet" href="regatta-palette.css">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Rapli Lab">
@@ -3048,6 +3049,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
           <div class="tabs" role="tablist" aria-label="Collection">
             <button type="button" role="tab" aria-selected="true" class="tab active" data-view="own">OWN <b id="tabOwnCount">0</b></button>
             <button type="button" role="tab" aria-selected="false" class="tab" data-view="wishlist">WISHLIST <b id="tabWishCount">0</b></button>
+            <a role="tab" aria-selected="false" class="tab regatta-main-tab" href="../#regatta" target="_top" title="Rapli Regatta — journal de courses">REGATTA <span aria-hidden="true">⛵</span></a>
           </div>
         </div>
         <section id="rapliSharedLoading" aria-labelledby="rapliSharedLoadingTitle" aria-live="polite" data-status="loading">
@@ -3185,8 +3187,34 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
   <dialog id="logoDialog" class="modal small" aria-labelledby="logoDialogTitle">
     <div class="modal-header"><div><span class="modal-kicker">RAPLI SPORTS / IDENTITÉS VISUELLES</span><h2 id="logoDialogTitle" class="modal-title">Bibliothèque de logos</h2></div><button type="button" class="close-modal" data-close="logoDialog" aria-label="Fermer">×</button></div>
     <div class="modal-body">
-      <div class="logo-tabs"><button type="button" class="logo-tab" id="appearanceSettingsBtn" data-logo-type="appearance">Couleurs &amp; variations</button><button type="button" class="logo-tab active" data-logo-type="brand">Marques</button><button type="button" class="logo-tab" data-logo-type="team">Équipes</button><button type="button" class="logo-tab" data-logo-type="rainbow">Rainbows</button><button type="button" class="logo-tab" data-logo-type="rookie">Rookie / RC</button><button type="button" class="logo-tab" data-logo-type="athlete">Portraits athlètes</button><button type="button" class="logo-tab" data-logo-type="nationality">Pays</button><button type="button" class="logo-tab" data-logo-type="sport">Sports</button><button type="button" class="logo-tab" data-logo-type="grading">Organismes de grading</button><button type="button" class="logo-tab" data-logo-type="tag">Tags / variations</button><button type="button" class="logo-tab" data-logo-type="labels">Étiquettes</button><button type="button" class="logo-tab" data-logo-type="collector">Style des badges</button></div>
+      <div class="logo-tabs"><button type="button" class="logo-tab" id="appearanceSettingsBtn" data-logo-type="appearance">Couleurs &amp; variations</button><button type="button" class="logo-tab" data-logo-type="regatta">⛵ Regatta</button><button type="button" class="logo-tab active" data-logo-type="brand">Marques</button><button type="button" class="logo-tab" data-logo-type="team">Équipes</button><button type="button" class="logo-tab" data-logo-type="rainbow">Rainbows</button><button type="button" class="logo-tab" data-logo-type="rookie">Rookie / RC</button><button type="button" class="logo-tab" data-logo-type="athlete">Portraits athlètes</button><button type="button" class="logo-tab" data-logo-type="nationality">Pays</button><button type="button" class="logo-tab" data-logo-type="sport">Sports</button><button type="button" class="logo-tab" data-logo-type="grading">Organismes de grading</button><button type="button" class="logo-tab" data-logo-type="tag">Tags / variations</button><button type="button" class="logo-tab" data-logo-type="labels">Étiquettes</button><button type="button" class="logo-tab" data-logo-type="collector">Style des badges</button></div>
       <section id="appearanceSettingsPanel" class="appearance-dialog" aria-label="Couleurs et variations" hidden></section>
+      <section id="regattaPalettePanel" aria-label="Identité visuelle de Rapli Regatta" hidden>
+        <div class="regatta-palette-hero">
+          <strong>⛵ RAPLI REGATTA · PERSONNALISATION VISUELLE</strong>
+          <p>Retrouve ici les réglages graphiques des courses. Les couleurs sont appliquées à Regatta, sans recréer les fiches ni dupliquer les données. Les couleurs conservent leur synchronisation Supabase.</p>
+          <div class="regatta-palette-status" id="regattaPaletteStatus" role="status" aria-live="polite">Chargement des réglages…</div>
+          <div class="regatta-palette-tools">
+            <button type="button" id="regattaPaletteRefresh">↻ ACTUALISER</button>
+            <label class="regatta-palette-compact"><input id="regattaPaletteCompact" type="checkbox" disabled> Affichage compact des courses (sur cet appareil)</label>
+          </div>
+        </div>
+        <div class="regatta-palette-section">
+          <h3>COULEUR GLOBALE DES CLASSES</h3>
+          <p>Modifie la couleur commune à toutes les classes de bateau. Cela réinitialise leurs couleurs particulières après confirmation.</p>
+          <label class="regatta-palette-global">Couleur par défaut <input id="regattaPaletteGlobal" type="color" value="#008fa1" disabled></label>
+        </div>
+        <div class="regatta-palette-section">
+          <h3>CLASSES DE BATEAUX</h3>
+          <p>Une couleur spécifique par classe, appliquée à toutes ses courses.</p>
+          <div id="regattaPaletteClasses"></div>
+        </div>
+        <div class="regatta-palette-section">
+          <h3>CATÉGORIES VSR</h3>
+          <p>Hors Catégorie, VSR 1, VSR 2 et VSR 3 : l'ordre de priorité reste inchangé.</p>
+          <div id="regattaPaletteVsr"></div>
+        </div>
+      </section>
       <section id="rainbowLibraryPanel" class="rainbow-library-panel" aria-label="Gestion des Rainbows" hidden><div class="rainbow-library-intro"><strong>GÉRER LES RAINBOWS</strong><p>Crée et modifie les checklists ici. Les tuiles restent consultables depuis la vue 🌈 RAINBOWS de la collection.</p></div><div class="rainbow-library-toolbar"><button id="newRainbowBtn" class="button button-primary" type="button">＋ CRÉER UN RAINBOW</button><button id="viewRainbowTilesBtn" class="button button-soft" type="button">VOIR LES TUILES ↗</button></div><div id="rainbowManageOverview" class="rainbow-library-summary" aria-live="polite"></div><div id="rainbowManageList" class="rainbow-library-list"></div></section>
       <div class="logo-create" id="logoCreatePanel"><p class="logo-help" id="logoCreateHelp">Associe une image à une marque ou une équipe : son logo s'affichera automatiquement sur toutes les cartes correspondantes.</p><div class="logo-create-row"><div class="input-group"><label id="logoNameLabel" for="logoName">Nom de la marque</label><select id="logoAthletePicker" class="select saved-value-picker" aria-label="Choisir un athlète déjà présent dans la collection" hidden><option value="">Choisir un athlète enregistré…</option></select><select id="logoTeamPicker" class="select saved-value-picker" aria-label="Choisir une équipe enregistrée" hidden><option value="">Choisir une équipe…</option></select><select id="logoTagPicker" class="select saved-value-picker" aria-label="Choisir un tag enregistré" hidden><option value="">Choisir un tag…</option></select><select id="logoGroupPicker" class="select saved-value-picker" aria-label="Choisir un pays ou un sport" hidden><option value="">Choisir une catégorie…</option></select><input class="input" id="logoName" list="logoNamesList" maxlength="100" placeholder="Topps"><datalist id="logoNamesList"></datalist></div><div class="input-group"><label id="logoImageLabel">Image du logo</label><label class="logo-file" id="logoFileLabel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 16V4m-5 5 5-5 5 5M4 17v4h16v-4"/></svg><span id="logoFileText">Choisir</span><input type="file" id="logoFileInput" accept="image/png,image/jpeg,image/webp"></label></div><button id="cropPortraitBtn" type="button" class="button button-soft" hidden>✂ Recadrer</button><button id="saveLogoBtn" type="button" class="button button-primary">Ajouter</button></div>
       <label id="athleteNationalityWrap" class="sports-athlete-country-editor" for="athleteNationality" hidden>
@@ -4973,7 +5001,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         document.querySelectorAll('[data-wishlist-dream]').forEach(button=>{
           button.setAttribute('aria-pressed',String((button.dataset.wishlistDream==='true')===$('filterDream').checked));
         });
-        document.querySelectorAll('.tab').forEach(t=>{
+        document.querySelectorAll('.tab[data-view]').forEach(t=>{
           const active=t.dataset.view===currentView&&sportsGalleryLayout!=='rainbows';
           t.classList.toggle('active',active);
           t.setAttribute('aria-selected',String(active));
@@ -5309,10 +5337,12 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         savedCountryTags().forEach(item=>list.append(new Option(item,item)));
       }
       function setLogoType(type){
-        if(!['brand','team','rainbow','rookie','athlete','nationality','sport','grading','tag','labels','collector','appearance'].includes(type))type='brand';
+        if(!['brand','team','rainbow','rookie','athlete','nationality','sport','grading','tag','labels','collector','appearance','regatta'].includes(type))type='brand';
         if(type==='appearance'&&!isRapliEditor())return;
         $('appearanceSettingsPanel').hidden=type!=='appearance';
         if(type==='appearance')window.RapliAppearance?.open();else window.RapliAppearance?.leave();
+        $('regattaPalettePanel').hidden=type!=='regatta';
+        if(type==='regatta')window.RapliRegattaPalette?.open();else window.RapliRegattaPalette?.close();
         logoType=type;pendingLogoPhoto='';countryDraft={tileImage:null,catalogImage:null};pendingPortraitCrop={...PORTRAIT_CROP_DEFAULT};$('athleteNationality').value='';$('logoName').value='';$('logoFileInput').value='';$('logoFileText').textContent='Choisir';
         $('logoAthletePicker').hidden=type!=='athlete';$('logoAthletePicker').value='';
         $('athleteNationalityWrap').hidden=type!=='athlete';
@@ -5328,7 +5358,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         if(type==='tag')renderTagBrandOptions();
         document.querySelectorAll('#tagCategoryPanel [data-tag-category]').forEach(box=>box.checked=false);
         $('logoImageLabel').textContent=['tag','grading'].includes(type)?'Image du logo (facultative)':'Image du logo';
-        const styleTab=type==='collector',labelsTab=type==='labels',rainbowTab=type==='rainbow',customTab=styleTab||labelsTab||rainbowTab||type==='appearance';
+        const styleTab=type==='collector',labelsTab=type==='labels',rainbowTab=type==='rainbow',customTab=styleTab||labelsTab||rainbowTab||type==='appearance'||type==='regatta';
         $('rainbowLibraryPanel').hidden=!rainbowTab;
         $('logoCreatePanel').hidden=customTab;$('logoList').hidden=customTab;
         $('collectorSettingsPanel').hidden=!styleTab;$('labelSettingsPanel').hidden=!labelsTab;
@@ -5344,7 +5374,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
           : 'Associe un logo à une marque ou une équipe pour l’afficher sur les cartes correspondantes.';
         $('saveLogoBtn').textContent=type==='rookie'?'Enregistrer le logo RC':type==='athlete'?'Enregistrer le portrait':(type==='nationality'?'Enregistrer le tag pays':type==='sport'?'Enregistrer l’icône':type==='grading'?'Enregistrer le style du grading':type==='tag'?'Enregistrer le tag':'Ajouter');
         document.querySelectorAll('.logo-tab').forEach(b=>b.classList.toggle('active',b.dataset.logoType===type));
-        if(styleTab)openCollectorSettings();else if(labelsTab)renderLabelEditors();else if(rainbowTab)renderRainbowManager();else if(type!=='appearance')renderLogos();
+        if(styleTab)openCollectorSettings();else if(labelsTab)renderLabelEditors();else if(rainbowTab)renderRainbowManager();else if(!['appearance','regatta'].includes(type))renderLogos();
         if(type==='grading')syncGradingEditor(true);
         if(type==='nationality')syncCountryIconEditor(true);
         if(type==='athlete')syncAthleteCountry();
@@ -5496,7 +5526,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
       }
       document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>closeModal(b.dataset.close)));
       document.querySelectorAll('dialog').forEach(d=>{d.addEventListener('close',()=>{if(!document.querySelector('dialog[open]'))document.body.style.overflow=''})});
-      document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
+      document.querySelectorAll('.tab[data-view]').forEach(t=>t.addEventListener('click',()=>{
         sportsNavigationHistory.length=0;
         currentView=t.dataset.view;
         if(sportsGalleryLayout==='rainbows'){
@@ -6055,9 +6085,19 @@ function rapliModuleReady(){
         notify:showToast
       };
 
+      window.addEventListener('message',event=>{
+        if(event.source!==window.parent||event.origin!==location.origin||event.data?.type!=='RAPLI_LAB_NAVIGATION')return;
+        if(!['own','wishlist'].includes(event.data.view))return;
+        currentView=event.data.view;
+        sportsNavigationHistory.length=0;
+        if(sportsGalleryLayout==='rainbows'){sportsGalleryLayout='details';saveSportsGalleryLayout('details');}
+        sportsGallerySelected=null;sportsGalleryPage=1;
+        renderAll();
+      });
       initialize().then(rapliModuleReady).catch(err=>console.warn('Rapli module startup',err));
     })();
   </script>
+<script src="regatta-palette.js" defer></script>
 <script src="card-tools.js" defer></script>
 <script src="color-theme.js" defer></script>
 <script src="collection-extras-ui.js" defer></script>

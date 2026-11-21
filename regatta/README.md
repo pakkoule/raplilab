@@ -30,14 +30,18 @@ Module autonome et seul espace actif de Rapli Lab dans la PR #4.
 
 ## Réglages globaux des couleurs
 
-- Troisième vue interne **COULEURS DES CLASSES** : choix d’une **couleur générale** (initialement turquoise), puis possibilité de personnaliser chaque classe IMOCA, ULTIM, Class40, Ocean Fifty, Mini 6.50 ou toute classe enregistrée. Sous les bateaux, gestion indépendante des couleurs des **quatre catégories VSR**, avec palette par défaut (Hors Catégorie dorée) et hiérarchie fixe.
+- Palette **ÉTIQUETTES FOIL · BATEAUX & VSR** accessible avec la roue dentée : couleur principale, reflet, accent irisé, bordure, couleur du texte et libellé affiché personnalisables pour chaque classe de bateau et catégorie VSR. Les icônes vectorielles monochromes utilisent la couleur de texte choisie ; le rang réel des catégories VSR ne change jamais.
 - Changer la couleur générale **applique la nouvelle couleur à toutes les courses** et, après confirmation, réinitialise les exceptions propres aux classes. Changer une classe met à jour simultanément toutes les courses portant cette classe (en ignorant les différences de casse et de présentation).
-- Les anciens champs `classColor` par course sont conservés dans les données historiques mais **ne pilotent plus l’affichage**. Les couleurs des tuiles et des exports PNG proviennent exclusivement des réglages globaux ; le contraste du texte est calculé automatiquement.
+- Les anciens champs `classColor` par course restent conservés. Les réglages historiques `classColors` et `vsrColors` restent compatibles ; les nouveaux champs optionnels `classFoils` et `vsrFoils` mémorisent uniquement le style visuel (sans changer la classification des courses). Tuiles et PNG réutilisent les couleurs et libellés personnalisés.
 - Réglages enregistrés localement sous `rapli-regatta-class-colors-v1` et synchronisés sur Supabase via l’objet de paramètres de la collection. Les réglages par défaut ne créent pas de faux contenu dans un nouveau compte. Import/export JSON inclut les couleurs (version 2) et les anciens JSON restent importables.
 
 ## Navigation, statistiques et exports
 
 - **Ordre automatique** : courses en cours, puis à venir, puis autres courses ; à l'intérieur de chaque groupe, départ le plus récent d'abord. Plus de barre de filtres ou de sélecteur de tri.
+- La barre de recherche, les commandes d'action et le profil sont réunis sur **une seule ligne**, y compris sur iPhone. Logo Regatta et onglets COURSES / STATISTIQUES / PALMARÈS partagent également une ligne.
+- Le bouton de changement de vue compact est supprimé. Les boutons d'action adoptent un contour foil bleu/rose Virtual Regatta et des hauteurs harmonisées, sans modifier les boutons propres aux notes ni le comportement des onglets.
+- Les tuiles en cours ou à venir, **y compris les records non clôturés**, cachent les captures de classement et de tracé (données conservées, pas supprimées). Les exports PNG de ces courses suivent la même règle. Les captures des courses terminées et des records clôturés restent visibles.
+- Les courses en direct affichent un pictogramme néon clignotant (signal de diffusion) ; animation désactivée si la réduction des animations est demandée par l'appareil. L'information de fuseau « 🌐 Heure française · Paris » est masquée sur les tuiles sans changer les calculs horaires.
 - **Recherche universelle** plein format : nom de course, bateau, classe, type de parcours, statut, VSR, équipement, dates/heures, fuseau, durée, rangs et effectifs, note visible, gains VSR/VR et détails des tentatives de record. Accents et casse ignorés, mots combinables, pagination et raccourci Ctrl/Cmd+K conservés. Le contenu textuel *à l'intérieur des images* n'est pas indexé.
 - Onglet interne **STATISTIQUES** enrichi, calculé directement à partir des courses de la collection :
   - **Tableau de bord** : total, terminées, en cours, à venir.

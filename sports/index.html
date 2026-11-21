@@ -6138,8 +6138,8 @@ function rapliModuleReady(){
         if(sportsGalleryLayout==='rainbows'){sportsGalleryLayout='details';saveSportsGalleryLayout('details');}
         sportsGallerySelected=null;sportsGalleryPage=1;
         renderAll();
-        if(event.data.palette==='regatta'){
-          setLogoType('regatta');openModal('logoDialog');
+        if(event.data.palette==='regatta'||event.data.palette==='jersey-font'){
+          setLogoType(event.data.palette);openModal('logoDialog');
         }
       });
       initialize().then(rapliModuleReady).catch(err=>console.warn('Rapli module startup',err));

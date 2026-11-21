@@ -183,7 +183,7 @@ function tagAppearance(kind,key,label){
   primary,secondary:override.secondary||foilMix(primary,'#ffffff',.40),
   accent:override.accent||foilMix(primary,'#f9dced',.62),
   border:override.border||foilMix(primary,'#122e53',.26),
-  text:override.text||classTextColor(primary),
+  text:override.text||classTextColor(foilMix(primary,'#ffffff',.58)),
   label:override.label||label
  };
 }

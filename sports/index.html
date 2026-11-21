@@ -5535,6 +5535,10 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
           sportsGalleryLayout='details';saveSportsGalleryLayout('details');
         }
         sportsGallerySelected=null;sportsGalleryPage=1;renderAll();
+        // Keep the global route in sync without reloading this iframe or its photos.
+        if(window.top!==window&&window.parent?.location?.origin===location.origin){
+          if(window.parent.location.hash!=='#'+currentView)window.parent.location.hash=currentView;
+        }
       }));
       $('newRainbowBtn').addEventListener('click',()=>{if(requireRapliEditor())openRainbow();});
       $('viewRainbowTilesBtn').addEventListener('click',()=>{
@@ -6090,6 +6094,7 @@ function rapliModuleReady(){
       window.addEventListener('message',event=>{
         if(event.source!==window.parent||event.origin!==location.origin||event.data?.type!=='RAPLI_LAB_NAVIGATION')return;
         if(!['own','wishlist'].includes(event.data.view))return;
+        if(event.data.view===currentView&&event.data.palette!=='regatta')return;
         currentView=event.data.view;
         sportsNavigationHistory.length=0;
         if(sportsGalleryLayout==='rainbows'){sportsGalleryLayout='details';saveSportsGalleryLayout('details');}

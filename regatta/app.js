@@ -408,8 +408,12 @@ function card(r){
  '<div class="card-tag-row"><span class="class-tag" title="'+safe(r.boatClass||'VIRTUAL REGATTA')+'"><span class="foil-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v15M12 4 5 16h7M12 7l6 9h-6M3 19c3 2 6 2 9 0 3 2 6 2 9 0"/></svg></span>'+safe(tag.label)+'</span>'+
  (mode?'<span class="vsr-badge vsr-'+r.vsr+(r.vsr==='hc'?' hc':'')+'" title="Importance VSR : '+(VSR_PRIORITY(r.vsr)+1)+' sur 4"><span class="foil-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="m12 2 9 10-9 10-9-10zM3 12h18M12 2l3 10-3 10-3-10z"/></svg></span>'+safe(vsrTag.label)+'</span>':'')+'</div></div>'+
  '<div class="card-boat">'+safe(r.boat)+(r.routeType?' · '+safe(ROUTE_TYPES[r.routeType]):'')+(r.kind==='record'?' · COURSE RECORD':r.kind==='event'?' · COMPÉTITION':r.eventId?' · ÉTAPE'+(r.joker?' JOKER':''):'')+'</div>'+
- raceClockMarkup(r)+'<div class="card-stats">'+(r.kind!=='record'&&r.start?'<span class="stat-chip">DÉPART '+safe(dateTimeFR(r.start,r.startTime))+'</span>':'')+
- (r.kind!=='record'&&status!=='dnf'&&r.end?'<span class="stat-chip arrival-chip">ARRIVÉE '+safe(dateTimeFR(r.end,r.endTime))+'</span>':'')+
+ raceClockMarkup(r)+'<div class="card-stats">'+
+ (r.kind!=='record'&&(r.start||r.end)&&status!=='dnf'?'<span class="journey-timeline">'+
+ (r.start?'<span class="stat-chip departure-chip">DÉPART '+safe(dateTimeFR(r.start,r.startTime))+'</span>':'')+
+ (r.start&&r.end?'<span class="journey-arrow" aria-hidden="true"><svg viewBox="0 0 28 20" width="25" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 10h23m-8-7 8 7-8 7"/></svg></span>':'')+
+ (r.end?'<span class="stat-chip arrival-chip">ARRIVÉE '+safe(dateTimeFR(r.end,r.endTime))+'</span>':'')+
+ '</span>':'')+
  (r.kind!=='record'&&r.duration?'<span class="stat-chip duration-chip">⏱ '+safe(r.duration)+'</span>':'')+
  (r.kind!=='record'&&validEquipment(r.equipment)?'<span class="stat-chip equipment">ÉQUIPEMENT · '+safe(equipmentModes[r.equipment])+'</span>':'')+
  (r.kind!=='record'&&moneyNumber(r.gainPoints)?'<span class="stat-chip reward-points">⭐ +'+safe(Number(r.gainPoints).toLocaleString('fr-FR'))+' POINTS VSR</span>':'')+
@@ -1614,6 +1618,23 @@ for(const id of ['regatta-pagination-top','regatta-pagination-bottom'])$(id).add
  if(!Number.isInteger(next)||next<1||next>pageCount)return;
  regattaPage=next;render({searchOnly:true});
  $('regatta-pagination-top').scrollIntoView?.({behavior:'smooth',block:'start'});
+});
+$('regatta-sync').addEventListener('click',()=>{
+ const cloud=window.RapliSharedCollection;
+ if(!cloud?.syncNow){
+  const notice=$('rapli-shared-status-regatta');
+  const overlay=$('regatta-cloud-overlay');
+  if(notice&&overlay){
+   notice.textContent='Synchronisation en cours d’initialisation…';
+   overlay.dataset.visible='true';overlay.dataset.status='pending';
+   overlay.setAttribute('aria-hidden','false');
+   setTimeout(()=>{if(overlay.dataset.visible==='true'){
+    overlay.dataset.visible='false';overlay.setAttribute('aria-hidden','true');
+   }},3200);
+  }
+  return;
+ }
+ void cloud.syncNow();
 });
 $('recalculate-scores').addEventListener('click',openScoreRecalc);
 $('score-recalc-confirm').addEventListener('click',confirmScoreRecalc);

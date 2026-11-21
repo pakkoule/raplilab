@@ -122,3 +122,41 @@ test('persistent Regatta collection and search continue unchanged',()=>{
  assert.ok(search.includes('context.boatDisplay'));
  assert.ok(js.includes("boatDisplay:tagAppearance('class'"));
 });
+
+test('actual tile markup omits screenshots for all unfinished statuses, but shows finished captures',()=>{
+ const start=js.indexOf('function card(r){');
+ const stop=js.indexOf('/* Ajustement dynamique',start);
+ assert.ok(start>0&&stop>start);
+ const context={
+  raceStatus:r=>r.mockStatus,
+  tagAppearance:(kind)=>({
+   primary:'#008fa1',secondary:'#e5fcfb',accent:'#ffe7f0',border:'#287cb5',
+   text:'#14395d',label:kind==='class'?'IMOCA FOIL':'VSR FOIL'
+  }),
+  foilVariables:(a,k)=>'--'+k+'-tag:'+a.primary,
+  VSR:{hc:'HORS CATÉGORIE'},VSR_PRIORITY:()=>0,
+  statusTitle:{live:'COURSE EN COURS',planned:'À VENIR',finished:'TERMINÉE',
+   dnf:'DNF',record:'COURSE RECORD','record-live':'RECORD EN COURS','record-closed':'RECORD CLÔTURÉ'},
+  timeEngine:{wallAt:()=>({date:'2001-01-01'})},
+  recordEngine:{latestStart:()=>({date:''})},
+  scoreView:()=>({available:false,reason:''}),
+  rankHtml:()=>'',podiumMedalFor:()=>'',rankPairs:[],
+  safe:v=>String(v??''),validImage:v=>String(v??'').startsWith('data:image'),
+  imageTag:()=>'<img class="capture">',recordCardContent:()=>'<div class="record">REC</div>',
+  equipmentModes:{},ROUTE_TYPES:{},moneyNumber:()=>false,validEquipment:()=>false,
+  dateTimeFR:()=>'',raceClockMarkup:()=>''
+ };
+ const card=new Function('ctx','with(ctx){'+js.slice(start,stop)+';return card;}')(context);
+ for(const status of ['live','record-live','planned','record','finished','dnf','record-closed']){
+  const race={mockStatus:status,kind:status.startsWith('record')?'record':'race',
+   recordClosed:status==='record-closed',name:'Course',boatClass:'IMOCA',vsr:'hc',
+   boat:'Sail',result:'data:image/png;base64,ABC',route:'data:image/png;base64,ABC'};
+  const markup=card(race);
+  const ongoing=['live','record-live','planned','record'].includes(status);
+  assert.equal(markup.includes('<div class="shots">'),!ongoing,status);
+  assert.equal(markup.includes('class="live-neon"'),
+   ['live','record-live'].includes(status),status);
+  assert.ok(markup.includes('IMOCA FOIL')&&markup.includes('VSR FOIL'),status);
+  assert.equal(markup.includes('🌐'),false,status);
+ }
+});

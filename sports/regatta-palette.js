@@ -27,7 +27,7 @@
       showStatus('Ouvre Rapli Lab pour personnaliser Regatta.',true);return;
     }
     const message={type:'RAPLI_REGATTA_PALETTE_REQUEST',id:++requestId,action,...options};
-    const send=()=>frame.contentWindow?.postMessage(message,location.origin);
+    const send=()=>{if(active)frame.contentWindow?.postMessage(message,location.origin);};
     if(!frame.hasAttribute('src')&&frame.dataset.src){
       frame.addEventListener('load',send,{once:true});
       frame.src=frame.dataset.src;
@@ -48,6 +48,9 @@
     const chip=document.createElement('span');
     chip.className='regatta-palette-chip';
     chip.style.setProperty('--regatta-chip',color);
+    const rgb=[1,3,5].map(i=>parseInt(color.slice(i,i+2),16)/255);
+    const luminance=rgb[0]*.2126+rgb[1]*.7152+rgb[2]*.0722;
+    chip.style.color=luminance<.52?'#fff':'#142d40';
     chip.textContent=label;
     left.append(chip);
     if(description){
@@ -120,6 +123,7 @@
   });
   compact.addEventListener('change',()=>apply('update',{kind:'compact',value:compact.checked}));
   refresh.addEventListener('click',()=>{latest=null;showStatus('Actualisation des réglages…');request('read');});
+  byId('logoDialog')?.addEventListener('close',()=>window.RapliRegattaPalette?.close());
   window.RapliRegattaPalette={
     open(){
       active=true;pending=false;latest=null;

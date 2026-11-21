@@ -160,3 +160,64 @@ test('actual tile markup omits screenshots for all unfinished statuses, but show
   assert.equal(markup.includes('🌐'),false,status);
  }
 });
+
+test('header VSR ranking uses the latest saved entry, progression and empty state',()=>{
+ const dom=new JSDOM(html);
+ try{
+  const doc=dom.window.document;
+  const button=doc.getElementById('vsr-header-ranking');
+  assert.ok(button);
+  assert.equal(button.getAttribute('aria-controls'),'stats-panel');
+  assert.ok(button.closest('.regatta-topbar'));
+  const from=js.indexOf('function renderVsrHeaderRanking(){');
+  const to=js.indexOf('function renderVsrRankingHistory(){',from);
+  assert.ok(from>0&&to>from);
+  const context={
+   $:id=>doc.getElementById(id),
+   classSettings:{vsrRankingHistory:[]},
+   rankDateDisplay:value=>value.slice(8,10)+'/'+value.slice(5,7)+'/'+value.slice(0,4)+' · '+value.slice(11)
+  };
+  const update=new Function('context','with(context){'+js.slice(from,to)+';return renderVsrHeaderRanking;}')(context);
+  update();
+  assert.equal(doc.getElementById('vsr-header-ranking-value').textContent,'—');
+  assert.equal(doc.getElementById('vsr-header-ranking-trend').hidden,true);
+  assert.ok(button.getAttribute('aria-label').includes('aucun relevé'));
+  context.classSettings.vsrRankingHistory=[{date:'2026-11-19T13:00',rank:4820}];
+  update();
+  assert.equal(doc.getElementById('vsr-header-ranking-value').textContent,'#4\u202f820');
+  assert.equal(doc.getElementById('vsr-header-ranking-trend').textContent,'1er relevé');
+  context.classSettings.vsrRankingHistory.push({date:'2026-11-20T13:00',rank:4700});
+  update();
+  const trend=doc.getElementById('vsr-header-ranking-trend');
+  assert.equal(trend.dataset.direction,'up');
+  assert.equal(trend.textContent,'▲ 120');
+  assert.ok(button.getAttribute('aria-label').includes('120 places gagnées'));
+  assert.ok(button.getAttribute('aria-label').includes('20/11/2026'));
+  context.classSettings.vsrRankingHistory.push({date:'2026-11-21T13:00',rank:4780});
+  update();
+  assert.equal(trend.dataset.direction,'down');
+  assert.equal(trend.textContent,'▼ 80');
+  context.classSettings.vsrRankingHistory.push({date:'2026-11-21T14:00',rank:4780});
+  update();
+  assert.equal(trend.dataset.direction,'flat');
+  assert.equal(trend.textContent,'=');
+ }finally{dom.window.close();}
+});
+test('the compact foil VSR ranking shortcut navigates to the existing statistics chart',()=>{
+ const dom=new JSDOM(html);
+ try{
+  const doc=dom.window.document;
+  assert.equal(doc.querySelectorAll('#vsr-header-ranking').length,1);
+  assert.ok(doc.getElementById('vsr-ranking-title'));
+  assert.ok(doc.getElementById('vsr-ranking-chart'));
+  assert.equal(doc.querySelector('#vsr-header-ranking').tagName,'BUTTON');
+  assert.equal(doc.querySelector('#vsr-header-ranking-value').textContent,'—');
+  assert.ok(css.includes('--vr-button-border'));
+  assert.ok(css.includes('.regatta-topbar #vsr-header-ranking.vsr-header-ranking'));
+  assert.ok(css.includes('@media(max-width:365px)'));
+  assert.ok(js.includes("$('vsr-header-ranking').addEventListener('click'"));
+  assert.ok(js.includes("selectWorkspace('stats')"));
+  assert.ok(js.includes("heading?.scrollIntoView?.("));
+  assert.ok(js.includes('renderVsrHeaderRanking();'));
+ }finally{dom.window.close();}
+});

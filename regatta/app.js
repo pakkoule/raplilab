@@ -405,8 +405,8 @@ function card(r){
  (isLive?'<span class="live-neon" role="img" aria-label="En direct"><svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2.5" aria-hidden="true"><path d="M8.7 7.4a9.6 9.6 0 0 0 0 13.2M19.3 7.4a9.6 9.6 0 0 1 0 13.2M5.2 3.5a15 15 0 0 0 0 21M22.8 3.5a15 15 0 0 1 0 21" /><circle cx="14" cy="14" r="2" fill="currentColor" stroke="none"/></svg></span>':'')+
  statusTitle[status]+'</span>'+(departsToday?'<span class="start-today-flag" title="Départ aujourd’hui, dans le fuseau de la course">🏁 DÉPART AUJOURD’HUI</span>':'')+'</div>'+
  '<div class="card-content"><div class="card-title-row"><h2 title="'+safe(r.name)+'">'+safe(r.name)+'</h2>'+
- '<div class="card-tag-row"><span class="class-tag" title="'+safe(r.boatClass||'VIRTUAL REGATTA')+'"><span class="foil-symbol" aria-hidden="true">⛵</span>'+safe(tag.label)+'</span>'+
- (mode?'<span class="vsr-badge vsr-'+r.vsr+(r.vsr==='hc'?' hc':'')+'" title="Importance VSR : '+(VSR_PRIORITY(r.vsr)+1)+' sur 4"><span class="foil-symbol" aria-hidden="true">✧</span>'+safe(vsrTag.label)+'</span>':'')+'</div></div>'+
+ '<div class="card-tag-row"><span class="class-tag" title="'+safe(r.boatClass||'VIRTUAL REGATTA')+'"><span class="foil-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v15M12 4 5 16h7M12 7l6 9h-6M3 19c3 2 6 2 9 0 3 2 6 2 9 0"/></svg></span>'+safe(tag.label)+'</span>'+
+ (mode?'<span class="vsr-badge vsr-'+r.vsr+(r.vsr==='hc'?' hc':'')+'" title="Importance VSR : '+(VSR_PRIORITY(r.vsr)+1)+' sur 4"><span class="foil-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="m12 2 9 10-9 10-9-10zM3 12h18M12 2l3 10-3 10-3-10z"/></svg></span>'+safe(vsrTag.label)+'</span>':'')+'</div></div>'+
  '<div class="card-boat">'+safe(r.boat)+(r.routeType?' · '+safe(ROUTE_TYPES[r.routeType]):'')+(r.kind==='record'?' · COURSE RECORD':r.kind==='event'?' · COMPÉTITION':r.eventId?' · ÉTAPE'+(r.joker?' JOKER':''):'')+'</div>'+
  raceClockMarkup(r)+'<div class="card-stats">'+(r.kind!=='record'&&r.start?'<span class="stat-chip">DÉPART '+safe(dateTimeFR(r.start,r.startTime))+'</span>':'')+
  (r.kind!=='record'&&status!=='dnf'&&r.end?'<span class="stat-chip arrival-chip">ARRIVÉE '+safe(dateTimeFR(r.end,r.endTime))+'</span>':'')+
@@ -826,7 +826,7 @@ function renderClassColors(){
   const customized=Object.hasOwn(classSettings.classColors,key)||Object.hasOwn(classSettings.classFoils||{},key);
   return '<div class="class-color-row foil-editor-row"><div class="foil-editor-summary">'+
    '<span class="class-color-preview class-tag foil-preview" style="'+foilVariables(appearance,'class')+'">'+
-   '<span class="foil-symbol" aria-hidden="true">⛵</span>'+safe(appearance.label)+'</span>'+
+   '<span class="foil-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v15M12 4 5 16h7M12 7l6 9h-6M3 19c3 2 6 2 9 0 3 2 6 2 9 0"/></svg></span>'+safe(appearance.label)+'</span>'+
    '<span class="class-color-count">'+count+' course'+(count===1?'':'s')+
    (customized?' · Personnalisé':'')+'</span></div>'+
    fields('class',key,appearance)+'</div>';
@@ -837,7 +837,7 @@ function renderClassColors(){
   return '<div class="class-color-row vsr-color-row foil-editor-row">'+
    '<div class="foil-editor-summary"><span class="vsr-badge foil-preview vsr-'+key+
    '" style="'+foilVariables(appearance,'vsr')+'" title="Priorité '+(i+1)+' sur 4">'+
-   '<span class="foil-symbol" aria-hidden="true">✧</span>'+safe(appearance.label)+'</span>'+
+   '<span class="foil-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="m12 2 9 10-9 10-9-10zM3 12h18M12 2l3 10-3 10-3-10z"/></svg></span>'+safe(appearance.label)+'</span>'+
    '<span class="class-color-count">'+count+' course'+(count===1?'':'s')+
    ' · Priorité '+(i+1)+'</span></div>'+fields('vsr',key,appearance)+'</div>';
  }).join('');

@@ -49,7 +49,7 @@
    .sort((a,b)=>a.name.localeCompare(b.name,'fr',{sensitivity:'base'}));
  const metadata=logos=>fonts(logos).map(row=>({
    id:row.id,name:row.name,format:format(row.format),
-   fileName:String(row.fileName||'').slice(0,140),size:Number(row.size)||0
+   fileName:String(row.fileName||'').slice(0,140),size:Number(row.size)||0,updatedAt:Number(row.updatedAt)||0
  }));
  const find=(logos,id)=>fonts(logos).find(row=>row.id===id)||null;
  const previewText=(name,number)=>{

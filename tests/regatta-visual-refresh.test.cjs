@@ -350,3 +350,61 @@ test('premium gradients preserve meaning of original ranking and chip colors',()
  assert.ok(css.includes('linear-gradient(112deg,#fff5ce'));
  assert.ok(css.includes('linear-gradient(112deg,#e9f8e8'));
 });
+
+
+test('compact Regatta card uses a thumbnail beside the race identity while preserving zoom and photo status',()=>{
+ const start=js.indexOf('function card(r){');
+ const end=js.indexOf('/* Ajustement dynamique',start);
+ assert.ok(start>0&&end>start);
+ const context={
+  raceStatus:r=>r.mockStatus,
+  tagAppearance:kind=>({primary:'#008fa1',secondary:'#e5fcfb',accent:'#ffe7f0',
+   border:'#287cb5',text:'#14395d',label:kind==='class'?'IMOCA':'HORS CATÉGORIE'}),
+  foilVariables:(value,kind)=>'--'+kind+'-tag:'+value.primary,
+  VSR:{hc:'HORS CATÉGORIE'},VSR_PRIORITY:()=>0,
+  statusTitle:{live:'COURSE EN COURS',planned:'À VENIR',finished:'TERMINÉE',
+   dnf:'DNF',record:'COURSE RECORD','record-live':'RECORD EN COURS',
+   'record-closed':'RECORD CLÔTURÉ'},
+  timeEngine:{wallAt:()=>({date:'1900-01-01'})},
+  recordEngine:{latestStart:()=>({date:''})},
+  scoreView:()=>({available:false,reason:''}),
+  rankHtml:()=>'',podiumMedalFor:()=>'',rankPairs:[],
+  safe:value=>String(value??''),validImage:value=>String(value??'').startsWith('data:image'),
+  imageTag:(src,alt)=>'<img src="'+src+'" alt="'+alt+'">',
+  recordCardContent:()=>'<div>RECORD</div>',
+  equipmentModes:{},ROUTE_TYPES:{},moneyNumber:()=>false,validEquipment:()=>false,
+  dateTimeFR:()=>'',raceClockMarkup:()=>''
+ };
+ const card=new Function('context','with(context){'+js.slice(start,end)+';return card;}')(context);
+ const input={name:'Transat Rapli',boat:'Rapli LPDB',boatClass:'IMOCA',vsr:'hc',
+  icon:'data:image/png;base64,AAAA',result:'data:image/png;base64,BBBB',
+  route:'data:image/png;base64,CCCC'};
+ for(const [status,kind,closed] of [
+  ['live','race',false],['planned','race',false],['finished','race',false],
+  ['dnf','race',false],['record-live','record',false],['record-closed','record',true]
+ ]){
+  const rendered=card({...input,kind,mockStatus:status,recordClosed:closed});
+  const tile=new JSDOM(rendered).window.document;
+  const intro=tile.querySelector('.card-intro');
+  assert.ok(intro,'missing compact introduction: '+status);
+  assert.ok(intro.querySelector('.card-top .race-icon.card-photo img'));
+  assert.ok(intro.querySelector('.card-intro-info .card-title-row h2'));
+  assert.ok(intro.querySelector('.card-status-row .badge-status'));
+  assert.equal(tile.querySelectorAll('.card-content').length,1);
+  const photo=tile.querySelector('.card-top img');
+  assert.ok(photo.alt.startsWith('Affiche '));
+  const shots=tile.querySelector('.card-footer .shots');
+  const unfinished=['live','planned','record-live'].includes(status);
+  assert.equal(Boolean(shots),!unfinished,status);
+  assert.ok(tile.querySelector('.card-footer .card-actions [data-action="edit"]'));
+  if(shots)assert.equal(shots.querySelectorAll('.shot-box.image-preview img').length,2);
+ }
+ assert.ok(css.includes('.card .card-intro{'));
+ assert.ok(css.includes('grid-template-columns:clamp(92px,28%,128px) minmax(0,1fr)'));
+ assert.ok(css.includes('.card .card-footer.with-shots{'));
+ assert.ok(css.includes('height:74px;min-height:0;max-height:74px'));
+ assert.ok(css.includes('@media(max-width:580px)'));
+ const viewer=fs.readFileSync('shared/photo-zoom.js','utf8');
+ assert.ok(viewer.includes('.card-photo img'));
+ assert.ok(viewer.includes('.image-preview img'));
+});

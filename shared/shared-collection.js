@@ -18,7 +18,7 @@
   const CHECK_TTL = 60000;
   const CHECK_KEY = 'rapli-last-check-v1-'+OWNER_ID+'-'+MODULE;
   const MAX_IMAGE = 10 * 1024 * 1024;
-  const MAX_FONT = 1024 * 1024; // Uploaded typography is intentionally smaller than photos.
+  const MAX_FONT = 5 * 1024 * 1024; // Small, validated font uploads (below the bucket's 10 MB limit).
   const FONT_MIMES = Object.freeze({'font/woff2':'woff2','font/woff':'woff','font/ttf':'ttf','font/otf':'otf'});
   const Diff = window.RapliCollectionDiff;
   const emptyState = () => ({records:[], logos:[]});
@@ -314,7 +314,7 @@
     const mime = (blob.type || '').toLowerCase();
     const ext = {'image/png':'png','image/jpeg':'jpg','image/webp':'webp','image/gif':'gif',...FONT_MIMES}[mime];
     if (!ext) throw Error('Format de ressource non pris en charge.');
-    if (mime.startsWith('font/') && blob.size > MAX_FONT) throw Error('Police de flocage trop volumineuse (1 Mo max).');
+    if (mime.startsWith('font/') && blob.size > MAX_FONT) throw Error('Police de flocage trop volumineuse (5 Mo max).');
     if (!mime.startsWith('font/') && blob.size > MAX_IMAGE) throw Error('Une image dépasse 10 Mo.');
     const digest = await crypto.subtle.digest('SHA-256', await blob.arrayBuffer());
     const hex = [...new Uint8Array(digest)].map(x => x.toString(16).padStart(2, '0')).join('');

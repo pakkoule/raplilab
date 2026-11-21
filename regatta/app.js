@@ -408,8 +408,13 @@ function raceSearchContext(r){
  const showReason=!record&&!note?.available&&(status==='dnf'||status==='finished');
  const first=record?recordEngine.latestStart(attempts)?.date:r.start;
  const today=timeEngine.wallAt(Date.now(),r.timezone)?.date;
+ const clock=raceClockInfo(r);
+ const clockLabel=!clock?'':clock.mode==='countdown'?
+  (clock.start===null?'départ à venir départ à renseigner':'départ dans'):
+  (clock.start===null?'en cours départ à renseigner':'en course depuis');
  return {
   status:statusTitle[status]||status,
+  clockLabel,vsrCode:r.vsr,
   kind:record?'course record':r.kind==='event'?'compétition':
     r.eventId?'étape'+(r.joker?' joker':''):'',
   routeType:ROUTE_TYPES[r.routeType]||'',
@@ -429,7 +434,8 @@ function raceSearchContext(r){
    recordStats.total+' tentatives '+recordStats.aborted+' avortées '+
    (recordStats.bestSeconds!==null?'meilleur temps '+recordEngine.format(recordStats.bestSeconds):'aucun temps validé')+
    (showRecordRanking&&!rankPairs.some(([key])=>r[key])?' record clôturé classement final':''):'',
-  capture:record?'capture du record tracé':'classement final tracé'
+  capture:(record?'capture du record tracé':'classement final tracé')+
+   ((!validImage(r.result)||!validImage(r.route))?' pas de capture':'')
  };
 }
 function render({searchOnly=false}={}){

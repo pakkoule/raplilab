@@ -953,3 +953,88 @@ button.close{min-width:40px;min-height:40px}
  .live-neon{animation:none;opacity:1}
  button:not(.workspace-tab):not(.score-orb){transition:none}
 }
+
+/* Header VSR ranking shortcut: the actual latest locally/cloud-synced VSR history. */
+.regatta-topbar #vsr-header-ranking.vsr-header-ranking{
+ position:relative;isolation:isolate;overflow:hidden;
+ display:inline-flex;align-items:center;justify-content:center;gap:9px;
+ flex:0 0 auto;min-width:153px;max-width:175px;
+ min-height:57px;padding:8px 12px!important;
+ border:2px solid transparent!important;border-radius:12px!important;
+ background:var(--vr-button-fill) padding-box,var(--vr-button-border) border-box!important;
+ box-shadow:inset 0 1px 0 #ffffffde,0 4px 14px #346c9930!important;
+ color:#163e66!important;
+ text-align:left;text-decoration:none;cursor:pointer;
+ -webkit-tap-highlight-color:transparent
+}
+.regatta-topbar #vsr-header-ranking::before{
+ content:"";position:absolute;inset:0;
+ background:linear-gradient(114deg,transparent 11%,#ffffffa8 30%,transparent 46%,#f8dceb45 65%,transparent 84%);
+ opacity:.46;pointer-events:none;z-index:-1
+}
+.regatta-topbar #vsr-header-ranking:focus-visible{
+ outline:2px solid #2184b8!important;outline-offset:3px!important
+}
+.regatta-topbar .vsr-header-ranking-symbol{
+ display:grid;place-items:center;flex:0 0 30px;
+ width:30px;height:30px;
+ border-radius:9px;background:linear-gradient(125deg,#d2edf9,#f9e6f5);
+ color:#236d9a
+}
+.regatta-topbar .vsr-header-ranking-symbol svg{display:block;width:21px;height:21px}
+.regatta-topbar .vsr-header-ranking-body{display:flex;flex-direction:column;align-items:flex-start;gap:2px;min-width:0}
+.regatta-topbar .vsr-header-ranking-label{
+ color:#46728e;font:900 9px/1.2 Poppins,system-ui,sans-serif;
+ letter-spacing:.035em;white-space:nowrap
+}
+.regatta-topbar .vsr-header-ranking-bottom{
+ display:flex;align-items:center;gap:5px;min-width:0;white-space:nowrap
+}
+.regatta-topbar .vsr-header-ranking-bottom strong{
+ font:900 25px/1 'Barlow Condensed',Poppins,system-ui,sans-serif;
+ color:#16426e;font-variant-numeric:tabular-nums;letter-spacing:.012em
+}
+.regatta-topbar .vsr-header-ranking-bottom small{
+ color:#4e788e;font:900 9px/1.1 Poppins,system-ui,sans-serif;
+ white-space:nowrap
+}
+.regatta-topbar .vsr-header-ranking-bottom small[data-direction="up"]{color:#147f80}
+.regatta-topbar .vsr-header-ranking-bottom small[data-direction="down"]{color:#c13b84}
+.regatta-topbar .vsr-header-ranking-bottom small[hidden]{display:none!important}
+.regatta-topbar #vsr-header-ranking[data-available="false"] .vsr-header-ranking-bottom strong{color:#7891a3}
+@media(max-width:980px){
+ .regatta-topbar{gap:9px}
+ .regatta-topbar #vsr-header-ranking.vsr-header-ranking{min-width:126px;padding:6px 9px!important;gap:6px;min-height:50px}
+ .regatta-topbar .vsr-header-ranking-symbol{width:23px;height:23px;flex-basis:23px}
+ .regatta-topbar .vsr-header-ranking-symbol svg{width:17px;height:17px}
+ .regatta-topbar .vsr-header-ranking-label{font-size:8px}
+ .regatta-topbar .vsr-header-ranking-bottom strong{font-size:21px}
+}
+@media(max-width:780px){
+ .regatta-topbar #vsr-header-ranking.vsr-header-ranking{
+  min-width:103px;max-width:123px;min-height:44px;padding:6px 7px!important;gap:4px
+ }
+ .regatta-topbar .vsr-header-ranking-symbol{display:none}
+ .regatta-topbar .vsr-header-ranking-label{font-size:7px;letter-spacing:0}
+ .regatta-topbar .vsr-header-ranking-bottom strong{font-size:19px}
+ .regatta-topbar .vsr-header-ranking-bottom small{font-size:8px}
+}
+@media(max-width:540px){
+ .regatta-topbar{gap:5px}
+ .regatta-topbar #vsr-header-ranking.vsr-header-ranking{
+  min-width:88px;max-width:99px;min-height:39px;padding:5px 6px!important;border-radius:10px!important
+ }
+ .regatta-topbar .vsr-header-ranking-label{font-size:7px}
+ .regatta-topbar .vsr-header-ranking-bottom{gap:3px}
+ .regatta-topbar .vsr-header-ranking-bottom strong{font-size:17px}
+ .regatta-topbar .vsr-header-ranking-bottom small{font-size:7px}
+}
+@media(max-width:365px){
+ .regatta-topbar{gap:3px}
+ .regatta-topbar #vsr-header-ranking.vsr-header-ranking{
+  min-width:75px;max-width:84px;padding:5px 4px!important
+ }
+ .regatta-topbar .vsr-header-ranking-label{font-size:6px}
+ .regatta-topbar .vsr-header-ranking-bottom strong{font-size:16px}
+ .regatta-topbar .vsr-header-ranking-bottom small{font-size:7px}
+}

@@ -381,6 +381,24 @@ function recordCardContent(r){
  const line=attempts.map((item,i)=>'<div class="record-attempt-chip'+(item.aborted?' is-aborted':item.id===stats.bestId?' is-best':'')+'"><span>TENTATIVE '+(i+1)+'<small>'+safe(item.startDate?'DÉPART · '+dateTimeFR(item.startDate,item.startTime):'DÉPART À RENSEIGNER')+'</small></span><strong>'+safe(item.aborted?'AVORTÉE':item.seconds!==null?recordEngine.format(item.seconds):'EN ATTENTE')+'</strong></div>').join('');
  return '<section class="record-card" aria-label="Tentatives de record"><div class="record-card-summary"><span>'+stats.total+' TENTATIVE'+(stats.total>1?'S':'')+' · '+stats.aborted+' AVORTÉE'+(stats.aborted>1?'S':'')+'</span><strong>'+safe(stats.bestSeconds!==null?'MEILLEUR TEMPS · '+recordEngine.format(stats.bestSeconds):'AUCUN TEMPS VALIDÉ')+'</strong></div><div class="record-attempt-chips">'+line+'</div></section>';
 }
+/* Record attempts can have a future date independently from race.upcoming. */
+function recordHasFutureStart(r){
+ if(r.kind!=='record'||r.recordClosed||r.live)return false;
+ const latest=recordEngine.latestStart(r.attempts);
+ if(!latest?.date)return false;
+ const now=Date.now(),today=timeEngine.wallAt(now,r.timezone)?.date;
+ if(!today)return false;
+ if(latest.date>today)return true;
+ if(latest.date<today||!latest.time)return false;
+ const start=localDateTime(latest.date,latest.time,r.timezone);
+ return start!==null&&start>now;
+}
+function canExportRaceCalendar(r){
+ const date=r.kind==='record'?recordEngine.latestStart(r.attempts)?.date:r.start;
+ return Boolean(date)&&(
+  r.kind==='record'?recordHasFutureStart(r):raceStatus(r)==='planned'
+ );
+}
 /* Both columns are rendered from existing race data; no new persistent fields. */
 function raceCardSchedule(r,status){
  const isRecord=r.kind==='record';
@@ -388,7 +406,7 @@ function raceCardSchedule(r,status){
  const startDate=latest?.date||r.start,startTime=latest?.time||r.startTime;
  const startInstant=startDate&&startTime?localDateTime(startDate,startTime,r.timezone):null;
  const live=status==='live'||status==='record-live';
- const futureRecord=isRecord&&status==='record'&&startInstant!==null&&startInstant>Date.now();
+ const futureRecord=isRecord&&recordHasFutureStart(r);
  const planned=status==='planned'||futureRecord;
  const startLabel=isRecord?'DÉPART · DERNIÈRE TENTATIVE':'DÉPART';
  const startValue=startDate?dateTimeFR(startDate,startTime):'À renseigner';
@@ -426,9 +444,7 @@ function raceCardSchedule(r,status){
 }
 function raceCardMenu(r,status){
  const showImages=!['live','record-live','planned','record'].includes(status);
- const canCalendar=(r.upcoming&&!!r.start)||
-   (r.kind==='event'&&status==='planned'&&!!r.start)||
-   (r.kind==='record'&&status==='record'&&!!recordEngine.latestStart(r.attempts)?.date);
+ const canCalendar=canExportRaceCalendar(r);
  const action=(id,title,icon,extra='')=>
   '<button type="button" data-action="'+id+'"'+extra+'><span aria-hidden="true">'+icon+
   '</span>'+title+'</button>';
@@ -1462,12 +1478,14 @@ function foldCalendarLine(line){
  return result;
 }
 function calendarText(r){
- if(!r.upcoming)throw Error('Disponible uniquement pour une course à venir.');
- if(!r.start)throw Error('Renseigne la date de départ pour exporter dans Calendrier.');
- const startClock=r.startTime||'';
+ if(!canExportRaceCalendar(r))throw Error('Disponible uniquement pour une course, étape ou tentative de record à venir.');
+ const recordStart=r.kind==='record'?recordEngine.latestStart(r.attempts):null;
+ const startDate=recordStart?.date||r.start;
+ if(!startDate)throw Error('Renseigne la date de départ pour exporter dans Calendrier.');
+ const startClock=(r.kind==='record'?recordStart?.time:r.startTime)||'';
  let start='',finish='',allDay=false,placeholder=false;
  if(startClock){
-   const startInstant=timeEngine.fromWall(r.start,startClock,r.timezone);
+   const startInstant=timeEngine.fromWall(startDate,startClock,r.timezone);
   start=timeEngine.utcIcs(startInstant);
   if(!start)throw Error('Heure de départ invalide ou inexistante dans le fuseau choisi.');
   const duration=parseRaceDuration(r.duration);
@@ -1478,8 +1496,8 @@ function calendarText(r){
    placeholder=true;
   }
  }else{
-   allDay=true;start=r.start.replace(/-/g,'');
-   const [year,month,day]=r.start.split('-').map(Number);
+   allDay=true;start=startDate.replace(/-/g,'');
+   const [year,month,day]=startDate.split('-').map(Number);
    const next=new Date(Date.UTC(year,month-1,day+1)).toISOString().slice(0,10);
    finish=next.replace(/-/g,'');
  }
@@ -1749,7 +1767,44 @@ cardContainer.addEventListener('pointerdown',event=>{
 });
 for(const name of ['pointerup','pointercancel','pointermove'])cardContainer.addEventListener(name,clearLongPress);
 for(const key of imageKeys){$('image-'+key).addEventListener('change',e=>{const f=e.target.files[0];e.target.value='';fileData(f,key);});document.querySelector('[data-remove="'+key+'"]').addEventListener('click',()=>{pictures[key]='';preview(key);});const zone=document.querySelector('[data-image="'+key+'"] .upload-preview');zone.addEventListener('dragover',e=>{e.preventDefault();});zone.addEventListener('drop',e=>{e.preventDefault();fileData(e.dataTransfer?.files[0],key);});}
-$('cards').addEventListener('click',e=>{const btn=e.target.closest('[data-action]');if(!btn)return;const r=rows.find(x=>x.id===btn.closest('[data-id]')?.dataset.id);if(!r)return;if(btn.dataset.action==='edit')openEditor(r);if(btn.dataset.action==='record-close')closeRecord(r.id);if(btn.dataset.action==='delete')deleteRace(r.id);if(btn.dataset.action==='png')exportPNG(r);if(btn.dataset.action==='score'&&!longPressOpened)openScoreDetail(r);if(btn.dataset.action==='score')longPressOpened=false;if(btn.dataset.action==='calendar')exportCalendar(r);});
+// Only one options menu can stay open. No persistence or extra controls are created.
+const closeRaceMenus=except=>{
+ document.querySelectorAll('#cards .race-actions-menu[open]').forEach(menu=>{
+  if(menu!==except)menu.open=false;
+ });
+};
+$('cards').addEventListener('click',event=>{
+ const summary=event.target.closest('.race-actions-menu>summary');
+ if(summary)closeRaceMenus(summary.parentElement);
+ const btn=event.target.closest('[data-action]');
+ if(!btn)return;
+ const item=btn.closest('[data-id]'),r=rows.find(row=>row.id===item?.dataset.id);
+ if(!r)return;
+ const action=btn.dataset.action;
+ closeRaceMenus();
+ if(action==='edit')openEditor(r);
+ else if(action==='record-close')void closeRecord(r.id);
+ else if(action==='delete')void deleteRace(r.id);
+ else if(action==='png')void exportPNG(r);
+ else if(action==='calendar')exportCalendar(r);
+ else if(action==='score'){
+  if(!longPressOpened)openScoreDetail(r);
+  longPressOpened=false;
+ }else if(action==='view-result'||action==='view-route'){
+  if(['live','record-live','planned','record'].includes(raceStatus(r)))return;
+  const src=action==='view-result'?r.result:r.route;
+  if(!validImage(src))return;
+  const label=action==='view-result'?'Classement '+r.name:'Tracé '+r.name;
+  if(!window.RapliPhotoZoom?.openSource?.(src,label))
+    toast('Visionneuse photo indisponible.',true);
+ }
+});
+document.addEventListener('click',event=>{
+ if(!event.target.closest('#cards .race-actions-menu'))closeRaceMenus();
+});
+document.addEventListener('keydown',event=>{
+ if(event.key==='Escape')closeRaceMenus();
+});
 document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'&&!dialog.open){e.preventDefault();$('search').focus();}});
 window.addEventListener?.('resize',scheduleRankingFit);
 let regattaClockTicker=window.setInterval(updateRaceClocks,1000);

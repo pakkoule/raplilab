@@ -1,9 +1,9 @@
-# Rapli Regatta — journal de courses (PR #1)
+# Rapli Regatta — journal de courses
 
-Module intégré à la PR #1 de RapliLab, non fusionnée.
+Module autonome et seul espace actif de Rapli Lab dans la PR #4.
 
-- Onglet : `#regatta` ; page directe : `regatta/index.html`.
-- Deploy Preview attendue : https://deploy-preview-1--raplilab.netlify.app/#regatta
+- Accueil : `/` ; module direct : `regatta/index.html`.
+- Deploy Preview attendue : https://deploy-preview-4--raplilab.netlify.app/
 - Logo fourni intégré en WebP transparent ; charte turquoise/rose ; Poppins.
 - Bloc du module limité à **1 120 px**, portail limité à **1 360 px** ; 11 onglets sur une seule ligne défilante sur iPhone. Sur bureau : dégradé latéral teinté et répétitions discrètes du logo en noir et blanc.
 - Affiche de course **16:9 intégrale sans rognage** ; captures de classement et de tracé indépendantes, affichées sans déformation, zoom partagé.
@@ -16,7 +16,7 @@ Module intégré à la PR #1 de RapliLab, non fusionnée.
 - **Gains** : deux champs numériques entiers positifs ou nuls, Points VSR gagnés et Crédits VR gagnés, enregistrés par course et affichés dans les tuiles et les exports PNG.
 - **Deux cases indépendantes mais mutuellement exclusives** : « Course en cours » (halo turquoise) et « À venir » (halo bleu).
 - **Équipement unique et facultatif** : PDD, 1/2 FP ou Full Pack (cases exclusives) ; zéro choix possible.
-- Sur chaque tuile, **nom de la course à gauche et tags de classe de bateau + catégorie VSR à droite**, alignés horizontalement. La ligne s’adapte à l’iPhone : le nom peut revenir à la ligne et les libellés trop longs sont tronqués sans déplacer les tags. Même alignement dans l’export PNG ; l’ancienne année d’édition n’est plus affichée.
+- Les tuiles sont organisées en **deux colonnes** : visuel intégral, titre avec menu « … », dates et durée/chrono à gauche ; classe du bateau, équipement, catégorie VSR, classement général et note, quatre classements alternatifs, gains VSR/VR à droite. Les colonnes restent côte à côte sur iPhone, avec tailles adaptées. Le rendu PNG conserve son propre format d’export. ; l’ancienne année d’édition n’est plus affichée.
 - Cinq classements avec **position / nombre de joueurs** (même un total supérieur à 100 000 joueurs doit tenir **sur une seule ligne**, avec ajustement dynamique de la taille), affichés avec la police sportive **Barlow Condensed ExtraBold** (tuiles, formulaire et export PNG), et non une serif type Times New Roman. Les podiums terminés affichent automatiquement **🥇 1re place / 🥈 2e / 🥉 3e** à côté du rang, sans masquer l’emoji du type de classement. Les courses en cours/à venir n’affichent pas de médaille :
   - 🏆 Général : plaque principale agrandie (police sportive blanche sur fond contrasté) ;
   - 🇫🇷 National : petite plaque ;
@@ -30,15 +30,19 @@ Module intégré à la PR #1 de RapliLab, non fusionnée.
 
 ## Réglages globaux des couleurs
 
-- Troisième vue interne **COULEURS DES CLASSES** : choix d’une **couleur générale** (initialement turquoise), puis possibilité de personnaliser chaque classe IMOCA, ULTIM, Class40, Ocean Fifty, Mini 6.50 ou toute classe enregistrée. Sous les bateaux, gestion indépendante des couleurs des **quatre catégories VSR**, avec palette par défaut (Hors Catégorie dorée) et hiérarchie fixe.
+- Palette **ÉTIQUETTES FOIL · BATEAUX & VSR** accessible avec la roue dentée : couleur principale, reflet, accent irisé, bordure, couleur du texte et libellé affiché personnalisables pour chaque classe de bateau et catégorie VSR. Les icônes vectorielles monochromes utilisent la couleur de texte choisie ; le rang réel des catégories VSR ne change jamais.
 - Changer la couleur générale **applique la nouvelle couleur à toutes les courses** et, après confirmation, réinitialise les exceptions propres aux classes. Changer une classe met à jour simultanément toutes les courses portant cette classe (en ignorant les différences de casse et de présentation).
-- Les anciens champs `classColor` par course sont conservés dans les données historiques mais **ne pilotent plus l’affichage**. Les couleurs des tuiles et des exports PNG proviennent exclusivement des réglages globaux ; le contraste du texte est calculé automatiquement.
+- Les anciens champs `classColor` par course restent conservés. Les réglages historiques `classColors` et `vsrColors` restent compatibles ; les nouveaux champs optionnels `classFoils` et `vsrFoils` mémorisent uniquement le style visuel (sans changer la classification des courses). Tuiles et PNG réutilisent les couleurs et libellés personnalisés.
 - Réglages enregistrés localement sous `rapli-regatta-class-colors-v1` et synchronisés sur Supabase via l’objet de paramètres de la collection. Les réglages par défaut ne créent pas de faux contenu dans un nouveau compte. Import/export JSON inclut les couleurs (version 2) et les anciens JSON restent importables.
 
 ## Navigation, statistiques et exports
 
-- **Tri par défaut : date de départ récente → ancienne**, avec possibilité de classer par importance VSR (Hors Catégorie, VSR 1, VSR 2, VSR 3), puis départ récent.
-- Filtres par statut, classe de bateau, **catégorie VSR** ; recherche texte.
+- **Ordre automatique** : courses en cours, puis à venir, puis autres courses ; à l'intérieur de chaque groupe, départ le plus récent d'abord. Plus de barre de filtres ou de sélecteur de tri.
+- La barre de recherche, les commandes d'action et le profil sont réunis sur **une seule ligne**, y compris sur iPhone. Logo Regatta et onglets COURSES / STATISTIQUES / PALMARÈS partagent également une ligne.
+- Le bouton de changement de vue compact est supprimé. Les boutons d'action adoptent un contour foil bleu/rose Virtual Regatta et des hauteurs harmonisées, sans modifier les boutons propres aux notes ni le comportement des onglets.
+- Les captures de classement final et de tracé sont **consultables dans le menu « … »** uniquement sur les courses terminées, DNF ou records clôturés, si une image existe ; aucune miniature n’encombre la tuile. Elles restent masquées sur les courses à venir/en cours et les records non clôturés, sans suppression de données. L’export PNG suit les mêmes règles.
+- Les courses en direct affichent un pictogramme néon clignotant (signal de diffusion) ; animation désactivée si la réduction des animations est demandée par l'appareil. L'information de fuseau « 🌐 Heure française · Paris » est masquée sur les tuiles sans changer les calculs horaires.
+- **Recherche universelle** plein format : nom de course, bateau, classe, type de parcours, statut, VSR, équipement, dates/heures, fuseau, durée, rangs et effectifs, note visible, gains VSR/VR et détails des tentatives de record. Accents et casse ignorés, mots combinables, pagination et raccourci Ctrl/Cmd+K conservés. Le contenu textuel *à l'intérieur des images* n'est pas indexé.
 - Onglet interne **STATISTIQUES** enrichi, calculé directement à partir des courses de la collection :
   - **Tableau de bord** : total, terminées, en cours, à venir.
   - **Palmarès** : victoires, podiums, Top 10, Top 100, taux de podiums/Top 10 parmi les courses classées, meilleur classement général, moyenne et médiane des places, meilleur et moyen « Top % » (place / participants), records nationaux, départementaux, ville et team.
@@ -52,7 +56,7 @@ Module intégré à la PR #1 de RapliLab, non fusionnée.
   - Les statistiques de performance ne comptabilisent pas les courses « À venir » ou « En cours ». Les métriques nécessitant des classements / participants affichent « — » lorsqu’il manque les données. Les moyennes de durée utilisent uniquement des courses terminées avec durée positive. Aucun nouveau champ ni migration Supabase nécessaire.
 - **PNG par course** : affiche 16:9, métadonnées, couleurs des tags bateau **et VSR** issues du menu, date/heure, durée en Courier Prime, gains et **cinq classements (avec position, total et médailles de podium)**, plus les captures.
 - **PDF global** : bouton **↓ PDF GLOBAL**, ouverture d’un formulaire de filtres cumulables (année, catégorie VSR, classe, nom de bateau, statut), tri par importance VSR ou date. Génération d’un **PDF A4 paysage** contenant synthèse (nombre de courses, podiums des cinq types, temps total, points VSR cumulés et crédits VR cumulés, répartition VSR) puis **tableaux paginés** (dates, courses, bateau, classe, VSR, classements, durée et gains). Les statistiques sont calculées sur la sélection uniquement et les gains/podiums s’appliquent aux courses terminées. Générateur navigateur via jsPDF **4.2.1** chargé à la demande ; aucune nouvelle table Supabase.
-- Pour une **course cochée À venir**, bouton **📅 CALENDRIER** produisant un fichier `.ics` compatible avec l’import dans Apple Calendrier : horaires de départ/arrivée si connus, journée entière si heure manquante, ou plage indicative d’une heure si durée absente. Le téléchargement ne crée pas directement un événement sans l’action d’importation de l’utilisateur.
+- Pour une **course ou une étape à venir**, et pour une **tentative de record future**, entrée **Ajouter au calendrier iOS** dans le menu « … » produisant un fichier `.ics` compatible avec Apple Calendrier : horaires si connus, journée entière si heure manquante, ou plage indicative d’une heure si durée absente. Le téléchargement ne crée pas directement un événement sans l’action d’importation de l’utilisateur.
 - Sauvegarde locale automatique dans IndexedDB `rapli-regatta-v1` ; synchronisation Supabase via `RapliModuleBridge`, bucket privé et RLS existants. Aucune nouvelle table ; migration contrainte `regatta/migrations/20261113_add_regatta_module.sql` déjà appliquée.
 
 ## Vérifications
@@ -83,7 +87,7 @@ Module intégré à la PR #1 de RapliLab, non fusionnée.
 ## Courses record — clôture manuelle et classements finaux (PR #1)
 
 - Une **tentative terminée** (avec un temps) ou une tentative avortée n'a **aucun effet** sur la case **Course en cours** de la course record. Plusieurs tentatives sont donc possibles sans changement automatique de statut.
-- Une course record ouverte dispose sur sa tuile du bouton **✓ CLÔTURER LE RECORD**. L'utilisateur doit confirmer la clôture ; l'action sauvegarde explicitement `recordClosed: true`, retire l'état en cours et conserve toutes les tentatives et leurs dates.
+- Une course record ouverte dispose, via son menu **« … »**, de l’action **✓ CLÔTURER LE RECORD**. L'utilisateur doit confirmer la clôture ; l'action sauvegarde explicitement `recordClosed: true`, retire l'état en cours et conserve toutes les tentatives et leurs dates.
 - Le statut devient **RECORD CLÔTURÉ**. Le record clôturé est visible parmi les courses record et dans le filtre « Terminées » ; il n'est plus comptabilisé « En cours ». Il ne gonfle pas les statistiques des courses VSR classiques.
 - Après clôture, l'éditeur s'ouvre automatiquement et révèle les cinq classements finaux (général, national, départemental, ville, team) avec positions et effectifs. Les contrôles numériques habituels s'appliquent. Ils sont affichés dans la fiche et dans l'export PNG, après le tableau des tentatives.
 - Le statut de clôture est persistant dans IndexedDB, JSON et les sauvegardes Supabase du module. Modifier ultérieurement le record ne réactive jamais « En cours », ne supprime jamais ses classements et ne le rouvre pas par accident.
@@ -113,7 +117,22 @@ Module intégré à la PR #1 de RapliLab, non fusionnée.
 ## Évolutions sélectionnées — #14, #34 et #79 (16 novembre 2026)
 
 - **#14 Drapeau de départ** : badge « 🏁 DÉPART AUJOURD’HUI » lorsque la date de départ correspond à la date courante dans le **fuseau de la course**, pour les courses normales et les dernières tentatives de record.
-- **#34 Affichage compact** : nouveau bouton ▦ de bascule entre fiches normales et grille compacte (trois colonnes sur écran large, deux colonnes selon la largeur). Le réglage est stocké localement sur l’appareil, les données et actions de chaque fiche sont conservées.
+- **Organisation à deux colonnes** : unique mode d’affichage des fiches, sans bouton de bascule ; photo et chronologie à gauche, données sportives à droite ; même structure pour les fiches normales, records et étapes.
 - **#79 Type de parcours** : champ facultatif parmi Tour du monde, Transatlantique, Côtier, Course à étapes, Record de distance et Autre parcours. Stockage dans la fiche existante, libellé visible sur la tuile et texte pris en compte dans la recherche.
 - Aucun changement de barème VSR, d’historique de notes, de classement ou de politique Supabase.
 - Tests de syntaxe et présence des contrôles réalisés ; mise en page PC/iPhone et synchronisation restent à valider sur la Deploy Preview.
+
+## Barre d'actions et présentation des fiches (PR #4)
+
+- Le premier bouton **↻** de la barre des courses déclenche une synchronisation manuelle Supabase (envoi des modifications locales en attente pour l'administrateur, ou récupération des nouveautés). Le bouton **calculatrice** distinct ouvre le recalcul des notes ; il n'est pas lié à la synchronisation.
+- Les messages Cloud apparaissent en **surimpression translucide** sur tous les onglets ; disparition automatique après environ 3,6 secondes pour une confirmation, 4,8 secondes pour un chargement et 6,5 secondes pour une erreur. Aucun statut permanent ni deuxième bouton ↻ sous la recherche.
+- Les dates **Départ**, **Arrivée** (ou **En cours / À venir**) et la **durée totale / chrono / compte à rebours** sont désormais présentées verticalement dans la colonne gauche. Le chrono existant utilise les dates, heures et fuseaux sauvegardés, pour les courses, étapes et records.
+- Les tags horaires, équipements, gains et les cinq classements utilisent un **foil clair premium** en reprenant leurs couleurs existantes (bleu pétrole, bleu, menthe, lavande, champagne, or et vert). La note circulaire reste indépendante.
+- Suppression du titre « MES COURSES / RACE ARCHIVE », mais conservation du nombre de résultats et de la pagination.
+
+## Disposition des tuiles : deux colonnes (PR #4)
+
+- **Gauche** : illustration 16:10 non recadrée (zoom au clic), puis menu **« … »** juste avant le titre, date/heure de départ, arrivée ou libellé **En cours / À venir**, durée totale pour les courses achevées ou minuteur précis mis à jour toutes les secondes. Un record clôturé présente le meilleur temps validé ; un record en cours utilise le départ de la dernière tentative.
+- **Droite** : classe de bateau, équipement et VSR en tags foil, classement général avec note circulaire lorsqu’elle est applicable, quatre classements complémentaires, gains VSR et crédits VR. Les records ne reçoivent ni note ni gains fictifs, mais gardent leurs tentatives et classements de clôture. Les étapes restent évaluées selon leur règle de notation existante.
+- **Menu « … »** : capture finale, tracé (si disponibles et autorisés par le statut), modifier, exporter PNG, ajouter au calendrier iOS si le départ est futur, clôturer le record si ouvert, supprimer. Un seul menu à la fois ; fermeture au clic extérieur ou avec Échap. Les captures s’ouvrent dans la visionneuse existante.
+- Les photos, courses, classements, gains, préférences foil et sauvegardes Supabase/IndexedDB ne changent pas de format. Seule leur **présentation** est remaniée.

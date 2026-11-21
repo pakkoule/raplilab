@@ -6,7 +6,7 @@ const {createHash}=require('node:crypto');
 const {IDBFactory}=require('fake-indexeddb');
 const Diff=require('../shared/collection-diff.js');
 const owner='91a067ed-796a-45c0-b4b1-c04f3bfbe35e';
-const ref='rapli-private://'+owner+'/sports/'+'a'.repeat(64)+'.png';
+const ref='rapli-private://'+owner+'/regatta/'+'a'.repeat(64)+'.png';
 const dataUri='data:image/png;base64,aGVsbG8=';
 const code=fs.readFileSync(require.resolve('../shared/shared-collection.js'),'utf8')
  .replace("await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.83.0/+esm')",'window.testSdk');
@@ -61,7 +61,7 @@ function device(api){
  clearTimeout:t=>{clearTimeout(t);timers.delete(t)},setInterval:()=>{throw Error('Polling forbidden');},
  location:{origin:'https://test.local'},Date,Error,Event,addEventListener:(name,fn)=>{(listeners[name]||=[]).push(fn)},
  RapliAdminAccess:{isEditor:()=>true,initialize:async()=>true},RapliCollectionDiff:Diff,testSdk:sdk,
- RapliModuleBridge:{module:'sports',ready:true,getState:()=>state,
+ RapliModuleBridge:{module:'regatta',ready:true,getState:()=>state,
  previewState:s=>{state=structuredClone(s);},replaceState:async s=>{state=structuredClone(s);storage.set('local',JSON.stringify(s));}}};
  ctx.window=ctx;ctx.parent=ctx;vm.runInNewContext(code,ctx);return dev;
  },status:()=>ctx.RapliSharedCollection?.getStatus(),state:()=>state,
@@ -78,7 +78,7 @@ test('warm cache: no request within one minute, one check after expiry, manual b
  assert.deepEqual(api.calls.map(c=>c.name),[]);assert.equal(d.state().records[0].photo,dataUri);
  api.calls=[];for(let i=0;i<5;i++)d.emit('focus');await wait(40);assert.equal(api.calls.length,0);
  await d.refresh();assert.deepEqual(api.calls.map(c=>c.name),['version'],'manual refresh bypasses TTL');
- const key='rapli-last-check-v1-'+owner+'-sports';
+ const key='rapli-last-check-v1-'+owner+'-regatta';
  d.storage.set(key,JSON.stringify({revision:api.revision,at:Date.now()-61000}));
  api.calls=[];d.boot();await d.sync();await wait(40);
  assert.deepEqual(api.calls.map(c=>c.name),['version'],'expired cache checks just the revision');

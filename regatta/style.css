@@ -3,7 +3,7 @@
 html{scroll-behavior:smooth}body{margin:0;min-width:320px;min-height:100vh;background:radial-gradient(circle at 95% -4%,#c9f4f0 0,transparent 32%),radial-gradient(circle at -12% 36%,#f9e0ed 0,transparent 28%),#f2f7f8;color:#193449;font-size:13px}
 button,input,select,textarea{font:inherit}button{cursor:pointer}button:disabled{opacity:.5;cursor:wait}input,select,textarea{min-width:0}a{color:inherit}
 button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #00a8b8;outline-offset:2px}
-.shell{position:relative;width:min(1120px,calc(100% - 48px));margin:26px auto 44px;border:1px solid #d2e6e8;border-radius:20px;overflow:hidden;background:#fff;box-shadow:0 24px 70px #264b571a}
+.shell{position:relative;width:min(1120px,calc(100% - 48px));margin:26px auto 44px;border:1px solid #d2e6e8;border-radius:20px;overflow:hidden;background:linear-gradient(180deg,#163a59 0%,#215575 28%,#2a607c 53%,#284f6c 70%,#6c536a 86%,#141922 100%);box-shadow:0 24px 70px #264b571a}
 .topline{height:5px;background:linear-gradient(90deg,var(--pink),var(--pink) 21%,var(--teal) 21%,#16ccd1 80%,#142d40 80%)}
 .utility{padding:14px 26px;display:flex;justify-content:space-between;gap:14px;align-items:center;border-bottom:1px solid var(--stroke);background:#fafdfe}
 .utility-title{white-space:nowrap;font-size:13px;font-weight:900;letter-spacing:.04em;color:#174457}.utility-title small{font-size:10px;letter-spacing:.09em;color:#8ca5ae;font-weight:700}
@@ -485,22 +485,20 @@ dialog form{border-radius:18px;background:#fff;display:flex;flex-direction:colum
 .regatta-pagination{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:7px;
  padding:10px 25px 14px;min-width:0}
 #regatta-pagination-bottom .regatta-pagination{padding-top:17px;padding-bottom:20px}
-.regatta-pagination button{display:grid;place-items:center;min-width:35px;min-height:35px;
- padding:7px 10px;background:#fff;color:#176784;border:1px solid #b4d8df;border-radius:8px;
+.regatta-pagination button{display:flex;align-items:center;justify-content:center;min-width:35px;min-height:35px;
+ padding:0;background:#fff;color:#176784;border:1px solid #b4d8df;border-radius:8px;
  font:900 11px/1 Poppins,sans-serif;font-variant-numeric:tabular-nums;cursor:pointer;
  transition:background .16s,transform .16s}
 .regatta-pagination button:not(:disabled):hover{background:#e9f8fa}
 .regatta-pagination button:focus-visible{outline:3px solid #3cb8d2;outline-offset:2px}
 .regatta-pagination button[aria-current=page]{position:relative;color:#fff;background:#0d728c;border-color:#0d728c;
- box-shadow:0 0 0 3px #31b5c13d,0 3px 12px #08738a33;transform:translateY(-1px);cursor:default}
-.regatta-pagination button[aria-current=page]::after{content:"";width:5px;height:5px;border-radius:50%;
- background:#fff;margin:2px auto -3px;display:block}
+ box-shadow:0 0 0 3px #31b5c13d,0 3px 12px #08738a33;cursor:default}
 .regatta-pagination button:disabled{opacity:.35;cursor:default}
 .regatta-page-ellipsis{font:750 11px Poppins,sans-serif;color:#7b98a6;padding:0 3px}
 .regatta-page-caption{width:100%;text-align:center;color:#507985;font:750 10px Poppins,sans-serif;
  padding-top:3px}
 @media(max-width:580px){.regatta-pagination{padding:8px 11px 12px;gap:5px}
- .regatta-pagination button{min-width:32px;min-height:32px;padding:6px 8px}
+ .regatta-pagination button{min-width:32px;min-height:32px;padding:0}
 }
 
 .race-live-clock{display:flex;align-items:center;gap:9px;flex-wrap:wrap;padding:9px 12px;margin:8px 0;
@@ -653,22 +651,6 @@ dialog form{border-radius:18px;background:#fff;display:flex;flex-direction:colum
 
 /* PR #1 : affichage compact sans retirer les données de course. */
 .start-today-flag{position:absolute;right:8px;bottom:9px;z-index:2;display:inline-flex;align-items:center;gap:4px;background:#ecfbf4;color:#216951;border:1px solid #9ae2c0;border-radius:6px;padding:5px 8px;font-size:9px;font-weight:900;box-shadow:0 3px 9px #0003}
-#compact-cards[aria-pressed="true"]{background:#cceaf1;border-color:#0b92a9;color:#17536e}
-.cards.regatta-compact{grid-template-columns:repeat(3,minmax(0,1fr));gap:11px}
-.regatta-compact .card-content{padding:11px 12px}
-.regatta-compact .card h2{font-size:15px}
-.regatta-compact .card-boat{font-size:10px}
-.regatta-compact .shots,.regatta-compact .card-note,.regatta-compact .rank-grid .rank-national,.regatta-compact .rank-grid .rank-department,.regatta-compact .rank-grid .rank-city,.regatta-compact .rank-grid .rank-team{display:none}
-.regatta-compact .card-stats{gap:4px;margin-top:8px}
-.regatta-compact .stat-chip{font-size:9px;padding:4px 6px}
-.regatta-compact .rank-plate{padding:6px}
-.regatta-compact .card-actions{gap:4px}
-.regatta-compact .card-actions .btn{font-size:9px;min-height:29px;padding:5px 6px}
-.regatta-compact .start-today-flag{font-size:8px;padding:4px 6px}
-@media(max-width:840px){.cards.regatta-compact{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:570px){.cards.regatta-compact{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;padding:0 9px 17px}.regatta-compact .card-content{padding:8px}.regatta-compact .card h2{font-size:12px}.regatta-compact .card-actions .btn{font-size:8px;min-height:27px;padding:4px}.regatta-compact .card-actions{flex-wrap:wrap}.regatta-compact .badge-status{font-size:7px;padding:4px 5px}}
-
-
 /* VSR ranking time series: separate from per-race rankings and responsive on mobile. */
 .vsr-ranking-section{margin:0 0 28px;padding:20px;border:1px solid #cbdfe5;border-radius:16px;background:linear-gradient(135deg,#f9fffd,#f2f7fc 55%,#fdfaf2);box-shadow:0 5px 20px #1c577012}
 .vsr-ranking-heading{display:flex;align-items:stretch;justify-content:space-between;gap:18px;margin-bottom:18px}
@@ -700,3 +682,912 @@ dialog form{border-radius:18px;background:#fff;display:flex;flex-direction:colum
 .vsr-ranking-empty{margin:10px 5px;font-size:11px;line-height:1.6;color:#77929c}
 @media(max-width:900px){.vsr-ranking-form{grid-template-columns:repeat(2,minmax(0,1fr))}.vsr-ranking-form-actions{grid-column:1/-1}.vsr-ranking-history-row{grid-template-columns:1fr auto}.vsr-ranking-history-row>span{grid-column:1}.vsr-ranking-row-actions{grid-column:2;grid-row:1/3}}
 @media(max-width:580px){.vsr-ranking-section{padding:12px}.vsr-ranking-heading{flex-direction:column;gap:10px}.vsr-ranking-current{flex:auto;min-height:70px}.vsr-ranking-form{grid-template-columns:minmax(0,1fr)}.vsr-ranking-form-actions{grid-column:1}.vsr-ranking-history-row{gap:5px}.vsr-ranking-row-actions{flex-wrap:wrap;justify-content:flex-end}}
+/* Dedicated Rapli Regatta logo and compact header. */
+.regatta-brand-header{display:flex;align-items:center;justify-content:center;min-height:100px;margin:0;padding:10px 26px 9px;border-bottom:1px solid #d6e6e9;background:linear-gradient(120deg,rgba(238,253,249,.75),rgba(239,248,255,.72),rgba(255,242,249,.58))}
+.regatta-brand-logo{display:block;width:auto;height:auto;max-width:min(62vw,224px);max-height:94px;object-fit:contain;object-position:center}
+@media(max-width:600px){.regatta-brand-header{min-height:76px;padding:8px 12px 7px}.regatta-brand-logo{max-height:69px;max-width:min(66vw,194px)}}
+
+/* A single universal, full-width search replaces the discontinued filter drawer. */
+.sr-only{
+ position:absolute!important;width:1px!important;height:1px!important;overflow:hidden!important;
+ clip:rect(0,0,0,0)!important;white-space:nowrap!important;clip-path:inset(50%)!important;
+ margin:-1px!important;padding:0!important;border:0!important
+}
+.regatta-catalogue-controls{
+ grid-template-columns:minmax(0,1fr) auto;gap:10px;margin-bottom:12px;
+ align-items:center
+}
+.regatta-catalogue-controls>.regatta-navigation{min-width:0}
+.regatta-catalogue-controls>.regatta-inline-actions{justify-content:flex-end}
+.regatta-catalogue-controls>.regatta-search{
+ grid-column:1/-1;min-width:0;position:relative;display:flex;align-items:center
+}
+.regatta-search-field{
+ display:flex;align-items:center;gap:12px;width:100%;min-width:0;
+ min-height:50px;padding:0 46px 0 16px;border:1.5px solid transparent;border-radius:13px;
+ background:linear-gradient(115deg,#fafffc,#f4fafd 68%,#fff9fc) padding-box,
+ linear-gradient(112deg,#7fdbc2,#b4d1e5 48%,#e1c3d8 79%,#c0d7dd) border-box;
+ box-shadow:0 2px 11px #2a647711, inset 0 1px 0 #ffffff;
+ color:#387784;cursor:text;transition:box-shadow .2s ease
+}
+.regatta-search-field:focus-within{
+ box-shadow:0 0 0 3px rgba(27,178,176,.13),0 5px 16px #2a647719
+}
+.regatta-search-field svg{flex:0 0 21px;color:#378d93;pointer-events:none}
+.regatta-search-field input[type="search"]{
+ flex:1;display:block;min-width:0;width:100%;height:48px;
+ border:0!important;border-radius:0!important;padding:0!important;
+ outline:0!important;box-shadow:none!important;
+ background:transparent!important;font:600 14px/1.4 Poppins,system-ui,sans-serif;
+ letter-spacing:0;color:#173e55;-webkit-appearance:none;appearance:none
+}
+.regatta-search-field input[type="search"]::placeholder{color:#6e8e9d;opacity:1;font-weight:500}
+.regatta-search-field input[type="search"]::-webkit-search-cancel-button{display:none}
+.regatta-search-field input[type="search"]:focus{outline:0!important;box-shadow:none!important}
+.regatta-search-clear{
+ position:absolute;right:9px;top:50%;transform:translateY(-50%);
+ display:grid;place-items:center;width:33px;height:33px;min-height:33px;
+ padding:0;border:1px solid #c6dce2;border-radius:9px;
+ background:#fff;color:#5d8492;font:500 25px/1 Poppins,system-ui,sans-serif
+}
+.regatta-search-clear:hover{background:#e9f9f6;color:#205c71}
+.regatta-search-clear[hidden]{display:none!important}
+.regatta-search-empty{
+ grid-column:1/-1;margin:0;padding:26px 12px;
+ border:1px dashed #c8e0e5;border-radius:12px;background:#f9fcfd;
+ color:#6c8997;text-align:center;font:700 12px/1.7 Poppins,system-ui,sans-serif
+}
+@media(max-width:780px){
+ .regatta-catalogue-controls{gap:8px;margin:0 14px 12px}
+ .regatta-search-field{min-height:46px;padding-left:13px;gap:9px}
+ .regatta-search-field input[type="search"]{height:44px;font-size:16px}
+}
+@media(max-width:580px){
+ .regatta-catalogue-controls{grid-template-columns:minmax(0,1fr) auto;gap:8px}
+ .regatta-search-field{min-height:45px;border-radius:12px}
+ .regatta-search-field input[type="search"]{height:43px}
+}
+@media(max-width:360px){
+ .regatta-catalogue-controls{margin:0 9px 10px;gap:5px}
+ .regatta-search-field{padding-left:10px;padding-right:42px;gap:7px}
+ .regatta-search-field svg{width:18px;height:18px;flex-basis:18px}
+}
+@media(prefers-reduced-motion:reduce){
+ .regatta-search-field{transition:none}
+}
+
+
+/* PR #4 — unified Regatta header / search / Virtual Regatta buttons and foil identity. */
+:root{
+ --vr-navy:#173b64;--vr-blue:#258fc7;--vr-sky:#79d6e9;
+ --vr-pink:#ed4cae;--vr-rose:#f2b6d8;
+ --vr-button-border:linear-gradient(116deg,#217fb9 0%,#72d4ec 22%,#e95bad 55%,#1e548f 78%,#f1b4da 100%);
+ --vr-button-fill:linear-gradient(118deg,#f8fcff 0%,#e7f6fd 45%,#faedf7 80%,#f7fbff 100%);
+}
+.regatta-topbar{
+ display:flex;align-items:center;justify-content:space-between;
+ gap:18px;margin:0 26px 14px;
+ border-bottom:1px solid #d3e5ed;min-width:0;
+}
+.regatta-topbar .regatta-brand-header{
+ min-height:0;min-width:0;flex:0 0 auto;
+ margin:0;padding:4px 0 9px;border:0;background:transparent;
+}
+.regatta-topbar .regatta-brand-logo{
+ display:block;max-width:190px;width:auto;height:auto;max-height:69px;object-fit:contain
+}
+.regatta-topbar .workspace-tabs{
+ min-width:0;flex:1 1 auto;justify-content:flex-end;
+ margin:0;gap:7px;border-bottom:0;align-self:stretch
+}
+.regatta-topbar .workspace-tab{
+ flex:0 1 auto;min-height:51px;padding:12px 12px;
+ font-size:12px;letter-spacing:.035em
+}
+.regatta-topbar .workspace-tab.active::after{
+ background:linear-gradient(90deg,var(--vr-blue),var(--vr-pink),var(--vr-sky))
+}
+.regatta-catalogue-controls{
+ display:grid;grid-template-columns:minmax(0,1fr) auto auto;
+ align-items:center;gap:8px;margin:0 26px 8px;min-width:0
+}
+.regatta-catalogue-controls>.regatta-search{
+ grid-column:1!important;grid-row:1;min-width:0;width:100%
+}
+.regatta-catalogue-controls>.regatta-inline-actions{
+ grid-column:2;grid-row:1;display:flex;align-items:center;
+ justify-content:flex-end;gap:6px;flex-wrap:nowrap;min-width:0
+}
+.regatta-catalogue-controls>.regatta-navigation{
+ grid-column:3;grid-row:1;display:flex;align-items:center;
+ min-width:0;margin:0;gap:0
+}
+.regatta-cloud-status{
+ grid-column:1/-1;grid-row:2;
+ font-size:10px;min-width:0;color:#6d8898;
+ display:flex;justify-content:flex-end;margin-top:0
+}
+.regatta-cloud-status #rapli-shared-status-regatta{font-size:10px}
+.regatta-catalogue-controls>.regatta-search .regatta-search-field{min-height:42px}
+.regatta-catalogue-controls>.regatta-search input[type=search]{height:40px;font-size:13px}
+.regatta-catalogue-controls .regatta-inline-actions .regatta-icon-action{
+ width:42px!important;height:42px!important;min-height:42px!important;
+ flex:0 0 42px;padding:0!important;font-size:21px
+}
+#rapliProfileToggle.rapli-profile-toggle{
+ display:grid;place-items:center;
+ width:42px!important;height:42px!important;min-height:42px!important;
+ border:2px solid transparent!important;border-radius:11px!important;
+ color:var(--vr-navy)!important;
+ background:var(--vr-button-fill) padding-box,var(--vr-button-border) border-box!important;
+ box-shadow:0 4px 12px rgba(31,88,133,.16),inset 0 1px 0 rgba(255,255,255,.93)!important
+}
+#rapliProfileToggle.rapli-profile-toggle svg{stroke-width:2.4}
+button:not(.workspace-tab):not(.score-orb):not(.regatta-search-clear){
+ border:2px solid transparent!important;border-radius:11px!important;
+ background:var(--vr-button-fill) padding-box,var(--vr-button-border) border-box!important;
+ color:var(--vr-navy)!important;
+ min-height:40px;box-shadow:0 2px 9px rgba(40,102,143,.10),inset 0 1px 0 rgba(255,255,255,.85);
+ transition:filter .17s,box-shadow .17s,transform .17s
+}
+button:not(.workspace-tab):not(.score-orb):not(.regatta-search-clear):hover:not(:disabled){
+ filter:saturate(1.1);box-shadow:0 4px 14px rgba(28,100,160,.2),inset 0 1px 0 white;
+ transform:translateY(-1px)
+}
+button:not(.workspace-tab):not(.score-orb):not(.regatta-search-clear):active:not(:disabled){transform:translateY(0)}
+button.btn.danger,button[data-action="delete"],button[data-vsr-ranking-delete]{
+ color:#a72d5b!important
+}
+button.btn.primary,button#new-race,button#save-race{font-weight:900}
+button.close{min-width:40px;min-height:40px}
+.regatta-pagination button{min-width:40px!important;min-height:40px!important}
+.regatta-inline-actions button svg{width:19px;height:19px}
+.regatta-search-clear{border:1px solid #b8d0dc;background:#f8fcff}
+.badge-status{display:inline-flex;align-items:center;gap:6px}
+.live-neon{
+ display:inline-flex;width:20px;height:20px;align-items:center;justify-content:center;
+ color:#5cffbf;filter:drop-shadow(0 0 3px #12f3a9) drop-shadow(0 0 7px #02e9be);
+ animation:vr-live-pulse 1.45s ease-in-out infinite
+}
+.live-neon svg{display:block;width:19px;height:19px;overflow:visible}
+@keyframes vr-live-pulse{
+ 0%,100%{opacity:1;filter:drop-shadow(0 0 4px #11f7b7) drop-shadow(0 0 9px #18ecc5)}
+ 47%{opacity:.40;filter:drop-shadow(0 0 1px #1ef2b8)}
+ 68%{opacity:1;filter:drop-shadow(0 0 7px #72ffd0) drop-shadow(0 0 12px #00f3ae)}
+}
+.card .class-tag,.colors-panel .foil-editor-row .class-tag{
+ display:inline-flex;align-items:center;gap:5px;justify-content:center;
+ min-width:0;color:var(--class-ink,#14364a)!important;
+ border:2px solid var(--class-border,#8ab8cc)!important;
+ background:linear-gradient(132deg,var(--class-tag,#0b88a0) 0%,
+    var(--class-foil,#c1e7ed) 30%,var(--class-accent,#f5dbea) 62%,
+    var(--class-tag,#0b88a0) 100%)!important;
+ box-shadow:inset 0 1px 0 #ffffff88,0 2px 7px #234c6f22!important;
+ text-shadow:0 1px 1px #ffffff26!important;isolation:isolate
+}
+.card .vsr-badge,.colors-panel .foil-editor-row .vsr-badge{
+ display:inline-flex;align-items:center;gap:4px;justify-content:center;
+ color:var(--vsr-ink,#14364a)!important;
+ border:2px solid var(--vsr-border,#b6c6d8)!important;
+ background:linear-gradient(127deg,var(--vsr-tag,#c4e5ec) 0%,
+    var(--vsr-foil,#e5f6fb) 36%,var(--vsr-accent,#fce7f5) 67%,
+    var(--vsr-tag,#c4e5ec) 100%)!important;
+ box-shadow:inset 0 1px 0 #ffffffa8,0 2px 7px #234c6f22!important;
+ text-shadow:0 1px 1px #ffffff2d!important
+}
+.card .foil-symbol,.colors-panel .foil-symbol{font-size:11px;line-height:1;flex:0 0 auto}
+.card .class-tag,.card .vsr-badge{max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.colors-panel .foil-editor-row{
+ display:flex;flex-direction:column;align-items:stretch;gap:12px;
+ padding:15px;border:1px solid #cddfe9;border-radius:13px;
+ background:linear-gradient(127deg,#fafffe,#f6fafd 62%,#fff8fc);
+ margin:0 0 10px;min-width:0
+}
+.colors-panel .foil-editor-summary{
+ display:flex;align-items:center;justify-content:space-between;gap:9px;
+ flex-wrap:wrap;min-width:0
+}
+.colors-panel .foil-preview{flex:0 1 auto;min-width:0;max-width:100%;padding:7px 12px;border-radius:8px;font-weight:900}
+.colors-panel .foil-style-edit{display:grid;gap:11px;min-width:0}
+.colors-panel .foil-color-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;min-width:0}
+.colors-panel .foil-color-picker{min-width:0;display:flex;flex-direction:column;gap:5px}
+.colors-panel .foil-color-picker>span{font:850 9px/1.3 Poppins,sans-serif;letter-spacing:.02em;color:#4f758c}
+.colors-panel .foil-color-picker input[type=color]{
+ display:block;width:100%;height:40px;min-height:40px;padding:3px;
+ border:1px solid #b4cfdc;border-radius:8px;cursor:pointer;background:white
+}
+.colors-panel .foil-text-row{display:flex;align-items:end;gap:10px;min-width:0;flex-wrap:wrap}
+.colors-panel .foil-text-row>label{display:flex;flex-direction:column;gap:6px;flex:1 1 185px;
+ min-width:0;font:850 10px Poppins,sans-serif;color:#4b7187}
+.colors-panel .foil-text-row input[type=text]{
+ width:100%;min-width:0;min-height:40px;border:1px solid #b8cfdb;
+ background:white;border-radius:9px;padding:8px 12px;font:700 13px Poppins,sans-serif;color:#153d5c
+}
+.colors-panel .foil-text-row button{min-height:40px}
+@media(max-width:780px){
+ .regatta-topbar{margin:0 14px 11px;gap:8px}
+ .regatta-topbar .regatta-brand-logo{max-width:120px;max-height:56px}
+ .regatta-topbar .workspace-tabs{margin:0;gap:2px}
+ .regatta-topbar .workspace-tab{padding:9px 7px;font-size:10px;letter-spacing:0}
+ .regatta-catalogue-controls{margin:0 14px 10px;gap:5px}
+ .regatta-catalogue-controls .regatta-inline-actions{gap:4px}
+ .regatta-catalogue-controls .regatta-inline-actions .regatta-icon-action{
+  width:37px!important;height:39px!important;min-height:39px!important;flex-basis:37px
+ }
+ #rapliProfileToggle.rapli-profile-toggle{width:39px!important;height:39px!important;min-height:39px!important}
+ .regatta-catalogue-controls>.regatta-search .regatta-search-field{min-height:39px;padding:0 37px 0 10px;gap:6px}
+ .regatta-catalogue-controls>.regatta-search input[type=search]{height:37px;font-size:16px}
+ .regatta-catalogue-controls>.regatta-search svg{width:18px;height:18px;flex-basis:18px}
+}
+@media(max-width:540px){
+ .regatta-topbar .regatta-brand-logo{max-width:84px;max-height:44px}
+ .regatta-topbar .workspace-tab{font-size:9px;padding:8px 3px}
+ .regatta-catalogue-controls{margin:0 9px 9px;gap:4px}
+ .regatta-catalogue-controls .regatta-inline-actions .regatta-icon-action{
+  width:33px!important;height:35px!important;min-height:35px!important;flex-basis:33px;font-size:19px
+ }
+ #rapliProfileToggle.rapli-profile-toggle{width:35px!important;height:35px!important;min-height:35px!important}
+ .regatta-catalogue-controls>.regatta-search .regatta-search-field{min-height:35px;padding:0 31px 0 7px;gap:5px}
+ .regatta-catalogue-controls>.regatta-search input[type=search]{height:33px;font-size:16px}
+ .regatta-catalogue-controls>.regatta-search svg{width:16px;height:16px;flex-basis:16px}
+ .regatta-search-clear{width:26px;height:26px;min-height:26px;right:5px}
+ .regatta-cloud-status{font-size:9px;overflow-wrap:anywhere}
+ .colors-panel .foil-color-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .colors-panel .foil-text-row{flex-direction:column;align-items:stretch}
+ .colors-panel .foil-text-row button{align-self:flex-start}
+}
+@media(max-width:365px){
+ .regatta-topbar{margin:0 9px 10px;gap:5px}
+ .regatta-topbar .regatta-brand-logo{max-width:70px}
+ .regatta-topbar .workspace-tab{font-size:8px;padding:8px 2px}
+ .regatta-catalogue-controls .regatta-inline-actions{gap:2px}
+ .regatta-catalogue-controls .regatta-inline-actions .regatta-icon-action{
+  width:30px!important;height:33px!important;min-height:33px!important;flex-basis:30px
+ }
+ #rapliProfileToggle.rapli-profile-toggle{width:33px!important;height:33px!important;min-height:33px!important}
+ .colors-panel .foil-color-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(prefers-reduced-motion:reduce){
+ .live-neon{animation:none;opacity:1}
+ button:not(.workspace-tab):not(.score-orb){transition:none}
+}
+
+/* Header VSR ranking shortcut: the actual latest locally/cloud-synced VSR history. */
+.regatta-topbar #vsr-header-ranking.vsr-header-ranking{
+ position:relative;isolation:isolate;overflow:hidden;
+ display:inline-flex;align-items:center;justify-content:center;gap:9px;
+ flex:0 0 auto;min-width:153px;max-width:175px;
+ min-height:57px;padding:8px 12px!important;
+ border:2px solid transparent!important;border-radius:12px!important;
+ background:var(--vr-button-fill) padding-box,var(--vr-button-border) border-box!important;
+ box-shadow:inset 0 1px 0 #ffffffde,0 4px 14px #346c9930!important;
+ color:#163e66!important;
+ text-align:left;text-decoration:none;cursor:pointer;
+ -webkit-tap-highlight-color:transparent
+}
+.regatta-topbar #vsr-header-ranking::before{
+ content:"";position:absolute;inset:0;
+ background:linear-gradient(114deg,transparent 11%,#ffffffa8 30%,transparent 46%,#f8dceb45 65%,transparent 84%);
+ opacity:.46;pointer-events:none;z-index:-1
+}
+.regatta-topbar #vsr-header-ranking:focus-visible{
+ outline:2px solid #2184b8!important;outline-offset:3px!important
+}
+.regatta-topbar .vsr-header-ranking-symbol{
+ display:grid;place-items:center;flex:0 0 30px;
+ width:30px;height:30px;
+ border-radius:9px;background:linear-gradient(125deg,#d2edf9,#f9e6f5);
+ color:#236d9a
+}
+.regatta-topbar .vsr-header-ranking-symbol svg{display:block;width:21px;height:21px}
+.regatta-topbar .vsr-header-ranking-body{display:flex;flex-direction:column;align-items:flex-start;gap:2px;min-width:0}
+.regatta-topbar .vsr-header-ranking-label{
+ color:#46728e;font:900 9px/1.2 Poppins,system-ui,sans-serif;
+ letter-spacing:.035em;white-space:nowrap
+}
+.regatta-topbar .vsr-header-ranking-bottom{
+ display:flex;align-items:center;gap:5px;min-width:0;white-space:nowrap
+}
+.regatta-topbar .vsr-header-ranking-bottom strong{
+ font:900 25px/1 'Barlow Condensed',Poppins,system-ui,sans-serif;
+ color:#16426e;font-variant-numeric:tabular-nums;letter-spacing:.012em
+}
+.regatta-topbar .vsr-header-ranking-bottom small{
+ color:#4e788e;font:900 9px/1.1 Poppins,system-ui,sans-serif;
+ white-space:nowrap
+}
+.regatta-topbar .vsr-header-ranking-bottom small[data-direction="up"]{color:#147f80}
+.regatta-topbar .vsr-header-ranking-bottom small[data-direction="down"]{color:#c13b84}
+.regatta-topbar .vsr-header-ranking-bottom small[hidden]{display:none!important}
+.regatta-topbar #vsr-header-ranking[data-available="false"] .vsr-header-ranking-bottom strong{color:#7891a3}
+@media(max-width:980px){
+ .regatta-topbar{gap:9px}
+ .regatta-topbar #vsr-header-ranking.vsr-header-ranking{min-width:126px;padding:6px 9px!important;gap:6px;min-height:50px}
+ .regatta-topbar .vsr-header-ranking-symbol{width:23px;height:23px;flex-basis:23px}
+ .regatta-topbar .vsr-header-ranking-symbol svg{width:17px;height:17px}
+ .regatta-topbar .vsr-header-ranking-label{font-size:8px}
+ .regatta-topbar .vsr-header-ranking-bottom strong{font-size:21px}
+}
+@media(max-width:780px){
+ .regatta-topbar #vsr-header-ranking.vsr-header-ranking{
+  min-width:103px;max-width:123px;min-height:44px;padding:6px 7px!important;gap:4px
+ }
+ .regatta-topbar .vsr-header-ranking-symbol{display:none}
+ .regatta-topbar .vsr-header-ranking-label{font-size:7px;letter-spacing:0}
+ .regatta-topbar .vsr-header-ranking-bottom strong{font-size:19px}
+ .regatta-topbar .vsr-header-ranking-bottom small{font-size:8px}
+}
+@media(max-width:540px){
+ .regatta-topbar{gap:5px}
+ .regatta-topbar #vsr-header-ranking.vsr-header-ranking{
+  min-width:88px;max-width:99px;min-height:39px;padding:5px 6px!important;border-radius:10px!important
+ }
+ .regatta-topbar .vsr-header-ranking-label{font-size:7px}
+ .regatta-topbar .vsr-header-ranking-bottom{gap:3px}
+ .regatta-topbar .vsr-header-ranking-bottom strong{font-size:17px}
+ .regatta-topbar .vsr-header-ranking-bottom small{font-size:7px}
+}
+@media(max-width:365px){
+ .regatta-topbar{gap:3px}
+ .regatta-topbar #vsr-header-ranking.vsr-header-ranking{
+  min-width:75px;max-width:84px;padding:5px 4px!important
+ }
+ .regatta-topbar .vsr-header-ranking-label{font-size:6px}
+ .regatta-topbar .vsr-header-ranking-bottom strong{font-size:16px}
+ .regatta-topbar .vsr-header-ranking-bottom small{font-size:7px}
+}
+
+/* Keep the VSR rank precisely centred in the free space between branding and tabs. */
+.regatta-topbar{
+ display:grid;
+ grid-template-columns:auto minmax(0,1fr) auto;
+ align-items:center;
+ justify-content:stretch;
+}
+.regatta-topbar .regatta-brand-header{
+ grid-column:1;
+ justify-self:start;
+}
+.regatta-topbar #vsr-header-ranking.vsr-header-ranking{
+ grid-column:2;
+ justify-self:center;
+ margin:0;
+}
+.regatta-topbar .workspace-tabs{
+ grid-column:3;
+ justify-self:end;
+ flex:0 0 auto;
+ width:max-content;
+}
+.regatta-topbar .workspace-tab{flex:0 0 auto}
+@media(max-width:780px){
+ .regatta-topbar{grid-template-columns:auto minmax(0,1fr) auto}
+}
+@media(max-width:540px){
+ .regatta-topbar{grid-template-columns:auto minmax(0,1fr) auto}
+ .regatta-topbar .workspace-tabs{max-width:100%}
+}
+@media(max-width:365px){
+ .regatta-topbar .regatta-brand-logo{max-width:54px;max-height:39px}
+ .regatta-topbar .workspace-tab{font-size:7.5px;padding:8px 1px}
+}
+
+/* PR #4 — non-intrusive Cloud overlay and uniform glass/foil Regatta tile accents. */
+.regatta-cloud-status{
+ position:fixed!important;
+ top:calc(env(safe-area-inset-top,0px) + 64px);
+ right:clamp(10px,3vw,30px);
+ z-index:120;
+ width:max-content;max-width:min(355px,calc(100vw - 26px));
+ padding:11px 15px;
+ border:1.5px solid transparent;border-radius:13px;
+ background:linear-gradient(125deg,rgba(250,254,255,.91),rgba(232,245,255,.88) 52%,rgba(255,241,249,.88)) padding-box,
+  linear-gradient(115deg,#67c9df,#529bd2,#e28ebd,#9fd8dc) border-box;
+ backdrop-filter:blur(17px) saturate(1.22);-webkit-backdrop-filter:blur(17px) saturate(1.22);
+ box-shadow:0 13px 32px #174a7230,inset 0 1px 0 #ffffffd8;
+ color:#17415f;font:800 11px/1.5 Poppins,system-ui,sans-serif;
+ opacity:0;visibility:hidden;transform:translateY(-9px);
+ pointer-events:none;
+ transition:opacity .24s ease,transform .24s ease,visibility .24s ease;
+}
+.regatta-cloud-status[data-visible="true"]{
+ opacity:1;visibility:visible;transform:translateY(0)
+}
+.regatta-cloud-status[data-status="error"]{
+ background:linear-gradient(120deg,rgba(255,251,252,.94),rgba(255,232,239,.9)) padding-box,
+  linear-gradient(110deg,#e9828c,#cc4c85,#a0ccde) border-box;color:#8f315c
+}
+.regatta-cloud-status[data-status="pending"]{
+ color:#245b88;
+}
+.regatta-cloud-status #rapli-shared-status-regatta{
+ font:inherit;white-space:normal;overflow-wrap:anywhere;max-width:100%;display:block
+}
+.regatta-catalogue-controls .regatta-inline-actions #regatta-sync svg,
+.regatta-catalogue-controls .regatta-inline-actions #recalculate-scores svg{
+ width:19px;height:19px
+}
+.regatta-catalogue-controls .regatta-inline-actions #regatta-sync:focus-visible,
+.regatta-catalogue-controls .regatta-inline-actions #recalculate-scores:focus-visible{
+ outline:2px solid #258fc7;outline-offset:2px
+}
+/* Departure and arrival are a visual pair, without changing the stored dates. */
+.card .journey-timeline{
+ display:inline-flex;align-items:center;gap:7px;min-width:0;max-width:100%;
+ flex-wrap:wrap
+}
+.card .journey-arrow{
+ display:inline-flex;align-items:center;justify-content:center;
+ width:27px;min-height:28px;flex:0 0 27px;
+ color:#3790a6;filter:drop-shadow(0 1px 3px #50c6d13e)
+}
+.card .journey-arrow svg{display:block;width:25px;height:18px}
+/* Foil chips preserve the established visual semantics:
+   slate for times, mint for arrival, turquoise for equipment, gold/green for rewards. */
+.card .stat-chip{
+ border:1.6px solid transparent!important;border-radius:10px!important;
+ background:linear-gradient(117deg,#f8fbfd,#edf3f6 45%,#fafdff 65%,#e9f0f4) padding-box,
+  linear-gradient(113deg,#c9d9e0,#eaf9fc,#a7cadb,#e2ebee) border-box!important;
+ color:#466475;
+ box-shadow:inset 0 1px 0 #ffffffcc,0 2px 6px #1e5c7110!important;
+ font-weight:800;padding:8px 11px
+}
+.card .stat-chip.departure-chip{
+ background:linear-gradient(112deg,#f5f9fb,#eaf1f5 45%,#ffffff 71%,#eef6f7) padding-box,
+  linear-gradient(117deg,#c2dce4,#e5f3f9,#bfd6e2) border-box!important;
+ color:#466777
+}
+.card .stat-chip.arrival-chip{
+ background:linear-gradient(112deg,#e8f9f5,#d7f3ec 48%,#f7fffd 73%,#e1f6f0) padding-box,
+  linear-gradient(112deg,#7dcabb,#d1f0e8,#7acbbd) border-box!important;
+ color:#206e63
+}
+.card .stat-chip.duration-chip{
+ background:linear-gradient(112deg,#f1f6f8,#e5eef1 43%,#ffffff 67%,#eaf1f4) padding-box,
+  linear-gradient(111deg,#b4cdd8,#eaf8f9,#a2c4d0) border-box!important;
+ color:#345c73
+}
+.card .stat-chip.equipment{
+ background:linear-gradient(110deg,#e3f8f8,#cdefef 44%,#f5ffff 69%,#daf5f3) padding-box,
+  linear-gradient(113deg,#63c5cd,#b5edf0,#5cbbc8) border-box!important;
+ color:#067388
+}
+.card .stat-chip.reward-points{
+ background:linear-gradient(112deg,#fff5ce,#f6e5ae 42%,#fffdf2 65%,#f9e7b4) padding-box,
+  linear-gradient(111deg,#cfab43,#fff0a5,#dfb956) border-box!important;
+ color:#7f5d13
+}
+.card .stat-chip.reward-credits{
+ background:linear-gradient(112deg,#e9f8e8,#d4efd2 43%,#fbfffa 65%,#e2f5dc) padding-box,
+  linear-gradient(111deg,#8fc98e,#def5cb,#95c89a) border-box!important;
+ color:#3b744d
+}
+/* Premium foil on ranking plates with the same blue/green/lavender/champagne mapping. */
+.card .rank-grid .rank-plate{
+ position:relative;isolation:isolate;
+ border:2px solid transparent!important;border-radius:13px!important;
+ box-shadow:0 4px 12px #1d537013,inset 0 1px 0 #ffffffa8!important
+}
+.card .rank-grid .rank-plate::before{
+ content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+ background:linear-gradient(111deg,transparent 18%,#ffffff38 45%,transparent 68%);
+ z-index:-1
+}
+.card .rank-grid .rank-plate.rank-main{
+ background:linear-gradient(115deg,#093b56,#126a81 52%,#0b6075 85%,#10465c) padding-box,
+  linear-gradient(105deg,#369dc9,#78d6e7 33%,#f1a1d5 68%,#24b0c0) border-box!important;
+ box-shadow:0 5px 17px #117aa12d,inset 0 1px 0 #ffffff36!important
+}
+.card .rank-grid .rank-plate.rank-national{
+ background:linear-gradient(115deg,#f0f6fd,#e3effc 46%,#fbfdff 69%,#e8f3fc) padding-box,
+  linear-gradient(113deg,#9fbde6,#d7eaff,#a8c8e9) border-box!important
+}
+.card .rank-grid .rank-plate.rank-department{
+ background:linear-gradient(115deg,#eaf8f2,#d9f1e6 46%,#fbfffc 70%,#e4f5ed) padding-box,
+  linear-gradient(113deg,#9bcfb6,#d6f5e8,#a1d3bc) border-box!important
+}
+.card .rank-grid .rank-plate.rank-city{
+ background:linear-gradient(115deg,#f7f2fa,#eae3f2 43%,#fffdff 68%,#f0e9f7) padding-box,
+  linear-gradient(113deg,#cbb5d7,#f2e2f8,#ccb5df) border-box!important
+}
+.card .rank-grid .rank-plate.rank-team{
+ background:linear-gradient(115deg,#faf6ef,#f1eadc 42%,#fffdf8 67%,#f5eddf) padding-box,
+  linear-gradient(112deg,#d5c2a7,#fff1d6,#d7bea1) border-box!important
+}
+.card .rank-grid .rank-plate.rank-main .rank-type{color:#c2edf3}
+.card .rank-grid .rank-plate.rank-main strong{color:#ffffff}
+.card .rank-grid .rank-plate.rank-national strong,
+.card .rank-grid .rank-plate.rank-department strong,
+.card .rank-grid .rank-plate.rank-city strong,
+.card .rank-grid .rank-plate.rank-team strong{color:#183c57}
+.card .rank-grid .rank-plate .rank-type{text-shadow:0 1px 0 #ffffff2a}
+.card .badge-status{
+ border:1px solid #ffffff59;backdrop-filter:blur(5px);
+ box-shadow:inset 0 1px 0 #ffffff2c,0 3px 9px #0a32572c
+}
+@media(max-width:580px){
+ .regatta-cloud-status{top:calc(env(safe-area-inset-top,0px) + 52px);right:9px;padding:10px 12px;font-size:10px}
+ .card .journey-timeline{gap:5px}
+ .card .journey-arrow{width:22px;flex-basis:22px}
+ .card .journey-arrow svg{width:20px}
+ .card .stat-chip{padding:7px 9px}
+ .card .rank-grid .rank-plate{border-radius:11px!important}
+}
+@media(prefers-reduced-motion:reduce){
+ .regatta-cloud-status{transition:none}
+}
+
+
+/* Legibility on the vertical, blue-dominant / muted rose / charcoal shell gradient.
+   Cards, dialogs and inputs keep their existing light backgrounds. */
+.regatta-topbar .workspace-tab,
+.regatta-topbar .workspace-tab.active{
+  color:#f6fbff;
+  text-shadow:0 1px 3px rgba(8,19,35,.46);
+}
+.regatta-topbar .workspace-tab:not(.active){color:#e0edf5}
+
+
+/* Compact race tile: artwork becomes a small thumbnail beside the course
+   identity; ranks and useful data remain the visual focus. */
+.card .card-content{padding:14px 15px 15px}
+.card .card-intro{
+ display:grid;grid-template-columns:clamp(92px,28%,128px) minmax(0,1fr);
+ align-items:start;gap:13px;min-width:0;margin:0 0 10px
+}
+.card .card-intro .card-top{
+ position:relative;align-self:start;overflow:hidden;
+ width:100%;aspect-ratio:16/11;
+ border:1.5px solid #c8dfe5;border-radius:11px;
+ background:linear-gradient(145deg,#e7f4f5,#dcebf1 50%,#f9fafc);
+ box-shadow:0 3px 11px #1d4a6220
+}
+.card .card-intro .race-icon{
+ width:100%;height:100%;aspect-ratio:auto;
+ min-height:0;background:transparent
+}
+.card .card-intro .race-icon img{
+ width:100%;height:100%;object-fit:contain;object-position:center;
+ cursor:zoom-in
+}
+.card .card-intro .icon-placeholder{font-size:27px}
+.card .card-intro-info{display:flex;flex-direction:column;min-width:0;align-self:stretch}
+.card .card-intro .card-title-row{
+ display:flex;flex-direction:column;align-items:stretch;gap:7px;
+ margin:0 0 5px;min-width:0
+}
+.card .card-intro .card-title-row h2{
+ flex:none;width:100%;margin:0;
+ font-size:clamp(15px,1.45vw,19px);line-height:1.26
+}
+.card .card-intro .card-tag-row{
+ display:flex;justify-content:flex-start;align-items:center;
+ flex-wrap:wrap;flex:0 0 auto;gap:5px;
+ width:100%;max-width:100%;margin:0
+}
+.card .card-intro .card-tag-row .class-tag{max-width:100%;flex:0 1 auto}
+.card .card-intro .card-tag-row .vsr-badge{max-width:100%;flex:0 0 auto}
+.card .card-intro .card-boat{
+ min-height:0;margin:0;
+ font-size:10px;line-height:1.45;overflow-wrap:anywhere
+}
+.card .card-intro .card-status-row{
+ display:flex;align-items:center;justify-content:flex-start;
+ flex-wrap:wrap;gap:6px;margin-top:8px;min-width:0
+}
+.card .card-intro .badge-status,
+.card .card-intro .start-today-flag{
+ position:static;left:auto;top:auto;right:auto;bottom:auto;
+ max-width:100%;width:max-content;margin:0;
+ font-size:8px;line-height:1.3;overflow-wrap:anywhere
+}
+.card .card-intro .start-today-flag{padding:5px 7px}
+.card .card-stats{margin-top:10px}
+.card .rank-grid{margin-top:12px}
+/* Secondary screenshots no longer dominate the bottom of a completed tile. */
+.card .card-footer{display:flex;flex-direction:column;gap:10px;margin-top:12px;min-width:0}
+.card .card-footer.with-shots{
+ display:grid;grid-template-columns:minmax(0,206px) minmax(0,1fr);
+ align-items:end;gap:12px
+}
+.card .card-footer .shots{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+ width:100%;max-width:100%;gap:7px;margin:0;min-width:0
+}
+.card .card-footer .shot{display:flex;flex-direction:column;gap:4px;min-width:0}
+.card .card-footer .shot label{
+ display:block;margin:0;min-height:18px;
+ color:#597d8b;font-size:8px;line-height:1.15
+}
+.card .card-footer .shot-box{
+ aspect-ratio:auto;height:74px;min-height:0;max-height:74px;
+ border:1.5px solid #cee0e7;border-radius:9px;
+ background:linear-gradient(140deg,#f2f8fa,#e8f1f5)
+}
+.card .card-footer .shot-box img{
+ width:100%;height:100%;object-fit:contain;cursor:zoom-in
+}
+.card .card-footer .shot-empty{font-size:8px;text-align:center;padding:4px}
+.card .card-footer .card-actions{
+ display:flex;align-items:flex-end;justify-content:flex-end;
+ flex-wrap:wrap;gap:6px;margin:0;min-width:0
+}
+.card .card-footer .card-actions .btn{flex:1 1 79px;min-width:0}
+@media(max-width:1000px){
+ .card .card-footer.with-shots{grid-template-columns:minmax(0,1fr);gap:10px}
+ .card .card-footer .shots{max-width:238px}
+ .card .card-footer .card-actions{justify-content:stretch}
+}
+@media(max-width:580px){
+ .card .card-content{padding:12px 13px 13px}
+ .card .card-intro{grid-template-columns:clamp(90px,27%,114px) minmax(0,1fr);gap:11px;margin-bottom:8px}
+ .card .card-intro .card-title-row h2{font-size:16px}
+ .card .card-intro .card-boat{font-size:10px}
+ .card .card-intro .card-status-row{margin-top:7px}
+ .card .card-footer .shot-box{height:68px;max-height:68px}
+ .card .card-footer .shots{max-width:224px}
+}
+@media(max-width:360px){
+ .card .card-intro{grid-template-columns:83px minmax(0,1fr);gap:9px}
+ .card .card-intro .card-title-row h2{font-size:15px}
+ .card .card-intro .card-tag-row{gap:4px}
+ .card .card-intro .card-tag-row .class-tag{font-size:8px;padding:4px 5px}
+ .card .card-intro .card-tag-row .vsr-badge{font-size:8px;padding:4px 5px}
+}
+
+
+/* PR #4 — Two-column race cards: left story/timing, right performance. 
+   Only presentation changes; the collection's saved schema is unchanged. */
+.cards .card.card--columns{overflow:hidden;isolation:isolate}
+.cards .card.card--columns:has(.race-actions-menu[open]){
+ overflow:visible;isolation:auto;z-index:25
+}
+.cards .card.card--columns .card-content{padding:14px;min-width:0}
+.cards .card.card--columns .race-card-layout{
+ display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.18fr);
+ gap:14px;align-items:start;min-width:0;margin:0
+}
+.cards .card.card--columns .race-card-left,
+.cards .card.card--columns .race-card-right{display:flex;flex-direction:column;min-width:0}
+.cards .card.card--columns .race-card-left .card-top{
+ width:100%;height:auto;aspect-ratio:16/10;min-height:0;
+ border:1.5px solid #c9dfe5;border-radius:11px;
+ overflow:hidden;position:relative;box-shadow:0 3px 12px #173c5b26;
+ background:linear-gradient(137deg,#e5f3f8,#dce8f1 60%,#f5eff9)
+}
+.cards .card.card--columns .race-card-left .race-icon{
+ width:100%;height:100%;aspect-ratio:auto;min-height:0
+}
+.cards .card.card--columns .race-card-left .race-icon img{
+ display:block;width:100%;height:100%;object-fit:contain;cursor:zoom-in
+}
+.cards .card.card--columns .race-card-left .icon-placeholder{font-size:30px}
+.cards .card.card--columns .card-top .card-status-row{
+ position:absolute;bottom:6px;left:6px;right:6px;z-index:2;
+ display:flex;flex-wrap:wrap;gap:5px;margin:0;align-items:center
+}
+.cards .card.card--columns .card-top .badge-status{
+ position:static;display:inline-flex;align-items:center;gap:4px;
+ width:auto;max-width:100%;padding:5px 7px;border-radius:7px;
+ font:900 8px/1.25 Poppins,sans-serif;letter-spacing:.01em;
+ background:#143c59d9;color:#fff;backdrop-filter:blur(7px);
+ box-shadow:0 2px 8px #12304452
+}
+.cards .card.card--columns .card-top .badge-status .live-neon{
+ width:15px;height:15px;flex:0 0 15px
+}
+.cards .card.card--columns .card-top .badge-status .live-neon svg{
+ width:15px;height:15px
+}
+.cards .card.card--columns.live .card-top .badge-status{
+ background:#9b296ddc;color:white
+}
+.cards .card.card--columns .card-intro-info{
+ display:flex;flex-direction:column;min-width:0;align-self:stretch;
+ gap:0;margin-top:11px
+}
+.cards .card.card--columns .card-title-row{
+ display:grid;grid-template-columns:34px minmax(0,1fr);
+ gap:7px;align-items:start;justify-content:initial;
+ margin:0 0 5px;min-width:0
+}
+.cards .card.card--columns .card-title-row h2{
+ grid-column:2;grid-row:1;min-width:0;width:auto;margin:0;
+ font-size:clamp(14px,1.45vw,18px);line-height:1.27;
+ overflow-wrap:anywhere;color:#193c5b
+}
+.cards .card.card--columns .race-card-subtype{
+ color:#7291a4;font:800 9px/1.45 Poppins,sans-serif;
+ letter-spacing:.055em;margin:2px 0 6px
+}
+.cards .card.card--columns .start-today-flag{
+ display:inline-flex;align-self:flex-start;position:static;
+ margin:1px 0 5px;padding:5px 7px;max-width:100%;
+ font-size:8px;white-space:normal
+}
+.cards .card.card--columns .race-actions-menu{
+ position:relative;grid-column:1;grid-row:1;
+ min-width:0;margin:0;padding:0;z-index:8
+}
+.cards .card.card--columns .race-actions-menu>summary{
+ display:flex;align-items:center;justify-content:center;
+ list-style:none;cursor:pointer;width:34px;height:34px;
+ padding:0;border-radius:10px;border:2px solid transparent;
+ background:linear-gradient(110deg,#f4fbff,#e5f2fa 53%,#f8eaf5) padding-box,
+  linear-gradient(110deg,#55b7d9,#a1dcea,#e79bc6,#3579b3) border-box;
+ color:#18476c;font:900 22px/1 Poppins,sans-serif;
+ box-shadow:inset 0 1px 0 #ffffffdd,0 2px 7px #2460851c;
+ user-select:none;-webkit-tap-highlight-color:transparent
+}
+.cards .card.card--columns .race-actions-menu>summary::-webkit-details-marker{display:none}
+.cards .card.card--columns .race-actions-menu>summary::marker{content:""}
+.cards .card.card--columns .race-actions-menu>summary:focus-visible{
+ outline:2px solid #238ec2;outline-offset:2px
+}
+.cards .card.card--columns .race-actions-menu[open]>summary{
+ background:linear-gradient(120deg,#e8f7fb,#f8e6f3) padding-box,
+  linear-gradient(113deg,#1488bd,#e76fac,#245c94) border-box
+}
+.cards .card.card--columns .race-actions-popover{
+ position:absolute;top:39px;left:0;z-index:55;
+ display:flex;flex-direction:column;gap:4px;
+ width:max-content;min-width:205px;max-width:min(245px,calc(100vw - 45px));
+ padding:8px;border:1.5px solid #b4d4e3;border-radius:12px;
+ background:linear-gradient(135deg,rgba(250,254,255,.97),rgba(244,250,255,.98) 50%,rgba(255,246,251,.97));
+ box-shadow:0 15px 32px #143a5961,inset 0 1px 0 #ffffff;
+ backdrop-filter:blur(13px);-webkit-backdrop-filter:blur(13px)
+}
+.cards .card.card--columns .race-actions-popover button{
+ display:flex;align-items:center;justify-content:flex-start;
+ gap:9px;width:100%;min-height:36px;padding:8px 10px!important;
+ border:1px solid #cee0e9!important;border-radius:8px!important;
+ text-align:left;white-space:normal;
+ background:linear-gradient(120deg,#f8fcfe,#e8f3fa 58%,#faf2f8)!important;
+ color:#184664!important;font:750 10px/1.3 Poppins,sans-serif!important
+}
+.cards .card.card--columns .race-actions-popover button>span{
+ font-size:15px;flex:0 0 17px;text-align:center
+}
+.cards .card.card--columns .race-actions-popover button.is-danger{
+ color:#a33468!important
+}
+.cards .card.card--columns .race-actions-divider{height:1px;background:#d8e6ec;margin:2px 0}
+.cards .card.card--columns .race-card-schedule{
+ display:flex;flex-direction:column;gap:7px;margin-top:10px;min-width:0
+}
+.cards .card.card--columns .race-card-date-item{
+ display:flex;flex-direction:column;gap:3px;min-width:0;
+ border:1.5px solid transparent;border-radius:9px;padding:8px 9px;
+ background:linear-gradient(115deg,#f8fcfe,#edf5f8 65%,#faf9fd) padding-box,
+  linear-gradient(110deg,#c3dae6,#e7f4f8,#b6d5e3) border-box;
+ box-shadow:0 2px 6px #245a7610
+}
+.cards .card.card--columns .race-card-field-label{
+ color:#648697;font:900 8px/1.35 Poppins,sans-serif;letter-spacing:.04em
+}
+.cards .card.card--columns .race-card-date-item strong{
+ color:#285774;font:800 11px/1.35 Poppins,sans-serif;overflow-wrap:anywhere
+}
+.cards .card.card--columns .race-card-date-item strong.is-live{color:#c23380}
+.cards .card.card--columns .race-card-date-item strong.is-upcoming{color:#386cba}
+.cards .card.card--columns .race-card-clock{
+ background:linear-gradient(112deg,#e6f6f6,#dbf2f5 58%,#faf2fa) padding-box,
+  linear-gradient(115deg,#7ac3d4,#f2bfdc,#74b8d4) border-box
+}
+.cards .card.card--columns .race-card-clock .race-card-time-value{
+ color:#146680;font:900 clamp(13px,1.75vw,18px)/1.3 'Courier Prime','Courier New',monospace;
+ font-variant-numeric:tabular-nums;overflow-wrap:anywhere
+}
+.cards .card.card--columns .race-card-clock .race-card-time-value.is-empty{
+ color:#70899b;font:800 10px/1.4 Poppins,sans-serif
+}
+.cards .card.card--columns .race-card-right .race-card-meta{
+ display:flex;flex-direction:column;gap:7px;min-width:0;
+ padding-bottom:9px;border-bottom:1px solid #dbe9ee
+}
+.cards .card.card--columns .race-card-meta-tags{
+ display:flex;align-items:center;justify-content:flex-start;
+ gap:5px;flex-wrap:wrap;min-width:0
+}
+.cards .card.card--columns .race-card-meta-tags .class-tag,
+.cards .card.card--columns .race-card-meta-tags .vsr-badge{
+ flex:0 1 auto;max-width:100%;font-size:9px;padding:6px 8px
+}
+.cards .card.card--columns .race-card-meta-tags .stat-chip.equipment{
+ font-size:9px;padding:6px 8px;max-width:100%;overflow-wrap:anywhere
+}
+.cards .card.card--columns .race-card-right .card-boat{
+ color:#748fa0;font:650 10px/1.5 Poppins,sans-serif;min-height:0;
+ overflow-wrap:anywhere
+}
+.cards .card.card--columns .race-card-rankings{margin-top:10px;min-width:0}
+.cards .card.card--columns .rank-main-row{
+ display:flex;align-items:center;gap:7px;min-width:0
+}
+.cards .card.card--columns .rank-main-row .rank-plate.rank-main{
+ flex:1 1 0;width:0;min-width:0;padding:8px
+}
+.cards .card.card--columns .rank-main-row .rank-main .rank-icon{font-size:18px}
+.cards .card.card--columns .rank-main-row .rank-main .rank-type{font-size:8px}
+.cards .card.card--columns .rank-main-row .rank-main strong{font-size:clamp(22px,2.5vw,30px)}
+.cards .card.card--columns .rank-main-row .score-orb{
+ flex:0 0 53px;width:53px;height:53px;font-size:19px
+}
+.cards .card.card--columns .race-rank-placeholder{
+ flex:1;min-width:0;padding:10px 7px;border-radius:8px;
+ border:1px dashed #c2dce5;background:#edf7fa;
+ color:#5e8999;font:800 9px/1.4 Poppins,sans-serif
+}
+.cards .card.card--columns .race-alt-ranks.rank-grid{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+ gap:6px;margin:8px 0 0;min-width:0
+}
+.cards .card.card--columns .race-alt-ranks .rank-plate{
+ min-width:0;gap:5px;padding:7px 6px;border-radius:9px
+}
+.cards .card.card--columns .race-alt-ranks .rank-icon{font-size:15px}
+.cards .card.card--columns .race-alt-ranks .rank-type{font-size:7px}
+.cards .card.card--columns .race-alt-ranks strong{font-size:18px}
+.cards .card.card--columns .race-card-rewards{
+ display:flex;flex-wrap:wrap;align-items:center;
+ gap:6px;margin-top:11px;min-width:0
+}
+.cards .card.card--columns .race-card-rewards .stat-chip{
+ flex:1 1 116px;min-width:0;font-size:9px;
+ text-align:center;padding:8px 7px;overflow-wrap:anywhere
+}
+.cards .card.card--columns .race-card-rank-empty{
+ padding:11px 9px;margin:11px 0 0;border:1px dashed #cfdee8;
+ border-radius:9px;background:#f3f8fa;color:#698798;
+ font:700 10px/1.5 Poppins,sans-serif
+}
+.cards .card.card--columns .record-card{
+ margin-top:10px;min-width:0
+}
+.cards .card.card--columns .record-card-summary{
+ padding:8px;gap:6px
+}
+.cards .card.card--columns .record-card-summary strong{overflow-wrap:anywhere}
+.cards .card.card--columns .record-attempt-chips{
+ max-height:230px;overflow-y:auto;overscroll-behavior:contain
+}
+.cards .card.card--columns .score-pending{margin-top:8px}
+@media(max-width:780px){
+ .cards .card.card--columns .race-card-layout{grid-template-columns:minmax(0,.9fr) minmax(0,1.28fr);gap:11px}
+ .cards .card.card--columns .card-content{padding:12px}
+ .cards .card.card--columns .race-card-meta-tags .class-tag,
+ .cards .card.card--columns .race-card-meta-tags .vsr-badge{padding:5px 6px}
+}
+@media(max-width:580px){
+ .cards .card.card--columns .race-card-layout{grid-template-columns:minmax(0,.85fr) minmax(0,1.27fr);gap:9px}
+ .cards .card.card--columns .card-content{padding:11px}
+ .cards .card.card--columns .card-title-row{grid-template-columns:30px minmax(0,1fr);gap:5px}
+ .cards .card.card--columns .card-title-row h2{font-size:15px}
+ .cards .card.card--columns .race-actions-menu>summary{width:30px;height:30px;font-size:19px}
+ .cards .card.card--columns .race-actions-popover{top:34px}
+ .cards .card.card--columns .race-card-schedule{gap:6px}
+ .cards .card.card--columns .race-card-date-item{padding:7px 6px}
+ .cards .card.card--columns .race-card-date-item strong{font-size:10px}
+ .cards .card.card--columns .race-card-clock .race-card-time-value{font-size:14px}
+ .cards .card.card--columns .race-card-meta-tags{gap:4px}
+ .cards .card.card--columns .race-card-meta-tags .class-tag,
+ .cards .card.card--columns .race-card-meta-tags .vsr-badge,
+ .cards .card.card--columns .race-card-meta-tags .stat-chip.equipment{font-size:8px}
+ .cards .card.card--columns .rank-main-row .rank-main strong{font-size:22px}
+ .cards .card.card--columns .rank-main-row .score-orb{flex-basis:45px;width:45px;height:45px;font-size:17px}
+ .cards .card.card--columns .race-alt-ranks .rank-plate{padding:6px 4px;gap:3px}
+ .cards .card.card--columns .race-alt-ranks strong{font-size:17px}
+ .cards .card.card--columns .race-card-rewards .stat-chip{flex-basis:100%;font-size:9px}
+}
+@media(max-width:360px){
+ .cards .card.card--columns .race-card-layout{grid-template-columns:minmax(0,.82fr) minmax(0,1.18fr);gap:7px}
+ .cards .card.card--columns .card-title-row{grid-template-columns:27px minmax(0,1fr);gap:4px}
+ .cards .card.card--columns .race-actions-menu>summary{width:27px;height:29px}
+ .cards .card.card--columns .card-title-row h2{font-size:14px}
+ .cards .card.card--columns .race-alt-ranks.rank-grid{grid-template-columns:minmax(0,1fr)}
+ .cards .card.card--columns .race-card-date-item strong{font-size:9px}
+ .cards .card.card--columns .rank-main-row .score-orb{flex-basis:40px;width:40px;height:40px}
+}
+@media(prefers-reduced-motion:reduce){
+ .cards .card.card--columns .race-actions-menu>summary{transition:none}
+}

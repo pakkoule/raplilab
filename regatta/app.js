@@ -283,7 +283,7 @@ let storageRecoveryBlocked=false;
  function regattaPager(total){
    const pages=Math.ceil(total/REGATTA_PAGE_SIZE);
    regattaPage=Math.max(1,Math.min(regattaPage,Math.max(1,pages)));
-   if(total<=0)return '';
+   if(total<=REGATTA_PAGE_SIZE)return ''; // Hide pagination when everything fits on one page.
    const visible=[...new Set([1,pages,regattaPage-1,regattaPage,regattaPage+1]
      .filter(n=>n>=1&&n<=pages))].sort((a,b)=>a-b);
    let previous=0,links='';
@@ -511,7 +511,6 @@ function render({searchOnly=false}={}){
  $('count-finished').textContent=raceRows.filter(r=>raceStatus(r)==='finished').length;
  $('count-dnf').textContent=raceRows.filter(r=>raceStatus(r)==='dnf').length;
  $('count-record').textContent=rows.filter(r=>r.kind==='record').length;
- $('result-count').textContent=out.length+' / '+rows.length;
  regattaResultsCount=out.length;
  regattaPage=Math.max(1,Math.min(regattaPage,Math.max(1,Math.ceil(out.length/REGATTA_PAGE_SIZE))));
  const pageStart=(regattaPage-1)*REGATTA_PAGE_SIZE;

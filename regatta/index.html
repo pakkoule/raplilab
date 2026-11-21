@@ -54,6 +54,11 @@ html:not([data-rapli-role="editor"]) #rapli-module-cloud-save{display:none!impor
 <body>
 <main class="shell">
   <div class="topline" aria-hidden="true"></div>
+  <nav class="regatta-collection-tabs" role="tablist" aria-label="Collections Rapli Lab">
+    <a class="regatta-collection-tab" href="../#own" target="_top" role="tab" aria-selected="false">OWN</a>
+    <a class="regatta-collection-tab" href="../#wishlist" target="_top" role="tab" aria-selected="false">WISHLIST</a>
+    <span class="regatta-collection-tab is-active" role="tab" aria-selected="true" tabindex="0">REGATTA <span aria-hidden="true">⛵</span></span>
+  </nav>
   <nav class="workspace-tabs" role="tablist" aria-label="Vues Rapli Regatta">
     <button type="button" id="view-races" class="workspace-tab active" role="tab" aria-selected="true" aria-controls="races-panel">COURSES</button>
     <button type="button" id="view-stats" class="workspace-tab" role="tab" aria-selected="false" aria-controls="stats-panel" tabindex="-1">STATISTIQUES</button>

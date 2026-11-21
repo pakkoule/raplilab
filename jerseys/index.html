@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#f3f4f6">
+  <meta name="description" content="Rapli Jerseys — collection de maillots de sport, bientôt disponible dans Rapli Lab.">
+  <title>Rapli Lab</title>
+  <link rel="icon" type="image/png" href="../assets/rapli-lab-favicon.png">
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png">
+  <style>
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap');
+  *{box-sizing:border-box}
+  :root{font-family:Poppins,system-ui,-apple-system,sans-serif;color:#26475b;background:#f5f8fa}
+  html{scroll-behavior:smooth}
+  body{margin:0;min-height:100vh;background:linear-gradient(150deg,#f5fbf8 0%,#f4f8fc 52%,#faf6f7 100%)}
+  .app-shell{
+    width:min(1120px,calc(100% - 48px));max-width:1120px;
+    margin:27px auto 42px;padding:0 27px 40px;
+    border:1px solid #d9e5ed;border-radius:21px;
+    background:linear-gradient(145deg,#fff,#f7fafb 65%,#f6f9fb);
+    box-shadow:0 14px 42px rgba(40,80,103,.08);
+  }
+  .topline{height:5px;margin:0 -27px;border-radius:20px 20px 0 0;
+    background:linear-gradient(90deg,#8bdfc5,#c7e2f1 42%,#e7d4e9 75%,#efddba)}
+  .jerseys-collection-header{margin-top:10px}
+  .jerseys-start{margin:30px auto 0;padding:36px clamp(18px,5vw,50px);
+    max-width:780px;text-align:center;position:relative;
+    border:1px solid #d7e8e7;border-radius:20px;
+    background:linear-gradient(135deg,rgba(246,255,251,.96),rgba(244,249,255,.96),rgba(255,250,244,.9));
+    box-shadow:0 10px 26px rgba(34,77,103,.065)}
+  .jerseys-symbol{display:grid;place-items:center;width:72px;height:72px;margin:0 auto 16px;
+    border:1px solid #b9deda;border-radius:20px;font-size:33px;
+    background:linear-gradient(140deg,#e9fcf6,#e8f4ff 60%,#f9ebf3)}
+  .jerseys-kicker{font-size:10px;letter-spacing:.18em;font-weight:900;color:#43817e}
+  h1{margin:8px 0 13px;font-size:clamp(22px,5vw,35px);font-weight:900;letter-spacing:.045em;color:#245466}
+  .jerseys-start p{max-width:540px;margin:0 auto;font-size:13px;line-height:1.75;color:#587386}
+  .jerseys-note{margin:22px auto 0;max-width:540px;padding:12px 15px;
+    border-radius:11px;background:#fff;border:1px solid #dae9eb;
+    color:#617a88;font-weight:650;font-size:11px;line-height:1.6}
+  @media(max-width:750px){
+    .app-shell{width:calc(100% - 16px);padding:0 11px 26px;margin:8px auto 18px;border-radius:15px}
+    .topline{margin:0 -11px;border-radius:14px 14px 0 0}
+    .jerseys-start{margin-top:18px;padding:25px 16px}
+    .jerseys-start p{font-size:12px}
+    .jerseys-symbol{width:62px;height:62px;font-size:29px}
+  }
+  </style>
+  <link rel="stylesheet" href="../shared/collection-navigation.css">
+</head>
+<body>
+  <main class="app-shell">
+    <div class="topline" aria-hidden="true"></div>
+    <header class="jerseys-collection-header">
+      <div class="rapli-collection-brand" aria-label="Rapli Lab"><img src="../assets/rapli-archives-logo-header-transparent.webp" alt="Rapli Lab" width="102" height="72"></div>
+      <nav class="jerseys-collection-tabs" role="tablist" aria-label="Collections Rapli Lab">
+        <a role="tab" aria-selected="false" class="jerseys-collection-tab" href="../#own" target="_top">OWN</a>
+        <a role="tab" aria-selected="false" class="jerseys-collection-tab" href="../#wishlist" target="_top">WISHLIST</a>
+        <a role="tab" aria-selected="false" class="jerseys-collection-tab" href="../#regatta" target="_top">REGATTA</a>
+        <span role="tab" aria-selected="true" tabindex="0" class="jerseys-collection-tab is-active">JERSEYS</span>
+      </nav>
+    </header>
+    <section class="jerseys-start" aria-labelledby="jerseys-title">
+      <div class="jerseys-symbol" aria-hidden="true">👕</div>
+      <span class="jerseys-kicker">RAPLI LAB · NOUVELLE COLLECTION</span>
+      <h1 id="jerseys-title">JERSEYS</h1>
+      <p>Ton futur espace dédié à la collection de maillots. La navigation est prête et adopte exactement le style des onglets OWN et WISHLIST.</p>
+      <div class="jerseys-note">La gestion des maillots, leurs photos et leurs fiches seront ajoutées ultérieurement. Les cartes, les Rainbows et les courses Regatta restent inchangés.</div>
+    </section>
+  </main>
+</body>
+</html>

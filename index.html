@@ -492,7 +492,8 @@ html[data-rapli-role="editor"] #rapli-admin-login{display:none}
     function routeSportsView(){
       const frame=frames.sports;
       if(frame?.src&&frame.contentWindow)frame.contentWindow.postMessage({
-        type:'RAPLI_LAB_NAVIGATION',view:sportsViewFromHash()
+        type:'RAPLI_LAB_NAVIGATION',view:sportsViewFromHash(),
+        palette:location.hash.slice(1).toLowerCase()==='regatta-appearance'?'regatta':null
       },location.origin);
     }
     function activity(name,active){

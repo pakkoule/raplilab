@@ -47,11 +47,13 @@ html:not([data-rapli-role="editor"]) #rapli-module-cloud-save{display:none!impor
 .rapli-profile-menu button,.rapli-profile-menu a{display:block;width:100%;box-sizing:border-box;min-height:38px;border:1px solid #d1e3e7;border-radius:9px;padding:10px;background:#fff;color:#20516c;font:800 11px Poppins,system-ui,sans-serif;text-decoration:none;text-align:left;cursor:pointer}
 .rapli-profile-message{padding:3px 5px;overflow-wrap:anywhere;font-size:10px;color:#60798a}
 .rapli-profile-message[data-error=true]{color:#af4050}
-@media(max-width:520px){.regatta-navigation{gap:5px}</style>
+@media(max-width:520px){.regatta-navigation{gap:5px}#rapli-shared-status-regatta{font-size:9px}.rapli-profile-toggle{width:35px;height:35px}}
+</style>
 </head>
 <body>
 <main class="shell">
   <div class="topline" aria-hidden="true"></div>
+  <div class="regatta-topbar">
   <header class="regatta-brand-header" aria-label="Rapli Regatta">
     <img class="regatta-brand-logo" src="assets/logo.webp" alt="Rapli Regatta" width="216" height="94" loading="eager">
   </header>
@@ -61,10 +63,26 @@ html:not([data-rapli-role="editor"]) #rapli-module-cloud-save{display:none!impor
     <button type="button" id="view-honors" class="workspace-tab" role="tab" aria-selected="false" aria-controls="honors-panel" tabindex="-1">PALMARÈS</button>
     <button type="button" id="view-colors" class="workspace-tab regatta-settings-tab" role="tab" aria-selected="false" aria-controls="colors-panel" tabindex="-1" hidden>COULEURS DES CLASSES</button>
   </nav>
+  </div>
   <div id="races-panel" role="tabpanel" aria-labelledby="view-races">
   <div class="regatta-catalogue-controls">
+    <div class="regatta-search" role="search" aria-label="Recherche dans toutes les informations des courses">
+      <label class="regatta-search-field" for="search">
+        <svg aria-hidden="true" viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.8" cy="10.8" r="7.2"/><path d="m16.3 16.3 5 5"/></svg>
+        <span class="sr-only">Rechercher une course par toutes les informations présentes sur sa tuile</span>
+        <input id="search" type="search" enterkeyhint="search" autocomplete="off" spellcheck="false"
+          placeholder="Rechercher une course, un bateau, une date, un classement, une note…" aria-controls="cards"
+          aria-describedby="regatta-search-help">
+      </label>
+      <button type="button" id="regatta-search-clear" class="regatta-search-clear" aria-label="Effacer la recherche" title="Effacer la recherche" hidden>×</button>
+      <span class="sr-only" id="regatta-search-help">Recherchez aussi les catégories VSR, statuts, équipements, points, crédits et tentatives. Plusieurs mots peuvent être combinés.</span>
+    </div>
+    <div class="cloud-actions regatta-inline-actions" role="group" aria-label="Actions sur les courses">
+      <button type="button" class="btn subtle tiny regatta-icon-action" id="recalculate-scores" aria-label="Recalculer les notes" title="Recalculer les notes">↻</button>
+      <button type="button" class="btn primary tiny regatta-icon-action" id="new-race" aria-label="Ajouter une course" title="Ajouter une course">＋</button>
+      <button type="button" class="btn subtle tiny regatta-icon-action rapli-personalize-action" id="manage-class-colors" aria-label="Gérer les couleurs des classes" title="Gérer les couleurs des classes"><svg class="rapli-personalize-gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M10.3 2.4h3.4l.5 1.9 1.7.7 1.7-1 2.4 2.4-1 1.7.7 1.7 1.9.5v3.4l-1.9.5-.7 1.7 1 1.7-2.4 2.4-1.7-1-1.7.7-.5 1.9h-3.4l-.5-1.9-1.7-.7-1.7 1-2.4-2.4 1-1.7-.7-1.7-1.9-.5v-3.4l1.9-.5.7-1.7-1-1.7 2.4-2.4 1.7 1 1.7-.7z"/></svg></button>
+    </div>
     <div class="regatta-navigation">
-      <span id="rapli-shared-status-regatta" role="status" aria-live="polite">Chargement de la collection…</span>
       <div class="rapli-profile" id="rapliProfile">
         <button id="rapliProfileToggle" type="button" class="rapli-profile-toggle" aria-label="Ouvrir le menu Profil" title="Profil et applications" aria-haspopup="true" aria-expanded="false" aria-controls="rapliProfileMenu">
           <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5.2 20c.2-4 2.8-6.2 6.8-6.2s6.6 2.2 6.8 6.2"/></svg>
@@ -77,24 +95,8 @@ html:not([data-rapli-role="editor"]) #rapli-module-cloud-save{display:none!impor
         </div>
       </div>
     </div>
-    <div class="cloud-actions regatta-inline-actions" role="group" aria-label="Actions sur les courses">
-      <button type="button" class="btn subtle tiny regatta-icon-action" id="recalculate-scores" aria-label="Recalculer les notes" title="Recalculer les notes">↻</button>
-      <button type="button" class="btn subtle tiny regatta-icon-action" id="compact-cards" aria-label="Activer l’affichage compact" title="Affichage compact des courses" aria-pressed="false">▦</button>
-      <button type="button" class="btn primary tiny regatta-icon-action" id="new-race" aria-label="Ajouter une course" title="Ajouter une course">＋</button>
-      <button type="button" class="btn subtle tiny regatta-icon-action rapli-personalize-action" id="manage-class-colors" aria-label="Gérer les couleurs des classes" title="Gérer les couleurs des classes"><svg class="rapli-personalize-gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M10.3 2.4h3.4l.5 1.9 1.7.7 1.7-1 2.4 2.4-1 1.7.7 1.7 1.9.5v3.4l-1.9.5-.7 1.7 1 1.7-2.4 2.4-1.7-1-1.7.7-.5 1.9h-3.4l-.5-1.9-1.7-.7-1.7 1-2.4-2.4 1-1.7-.7-1.7-1.9-.5v-3.4l1.9-.5.7-1.7-1-1.7 2.4-2.4 1.7 1 1.7-.7z"/></svg></button>
-    </div>
-  <div class="regatta-search" role="search" aria-label="Recherche dans toutes les informations des courses">
-    <label class="regatta-search-field" for="search">
-      <svg aria-hidden="true" viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.8" cy="10.8" r="7.2"/><path d="m16.3 16.3 5 5"/></svg>
-      <span class="sr-only">Rechercher une course par toutes les informations présentes sur sa tuile</span>
-      <input id="search" type="search" enterkeyhint="search" autocomplete="off" spellcheck="false"
-        placeholder="Rechercher une course, un bateau, une date, un classement, une note…" aria-controls="cards"
-        aria-describedby="regatta-search-help">
-    </label>
-    <button type="button" id="regatta-search-clear" class="regatta-search-clear" aria-label="Effacer la recherche" title="Effacer la recherche" hidden>×</button>
-    <span class="sr-only" id="regatta-search-help">Recherchez aussi les catégories VSR, statuts, équipements, points, crédits et tentatives. Plusieurs mots peuvent être combinés.</span>
+    <div class="regatta-cloud-status"><span id="rapli-shared-status-regatta" role="status" aria-live="polite">Chargement de la collection…</span></div>
   </div>
-</div>
   <div class="collection-head"><strong>MES COURSES <span class="mini-accent">/ RACE ARCHIVE</span></strong><span id="result-count" role="status" aria-live="polite" aria-atomic="true"></span></div>
   <div class="regatta-pagination-host" id="regatta-pagination-top" aria-label="Pagination supérieure des courses"></div>
   <section id="cards" class="cards" aria-live="polite"></section>
@@ -136,17 +138,17 @@ html:not([data-rapli-role="editor"]) #rapli-module-cloud-save{display:none!impor
     <div id="honors-content" class="honors-content" aria-live="polite"></div>
   </section>
   <section id="colors-panel" class="colors-panel" role="tabpanel" aria-labelledby="view-colors" hidden>
-    <div class="colors-heading"><strong>COULEURS DES TAGS</strong><button type="button" class="btn subtle tiny" id="colors-back-races">← Retour aux courses</button><p>Réglages communs à toutes les courses : bateaux et catégories VSR. Les couleurs sont conservées dans les sauvegardes.</p></div>
+    <div class="colors-heading"><strong>ÉTIQUETTES FOIL · BATEAUX &amp; VSR</strong><button type="button" class="btn subtle tiny" id="colors-back-races">← Retour aux courses</button><p>Personnalise les deux couleurs du foil, la bordure, le texte et le libellé affiché. Les couleurs et les noms se retrouvent sur toutes les tuiles concernées, sans modifier leur catégorie réelle.</p></div>
     <div class="color-global">
       <label for="default-class-color">COULEUR GLOBALE DES TAGS <input type="color" id="default-class-color" value="#008fa1" aria-label="Couleur globale des classes de bateaux"></label>
       <p>Modifier cette couleur l'applique à <strong>toutes les courses</strong> et réinitialise les couleurs spécifiques. Tu peux ensuite attribuer une couleur différente à une classe ci-dessous.</p>
     </div>
-    <div class="colors-list-head"><strong>COULEURS PAR CLASSE</strong><span id="colors-class-count"></span></div>
+    <div class="colors-list-head"><strong>IDENTITÉ VISUELLE PAR CLASSE DE BATEAU</strong><span id="colors-class-count"></span></div>
     <div id="class-colors-list" class="class-colors-list"></div>
-    <p class="colors-help">Une couleur modifiée ici s'applique immédiatement à toutes les courses de la même classe de bateau, même aux anciennes fiches.</p>
-    <div class="colors-list-head vsr-colors-head"><strong>COULEURS DES CATÉGORIES VSR</strong><span>Priorité : HC › VSR 1 › VSR 2 › VSR 3</span></div>
+    <p class="colors-help">Couleur principale, reflet irisé, bordure et lettrage personnalisables. Le nom affiché peut être modifié sans changer la classe stockée.</p>
+    <div class="colors-list-head vsr-colors-head"><strong>IDENTITÉ VISUELLE DES CATÉGORIES VSR</strong><span>Priorité : HC › VSR 1 › VSR 2 › VSR 3</span></div>
     <div id="vsr-colors-list" class="vsr-colors-list"></div>
-    <p class="colors-help">Hors Catégorie reste la plus haute catégorie, indépendamment de sa couleur. Les changements de couleur VSR s'appliquent à toutes les courses concernées.</p>
+    <p class="colors-help">Hors Catégorie reste la plus haute catégorie, indépendamment de sa couleur. Les styles foil et libellés affichés s'appliquent à toutes les courses ; la hiérarchie HC, VSR 1, VSR 2, VSR 3 reste inchangée.</p>
   </section>
   <p id="notice" class="notice" role="status" aria-live="polite"></p>
 </main>

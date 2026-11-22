@@ -11,7 +11,13 @@ const stamp=()=>new Date().toISOString();
 const today=()=>new Date().toLocaleDateString('en-CA');
 const types={month:'Mensuel',quarter:'Trimestriel',year:'Annuel',custom:'Libre',all:'Historique complet'};
 let api,viewMode='main',periodType='month',periodValue='',customFrom='',customTo='',search='',filter='all',page=1,statMode='avg',draft=null,editingMember=null,notice='';
-const all=()=>engine.normalize(api?.get?.()||[]);
+const personal=()=>api?.personal?.()||[];
+const raw=()=>engine.normalize(api?.get?.()||[]);
+const all=()=>raw().map(x=>x.type==='team-race'?
+ engine.resolveLinkedRace(x,personal().find(p=>p.id===x.personalRaceId)):x);
+const personalById=id=>personal().find(x=>x.id===id&&x.kind==='race');
+const detailInputs={boatClass:'team-race-class',routeType:'team-race-route',start:'team-race-start',
+ startTime:'team-race-start-time',endTime:'team-race-end-time',equipment:'team-race-equipment',timezone:'team-race-timezone'};
 const members=()=>all().filter(x=>x.type==='team-member');
 const races=()=>all().filter(x=>x.type==='team-race');
 const unique=(values)=>[...new Set(values)];
@@ -91,7 +97,16 @@ function renderRaces(){
  (rs.length?'<div class="team-race-list">'+rs.map(r=>{
  const error=engine.verifyRace(r,known),scored=r.status==='finished'&&!error;
  const total=engine.scoredRace(r,known).reduce((s,x)=>s+(viewMode==='main'?x.main:x.historic),0);
- return '<article class="team-race-card"><div><small>'+esc(r.dateEnd||'Arrivée inconnue')+' · '+esc(r.vsr.toUpperCase())+(r.stageGroup?' · '+esc(r.stageGroup):'')+'</small><h3>'+esc(r.name)+'</h3><p>'+r.results.length+' participant(s) · '+(r.status==='finished'?(error?'À compléter : '+esc(error):'Terminée · validée'):r.status==='live'?'En cours':'À venir')+'</p></div><div class="team-race-score"><strong>'+num(total)+'</strong><small>pts distribués</small></div><div class="team-toolbar">'+action('race-'+esc(r.id),'Modifier','team-secondary')+action('export-race-'+esc(r.id),'↓ PNG')+action('delete-race-'+esc(r.id),'Supprimer','team-danger')+'</div></article>';
+ const p=personalById(r.personalRaceId);
+ const details=[r.boatClass,r.start?'Départ '+r.start:'',r.routeType,r.equipment].filter(Boolean).join(' · ');
+ const image=p&&/^data:image\/(png|webp|jpeg|gif);base64,/i.test(p.icon||'')?
+  '<img class="team-linked-thumb" src="'+esc(p.icon)+'" alt="Illustration de '+esc(r.name)+'">':'';
+ return '<article class="team-race-card">'+image+'<div><small>'+esc(r.dateEnd||'Arrivée inconnue')+' · '+esc(r.vsr.toUpperCase())+(r.stageGroup?' · '+esc(r.stageGroup):'')+'</small><h3>'+esc(r.name)+'</h3><p>'+r.results.length+' participant(s) · '+(r.status==='finished'?(error?'À compléter : '+esc(error):'Terminée · validée'):r.status==='live'?'En cours':'À venir')+'</p>'+
+ (details?'<p class="team-race-details">'+esc(details)+'</p>':'')+
+ (r.personalRaceId?'<small class="team-link-marker">'+(p?'↔ Liée à Mes courses':'⚠ Fiche personnelle introuvable')+'</small>':'')+
+ '</div><div class="team-race-score"><strong>'+num(total)+'</strong><small>pts distribués</small></div><div class="team-toolbar">'+action('race-'+esc(r.id),'Modifier','team-secondary')+
+ (p?action('open-personal-'+esc(p.id),'↗ MA COURSE','team-secondary'):action('new-personal-'+esc(r.id),'＋ MA COURSE','team-secondary'))+
+ action('export-race-'+esc(r.id),'↓ PNG')+action('delete-race-'+esc(r.id),'Supprimer','team-danger')+'</div></article>';
  }).join('')+'</div>':empty('Aucune course d’équipe. Ajoute la première épreuve du nouveau championnat.'))+
  (groups.length?'<section class="team-groups"><h3>CLASSEMENTS BONUS · ENSEMBLES D’ÉTAPES</h3><p>Somme des étapes, sans redistribuer de points.</p>'+groups.map(g=>'<div class="team-group-row"><strong>'+esc(g)+'</strong><div>'+action('stage-'+encodeURIComponent(g),'Voir le classement')+action('png-stage-'+encodeURIComponent(g),'↓ PNG')+'</div></div>').join('')+'</section>':'');
 }
@@ -155,16 +170,58 @@ function editorSummary(){
  $('team-race-validation').dataset.error=error?'true':'false';
  $('team-race-preview').textContent=num(scores)+' points principaux · '+n+' participants · palier '+(engine.tier(n)*5+10);
 }
-function openRace(id){
+function fillSharedFields(){
+ if(!draft)return;
+ $('team-race-name').value=draft.name||'';
+ $('team-race-date').value=draft.dateEnd||'';
+ $('team-race-vsr').value=draft.vsr||'vsr2';
+ $('team-race-status').value=draft.status||'planned';
+ $('team-race-group').value=draft.stageGroup||'';
+ for(const [field,id] of Object.entries(detailInputs))$(id).value=draft[field]||'';
+}
+function renderPersonalLink(){
+ if(!draft)return;
+ const linked=personalById(draft.personalRaceId);
+ const otherLinks=new Set(raw().filter(x=>x.type==='team-race'&&x.id!==draft.id).map(x=>x.personalRaceId).filter(Boolean));
+ const choices=personal().filter(x=>x.kind==='race'&&(!otherLinks.has(x.id)||x.id===draft.personalRaceId));
+ const selector=$('team-race-personal');
+ selector.innerHTML='<option value="">Aucune · course indépendante</option>'+
+  opts(choices.map(p=>({value:p.id,label:p.name+(p.end?' · '+p.end:'')})),draft.personalRaceId||'');
+ selector.value=choices.some(p=>p.id===draft.personalRaceId)?draft.personalRaceId:'';
+ for(const id of ['team-race-name','team-race-date','team-race-vsr',...Object.values(detailInputs)])
+  $(id).disabled=!!linked;
+ const help=$('team-linked-help'),photo=$('team-linked-image');
+ help.textContent=linked?'↔ Détails communs synchronisés depuis « Mes courses ». Les positions, DNF et points de l’équipe restent indépendants.':
+  draft.personalRaceId?'La fiche personnelle associée est introuvable. Dissocie-la pour rendre les champs modifiables.':
+  'Choisis une course personnelle et clique sur « Utiliser ses détails ». Les résultats de l’équipe restent indépendants.';
+ if(linked&&/^data:image\/(png|webp|jpeg|gif);base64,/i.test(linked.icon||'')){
+  photo.innerHTML='<img src="'+esc(linked.icon)+'" alt="Visuel de '+esc(linked.name)+'">';
+  photo.hidden=false;
+ }else{photo.innerHTML='';photo.hidden=true;}
+ const isSaved=raw().some(x=>x.type==='team-race'&&x.id===draft.id);
+ document.querySelector('[data-team-action="new-personal"]').disabled=!!linked||!isSaved;
+ document.querySelector('[data-team-action="open-personal"]').disabled=!linked;
+ document.querySelector('[data-team-action="unlink-personal"]').disabled=!draft.personalRaceId;
+}
+function fromPersonalId(id){
  if(!canWrite())return;
- draft=id?races().find(r=>r.id===id):null;
- draft=draft?structuredClone(draft):{id:uuid('race'),type:'team-race',name:'',dateEnd:'',vsr:'vsr2',status:'planned',stageGroup:'',results:[],createdAt:stamp()};
+ const p=personalById(id);if(!p){notify('Fiche personnelle introuvable.',true);return;}
+ const existing=races().find(r=>r.personalRaceId===id);
+ if(existing)return openRace(existing.id);
+ const base={id:uuid('race'),type:'team-race',name:p.name||'',dateEnd:p.end||'',
+  vsr:p.vsr||'vsr2',status:'planned',stageGroup:'',results:[],createdAt:stamp()};
+ draft=engine.fromPersonal(p,base);
+ openRace(null,id);
+}
+function openRace(id,personalId=''){
+ if(!canWrite())return;
+ const existing=id?races().find(r=>r.id===id):null;
+ const p=personalById(personalId);
+ const base=existing?structuredClone(existing):{id:uuid('race'),type:'team-race',name:'',dateEnd:'',
+  vsr:'vsr2',status:'planned',stageGroup:'',results:[],createdAt:stamp()};
+ draft=p?engine.fromPersonal(p,base):base;
  $('team-race-dialog-title').textContent=id?'MODIFIER LA COURSE':'NOUVELLE COURSE D’ÉQUIPE';
- $('team-race-name').value=draft.name;
- $('team-race-date').value=draft.dateEnd;
- $('team-race-vsr').value=draft.vsr;
- $('team-race-status').value=draft.status;
- $('team-race-group').value=draft.stageGroup;
+ fillSharedFields();renderPersonalLink();
  $('team-create-member').value='';
  $('team-select-member').value='';
  choices();editorRows();$('team-race-dialog').showModal();
@@ -194,9 +251,14 @@ async function quickMember(){
 }
 async function submitRace(ev){
  ev.preventDefault();if(!canWrite()||!draft)return;
- draft.name=$('team-race-name').value.trim().slice(0,160);
- draft.dateEnd=$('team-race-date').value;draft.status=$('team-race-status').value;
- draft.vsr=$('team-race-vsr').value;draft.stageGroup=$('team-race-group').value.trim().slice(0,100);
+ const linked=personalById(draft.personalRaceId);
+ if(linked)draft=engine.fromPersonal(linked,draft);
+ else{
+  draft.name=$('team-race-name').value.trim().slice(0,160);
+  draft.dateEnd=$('team-race-date').value;draft.vsr=$('team-race-vsr').value;
+  for(const [field,id] of Object.entries(detailInputs))draft[field]=$(id).value;
+ }
+ draft.status=$('team-race-status').value;draft.stageGroup=$('team-race-group').value.trim().slice(0,100);
  if(!draft.name){notify('Renseigne le nom de la course.',true);return;}
  if(draft.status==='finished'){
   const issue=engine.verifyRace(draft,new Map(members().map(m=>[m.id,m])));
@@ -406,6 +468,28 @@ async function click(ev){
  const cmd=button.dataset.teamAction;
  if(cmd==='new-race')return openRace();
  if(cmd==='new-member')return openMember();
+ if(cmd==='link-existing'&&draft){
+  const id=$('team-race-personal').value,p=personalById(id);
+  if(!p){notify('Choisis une fiche personnelle existante.',true);return;}
+  const linkedElsewhere=races().some(r=>r.personalRaceId===p.id&&r.id!==draft.id);
+  if(linkedElsewhere){notify('Cette fiche personnelle est déjà liée à une autre course d’équipe.',true);return;}
+  draft=engine.fromPersonal(p,draft);fillSharedFields();renderPersonalLink();editorRows();return;
+ }
+ if(cmd==='unlink-personal'&&draft){
+  draft.personalRaceId='';renderPersonalLink();notify('Liaison retirée dans le formulaire. Enregistre la course pour confirmer.');return;
+ }
+ if(cmd==='open-personal'){
+  const linked=personalById(draft?.personalRaceId);
+  if(linked){$('team-race-dialog').close();api.openPersonal?.(linked.id);}
+  else notify('Aucune fiche personnelle associée.',true);
+  return;
+ }
+ if(cmd==='new-personal'){
+  if(!draft||!raw().some(r=>r.id===draft.id)){notify('Enregistre d’abord la course d’équipe.',true);return;}
+  $('team-race-dialog').close();api.newPersonalFromTeam?.(draft.id);return;
+ }
+ if(cmd.startsWith('open-personal-')){api.openPersonal?.(cmd.slice(14));return;}
+ if(cmd.startsWith('new-personal-')){api.newPersonalFromTeam?.(cmd.slice(13));return;}
  if(cmd==='recalculate'){render();notify('Tous les classements ont été recalculés ✓');return;}
  if(cmd==='select-all'&&draft){
   for(const m of members().filter(active))if(draft.results.length<50&&!draft.results.some(x=>x.skipperId===m.id))
@@ -479,5 +563,5 @@ function init(bridge){
  }
  render();
 }
-root.RapliTeamUI={init,render,getPeriod:period,getViewMode:()=>viewMode};
+root.RapliTeamUI={init,render,getPeriod:period,getViewMode:()=>viewMode,openFromPersonal:fromPersonalId};
 })(window);

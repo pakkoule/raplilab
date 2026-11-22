@@ -1791,10 +1791,6 @@ button.close{min-width:40px;min-height:40px}
 .cards .card.card--columns .race-gfs-briefing-tip>span:first-child{
  font-size:13px;line-height:1;flex:0 0 auto
 }
-.cards .card.card--columns .race-gfs-briefing-disclaimer{
- color:#7290a0;font:550 7px/1.4 Poppins,system-ui,sans-serif;
- margin:0;overflow-wrap:anywhere
-}
 .cards .card.card--columns .race-gfs-briefing-empty{
  color:#577d90;font:650 10px/1.45 Poppins,system-ui,sans-serif;margin:0
 }
@@ -1811,7 +1807,6 @@ button.close{min-width:40px;min-height:40px}
  .cards .card.card--columns .race-gfs-briefing-chip>strong{font-size:clamp(11px,3vw,15px)}
  .cards .card.card--columns .race-gfs-briefing-chip>small{font-size:7px}
  .cards .card.card--columns .race-gfs-briefing-tip{padding:6px;font-size:8px}
- .cards .card.card--columns .race-gfs-briefing-disclaimer{font-size:6.5px}
 }
 @media(max-width:365px){
  .cards .card.card--columns .race-gfs-briefing-grid{grid-template-columns:minmax(0,1fr)}

@@ -477,6 +477,25 @@ function showProfile(id){
  $('team-profile-body').innerHTML=content;
  $('team-profile-dialog').showModal();
 }
+function showRaceRanking(id){
+ const r=races().find(x=>x.id===id);if(!r)return;
+ const names=new Map(members().map(m=>[m.id,m.name]));
+ const scored=engine.scoredRace(r,new Map(members().map(m=>[m.id,m])));
+ const byId=new Map(scored.map(row=>[row.skipperId,row]));
+ const rows=[...r.results].sort((a,b)=>(a.status==='dnf'?999:a.position??998)-(b.status==='dnf'?999:b.position??998));
+ $('team-classification-title').textContent='CLASSEMENT · '+r.name;
+ $('team-classification-body').innerHTML='<p class="team-footnote">'+esc(r.dateEnd||'Date inconnue')+' · '+esc(r.vsr.toUpperCase())+' · '+
+  (r.status==='finished'&&scored.length?'Résultats validés':'Résultats non encore validés au championnat')+'</p>'+
+ '<div class="team-table-wrap"><table class="team-table"><thead><tr><th>#</th><th>SKIPPER</th><th>CHRONO TOTAL</th><th>ÉCART AU 1ER</th><th>PRINCIPAL</th><th>HISTORIQUE</th></tr></thead><tbody>'+
+ rows.map(row=>{
+  const points=byId.get(row.skipperId);
+  return '<tr><td>'+(row.status==='dnf'?'DNF':row.position??'—')+'</td><td>'+esc(names.get(row.skipperId)||'Skipper inconnu')+'</td>'+
+   '<td>'+clockLabel(row.elapsedSeconds)+'</td><td>'+(row.gapSeconds!=null?'+ '+clockLabel(row.gapSeconds):'—')+'</td>'+
+   '<td>'+num(points?.main??0)+'</td><td>'+num(points?.historic??0)+'</td></tr>';
+ }).join('')+'</tbody></table></div>'+
+ '<p class="team-footnote">Les chronos sont des durées de course. Les écarts restent calculés par rapport au premier skipper.</p>';
+ $('team-race-classification-dialog').showModal();
+}
 let currentStage='';
 function stageDialog(group){
  currentStage=group;
@@ -636,6 +655,7 @@ async function click(ev){
  const button=ev.target.closest('[data-team-action]');if(!button)return;
  const cmd=button.dataset.teamAction;
  if(cmd==='new-race')return openRace();
+ if(cmd.startsWith('show-ranking-'))return showRaceRanking(cmd.slice('show-ranking-'.length));
  if(cmd==='toggle-ranking-import'){
   const body=$('team-ranking-import-body'),open=body.hidden;
   body.hidden=!open;button.setAttribute('aria-expanded',String(open));

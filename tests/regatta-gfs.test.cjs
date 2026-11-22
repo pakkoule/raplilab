@@ -45,11 +45,13 @@ test('GFS integration estimate advises when routing review becomes relevant',()=
  assert.equal(ready.stage,'ready');
  assert.equal(ready.status,'MÉTÉO À CONSULTER');
 });
-test('each active course or record displays its own responsive GFS block',()=>{
+test('active courses and records replace the right-column ranking area with a GFS widget',()=>{
  const cardCode=js.slice(js.indexOf('function card(r){'),js.indexOf('/* Ajustement dynamique'));
  assert.match(cardCode,/const isLive=status==='live'\|\|status==='record-live'/);
- assert.match(cardCode,/\(isLive\?gfsCardMarkup\(\):''\)/);
- assert.match(css,/\.race-gfs-widget\{[\s\S]*?grid-column:1 \/ -1/);
+ assert.match(cardCode,/\(isLive\?gfsCardMarkup\(\):rankContent\)/);
+ assert.doesNotMatch(cardCode,/rankContent\+\s*\(isLive\?gfsCardMarkup/);
+ assert.match(css,/\.race-card-right \.race-gfs-widget\{[\s\S]*?width:100%/);
+ assert.doesNotMatch(css,/\.race-gfs-widget\{\s*grid-column:1 \/ -1/);
  assert.match(css,/@media\(max-width:580px\)\{[\s\S]*?\.race-gfs-widget/);
  const markup=gfsCardMarkup();
  assert.match(markup,/data-gfs-widget/);

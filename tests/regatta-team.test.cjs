@@ -144,8 +144,10 @@ test('editor, selectors, and PNG elements are present without removing personal 
  for(const id of ['team-panel','team-races-panel','team-skippers-panel','team-stats-panel','team-race-form','team-member-form','team-profile-dialog','view-races','races-panel'])assert.ok(doc.getElementById(id),id);
  for(const script of ['team-engine.js','team-app.js'])assert.ok([...doc.querySelectorAll('script')].some(el=>el.getAttribute('src')===script),script);
  const code=fs.readFileSync('regatta/team-app.js','utf8');
+ const png=fs.readFileSync('regatta/team-export.js','utf8');
  assert.ok(code.includes("exportStandings"));
- assert.ok(code.includes("toBlob"));
+ assert.ok(code.includes("RapliTeamExport.exportPng"));
+ assert.ok(png.includes("toBlob"));
  const app=fs.readFileSync('regatta/app.js','utf8');
  assert.ok(app.includes('teamRecords'));
  assert.ok(app.includes('window.RapliTeamUI?.init?.'));
@@ -591,5 +593,89 @@ test('LPDB classification dialog renders an independent note for each skipper',(
  assert.equal(cells.length,2);
  assert.match(cells[0].textContent,/79\/100/);
  assert.match(cells[1].textContent,/78\/100/);
+ dom.window.close();
+});
+
+
+test('premium export makes exactly one image with dynamic height for 50 skippers',()=>{
+ const out=require('../regatta/team-export.js');
+ const ctx={font:'',measureText:text=>({width:[...String(text)].length*13})};
+ const rows=Array.from({length:50},(_,i)=>({
+  rank:i+1,name:'Skipper LPDB numéro '+(i+1)+' avec un pseudo très long conservé intégralement',
+  generalRank:100+i,elapsedSeconds:900000+i*100,gapSeconds:i*100,
+  points:1000-i,note:{available:true,value:90-i}
+ }));
+ const full=out.plan(rows,{ctx,race:true,style:'table',limit:0});
+ assert.equal(full.items.length,50);
+ assert.ok(full.height>4000,'one long adaptive PNG covers all 50 skippers');
+ assert.equal(full.width,1500);
+ const count25=out.plan(rows.slice(0,25),{ctx,race:true,style:'table'});
+ assert.ok(full.height>count25.height);
+ assert.equal(full.items[0].nameLines.join(' ').replace(/\s+/g,' '),rows[0].name);
+ const top10=out.plan(rows,{ctx,race:true,style:'social',limit:10});
+ const podium=out.plan(rows,{ctx,race:true,style:'social',limit:3});
+ assert.equal(top10.items.length,10);
+ assert.equal(podium.items.length,3);
+ assert.equal(podium.podium,true);
+ assert.equal(top10.top10,true);
+ assert.ok(full.height<16000,'single PNG stays within ordinary canvas limits');
+});
+test('premium export handles one long unspaced pseudo without ellipsis or slicing',()=>{
+ const out=require('../regatta/team-export.js'),ctx={measureText:text=>({width:[...String(text)].length*21})};
+ const pseudo='pseudonymeLPDBextrêmementLongSansEspaceAvecDesCaractèresÀConserverEntièrement';
+ const wrapped=out.wrapText(ctx,pseudo,190);
+ assert.ok(wrapped.length>1);
+ assert.equal(wrapped.join(''),pseudo);
+ assert.equal(out.duration(9*86400+15*3600+32*60+50),'09j 15:32:50');
+ assert.equal(out.imageSource('data:image/png;base64,AA=='),'data:image/png;base64,AA==');
+ assert.equal(out.imageSource('https://untrusted.invalid/photo.jpg'),null);
+});
+test('race export passes all 26 skippers, individual notes, original artwork and boat/VSR without pagination',async()=>{
+ const dom=new JSDOM(fs.readFileSync('regatta/index.html','utf8'),{runScripts:'outside-only',url:'https://example.org/regatta/'});
+ const w=dom.window,d=w.document,calls=[];
+ w.RapliTeamEngine=E;
+ w.RapliTeamTime=require('../regatta/team-time.js');
+ w.RapliTeamExport={exportPng:async args=>{
+  calls.push(args);return {count:args.rows.length,width:1500,height:3000,fileCount:1};
+ }};
+ w.eval(fs.readFileSync('regatta/score.js','utf8'));
+ w.eval(fs.readFileSync('regatta/team-rating.js','utf8'));
+ w.eval(fs.readFileSync('regatta/team-app.js','utf8'));
+ const roster=Array.from({length:26},(_,i)=>m('Pseudo complet du skipper LPDB '+(i+1)));
+ const start=9*86400+15*3600+32*60+50;
+ const results=roster.map((person,i)=>({
+  skipperId:person.id,status:'finished',position:i+1,
+  generalRank:100+i,elapsedSeconds:start+i*90,gapSeconds:i*90
+ }));
+ const race=E.race({
+  ...r('route-du-rhum','2026-11-22','hc','finished',results),
+  name:'Route du Rhum',boatClass:'IMOCA',start:'2026-11-10',fleetTotal:20000,
+  personalRaceId:'personal-illustration'
+ });
+ const image='data:image/png;base64,AA==';
+ w.RapliTeamUI.init({
+  get:()=>[...roster,race],
+  personal:()=>[{id:'personal-illustration',kind:'race',name:'Route du Rhum',
+   icon:image,boatClass:'IMOCA',vsr:'hc',start:'2026-11-10'}],
+  canEdit:()=>false,notify:()=>{},save:async()=>{},remove:async()=>{}
+ });
+ const btn=d.querySelector('[data-team-action="export-race-'+race.id+'"]');
+ assert.ok(btn,'race table PNG is reachable via the tile menu');
+ btn.click();
+ for(let i=0;i<15&&!calls.length;i++)await new Promise(resolve=>setTimeout(resolve,0));
+ assert.equal(calls.length,1);
+ const call=calls[0];
+ assert.equal(call.rows.length,26);
+ assert.equal(call.limit,0,'export all rows without pagination');
+ assert.equal(call.race.illustration,image);
+ assert.equal(call.race.boatClass,'IMOCA');
+ assert.equal(call.race.vsr,'hc');
+ assert.equal(call.race.average!=null,true);
+ assert.equal(call.rows[0].name,roster[0].name);
+ assert.equal(call.rows[25].name,roster[25].name);
+ assert.equal(call.rows[0].note?.available,true);
+ assert.equal(call.rows[25].note?.available,true);
+ assert.equal(call.rows[25].generalRank,125);
+ assert.match(call.filename,/lpdb-course-route-du-rhum-main/);
  dom.window.close();
 });

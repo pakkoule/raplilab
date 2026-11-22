@@ -126,10 +126,17 @@ html:not([data-rapli-role="editor"]) #rapli-module-cloud-save{display:none!impor
   <details class="regatta-gfs-lab" id="regatta-gfs-lab">
     <summary><span aria-hidden="true">🌬️</span> LAB GFS 0,25° <span class="gfs-lab-pill">TEST NOAA · EXPÉRIMENTAL</span></summary>
     <div class="gfs-lab-inner">
-      <p class="gfs-lab-desc">Premier test météo : validation réelle d'un fichier NOAA (vents UGRD et VGRD à 10 m), sur l'Atlantique nord-est. Aucun routage ni temps de passage n'est encore calculé.</p>
+      <p class="gfs-lab-desc">Vents NOAA 0,25° réellement décodés sur trois points de l'Atlantique Nord-Est. Choisis une échéance du même cycle GFS pour commencer à suivre l'évolution météo. Aucun routage n'est encore calculé.</p>
       <div class="gfs-lab-actions">
         <button type="button" class="gfs-lab-run" data-gfs-lab-run>TESTER LES DONNÉES NOAA</button>
-        <button type="button" class="gfs-lab-run" data-gfs-wind-run>MESURER LE VENT RÉEL</button>
+        <label class="gfs-lab-forecast-label" for="gfs-lab-forecast">ÉCHÉANCE GFS
+          <select id="gfs-lab-forecast" data-gfs-wind-hour aria-label="Échéance prévision météo">
+            <option value="6">+6 heures</option>
+            <option value="12">+12 heures</option>
+            <option value="18">+18 heures</option>
+          </select>
+        </label>
+        <button type="button" class="gfs-lab-run" data-gfs-wind-run>LIRE LES VENTS</button>
         <a href="https://nomads.ncep.noaa.gov/gribfilter.php?ds=gfs_0p25" target="_blank" rel="noopener noreferrer">Source officielle NOAA</a>
       </div>
       <p class="gfs-lab-status" role="status" aria-live="polite" data-gfs-lab-status>Test à lancer manuellement. Aucune requête NOAA au chargement du site.</p>
@@ -141,18 +148,33 @@ html:not([data-rapli-role="editor"]) #rapli-module-cloud-save{display:none!impor
         <div class="gfs-lab-cell"><span>Variables vérifiées</span><strong data-gfs-lab-fields>—</strong></div>
         <div class="gfs-lab-cell"><span>Messages GRIB2</span><strong data-gfs-lab-messages>—</strong></div>
       </div>
-      <section class="gfs-wind-panel" data-gfs-wind-panel aria-label="Lecture réelle des vents au large de Brest">
-        <div class="gfs-wind-heading"><strong>VENT RÉEL · AU LARGE DE BREST</strong><span>48,50°N · 8,00°O</span></div>
-        <p class="gfs-wind-status" data-gfs-wind-status role="status" aria-live="polite">Lecture prête : démarre le test avec le bouton ci-dessus.</p>
-        <div class="gfs-wind-values" data-gfs-wind-values hidden>
-          <div><small>Vitesse du vent</small><strong data-gfs-wind-speed>—</strong></div>
-          <div><small>Direction d'origine</small><strong data-gfs-wind-direction>—</strong></div>
-          <div><small>Composantes U / V</small><strong data-gfs-wind-components>—</strong></div>
-          <div><small>Prévision (Paris)</small><strong data-gfs-wind-valid>—</strong></div>
+      <section class="gfs-wind-panel" data-gfs-wind-panel aria-label="Lectures de vent GFS sur trois points atlantiques">
+        <div class="gfs-wind-heading"><strong>VENTS GFS · ATLANTIQUE</strong><span>3 POINTS · 0,25°</span></div>
+        <p class="gfs-wind-status" data-gfs-wind-status role="status" aria-live="polite">Choisis une échéance, puis appuie sur LIRE LES VENTS.</p>
+        <div class="gfs-wind-meta" data-gfs-wind-meta hidden>
+          <span>Cycle : <strong data-gfs-wind-cycle>—</strong></span>
+          <span>Prévision : <strong data-gfs-wind-valid>—</strong></span>
         </div>
-        <p class="gfs-wind-note">Lecture NOAA 0,25° au point de grille le plus proche. Pas encore de routage ni de fenêtre de départ.</p>
+        <div class="gfs-wind-points" data-gfs-wind-points hidden>
+          <div class="gfs-wind-point">
+            <span>Au large de Brest <small>48,50°N · 8,00°O</small></span>
+            <strong data-gfs-point-0-speed>—</strong>
+            <strong data-gfs-point-0-dir>—</strong>
+          </div>
+          <div class="gfs-wind-point">
+            <span>Ouest du golfe de Gascogne <small>44,50°N · 12,00°O</small></span>
+            <strong data-gfs-point-1-speed>—</strong>
+            <strong data-gfs-point-1-dir>—</strong>
+          </div>
+          <div class="gfs-wind-point">
+            <span>Au large du Portugal <small>41,50°N · 15,00°O</small></span>
+            <strong data-gfs-point-2-speed>—</strong>
+            <strong data-gfs-point-2-dir>—</strong>
+          </div>
+        </div>
+        <p class="gfs-wind-note">Vitesses en nœuds · directions météorologiques d'origine. Lecture du point de grille le plus proche, sans interpolation ni routage. Pour limiter les accès NOAA, change d'échéance en espaçant les tests d'au moins 10 secondes.</p>
       </section>
-      <p class="gfs-lab-limit">Source NOAA NOMADS · cycle choisi avec une marge de diffusion · aucun décodage des vitesses ni simulation de navigation à ce stade.</p>
+      <p class="gfs-lab-limit">Source NOAA NOMADS · vents à 10 m réellement décodés · échéance choisie avec marge de publication, sans simulation de navigation à ce stade.</p>
     </div>
   </details>
   <div class="regatta-pagination-host" id="regatta-pagination-top" aria-label="Pagination supérieure des courses"></div>

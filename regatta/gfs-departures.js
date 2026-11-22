@@ -121,8 +121,32 @@
   function compareLaterDepartureWindows(a,b){
     return compareForPair(a,b,12);
   }
+  function compareAllDepartureWindows(a,b,c){
+    const early=compareDepartureWindows(a,b);
+    const late=compareLaterDepartureWindows(b,c);
+    if(early.cycleUTC!==late.cycleUTC)
+      throw Error('Cycles NOAA incompatibles entre les deux fenêtres.');
+    const windows=[...early.windows,...late.windows];
+    const valid=windows.filter(x=>x.valid);
+    if(!valid.length)throw Error('Aucun départ valide sur les huit heures proposées.');
+    const fastest=[...valid].sort((x,y)=>
+      x.elapsedMinutes-y.elapsedMinutes||x.startHour-y.startHour)[0];
+    const earliest=[...valid].sort((x,y)=>
+      Date.parse(x.crossingUTC)-Date.parse(y.crossingUTC)||x.startHour-y.startHour)[0];
+    return {
+      cycleUTC:early.cycleUTC,
+      windows,validCount:valid.length,
+      fastestStartHour:fastest.startHour,
+      fastestElapsedMinutes:fastest.elapsedMinutes,
+      earliestArrivalStartHour:earliest.startHour,
+      earliestArrivalUTC:earliest.crossingUTC,
+      fullPack:false,isEquatorForecast:false,
+      method:'Comparaison de deux paires NOAA f006/f012 et f012/f018, toutes du même cycle'
+    };
+  }
   return {
     DEPARTURES,LATER_DEPARTURES,GATE_LATITUDE,HORIZON_HOURS,STEP_HOURS,
-    compatibleFrames,sailToGate,compareDepartureWindows,compareLaterDepartureWindows
+    compatibleFrames,sailToGate,compareDepartureWindows,compareLaterDepartureWindows,
+    compareAllDepartureWindows
   };
 });

@@ -175,3 +175,19 @@ Un bloc `LAB GFS 0,25°`, repliable et séparé des tuiles de course, permet de 
 - Aucun changement de collection, Supabase ou des widgets météo existants. Les polaires Ultim BP XI fournies précédemment restent une source provisoire, non Full Pack.
 
 Tests structurels : `tests/regatta-gfs-source.test.cjs` (sélection du cycle, URL, paires de champs U/V, rejet HTML/GRIB tronqué, erreurs NOAA et limite de taille). **Un test en production sur la preview Netlify reste nécessaire** pour confirmer que NOMADS répond dans son environnement.
+
+
+## Laboratoire GFS : décodage des vents (PR #4 · prototype 2)
+
+Le panneau `LAB GFS 0,25°` affiche désormais deux boutons indépendants :
+
+- `TESTER LES DONNÉES NOAA` : contrôle de signature/sections GRIB2 et présence UGRD/VGRD (prototype 1).
+- `MESURER LE VENT RÉEL` : récupère un fichier GFS `f006` sur la même zone Atlantique Nord-Est, décode les deux composantes du vent à 10 mètres et lit le point de grille le plus proche de **48,50°N, 8,00°O** (au large de Brest). La force est calculée en nœuds et la direction affichée est la provenance météorologique (0° = nord).
+
+Le décodeur `@azohra/meteo.grib@0.1.4` est déclaré comme dépendance de production (Node 22 minimum). Il gère la compression GRIB2 5.3 utilisée par GFS, contrairement au contrôle structurel du prototype 1. Les champs sont contrôlés sur la discipline météo, la catégorie du vent, le type de surface et la hauteur 10 mètres (template produit 4.0). Le décodage refuse les points hors-grille, les valeurs non finies et les métadonnées ambiguës.
+
+Le chargement reste **déclenché uniquement sur clic**, avec cache temporaire par instance Netlify (15 min pour réussite, 3 min pour échec), timeout et limite de taille. Ni sauvegarde de course, ni écriture Supabase, ni tâche planifiée. En cas d'échec NOAA, le widget indique une erreur et n'affiche pas de valeurs fictives.
+
+Les horaires de cycle et de validité sont affichés en heure française, automatiquement adaptée à l'heure d'été/hiver. Le fichier `f006` sélectionné est un cycle suffisamment ancien pour le test, **pas nécessairement le plus récent**. L'étape suivante sera de récupérer plusieurs échéances et de produire un champ de vent interpolable pour le routage à l'équateur.
+
+Tests automatisés `tests/regatta-gfs-wind.test.cjs` et `tests/regatta-gfs-source.test.cjs`. Un **test réel du bouton** sur la Deploy Preview Netlify reste indispensable avant de considérer le décodage NOAA comme confirmé en exploitation.

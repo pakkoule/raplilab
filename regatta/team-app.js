@@ -317,6 +317,7 @@ function editorRows(){
   const hc=row.status==='finished'&&row.position?engine.historical(row.position):0;
   return '<div class="team-result-row" data-team-row="'+esc(row.skipperId)+'"><span class="team-result-name" title="'+esc(name)+'">'+esc(name)+'</span>'+
    '<input type="number" min="1" max="50" step="1" inputmode="numeric" data-team-rank="'+esc(row.skipperId)+'" aria-label="Rang de '+esc(name)+'" value="'+(row.position??'')+'"'+(row.status==='dnf'?' disabled':'')+' placeholder="Rang">'+
+   '<input type="number" min="1" max="100000000" step="1" inputmode="numeric" data-team-general-rank="'+esc(row.skipperId)+'" aria-label="Classement général VR de '+esc(name)+'" title="Rang général Virtual Regatta distinct du rang LPDB" value="'+(row.generalRank??'')+'"'+(row.status==='dnf'?' disabled':'')+' placeholder="Général">'+
    '<select data-team-status="'+esc(row.skipperId)+'" aria-label="Résultat de '+esc(name)+'">'+opts([{value:'pending',label:'À saisir'},{value:'finished',label:'Classé'},{value:'dnf',label:'DNF'}],row.status)+'</select>'+
    '<input type="text" data-team-elapsed="'+esc(row.skipperId)+'" aria-label="Temps total de '+esc(name)+'" placeholder="09j 15h…" value="'+(row.elapsedSeconds!=null?esc(clock.formatTime(row.elapsedSeconds)):'')+'"'+(row.status!=='finished'?' disabled':'')+'>'+
    '<input type="text" data-team-gap="'+esc(row.skipperId)+'" aria-label="Écart au vainqueur de '+esc(name)+'" placeholder="+ 03h…" value="'+(row.gapSeconds!=null?'+ '+esc(clock.formatTime(row.gapSeconds)):'')+'"'+(row.status!=='finished'?' disabled':'')+'>'+
@@ -428,6 +429,9 @@ async function submitRace(ev){
  }
  draft.status=$('team-race-status').value;draft.stageGroup=$('team-race-group').value.trim().slice(0,100);
  if(!draft.name){notify('Renseigne le nom de la course.',true);return;}
+ const invalidGeneral=draft.results.some(row=>row.generalRank!=null&&
+  (!Number.isSafeInteger(row.generalRank)||row.generalRank<1||row.generalRank>100000000));
+ if(invalidGeneral){notify('Classement général VR invalide : indique un rang entier positif ou laisse vide.',true);return;}
  if(draft.status==='finished'){
   const issue=engine.verifyRace(draft,new Map(editorMembers().map(m=>[m.id,m])));
   if(issue){notify(issue,true);editorSummary();return;}
@@ -528,8 +532,8 @@ function showProfile(id){
  const model=engine.standings(all(),period(),viewMode),s=model.skippers.find(x=>x.id===id);
  const content='<div class="team-profile-head"><h3>'+esc(m.name)+'</h3><small>'+esc(m.status==='active'?'Membre actif':'Ancien membre')+' · '+esc(labelPeriod())+'</small><small>'+esc((m.memberships||[]).filter(w=>w.from||w.until).map(w=>(w.from||'Début inconnu')+' → '+(w.until||'En cours')).join(' · '))+'</small></div>'+
  (s?statCards([['Points',num(s.points)],['Points / course',num(s.avg)],['Courses terminées',num(s.finished)],['Victoires',num(s.wins)],['Podiums',num(s.podiums)],['Assiduité',num(s.attendance)+' %'],['Prestige moyen',num(s.prestige)],['Départage hybride',num(s.hybrid)],['Courses chronométrées',num(s.timedRaces)],['Chrono moyen',clockLabel(s.avgTimeSeconds)],['Écart moyen',clockLabel(s.avgGapSeconds)]])+
- '<div class="team-table-wrap"><table class="team-table"><thead><tr><th>COURSE</th><th>RANG</th><th>VSR</th><th>CHRONO</th><th>ÉCART</th><th>POINTS</th></tr></thead><tbody>'+
- s.records.slice().sort((a,b)=>b.dateEnd.localeCompare(a.dateEnd)).map(r=>'<tr><td>'+esc(r.raceName)+'<small>'+esc(r.dateEnd)+'</small></td><td>'+ (r.dnf?'DNF':r.rank)+'</td><td>'+esc(r.vsr.toUpperCase())+'</td><td>'+clockLabel(r.elapsedSeconds)+'</td><td>'+clockLabel(r.gapSeconds)+'</td><td>'+num(viewMode==='historic'?r.historic:r.main)+'</td></tr>').join('')+'</tbody></table></div>':empty('Aucune participation sur cette période.'));
+ '<div class="team-table-wrap"><table class="team-table"><thead><tr><th>COURSE</th><th>RANG LPDB</th><th>GÉNÉRAL VR</th><th>VSR</th><th>CHRONO</th><th>ÉCART</th><th>POINTS</th></tr></thead><tbody>'+
+ s.records.slice().sort((a,b)=>b.dateEnd.localeCompare(a.dateEnd)).map(r=>'<tr><td>'+esc(r.raceName)+'<small>'+esc(r.dateEnd)+'</small></td><td>'+ (r.dnf?'DNF':r.rank)+'</td><td>'+(r.generalRank!=null?'#'+num(r.generalRank):'—')+'</td><td>'+esc(r.vsr.toUpperCase())+'</td><td>'+clockLabel(r.elapsedSeconds)+'</td><td>'+clockLabel(r.gapSeconds)+'</td><td>'+num(viewMode==='historic'?r.historic:r.main)+'</td></tr>').join('')+'</tbody></table></div>':empty('Aucune participation sur cette période.'));
  $('team-profile-body').innerHTML=content;
  $('team-profile-dialog').showModal();
 }
@@ -542,10 +546,11 @@ function showRaceRanking(id){
  $('team-classification-title').textContent='CLASSEMENT · '+r.name;
  $('team-classification-body').innerHTML='<p class="team-footnote">'+esc(r.dateEnd||'Date inconnue')+' · '+esc(r.vsr.toUpperCase())+' · '+
   (r.status==='finished'&&scored.length?'Résultats validés':'Résultats non encore validés au championnat')+'</p>'+
- '<div class="team-table-wrap"><table class="team-table"><thead><tr><th>#</th><th>SKIPPER</th><th>CHRONO TOTAL</th><th>ÉCART AU 1ER</th><th>PRINCIPAL</th><th>HISTORIQUE</th></tr></thead><tbody>'+
+ '<div class="team-table-wrap"><table class="team-table"><thead><tr><th>RANG LPDB</th><th>SKIPPER</th><th>GÉNÉRAL VR</th><th>CHRONO TOTAL</th><th>ÉCART AU 1ER</th><th>PRINCIPAL</th><th>HISTORIQUE</th></tr></thead><tbody>'+
  rows.map(row=>{
   const points=byId.get(row.skipperId);
-  return '<tr><td>'+(row.status==='dnf'?'DNF':row.position??'—')+'</td><td>'+esc(names.get(row.skipperId)||'Skipper inconnu')+'</td>'+
+  return '<tr><td>'+(row.status==='dnf'?'DNF':row.position??'—')+'</td><td>'+esc(names.get(row.skipperId)||'Skipper inconnu')+'</td>'+ 
+   '<td>'+(row.generalRank!=null?'#'+num(row.generalRank):'—')+'</td>'+
    '<td>'+clockLabel(row.elapsedSeconds)+'</td><td>'+(row.gapSeconds!=null?'+ '+clockLabel(row.gapSeconds):'—')+'</td>'+
    '<td>'+num(points?.main??0)+'</td><td>'+num(points?.historic??0)+'</td></tr>';
  }).join('')+'</tbody></table></div>'+
@@ -706,7 +711,7 @@ function doExport(kind,arg){
   list=scores.sort((a,b)=>(a.rank??999)-(b.rank??999)).map((s,i)=>({
    name:members().find(m=>m.id===s.skipperId)?.name||'Inconnu',rank:s.rank??null,dnf:s.dnf,
    points:viewMode==='historic'?s.historic:s.main,participations:1,wins:Number(s.rank===1),raceResult:true,
-   elapsedSeconds:s.elapsedSeconds??null,gapSeconds:s.gapSeconds??null
+   elapsedSeconds:s.elapsedSeconds??null,gapSeconds:s.gapSeconds??null,generalRank:s.generalRank??null
   }));
   if(!list.length){notify('Valide tous les résultats avant d’exporter la course.',true);return;}
   filename='lpdb-course-'+race.id;
@@ -821,7 +826,7 @@ function change(ev){
  }
  if(el.dataset.teamStatus&&draft){
   const row=draft.results.find(r=>r.skipperId===el.dataset.teamStatus);
-  if(row){row.status=el.value;row.position=row.status==='finished'?row.position:null;editorRows();}
+  if(row){row.status=el.value;row.position=row.status==='finished'?row.position:null;if(row.status==='dnf')row.generalRank=null;editorRows();}
  }
 }
 function input(ev){
@@ -836,6 +841,11 @@ function input(ev){
   return;
  }
  if(el.id==='team-search'){search=el.value;page=1;renderMain();$('team-search')?.focus();$('team-search')?.setSelectionRange(search.length,search.length);return;}
+ if(el.dataset.teamGeneralRank&&draft){
+  const row=draft.results.find(r=>r.skipperId===el.dataset.teamGeneralRank);
+  if(row){row.generalRank=el.value.trim()?Number(el.value):null;editorSummary();}
+  return;
+ }
  if(el.dataset.teamRank&&draft){
   const row=draft.results.find(r=>r.skipperId===el.dataset.teamRank);
   if(row){

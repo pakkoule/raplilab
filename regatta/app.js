@@ -1364,10 +1364,8 @@ function changeVSRColor(key,value){
  toast('Couleur '+VSR[key]+' appliquée à toutes les courses correspondantes ✓');
 }
 const lpdbViews=['team','team-races','team-skippers','team-stats'];
-let selectedLpdbView='team';
 function selectLpdbView(view){
  if(!lpdbViews.includes(view))return;
- selectedLpdbView=view;
  for(const name of lpdbViews){
   const active=name===view;
   $(name+'-panel').hidden=!active;
@@ -1391,7 +1389,7 @@ function selectWorkspace(view){
   tab.setAttribute('aria-selected',String(active));
   tab.tabIndex=active?0:-1;
  }
- if(teamView)selectLpdbView(view==='team'?selectedLpdbView:view);
+ if(teamView)selectLpdbView(view);
  if(target==='stats')renderStatistics();
  if(target==='honors')renderHonors();
  if(target==='colors')renderClassColors();

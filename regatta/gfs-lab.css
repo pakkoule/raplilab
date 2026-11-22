@@ -136,3 +136,35 @@
 .regatta-gfs-lab .gfs-spatial-values small{display:block;font-size:9px;color:#648597}
 .regatta-gfs-lab .gfs-spatial-values strong{display:block;font-size:12px;color:#1a5f71;overflow-wrap:anywhere}
 @media(max-width:520px){.regatta-gfs-lab .gfs-spatial-values{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+
+/* Combined spatial + temporal interpolation, shown only after two verified GFS steps. */
+.regatta-gfs-lab .gfs-spatiotemporal-panel{
+ margin-top:12px;padding:11px;border:1px solid #c7dfec;border-radius:11px;
+ background:linear-gradient(120deg,#f3f9ff,#eefbf8)
+}
+.regatta-gfs-lab .gfs-spatiotemporal-title{
+ display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;
+ gap:6px;color:#24556b;font-size:10px
+}
+.regatta-gfs-lab .gfs-spatiotemporal-title strong{font-weight:900}
+.regatta-gfs-lab .gfs-spatiotemporal-title span{font-size:9px;color:#587c89;font-weight:700}
+.regatta-gfs-lab .gfs-spatiotemporal-panel p{
+ margin:8px 0;font-size:10px;line-height:1.6;color:#5a7381
+}
+.regatta-gfs-lab .gfs-spatiotemporal-panel p[data-state="success"]{color:#156d65}
+.regatta-gfs-lab .gfs-spatiotemporal-panel p[data-state="error"]{color:#a74756}
+.regatta-gfs-lab [data-gfs-spatiotemporal-results][hidden]{display:none}
+.regatta-gfs-lab .gfs-space-time-result{
+ display:flex;align-items:baseline;justify-content:space-between;
+ flex-wrap:wrap;gap:4px 9px;margin-top:8px;padding:9px;
+ border:1px solid #cfe6e8;border-radius:10px;background:#fff
+}
+.regatta-gfs-lab .gfs-space-time-result strong{
+ font-size:10px;color:#235f70;flex:1 1 100%
+}
+.regatta-gfs-lab .gfs-space-time-result span{font-size:14px;font-weight:900;color:#14677a}
+.regatta-gfs-lab .gfs-space-time-result small{font-size:9px;color:#688692}
+.regatta-gfs-lab .gfs-spatiotemporal-panel>small{
+ display:block;margin-top:9px;font-size:9px;line-height:1.5;color:#617e8e
+}

@@ -74,7 +74,7 @@ async function decodeWindPoint(bytes, site = SAMPLE, decoder) {
     site: {label:site.label, latitude:site.latitude, longitude:site.longitude},
     nearestGridpoint: {
       latitude: u.nearest.latitude,
-      longitude: u.nearest.longitude,
+      longitude: ((u.nearest.longitude + 180) % 360 + 360) % 360 - 180,
       distanceKm: Math.round(u.nearest.distanceKm * 100) / 100
     },
     ...windFromComponents(u.value, v.value),

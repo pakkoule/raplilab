@@ -198,3 +198,53 @@ test('LPDB secondary navigation changes panels without losing main workspace',()
  assert.equal(d.getElementById('team-races-panel').hidden,true);
  assert.equal(d.getElementById('lpdb-view-team-stats').getAttribute('aria-selected'),'true');
 });
+
+
+test('batch skipper import parses one nonempty line per member and skips duplicate names',()=>{
+ const existing=[m('RX8'),m('Mat_LH','former')];
+ const result=E.prepareMemberBatch('  Tomza  \r\nRX8\n\nTomza\n  Débi \nMat_LH\n',existing);
+ assert.deepEqual(result.accepted,['Tomza','Débi']);
+ assert.deepEqual(result.duplicates.map(x=>x.name),['RX8','Tomza','Mat_LH']);
+ assert.equal(result.invalid.length,0);
+ assert.equal(result.available,49);
+ assert.equal(result.overflow,0);
+});
+test('batch skipper import detects accent / case / whitespace duplicates consistently',()=>{
+ const result=E.prepareMemberBatch('Lucasiz29\nLUCASIZ29\n  Mat   LH  \nmat lh\n',[]);
+ assert.deepEqual(result.accepted,['Lucasiz29','Mat   LH']);
+ assert.deepEqual(result.duplicates.map(x=>x.line),[2,4]);
+ const fromExisting=E.prepareMemberBatch('mat lh\n',[m('Mat   LH')]);
+ assert.equal(fromExisting.accepted.length,0);
+ assert.equal(fromExisting.duplicates.length,1);
+});
+test('batch skipper import preserves original line numbers and flags invalid names',()=>{
+ const result=E.prepareMemberBatch('\nAlpha\n'+('x'.repeat(57))+'\nName\tExtra\nBravo\n',[]);
+ assert.deepEqual(result.accepted,['Alpha','Bravo']);
+ assert.deepEqual(result.invalid.map(x=>x.line),[3,4]);
+ assert.equal(result.invalid.length,2);
+});
+test('batch skipper import refuses overflow beyond 50 active skippers but keeps historic names',()=>{
+ const roster=Array.from({length:49},(_,i)=>m('active-'+i));
+ roster.push(m('old-member','former'));
+ const pending=E.prepareMemberBatch('New A\nNew B\nold-member',roster);
+ assert.equal(pending.available,1);
+ assert.deepEqual(pending.accepted,['New A','New B']);
+ assert.equal(pending.overflow,1);
+ assert.equal(pending.duplicates.length,1);
+ const withFormer=E.prepareMemberBatch('new member',Array.from({length:58},(_,i)=>m('skip-'+i,i<48?'active':'former')));
+ assert.equal(withFormer.available,2);
+ assert.equal(withFormer.overflow,0);
+});
+test('bulk skipper editor and atomic sync are wired into the LPDB team UI',()=>{
+ const doc=new JSDOM(fs.readFileSync('regatta/index.html','utf8')).window.document;
+ const ui=fs.readFileSync('regatta/team-app.js','utf8');
+ const app=fs.readFileSync('regatta/app.js','utf8');
+ assert.ok(doc.querySelector('#team-bulk-dialog #team-bulk-input'));
+ assert.ok(doc.querySelector('#team-bulk-form #team-bulk-submit'));
+ assert.match(ui,/bulk-members/);
+ assert.match(ui,/prepareMemberBatch/);
+ assert.match(ui,/api\.saveBatch\(rows\)/);
+ assert.match(app,/function saveTeamMembersBatch/);
+ assert.match(app,/saveBatch:saveTeamMembersBatch/);
+ assert.match(app,/db\.transaction\('races','readwrite'\)/);
+});

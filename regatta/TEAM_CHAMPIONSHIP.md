@@ -3,7 +3,7 @@
 Le championnat LPDB démarre avec la prochaine course enregistrée. **Aucun import des anciens Excel** et aucune migration destructive des fiches de courses personnelles.
 
 ## Accès / navigation
-- Un unique onglet principal **LPDB** regroupe quatre sous-sections internes : **CHAMPIONNAT**, **COURSES D'ÉQUIPE**, **SKIPPERS**, **STATS D'ÉQUIPE**. La dernière rubrique consultée est conservée lors des allers-retours entre onglets principaux.
+- Un unique onglet principal **LPDB** regroupe quatre sous-sections internes : **CHAMPIONNAT**, **COURSES D'ÉQUIPE**, **SKIPPERS**, **STATS D'ÉQUIPE**. Cliquer sur LPDB rouvre toujours le Championnat ; les autres rubriques restent disponibles via les boutons internes.
 - Les fiches individuelles anciennes restent accessibles dans les onglets « Mes courses · archives », « Mes statistiques » et « Mon palmarès ».
 - Lecture disponible aux visiteurs ; création, correction et suppression réservées à l'éditeur authentifié, selon les mêmes permissions Supabase et RLS que les courses existantes.
 - Les records d'équipe sont stockés dans le même flux de synchronisation Supabase, avec des ID et types dédiés `team-member` et `team-race`, sans réinterpréter les anciens enregistrements.
@@ -35,7 +35,7 @@ Le championnat LPDB démarre avec la prochaine course enregistrée. **Aucun impo
 - Aucune influence du VSR ou du nombre de participants, 0 point pour DNF.
 
 ## Périodes, classement et statistiques
-- Mensuel, trimestriel, annuel, dates libres, historique complet ; rattachement **par date d'arrivée**.
+- Mensuel, trimestriel, annuel, dates libres, historique complet ; rattachement **par date de clôture du classement d'équipe** (indépendante des arrivées individuelles).
 - **Toutes** les épreuves terminées et validées comptent, sans limite de courses retenues.
 - Un skipper avec au moins une participation figure au classement de la période même avec zéro point. Un skipper sans participation n'y apparaît pas.
 - Départage : points cumulés, puis indice **60 % prestige** des épreuves terminées (HC 100, VSR 1 75, VSR 2 50, VSR 3 25) et **40 % assiduité**, puis critères sportifs (courses HC, VSR 1, participations).

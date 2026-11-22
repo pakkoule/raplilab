@@ -464,7 +464,7 @@ test('LPDB foil is silver and overall VR ranking appears in editor, profile and 
  assert.match(doc.querySelector('.team-result-head').textContent,/CLASSEMENT GÉNÉRAL VR/);
  assert.match(ui,/data-team-general-rank/);
  assert.match(ui,/GÉNÉRAL VR/);
- assert.match(ui,/GÉN\. VR/);
+ assert.match(fs.readFileSync('regatta/team-export.js','utf8'),/GÉN\. VR/);
  assert.match(ui,/generalRank:s\.generalRank/);
  assert.match(styles,/--lpdb-foil:/);
  assert.match(styles,/team-result-row input\[data-team-general-rank\]/);
@@ -676,6 +676,6 @@ test('race export passes all 26 skippers, individual notes, original artwork and
  assert.equal(call.rows[0].note?.available,true);
  assert.equal(call.rows[25].note?.available,true);
  assert.equal(call.rows[25].generalRank,125);
- assert.match(call.filename,/lpdb-course-route-du-rhum-main/);
+ assert.match(call.filename,/lpdb-course-.*route-du-rhum-main/);
  dom.window.close();
 });

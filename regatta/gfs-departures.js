@@ -1,5 +1,5 @@
 /* LAB GFS · prototype 12 : comparaison de quatre heures de départ sur latitude témoin.
- * Franchissement 47°N uniquement, sur l'Atlantique nord-est : f006/f012, f012/f018 et f018/f024.
+ * Franchissement 47°N uniquement, sur l'Atlantique nord-est, de f006/f012 jusqu'à f024/f030.
  * Ces calculs ne prédisent ni l'équateur ni le cap de Bonne-Espérance.
  */
 (function(root,factory){
@@ -14,6 +14,7 @@
   const DEPARTURES=Object.freeze([6,7,8,9]);
   const LATER_DEPARTURES=Object.freeze([12,13,14,15]);
   const EVENING_DEPARTURES=Object.freeze([18,19,20,21]);
+  const NEXT_DAY_DEPARTURES=Object.freeze([24,25,26,27]);
   const GATE_LATITUDE=47;
   const HORIZON_HOURS=3;
   const STEP_HOURS=.5;
@@ -30,7 +31,7 @@
     if(!motion?.loadFrame||!motion?.windAt||!motion?.selectSouthHeading||!motion?.move)
       throw Error('Moteur météo/nav indisponible.');
     const first=motion.loadFrame(a),second=motion.loadFrame(b);
-    if(first.cycle!==second.cycle||![6,12,18].includes(first.hour)||
+    if(first.cycle!==second.cycle||![6,12,18,24].includes(first.hour)||
        second.hour!==first.hour+6||
        GRID_KEYS.some(key=>first.g[key]!==second.g[key]))
       throw Error('Prévisions NOAA adjacentes incompatibles.');
@@ -38,7 +39,8 @@
   }
 
   function sailToGate(first,second,startHour,gateLatitude=GATE_LATITUDE){
-    if(!(first.hour===6?DEPARTURES:first.hour===12?LATER_DEPARTURES:EVENING_DEPARTURES).includes(startHour)||
+    if(!(first.hour===6?DEPARTURES:first.hour===12?LATER_DEPARTURES:
+         first.hour===18?EVENING_DEPARTURES:NEXT_DAY_DEPARTURES).includes(startHour)||
        !finite(gateLatitude)||gateLatitude>=motion.START.latitude||
        gateLatitude<=40)
       throw Error('Départ ou latitude témoin non autorisé.');
@@ -86,7 +88,8 @@
   function compareForPair(a,b,firstHour){
     const {first,second}=compatibleFrames(a,b);
     if(first.hour!==firstHour)throw Error('Échéances météo non compatibles avec cette plage de départs.');
-    const departures=firstHour===6?DEPARTURES:firstHour===12?LATER_DEPARTURES:EVENING_DEPARTURES;
+    const departures=firstHour===6?DEPARTURES:firstHour===12?LATER_DEPARTURES:
+      firstHour===18?EVENING_DEPARTURES:NEXT_DAY_DEPARTURES;
     const windows=departures.map(startHour=>{
       try{return sailToGate(first,second,startHour);}
       catch(error){
@@ -124,6 +127,9 @@
   }
   function compareEveningDepartureWindows(a,b){
     return compareForPair(a,b,18);
+  }
+  function compareNextDayDepartureWindows(a,b){
+    return compareForPair(a,b,24);
   }
   function compareAllDepartureWindows(a,b,c){
     const early=compareDepartureWindows(a,b);
@@ -171,9 +177,33 @@
       method:'Trois paires adjacentes GFS f006/f012, f012/f018 et f018/f024 d’un même cycle'
     };
   }
+  function compareSixteenDepartureWindows(a,b,c,d,e){
+    const firstTwelve=compareTwelveDepartureWindows(a,b,c,d);
+    const nextDay=compareNextDayDepartureWindows(d,e);
+    if(firstTwelve.cycleUTC!==nextDay.cycleUTC)
+      throw Error('Cycles NOAA incompatibles entre les quatre fenêtres.');
+    const windows=[...firstTwelve.windows,...nextDay.windows];
+    const valid=windows.filter(x=>x.valid);
+    if(!valid.length)throw Error('Aucun départ valide sur les seize créneaux.');
+    const fastest=[...valid].sort((x,y)=>
+      x.elapsedMinutes-y.elapsedMinutes||x.startHour-y.startHour)[0];
+    const earliest=[...valid].sort((x,y)=>
+      Date.parse(x.crossingUTC)-Date.parse(y.crossingUTC)||x.startHour-y.startHour)[0];
+    return {
+      cycleUTC:firstTwelve.cycleUTC,
+      windows,validCount:valid.length,
+      fastestStartHour:fastest.startHour,
+      fastestElapsedMinutes:fastest.elapsedMinutes,
+      earliestArrivalStartHour:earliest.startHour,
+      earliestArrivalUTC:earliest.crossingUTC,
+      fullPack:false,isEquatorForecast:false,
+      method:'Quatre paires NOAA f006/f012, f012/f018, f018/f024, f024/f030 du même cycle'
+    };
+  }
   return {
-    DEPARTURES,LATER_DEPARTURES,EVENING_DEPARTURES,GATE_LATITUDE,HORIZON_HOURS,STEP_HOURS,
+    DEPARTURES,LATER_DEPARTURES,EVENING_DEPARTURES,NEXT_DAY_DEPARTURES,GATE_LATITUDE,HORIZON_HOURS,STEP_HOURS,
     compatibleFrames,sailToGate,compareDepartureWindows,compareLaterDepartureWindows,
-    compareAllDepartureWindows,compareEveningDepartureWindows,compareTwelveDepartureWindows
+    compareAllDepartureWindows,compareEveningDepartureWindows,compareTwelveDepartureWindows,
+    compareNextDayDepartureWindows,compareSixteenDepartureWindows
   };
 });

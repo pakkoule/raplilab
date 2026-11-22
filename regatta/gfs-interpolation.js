@@ -94,5 +94,51 @@
       method:'Interpolation bilinéaire spatiale et linéaire temporelle des composantes U/V NOAA'
     };
   }
-  return {validateFrame,interpolateFrames,interpolateSpatialFrames};
+  function interpolateDemonstrationTrack(a,b){
+    const cycleA=validateFrame(a),cycleB=validateFrame(b);
+    if(cycleA!==cycleB)throw Error('Impossible de mélanger deux cycles GFS.');
+    if(a.forecastHour!==6||b.forecastHour!==12)
+      throw Error('Le parcours météo témoin nécessite f006 et f012 du même cycle.');
+    if(!Array.isArray(a.trackSamples)||!Array.isArray(b.trackSamples)||
+       a.trackSamples.length!==3||b.trackSamples.length!==3)
+      throw Error('Échantillons météorologiques du parcours incomplets.');
+    const expected=[
+      {forecastHour:7,latitude:48.125,longitude:-8.625},
+      {forecastHour:9,latitude:47.625,longitude:-9.125},
+      {forecastHour:11,latitude:47.125,longitude:-9.625}
+    ];
+    return expected.map((site,i)=>{
+      const from=a.trackSamples[i],to=b.trackSamples[i];
+      const matches=sample=>
+        sample&&sample.verifiedWind===true&&
+        sample.spatiallyInterpolated===true&&
+        sample.gridResolutionDegrees===0.25&&
+        sample.forecastHour===site.forecastHour&&
+        sample.site&&finite(sample.site.latitude)&&finite(sample.site.longitude)&&
+        Math.abs(sample.site.latitude-site.latitude)<1e-7&&
+        Math.abs(sample.site.longitude-site.longitude)<1e-7&&
+        finite(sample.uMs)&&finite(sample.vMs)&&
+        Math.abs(sample.uMs)<=100&&Math.abs(sample.vMs)<=100;
+      if(!matches(from)||!matches(to))
+        throw Error('Position ou vent du parcours non vérifié.');
+      const fraction=(site.forecastHour-6)/6;
+      const u=from.uMs+(to.uMs-from.uMs)*fraction;
+      const v=from.vMs+(to.vMs-from.vMs)*fraction;
+      const speed=Math.hypot(u,v);
+      const direction=(Math.atan2(-u,-v)*180/Math.PI+360)%360;
+      return {
+        label:'Position témoin '+(i+1),
+        cycleUTC:a.cycleUTC,
+        forecastHour:site.forecastHour,
+        validUTC:new Date(cycleA+site.forecastHour*3600000).toISOString(),
+        latitude:site.latitude,longitude:site.longitude,
+        uMs:round(u,3),vMs:round(v,3),
+        speedKnots:round(speed*KNOTS,1),
+        directionFromDeg:round(direction,1),
+        spatiallyInterpolated:true,temporallyInterpolated:true,
+        demonstrativePosition:true
+      };
+    });
+  }
+  return {validateFrame,interpolateFrames,interpolateSpatialFrames,interpolateDemonstrationTrack};
 });

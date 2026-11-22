@@ -1812,3 +1812,94 @@ button.close{min-width:40px;min-height:40px}
  .cards .card.card--columns .race-gfs-briefing-grid{grid-template-columns:minmax(0,1fr)}
  .cards .card.card--columns .race-gfs-briefing-chip{gap:2px}
 }
+
+
+/* Pre-start insights: route-timing, personal class record and indicative projection.
+   Everything sits under the GFS briefing in the race card's right column. */
+.cards .card.card--columns .race-prestart-insights{
+ display:flex;flex-direction:column;gap:7px;margin-top:9px;min-width:0;
+ font-family:Poppins,system-ui,sans-serif
+}
+.cards .card.card--columns .race-prestart-routing{
+ display:flex;align-items:center;gap:8px;min-width:0;
+ padding:9px;border:1px solid #b3dae0;border-radius:10px;
+ background:linear-gradient(113deg,#eaf7f9,#e6f4f6 64%,#f5effa);
+ box-shadow:inset 0 1px 0 #ffffffd9
+}
+.cards .card.card--columns .race-prestart-icon{
+ flex:0 0 20px;font-size:19px;line-height:1
+}
+.cards .card.card--columns .race-prestart-routing-copy{
+ display:flex;flex:1 1 auto;min-width:0;flex-direction:column;gap:3px
+}
+.cards .card.card--columns .race-prestart-routing-copy strong{
+ font:900 8px/1.35 Poppins,system-ui,sans-serif;color:#245c77;
+ letter-spacing:.025em;overflow-wrap:anywhere
+}
+.cards .card.card--columns .race-prestart-routing-copy small{
+ font:600 8px/1.35 Poppins,system-ui,sans-serif;color:#6b8b99
+}
+.cards .card.card--columns .race-prestart-routing-time{
+ flex:0 1 auto;min-width:0;max-width:100%;
+ font:900 13px/1.25 'Courier Prime','Courier New',monospace;
+ color:#176c82;font-variant-numeric:tabular-nums;white-space:nowrap
+}
+.cards .card.card--columns .race-prestart-routing[data-gfs-route-state="ready"]{
+ background:linear-gradient(110deg,#e2f9ed,#edf9f0 67%,#f7f7fb);border-color:#9fd9bd
+}
+.cards .card.card--columns .race-prestart-routing[data-gfs-route-state="ready"] .race-prestart-routing-time{
+ color:#19816a
+}
+.cards .card.card--columns .race-prestart-performance{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;min-width:0
+}
+.cards .card.card--columns .race-prestart-history,
+.cards .card.card--columns .race-prestart-projection{
+ display:flex;flex-direction:column;gap:4px;min-width:0;
+ padding:9px 8px;border:1px solid #cbdce8;border-radius:10px;
+ background:linear-gradient(116deg,#f7fbfe,#edf4fa 65%,#f8f6fc)
+}
+.cards .card.card--columns .race-prestart-projection{
+ border-color:#b9d9ce;background:linear-gradient(115deg,#f0faf6,#eaf7f0 65%,#f9faf8)
+}
+.cards .card.card--columns .race-prestart-performance section>span{
+ font:900 7.5px/1.35 Poppins,system-ui,sans-serif;
+ color:#638197;letter-spacing:.015em;overflow-wrap:anywhere
+}
+.cards .card.card--columns .race-prestart-performance section>strong{
+ font:900 clamp(13px,1.65vw,20px)/1.15 'Courier Prime','Courier New',monospace;
+ color:#265673;font-variant-numeric:tabular-nums;overflow-wrap:anywhere
+}
+.cards .card.card--columns .race-prestart-projection>strong{color:#267b65}
+.cards .card.card--columns .race-prestart-performance section>small{
+ color:#698593;font:650 8px/1.4 Poppins,system-ui,sans-serif;
+ overflow-wrap:anywhere
+}
+.cards .card.card--columns .race-prestart-range{
+ margin:0;padding:2px 1px;
+ color:#547a89;font:750 8px/1.35 Poppins,system-ui,sans-serif
+}
+.cards .card.card--columns .race-prestart-note{
+ margin:0;color:#7e96a1;font:550 7px/1.4 Poppins,system-ui,sans-serif
+}
+@media(max-width:580px){
+ .cards .card.card--columns .race-prestart-insights{gap:5px;margin-top:7px}
+ .cards .card.card--columns .race-prestart-routing{gap:4px;padding:6px;flex-wrap:wrap}
+ .cards .card.card--columns .race-prestart-icon{flex-basis:14px;font-size:13px}
+ .cards .card.card--columns .race-prestart-routing-copy strong{font-size:7px}
+ .cards .card.card--columns .race-prestart-routing-copy small{font-size:7px}
+ .cards .card.card--columns .race-prestart-routing-time{
+  margin-left:auto;font-size:11px
+ }
+ .cards .card.card--columns .race-prestart-performance{gap:4px}
+ .cards .card.card--columns .race-prestart-history,
+ .cards .card.card--columns .race-prestart-projection{padding:6px 4px;gap:3px}
+ .cards .card.card--columns .race-prestart-performance section>span{font-size:7px}
+ .cards .card.card--columns .race-prestart-performance section>strong{font-size:12px}
+ .cards .card.card--columns .race-prestart-performance section>small{font-size:7px}
+ .cards .card.card--columns .race-prestart-range{font-size:7px}
+ .cards .card.card--columns .race-prestart-note{font-size:6.5px}
+}
+@media(max-width:365px){
+ .cards .card.card--columns .race-prestart-performance{grid-template-columns:minmax(0,1fr)}
+}

@@ -30,7 +30,16 @@ test('polaires provisoires ne sont utilisées que dans la zone TWA documentée',
   assert.equal(m.polarSpeed(30,100),41.42);
   assert.equal(m.polarSpeed(30,110),41.33);
   assert.ok(m.polarSpeed(30,105)>41.3&&m.polarSpeed(30,105)<41.5);
-  assert.throws(()=>m.polarSpeed(20,85),/hors des polaires/);
+  assert.equal(m.polarSpeed(20,85),33.73);
+  assert.equal(m.polarSpeed(12,30),5.70);
+  assert.equal(m.polarSpeed(30,35),11.88);
+  assert.equal(m.polarSpeed(14,45),13.30);
+  assert.equal(m.polarSpeed(18,70),27.36);
+  assert.equal(m.polarSpeed(30,80),36.86);
+  assert.equal(m.polarSpeed(30,95),40.76);
+  assert.ok(Math.abs(m.polarSpeed(12,32.5)-(5.70+7.41)/2)<1e-10);
+  assert.throws(()=>m.polarSpeed(20,29.9),/hors des polaires/);
+  assert.throws(()=>m.polarSpeed(20,120.1),/hors des polaires/);
   assert.throws(()=>m.polarSpeed(43,110),/hors des polaires/);
 });
 test('décodage compact little-endian et échantillon bilinéaire de grille',()=>{
@@ -170,4 +179,23 @@ test('la cinquième échéance f030 permet une interpolation bornée f024/f030',
   assert.throws(()=>m.windAt(f24,
     m.loadFrame(frame(30,{cycle:'2026-11-22T06:00:00.000Z'})),27,48.125,-8.625),
     /consécutives/);
+});
+
+test('test17 : données ITYC saisies sur chaque angle de 30° à 120°, sans Full Pack ni extrapolation',()=>{
+  assert.equal(m.ANGLES[0],30);
+  assert.equal(m.ANGLES.at(-1),120);
+  assert.equal(m.ANGLES.length,19);
+  assert.equal(m.TWS.length,13);
+  assert.equal(Object.keys(m.POLAR).length,m.ANGLES.length);
+  assert.ok(m.ANGLES.every(angle=>m.POLAR[angle]?.length===m.TWS.length));
+  for(const angle of m.ANGLES){
+    for(const knots of m.TWS){
+      assert.ok(Number.isFinite(m.polarSpeed(knots,angle)));
+      assert.ok(m.polarSpeed(knots,angle)>0);
+    }
+  }
+  assert.throws(()=>m.polarSpeed(14,25),/hors des polaires/);
+  assert.throws(()=>m.polarSpeed(14,125),/hors des polaires/);
+  assert.throws(()=>m.polarSpeed(3.9,90),/hors des polaires/);
+  assert.throws(()=>m.polarSpeed(40.1,90),/hors des polaires/);
 });

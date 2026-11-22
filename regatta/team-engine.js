@@ -63,25 +63,23 @@ function resolveLinkedRace(team,personal){
  const r=race(team);
  if(!r||!r.personalRaceId||!personal||personal.id!==r.personalRaceId||personal.kind!=='race')return r;
  const name=safe(personal.name,160)||r.name;
- const dateEnd=dateOk(personal.end)?personal.end:r.dateEnd;
  const vsr=BASE[personal.vsr]?personal.vsr:r.vsr;
- return {...r,name,dateEnd,vsr,
+ // Closing the team's results is separate from an individual's finish date.
+ return {...r,name,vsr,
   boatClass:safe(personal.boatClass,100)||r.boatClass,
   start:dateOk(personal.start)?personal.start:r.start,
   startTime:safe(personal.startTime,8)||r.startTime,
-  endTime:safe(personal.endTime,8)||r.endTime,
   routeType:safe(personal.routeType,40)||r.routeType,
   timezone:safe(personal.timezone,80)||r.timezone,
-  equipment:safe(personal.equipment,30)||r.equipment};
+  equipment:r.equipment};
 }
 function fromPersonal(personal,base={}){
  if(!personal||personal.kind!=='race')return null;
  return race({...base,personalRaceId:personal.id,
   name:safe(personal.name,160)||safe(base.name,160),
-  dateEnd:dateOk(personal.end)?personal.end:base.dateEnd,
   vsr:BASE[personal.vsr]?personal.vsr:base.vsr,
   boatClass:personal.boatClass,start:personal.start,startTime:personal.startTime,
-  endTime:personal.endTime,routeType:personal.routeType,timezone:personal.timezone,equipment:personal.equipment});
+  routeType:personal.routeType,timezone:personal.timezone});
 }
 function race(input){
  const id=cleanId(input?.id),name=safe(input?.name,160);

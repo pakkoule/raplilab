@@ -9,7 +9,7 @@ const BOUNDS = Object.freeze({top: 52, bottom: 40, left: -20, right: 5});
 const HOUR_MS = 60 * 60 * 1000;
 const MAX_BYTES = 4 * 1024 * 1024;
 const FORECAST_HOUR = 6;
-const FORECAST_HOURS = Object.freeze([6, 12, 18, 24]);
+const FORECAST_HOURS = Object.freeze([6, 12, 18, 24, 30]);
 
 function chooseCycle(nowMs = Date.now()) {
   if (!Number.isFinite(nowMs)) throw new Error('Horodatage invalide.');

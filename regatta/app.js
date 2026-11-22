@@ -1298,19 +1298,38 @@ function changeVSRColor(key,value){
  storeClassSettings({...classSettings,vsrColors:next});
  toast('Couleur '+VSR[key]+' appliquée à toutes les courses correspondantes ✓');
 }
-function selectWorkspace(view){
- const valid=['team','team-races','team-skippers','team-stats','races','stats','honors','colors'];
- if(!valid.includes(view))return;
- for(const name of valid){
+const lpdbViews=['team','team-races','team-skippers','team-stats'];
+let selectedLpdbView='team';
+function selectLpdbView(view){
+ if(!lpdbViews.includes(view))return;
+ selectedLpdbView=view;
+ for(const name of lpdbViews){
   const active=name===view;
   $(name+'-panel').hidden=!active;
-  const tab=$('view-'+name);
-  tab.classList.toggle('active',active);tab.setAttribute('aria-selected',String(active));tab.tabIndex=active?0:-1;
+  const tab=$('lpdb-view-'+name);
+  tab.classList.toggle('active',active);
+  tab.setAttribute('aria-selected',String(active));
+  tab.tabIndex=active?0:-1;
  }
- if(view.startsWith('team'))renderTeam();
- if(view==='stats')renderStatistics();
-  if(view==='honors')renderHonors();
- if(view==='colors')renderClassColors();
+ renderTeam();
+}
+function selectWorkspace(view){
+ const mainViews=['team','races','stats','honors','colors'];
+ const teamView=lpdbViews.includes(view);
+ const target=teamView?'team':view;
+ if(!mainViews.includes(target))return;
+ for(const name of mainViews){
+  const active=name===target;
+  (name==='team'?$('lpdb-panel'):$(name+'-panel')).hidden=!active;
+  const tab=$('view-'+name);
+  tab.classList.toggle('active',active);
+  tab.setAttribute('aria-selected',String(active));
+  tab.tabIndex=active?0:-1;
+ }
+ if(teamView)selectLpdbView(view==='team'?selectedLpdbView:view);
+ if(target==='stats')renderStatistics();
+ if(target==='honors')renderHonors();
+ if(target==='colors')renderClassColors();
 }
 
 const scoreDialog=$('score-dialog'),recalcDialog=$('score-recalc-dialog');
@@ -1996,7 +2015,8 @@ $('record-attempts-list').addEventListener('change',event=>{
 $('race-timezone').addEventListener('change',updateArrival);
 $('race-kind').addEventListener('change',updateKindFields);
 $('race-event-id').addEventListener('change',updateKindFields);
-for(const view of ['team','team-races','team-skippers','team-stats','races','stats','honors','colors'])$('view-'+view).addEventListener('click',()=>selectWorkspace(view));
+for(const view of ['team','races','stats','honors','colors'])$('view-'+view).addEventListener('click',()=>selectWorkspace(view));
+for(const view of lpdbViews)$('lpdb-view-'+view).addEventListener('click',()=>selectWorkspace(view));
 // Palette des classes: disponible dans la barre d'actions de Courses, sans troisième onglet encombrant.
 $('manage-class-colors').addEventListener('click',()=>selectWorkspace('colors'));
 $('colors-back-races').addEventListener('click',()=>selectWorkspace('races'));

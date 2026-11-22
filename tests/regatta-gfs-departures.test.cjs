@@ -4,7 +4,7 @@ const assert=require('node:assert/strict');
 const motion=require('../regatta/gfs-motion.js');
 const {
   DEPARTURES,LATER_DEPARTURES,GATE_LATITUDE,HORIZON_HOURS,
-  compatibleFrames,sailToGate,compareDepartureWindows,compareLaterDepartureWindows
+  compatibleFrames,sailToGate,compareDepartureWindows,compareLaterDepartureWindows,compareAllDepartureWindows
 }=require('../regatta/gfs-departures.js');
 const CYCLE='2026-11-22T00:00:00.000Z';
 function packed(values){
@@ -112,4 +112,20 @@ test('refuse d extrapoler une période météo ou des polaires absentes en deuxi
   assert.throws(()=>sailToGate(first,second,11,47),/non autorisé/);
   assert.throws(()=>sailToGate(first,second,15,40.1),/non franchie/);
   assert.throws(()=>compareLaterDepartureWindows(frame(12,{windSpeed:0}),frame(18,{windSpeed:0})),/Aucun départ/);
+});
+
+test('bilan global sur huit départs, même cycle et ETA de porte témoin',()=>{
+  const comparison=compareAllDepartureWindows(frame(6),frame(12),frame(18));
+  assert.equal(comparison.windows.length,8);
+  assert.equal(comparison.validCount,8);
+  assert.deepEqual(comparison.windows.map(w=>w.startHour),[6,7,8,9,12,13,14,15]);
+  assert.equal(comparison.fastestElapsedMinutes,Math.min(...comparison.windows.map(w=>w.elapsedMinutes)));
+  assert.ok(comparison.fastestStartHour>=6&&comparison.fastestStartHour<=15);
+  assert.equal(comparison.fullPack,false);
+  assert.equal(comparison.isEquatorForecast,false);
+});
+test('bilan de huit départs refusé quand la troisième prévision mélange deux cycles',()=>{
+  assert.throws(()=>compareAllDepartureWindows(
+    frame(6),frame(12),frame(18,{cycle:'2026-11-22T06:00:00.000Z'})
+  ),/incompatibles/);
 });

@@ -4,6 +4,7 @@ const {
   chooseCycle,buildUrl,inspectGrib2,readLimited,MAX_BYTES,FORECAST_HOURS
 }=require('./gfs-source-core.cjs');
 const {decodeWindPoints,SITES}=require('./gfs-wind-core.cjs');
+const {decodeWindSpatial,SPATIAL_SITE}=require('./gfs-spatial-core.cjs');
 
 // Chaque clic = une seule échéance météo, trois points échantillonnés.
 // Limiter l'accès NOMADS (cache et espacement >= 10 s par instance).
@@ -41,12 +42,13 @@ async function retrieveWind(cycle,forecastHour){
     const file=await readLimited(response,MAX_BYTES);
     const metadata=inspectGrib2(file);
     const points=await decodeWindPoints(file,SITES);
+    const spatial=await decodeWindSpatial(file,SPATIAL_SITE);
     return {
       source:'NOAA NOMADS',model:'GFS 0,25°',
       cycleUTC:cycle.iso,forecastHour,
       validUTC:new Date(Date.parse(cycle.iso)+forecastHour*3600000).toISOString(),
       bounds:{top:52,bottom:40,left:-20,right:5},
-      fileBytes:file.length,fields:metadata.variables,points,
+      fileBytes:file.length,fields:metadata.variables,points,spatial,
       // Compatibilité des clients utilisant l'ancienne lecture au large de Brest.
       wind:points[0]
     };

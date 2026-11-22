@@ -1,0 +1,28 @@
+name: Rapli Regatta · validation GFS source
+
+on:
+  pull_request:
+    paths:
+      - 'netlify/functions/gfs-*'
+      - 'regatta/gfs-lab.*'
+      - 'regatta/index.html'
+      - 'tests/regatta-gfs-source.test.cjs'
+      - '.github/workflows/regatta-gfs-check.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  gfs-source:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Verify NOAA GFS source URL and GRIB2 parser (offline fixtures)
+        run: node --test tests/regatta-gfs-source.test.cjs

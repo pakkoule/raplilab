@@ -612,7 +612,7 @@ function card(r){
     '<p class="score-pending">'+safe(score.reason||'Note en attente')+'</p>':'')+
    (showRecordRanking&&!rankPairs.some(([key])=>r[key])?
     '<p class="score-pending">Record clôturé · renseigne les classements finaux avec MODIFIER.</p>':'')+
-   gains+'</section></div>'+(isLive?gfsCardMarkup():'')+'</div></article>';
+   gains+'</section>'+(isLive?gfsCardMarkup():'')+'</div></div></article>';
 }
 
 /* Ajustement dynamique après mise en page : une ligne même pour > 100 000 joueurs. */

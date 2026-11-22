@@ -10,7 +10,7 @@ const uuid=type=>'lpdb-'+type+'-'+(root.crypto?.randomUUID?.()||Date.now().toStr
 const stamp=()=>new Date().toISOString();
 const today=()=>new Date().toLocaleDateString('en-CA');
 const types={month:'Mensuel',quarter:'Trimestriel',year:'Annuel',custom:'Libre',all:'Historique complet'};
-let api,viewMode='main',periodType='month',periodValue='',customFrom='',customTo='',search='',filter='all',page=1,statMode='avg',draft=null,editingMember=null,notice='',bulkSaving=false,rankingImport=null;
+let api,viewMode='main',periodType='month',periodValue='',customFrom='',customTo='',search='',filter='all',page=1,statMode='avg',draft=null,editingMember=null,notice='',bulkSaving=false,rankingImport=null,illustrationBusy=false;
 const personal=()=>api?.personal?.()||[];
 const raw=()=>engine.normalize(api?.get?.()||[]);
 const all=()=>raw().map(x=>x.type==='team-race'?
@@ -123,6 +123,7 @@ function teamRaceCard(r,known,now=Date.now()){
  const dnf=r.results.filter(x=>x.status==='dnf').length;
  const shared=root.RapliRegattaSharedCards;
  const isUpcoming=status==='planned',isLive=status==='live';
+ const forecast=isUpcoming?root.RapliTeamPrediction?.project(r,all(),engine):null;
  const timer=(isUpcoming||isLive)?shared?.raceClockMarkup?.(displayed)||'':'';
  const gfs=isUpcoming?shared?.gfsBriefingMarkup?.(displayed)||'':
   isLive?shared?.gfsCardMarkup?.()||'':'';
@@ -131,8 +132,9 @@ function teamRaceCard(r,known,now=Date.now()){
   (r.boatClass?'<span class="team-race-class">'+esc(r.boatClass)+'</span>':'');
  const vsrTag=shared?.vsrTagMarkup?.(r.vsr)||
   '<span class="team-race-vsr '+esc(r.vsr)+'">'+esc(r.vsr==='hc'?'HC':r.vsr.toUpperCase())+'</span>';
- const img=p&&/^data:image\/(?:png|webp|jpeg|gif);base64,/iu.test(p.icon||'')?
-  '<img src="'+esc(p.icon)+'" alt="Illustration de la course '+esc(r.name)+'">':
+ const illustration=r.icon||p?.icon||'';
+ const img=/^data:image\/(?:png|webp|jpeg|gif);base64,/iu.test(illustration)?
+  '<img src="'+esc(illustration)+'" alt="Illustration de la course '+esc(r.name)+'">':
   '<img src="assets/lpdb.webp" class="team-race-fallback-image" alt="Logo de l’équipe LPDB">';
  const menuItem=(cmd,label,danger=false)=>'<button type="button" data-team-action="'+cmd+'"'+
   (danger?' class="is-danger"':'')+'>'+label+'</button>';
@@ -174,6 +176,13 @@ function teamRaceCard(r,known,now=Date.now()){
  (status==='finished'?(winner?'<div class="team-race-first"><div><span>🥇 PREMIER LPDB</span><strong>'+esc(names.get(winner.skipperId)||'Skipper')+'</strong></div>'+
  (winner.elapsedSeconds!=null?'<span class="team-race-clock">'+clockLabel(winner.elapsedSeconds)+'</span>':'')+'</div>':
  '<p class="team-race-pending">Aucun résultat final validé.</p>'):'')+
+ (isUpcoming&&forecast?'<section class="team-forecast" aria-label="Pronostic du podium LPDB">'+
+ '<div class="team-forecast-title"><span>🔮 PODIUM TEAM THÉORIQUE</span><small>PRONOSTIC · HISTORIQUE LPDB</small></div>'+
+ (forecast.sufficient?'<div class="team-forecast-rows">'+forecast.podium.map((s,i)=>
+ '<div class="team-forecast-row"><span>'+medal(i+1)+'</span><strong title="'+esc(s.name)+'">'+esc(s.name)+'</strong>'+
+ '<small>INDICE '+num(s.index)+' · '+s.confidence+'</small></div>').join('')+'</div>':
+ '<p class="team-forecast-empty">Historique insuffisant pour établir un podium crédible.</p>')+
+ '<p class="team-forecast-footnote">'+num(forecast.represented)+' / '+num(forecast.entrants)+' skippers évaluables · Indice calculé sur les courses terminées avant ce départ. Aucune prédiction du classement VR réel.</p></section>':'')+
  (status==='finished'?
  (podium.length>1?'<div class="team-race-podium">'+podium.slice(1).map(x=>
  '<div><span>'+medal(x.position)+'</span><strong>'+esc(names.get(x.skipperId)||'Skipper')+'</strong></div>').join('')+'</div>':'')+
@@ -458,6 +467,58 @@ function renderPersonalLink(){
  }else{photo.innerHTML='';photo.hidden=true;}
  document.querySelector('[data-team-action="unlink-personal"]').disabled=!draft.personalRaceId;
 }
+/* Team images override a linked personal image but never overwrite the
+   personal archive. File input is compressed to a compact WebP/JPEG data URL. */
+function renderTeamIllustration(){
+ if(!draft)return;
+ const linked=personalById(draft.personalRaceId);
+ const image=draft.icon||linked?.icon||'';
+ const img=$('team-illustration-preview'),placeholder=$('team-illustration-placeholder');
+ const valid=/^data:image\/(?:png|webp|jpeg|gif);base64,/iu.test(image);
+ img.hidden=!valid;
+ if(valid)img.src=image;else img.removeAttribute('src');
+ placeholder.hidden=valid;
+ $('team-illustration-info').textContent=illustrationBusy?'Préparation de l’illustration…':
+  draft.icon?'Illustration personnalisée LPDB · également utilisée dans les exports PNG.':
+  valid?'Illustration reprise de la fiche historique · tu peux la remplacer ici.':
+  'Ajoute une illustration pour la tuile et les exports PNG (JPG, PNG, WebP).';
+ $('team-race-illustration-file').disabled=illustrationBusy;
+}
+async function uploadTeamIllustration(file){
+ if(!file||!draft)return;
+ if(illustrationBusy){notify('Une illustration est déjà en cours de traitement.',true);return;}
+ if(file.size>18*1024*1024||(!file.type.startsWith('image/')&&!/\.(heic|heif)$/iu.test(file.name))){
+  notify('Image non compatible ou supérieure à 18 Mo.',true);return;
+ }
+ const activeDraft=draft,form=$('team-race-form');
+ illustrationBusy=true;
+ const submit=form.querySelector('button[type="submit"]');
+ if(submit)submit.disabled=true;
+ renderTeamIllustration();
+ let url='';
+ try{
+  url=URL.createObjectURL(file);
+  const image=new Image();
+  image.src=url;
+  await new Promise((resolve,reject)=>{image.onload=resolve;image.onerror=()=>reject(Error('Format non décodable sur cet appareil. Essaie JPG ou PNG.'));});
+  if(draft!==activeDraft)return;
+  const ratio=Math.min(1,1400/Math.max(image.naturalWidth,image.naturalHeight));
+  const canvas=document.createElement('canvas');
+  canvas.width=Math.max(1,Math.round(image.naturalWidth*ratio));
+  canvas.height=Math.max(1,Math.round(image.naturalHeight*ratio));
+  const ctx=canvas.getContext('2d');if(!ctx)throw Error('Canvas image indisponible.');
+  ctx.drawImage(image,0,0,canvas.width,canvas.height);
+  let data=canvas.toDataURL('image/webp',.78);
+  if(!data.startsWith('data:image/webp'))data=canvas.toDataURL('image/jpeg',.78);
+  if(data.length>7*1024*1024)throw Error('Illustration trop volumineuse après compression.');
+  if(draft===activeDraft){draft.icon=data;renderTeamIllustration();notify('Illustration de course prête à enregistrer ✓');}
+ }catch(e){notify('Illustration : '+(e.message||e),true);}
+ finally{
+  if(url)URL.revokeObjectURL(url);
+  illustrationBusy=false;if(submit)submit.disabled=false;
+  if(draft===activeDraft)renderTeamIllustration();
+ }
+}
 function fromPersonalId(id){
  if(!canWrite())return;
  const p=personalById(id);if(!p){notify('Fiche personnelle introuvable.',true);return;}
@@ -479,7 +540,8 @@ function openRace(id,personalId=''){
  document.querySelector('[data-team-action="toggle-ranking-import"]').setAttribute('aria-expanded','false');
  previewImport();
  $('team-race-dialog-title').textContent=id?'MODIFIER LA COURSE':'NOUVELLE COURSE D’ÉQUIPE';
- fillSharedFields();renderPersonalLink();
+ fillSharedFields();renderPersonalLink();renderTeamIllustration();
+ $('team-race-illustration-file').value='';
  $('team-create-member').value='';
  $('team-select-member').value='';
  choices();editorRows();$('team-race-dialog').showModal();
@@ -509,6 +571,7 @@ async function quickMember(){
 }
 async function submitRace(ev){
  ev.preventDefault();if(!canWrite()||!draft)return;
+ if(illustrationBusy){notify('L’illustration est encore en cours de préparation.',true);return;}
  const linked=personalById(draft.personalRaceId);
  if(linked){
   draft=engine.fromPersonal(linked,draft);
@@ -727,7 +790,7 @@ function doExport(kind,arg){
   const metadata={
    name:race.name,boatClass:race.boatClass||linked?.boatClass||'',
    vsr:race.vsr,dateEnd:race.dateEnd,stageGroup:race.stageGroup||'',
-   illustration:linked?.icon||'',
+   illustration:race.icon||linked?.icon||'',
    finishers:race.results.filter(r=>r.status==='finished').length,
    dnf:race.results.filter(r=>r.status==='dnf').length,
    average:notes.average
@@ -761,6 +824,10 @@ async function click(ev){
  const cmd=button.dataset.teamAction;
  if(button.closest('.team-race-menu'))button.closest('.team-race-menu').open=false;
  if(cmd==='new-race')return openRace();
+ if(cmd==='remove-illustration'&&draft){
+  if(illustrationBusy){notify('Illustration en cours de chargement.',true);return;}
+  draft.icon='';renderTeamIllustration();notify('Illustration personnelle de l’équipe retirée du formulaire.');return;
+ }
  if(cmd==='team-colors'){api.openColors?.();return;}
  if(cmd.startsWith('show-ranking-'))return showRaceRanking(cmd.slice('show-ranking-'.length));
  if(cmd==='toggle-ranking-import'){
@@ -778,10 +845,10 @@ async function click(ev){
   if(!p){notify('Choisis une fiche personnelle existante.',true);return;}
   const linkedElsewhere=races().some(r=>r.personalRaceId===p.id&&r.id!==draft.id);
   if(linkedElsewhere){notify('Cette fiche personnelle est déjà liée à une autre course d’équipe.',true);return;}
-  draft=engine.fromPersonal(p,draft);fillSharedFields();renderPersonalLink();editorRows();return;
+  draft=engine.fromPersonal(p,draft);fillSharedFields();renderPersonalLink();renderTeamIllustration();editorRows();return;
  }
  if(cmd==='unlink-personal'&&draft){
-  draft.personalRaceId='';renderPersonalLink();notify('Liaison retirée dans le formulaire. Enregistre la course pour confirmer.');return;
+  draft.personalRaceId='';renderPersonalLink();renderTeamIllustration();notify('Liaison retirée dans le formulaire. Enregistre la course pour confirmer.');return;
  }
 
  if(cmd==='recalculate-notes'){recalculateNotes();return;}
@@ -891,6 +958,10 @@ function init(bridge){
  document.addEventListener('click',click);
  document.addEventListener('change',change);
  document.addEventListener('input',input);
+ $('team-race-illustration-file')?.addEventListener('change',ev=>{
+  const file=ev.target.files?.[0];ev.target.value='';
+  if(file)void uploadTeamIllustration(file);
+ });
  $('lpdb-global-search')?.addEventListener('keydown',ev=>{
   if(ev.key==='Escape'&&ev.target.value){ev.preventDefault();search='';ev.target.value='';
    $('lpdb-search-clear').hidden=true;page=1;renderCurrentTab();}

@@ -86,6 +86,60 @@
   };
   const verifiedFrames=new Map();
   const interpolationEngine=window.RapliGfsInterpolation;
+  const motionStatus=root.querySelector('[data-gfs-motion-status]');
+  const motionSummary=root.querySelector('[data-gfs-motion-summary]');
+  const motionSteps=root.querySelector('[data-gfs-motion-steps]');
+  const motionEngine=window.RapliGfsMotion;
+  const renderMotion=()=>{
+    motionSteps.replaceChildren();
+    motionSummary.hidden=true;
+    motionSteps.hidden=true;
+    if(!verifiedFrames.has(6)||!verifiedFrames.has(12)){
+      motionStatus.dataset.state='idle';
+      motionStatus.textContent='Lis +6 h puis +12 h du même cycle GFS pour simuler le déplacement à cap fixe.';
+      return;
+    }
+    if(!motionEngine?.simulateMotion){
+      motionStatus.dataset.state='error';
+      motionStatus.textContent='Moteur de déplacement expérimental indisponible.';
+      return;
+    }
+    try{
+      const result=motionEngine.simulateMotion(
+        verifiedFrames.get(6),verifiedFrames.get(12)
+      );
+      const last=result.steps[result.steps.length-1];
+      root.querySelector('[data-gfs-motion-distance]').textContent=result.distanceNm.toFixed(1)+' milles';
+      root.querySelector('[data-gfs-motion-final]').textContent=
+        last.latitude.toFixed(3)+'°N · '+Math.abs(last.longitude).toFixed(3)+'°O';
+      // Un pas de 30 min ; affichage compact à chaque heure entière.
+      for(const point of result.steps.filter(step=>Number.isInteger(step.hour))){
+        const row=document.createElement('div');
+        row.className='gfs-motion-step';
+        const heading=document.createElement('strong');
+        heading.textContent='+'+point.hour+' h';
+        const location=document.createElement('span');
+        location.textContent=point.latitude.toFixed(3)+'°N · '+
+          Math.abs(point.longitude).toFixed(3)+'°O';
+        const speed=document.createElement('b');
+        speed.textContent=point.boatKnots.toFixed(1)+' nds bateau';
+        const wind=document.createElement('small');
+        wind.textContent='Vent '+point.windKnots.toFixed(1)+' nds · '+point.windDirection.toFixed(0)+'°'+
+          ' · TWA '+point.twa.toFixed(0)+'°';
+        row.append(heading,location,speed,wind);
+        motionSteps.appendChild(row);
+      }
+      motionSummary.hidden=false;
+      motionSteps.hidden=false;
+      motionStatus.dataset.state='success';
+      motionStatus.textContent='Première trajectoire calculée · '+result.distanceNm.toFixed(1)+
+        ' milles en 3 h · modèle provisoire non Full Pack.';
+    }catch(error){
+      motionStatus.dataset.state='error';
+      motionStatus.textContent='Déplacement non calculable : '+String(error.message||error)+
+        ' Aucune distance fictive affichée.';
+    }
+  };
   const trackStatus=root.querySelector('[data-gfs-demo-track-status]');
   const trackResults=root.querySelector('[data-gfs-demo-track-results]');
   const renderDemoTrack=()=>{
@@ -279,6 +333,7 @@
       renderInterpolations();
       renderSpaceTime();
       renderDemoTrack();
+      renderMotion();
       windStatus.dataset.state='success';
       windStatus.textContent='3 vents réels décodés sur le même cycle NOAA · '+
         (result.cached?'résultat en cache.':'lecture validée.');

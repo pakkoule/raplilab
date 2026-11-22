@@ -18,6 +18,8 @@ on:
       - 'regatta/gfs-route-search.js'
       - 'tests/regatta-gfs-route-search.test.cjs'
       - 'regatta/gfs-departures.js'
+      - 'regatta/gfs-routing-summary.js'
+      - 'tests/regatta-gfs-routing-summary.test.cjs'
       - 'tests/regatta-gfs-departures.test.cjs'
       - 'regatta/gfs-interpolation.js'
       - 'package.json'
@@ -46,9 +48,10 @@ jobs:
           node --check regatta/gfs-motion.js
           node --check regatta/gfs-route-search.js
           node --check regatta/gfs-departures.js
+          node --check regatta/gfs-routing-summary.js
           node --check netlify/functions/gfs-grid-core.cjs
           node --check netlify/functions/gfs-wind-core.cjs
           node --check netlify/functions/gfs-spatial-core.cjs
           node --check netlify/functions/gfs-wind.js
       - name: Verify GRIB source and vector sampling
-        run: node --test tests/regatta-gfs-source.test.cjs tests/regatta-gfs-wind.test.cjs tests/regatta-gfs-interpolation.test.cjs tests/regatta-gfs-spatial.test.cjs tests/regatta-gfs-spatiotemporal.test.cjs tests/regatta-gfs-track.test.cjs tests/regatta-gfs-motion.test.cjs tests/regatta-gfs-grid.test.cjs tests/regatta-gfs-route-search.test.cjs tests/regatta-gfs-departures.test.cjs
+        run: node --test tests/regatta-gfs-source.test.cjs tests/regatta-gfs-wind.test.cjs tests/regatta-gfs-interpolation.test.cjs tests/regatta-gfs-spatial.test.cjs tests/regatta-gfs-spatiotemporal.test.cjs tests/regatta-gfs-track.test.cjs tests/regatta-gfs-motion.test.cjs tests/regatta-gfs-grid.test.cjs tests/regatta-gfs-route-search.test.cjs tests/regatta-gfs-departures.test.cjs tests/regatta-gfs-routing-summary.test.cjs

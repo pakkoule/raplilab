@@ -429,3 +429,37 @@
   .regatta-gfs-lab .gfs-departure-row{grid-template-columns:1fr;gap:2px}
   .regatta-gfs-lab .gfs-departure-row small{grid-column:1}
 }
+
+
+/* Test 13: second valid forecast pair (+12/+18), same local latitude gate as test 12. */
+.regatta-gfs-lab .gfs-later-departures-panel{
+  margin-top:12px;padding:11px;border:1px solid #c2deda;border-radius:11px;
+  background:linear-gradient(125deg,#f0faf8,#f5f8fc)
+}
+.regatta-gfs-lab .gfs-later-departures-panel>p{
+  font-size:10px;line-height:1.6;color:#587987;margin:8px 0
+}
+.regatta-gfs-lab .gfs-later-departures-panel>p[data-state="success"]{color:#186e63}
+.regatta-gfs-lab .gfs-later-departures-panel>p[data-state="error"]{color:#ab4e56}
+.regatta-gfs-lab [data-gfs-later-summary][hidden],
+.regatta-gfs-lab [data-gfs-later-rows][hidden]{display:none}
+.regatta-gfs-lab [data-gfs-later-summary]{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin:9px 0
+}
+.regatta-gfs-lab [data-gfs-later-summary]>div{
+  padding:9px;min-width:0;background:#fff;border:1px solid #d7e8e9;border-radius:9px
+}
+.regatta-gfs-lab [data-gfs-later-summary] small{display:block;font-size:9px;color:#678492}
+.regatta-gfs-lab [data-gfs-later-summary] strong{
+  display:block;color:#126676;font-size:12px;overflow-wrap:anywhere
+}
+.regatta-gfs-lab [data-gfs-later-rows]{display:grid;gap:6px;margin:9px 0}
+.regatta-gfs-lab .gfs-later-departures-panel .gfs-departure-row{
+  background:#fff
+}
+.regatta-gfs-lab .gfs-later-departures-panel .gfs-departure-row[data-fastest="true"]{
+  background:#effaf5
+}
+.regatta-gfs-lab .gfs-later-departures-panel>small{
+  display:block;margin-top:9px;font-size:9px;line-height:1.6;color:#806b77
+}

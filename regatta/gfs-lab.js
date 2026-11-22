@@ -86,6 +86,79 @@
   };
   const verifiedFrames=new Map();
   const interpolationEngine=window.RapliGfsInterpolation;
+  const polarDiagnosticStatus=root.querySelector('[data-gfs-polar-diagnostic-status]');
+  const polarDiagnosticRows=root.querySelector('[data-gfs-polar-diagnostic-rows]');
+  const renderPolarDiagnostic=()=>{
+    polarDiagnosticRows.replaceChildren();
+    polarDiagnosticRows.hidden=true;
+    if(!verifiedFrames.has(24)||!verifiedFrames.has(30)){
+      polarDiagnosticStatus.dataset.state='idle';
+      polarDiagnosticStatus.textContent='Lis +24 h puis +30 h du même cycle GFS pour connaître le premier blocage de chaque départ.';
+      return;
+    }
+    const engine=window.RapliGfsDepartures;
+    if(!engine?.compareNextDayDepartureWindows){
+      polarDiagnosticStatus.dataset.state='error';
+      polarDiagnosticStatus.textContent='Diagnostic des polaires indisponible.';
+      return;
+    }
+    const explanations={
+      WIND_TOO_LOW:'Vent plus faible que le minimum de la polaire',
+      WIND_TOO_HIGH:'Vent plus fort que le maximum de la polaire',
+      ANGLE_OUTSIDE_POLAR:'Aucun des cinq caps n’a un angle couvert par la polaire',
+      POLAR_NOT_AVAILABLE:'Aucune vitesse bateau disponible dans les polaires',
+      GFS_UNAVAILABLE:'Vent GFS absent ou point hors de la zone téléchargée',
+      GATE_NOT_REACHED:'La porte témoin n’est pas atteinte en 3 h',
+      CROSSING_UNEXPECTED:'Franchissement impossible à interpréter'
+    };
+    try{
+      const result=engine.compareNextDayDepartureWindows(
+        verifiedFrames.get(24),verifiedFrames.get(30)
+      );
+      for(const candidate of result.windows){
+        const row=document.createElement('div');
+        row.className='gfs-polar-diagnostic-row';
+        const title=document.createElement('strong');
+        title.textContent='Départ +'+candidate.startHour+' h';
+        const detail=document.createElement('span');
+        const meta=document.createElement('small');
+        if(candidate.valid){
+          row.dataset.state='ok';
+          detail.textContent='Calculable dans les limites provisoires';
+          meta.textContent=candidate.elapsedMinutes.toFixed(1)+' min pour atteindre 47°N';
+        }else if(candidate.diagnostic){
+          const d=candidate.diagnostic;
+          row.dataset.state='blocked';
+          detail.textContent=explanations[d.type]||'Donnée insuffisante';
+          if(Number.isFinite(d.windKnots)&&Number.isFinite(d.windDirection)){
+            const part='Vent '+d.windKnots.toFixed(1)+' nds de '+d.windDirection.toFixed(0)+'°';
+            const angles=Number.isFinite(d.twaMin)&&Number.isFinite(d.twaMax)
+              ?' · TWA '+d.twaMin.toFixed(1)+'° à '+d.twaMax.toFixed(1)+'°'
+              :'';
+            meta.textContent='Blocage à +'+d.forecastHour.toFixed(1).replace('.0','')+
+              ' h · '+part+angles;
+          }else{
+            meta.textContent=d.reason||'Conditions météo indisponibles à ce point.';
+          }
+        }else{
+          row.dataset.state='blocked';
+          detail.textContent='Cause précise non disponible';
+          meta.textContent=candidate.reason||'Conditions non calculables.';
+        }
+        row.append(title,detail,meta);
+        polarDiagnosticRows.appendChild(row);
+      }
+      polarDiagnosticRows.hidden=false;
+      polarDiagnosticStatus.dataset.state='success';
+      polarDiagnosticStatus.textContent=
+        result.windows.filter(candidate=>!candidate.valid).length+
+        ' départ(s) bloqué(s) sur 4 · diagnostic sans extrapolation de vitesse.';
+    }catch(error){
+      polarDiagnosticStatus.dataset.state='error';
+      polarDiagnosticStatus.textContent='Diagnostic impossible : '+
+        String(error?.message||error)+'. Aucune donnée inventée.';
+    }
+  };
   const nextStatus=root.querySelector('[data-gfs-next-status]');
   const nextSummary=root.querySelector('[data-gfs-next-summary]');
   const nextRows=root.querySelector('[data-gfs-next-rows]');
@@ -782,6 +855,7 @@
       renderLaterDepartures();
       renderEveningDepartures();
       renderNextDepartures();
+      renderPolarDiagnostic();
       windStatus.dataset.state='success';
       windStatus.textContent='3 vents réels décodés sur le même cycle NOAA · '+
         (result.cached?'résultat en cache.':'lecture validée.');

@@ -736,3 +736,51 @@
  .lpdb-shell .team-forecast-row{grid-template-columns:22px minmax(0,1fr)}
  .lpdb-shell .team-forecast-row>small{grid-column:2;text-align:left;white-space:normal}
 }
+
+/* PR #4 — detailed race validation: actionable errors associated with skippers. */
+.team-dialog .team-validation-details{
+ display:block;margin:14px 0 8px;padding:10px 12px;
+ border:1px solid #d4d9dc;border-radius:10px;background:#f6f8f8;
+ color:#555e64;font:650 11px/1.6 Poppins,system-ui,sans-serif;
+ overflow-wrap:anywhere;scroll-margin:110px
+}
+.team-dialog .team-validation-details[data-error="true"]{
+ border-color:#d9a0a6;background:linear-gradient(120deg,#fff8f8,#fceef0);
+ color:#8f303d
+}
+.team-dialog .team-validation-details:focus-visible{outline:2px solid #ae6470;outline-offset:2px}
+.team-validation-title{display:block;margin:0 0 7px;font-size:12px;font-weight:900}
+.team-validation-list{margin:0 0 9px;padding-left:20px;display:grid;gap:7px}
+.team-validation-list li{padding-left:3px;line-height:1.55}
+.team-validation-details small{font-size:10px;font-weight:600;color:#80535b}
+.team-dialog .team-result-row[data-error="true"]{
+ border-color:#d59ba5;box-shadow:inset 3px 0 0 #c86977;
+ background:linear-gradient(110deg,#fffafa,#f7eaed)
+}
+.team-dialog .team-result-row [aria-invalid="true"],
+.team-dialog .team-form-grid [aria-invalid="true"]{
+ border-color:#bd6272!important;box-shadow:0 0 0 1px #bd62723d!important;
+ background:#fff9fa!important
+}
+.team-dialog .team-result-row [aria-invalid="true"]:focus-visible{
+ outline:2px solid #a34657;outline-offset:1px
+}
+@media(max-width:700px){
+ .team-dialog .team-validation-details{margin-top:11px;padding:10px}
+ .team-validation-list{gap:9px}
+ /* The result editor must stay a legible four-row form on iPhones. */
+ .team-dialog .team-result-row{
+  grid-template-columns:minmax(0,1fr) 54px minmax(88px,105px) 29px;
+  grid-template-rows:repeat(4,auto);gap:6px;padding:10px 8px;
+  min-width:0
+ }
+ .team-dialog .team-result-name{font-size:11px}
+ .team-dialog .team-result-row input,
+ .team-dialog .team-result-row select{min-width:0;font-size:12px;padding:5px 6px}
+ .team-dialog .team-result-row input[data-team-general-rank]{
+  grid-column:1 / -1;grid-row:2
+ }
+ .team-dialog .team-result-row input[data-team-elapsed]{grid-column:1 / 3;grid-row:3}
+ .team-dialog .team-result-row input[data-team-gap]{grid-column:3 / 5;grid-row:3}
+ .team-dialog .team-result-points{grid-column:1 / -1;grid-row:4}
+}

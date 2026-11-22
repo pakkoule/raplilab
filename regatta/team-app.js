@@ -17,7 +17,7 @@ const all=()=>raw().map(x=>x.type==='team-race'?
  engine.resolveLinkedRace(x,personal().find(p=>p.id===x.personalRaceId)):x);
 const personalById=id=>personal().find(x=>x.id===id&&x.kind==='race');
 const detailInputs={boatClass:'team-race-class',routeType:'team-race-route',start:'team-race-start',
- startTime:'team-race-start-time',endTime:'team-race-end-time',equipment:'team-race-equipment',timezone:'team-race-timezone'};
+ startTime:'team-race-start-time',timezone:'team-race-timezone'};
 const members=()=>all().filter(x=>x.type==='team-member');
 const editorMembers=()=>[...members(),...(draft?.newMembers||[])];
 const races=()=>all().filter(x=>x.type==='team-race');
@@ -90,28 +90,80 @@ function renderMain(){
  '<select id="team-filter" aria-label="Filtrer les skippers">'+opts([{value:'all',label:'Tous les skippers'},{value:'active',label:'Membres actifs'},{value:'former',label:'Anciens membres'}],filter)+'</select></div>'+
  rankTable(list)+'<p class="team-footnote">Le filtre ne modifie pas les rangs officiels. Les DNF comptent comme participations, avec 0 point. Les anciennes périodes restent recalculables.</p>';
 }
-function renderRaces(){
- const rs=races().sort((a,b)=>b.dateEnd.localeCompare(a.dateEnd)||a.name.localeCompare(b.name,'fr'));
- const el=$('team-races-panel');if(!el)return;
- const team=all(),known=new Map(members().map(m=>[m.id,m]));
- const groups=unique(rs.map(r=>r.stageGroup).filter(Boolean));
- el.innerHTML='<div class="team-heading"><div><span>LPDB · RÉSULTATS</span><h2>COURSES DE L’ÉQUIPE</h2><p>Chaque étape est une course indépendante, sans point provisoire.</p></div><img src="assets/lpdb.webp" class="team-emblem" alt="LPDB"></div>'+
- '<div class="team-toolbar">'+action('new-race','＋ NOUVELLE COURSE','team-primary')+'</div>'+
- (rs.length?'<div class="team-race-list">'+rs.map(r=>{
- const error=engine.verifyRace(r,known),scored=r.status==='finished'&&!error;
- const total=engine.scoredRace(r,known).reduce((s,x)=>s+(viewMode==='main'?x.main:x.historic),0);
+function teamRaceCard(r,known){
  const p=personalById(r.personalRaceId);
- const details=[r.boatClass,r.start?'Départ '+r.start:'',r.routeType,r.equipment].filter(Boolean).join(' · ');
- const image=p&&/^data:image\/(png|webp|jpeg|gif);base64,/i.test(p.icon||'')?
-  '<img class="team-linked-thumb" src="'+esc(p.icon)+'" alt="Illustration de '+esc(r.name)+'">':'';
- return '<article class="team-race-card">'+image+'<div><small>'+esc(r.dateEnd||'Arrivée inconnue')+' · '+esc(r.vsr.toUpperCase())+(r.stageGroup?' · '+esc(r.stageGroup):'')+'</small><h3>'+esc(r.name)+'</h3><p>'+r.results.length+' participant(s) · '+(r.status==='finished'?(error?'À compléter : '+esc(error):'Terminée · validée'):r.status==='live'?'En cours':'À venir')+'</p>'+
- (details?'<p class="team-race-details">'+esc(details)+'</p>':'')+
- (r.personalRaceId?'<small class="team-link-marker">'+(p?'↔ Liée à Mes courses':'⚠ Fiche personnelle introuvable')+'</small>':'')+
- '</div><div class="team-race-score"><strong>'+num(total)+'</strong><small>pts distribués</small></div><div class="team-toolbar">'+action('race-'+esc(r.id),'Modifier','team-secondary')+
- (p?action('open-personal-'+esc(p.id),'↗ MA COURSE','team-secondary'):action('new-personal-'+esc(r.id),'＋ MA COURSE','team-secondary'))+
- action('show-ranking-'+esc(r.id),'CLASSEMENT + CHRONOS','team-secondary')+action('export-race-'+esc(r.id),'↓ PNG TABLEAU')+action('export-race-top10-'+esc(r.id),'↓ TOP 10')+action('export-race-podium-'+esc(r.id),'↓ PODIUM')+action('delete-race-'+esc(r.id),'Supprimer','team-danger')+'</div></article>';
- }).join('')+'</div>':empty('Aucune course d’équipe. Ajoute la première épreuve du nouveau championnat.'))+
- (groups.length?'<section class="team-groups"><h3>CLASSEMENTS BONUS · ENSEMBLES D’ÉTAPES</h3><p>Somme des étapes, sans redistribuer de points.</p>'+groups.map(g=>'<div class="team-group-row"><strong>'+esc(g)+'</strong><div>'+action('stage-'+encodeURIComponent(g),'Voir le classement')+action('png-stage-'+encodeURIComponent(g),'↓ PNG')+'</div></div>').join('')+'</section>':'');
+ const results=engine.scoredRace(r,known);
+ const checked=r.status==='finished'&&results.length>0;
+ const err=r.status==='finished'&&!checked?engine.verifyRace(r,known):'';
+ const state=checked?'TERMINÉE · VALIDÉE':r.status==='finished'?'RÉSULTATS À COMPLÉTER':
+  r.status==='live'?'EN COURS':'À VENIR';
+ const finished=r.results.filter(x=>x.status==='finished').sort((a,b)=>(a.position??999)-(b.position??999));
+ const podium=checked?finished.slice(0,3):[];
+ const names=new Map([...known].map(([id,m])=>[id,m.name]));
+ const winner=checked?finished.find(x=>x.position===1):null;
+ const main=results.reduce((n,s)=>n+s.main,0),historical=results.reduce((n,s)=>n+s.historic,0);
+ const dnf=r.results.filter(x=>x.status==='dnf').length;
+ const img=p&&/^data:image\/(?:png|webp|jpeg|gif);base64,/iu.test(p.icon||'')?
+  '<img src="'+esc(p.icon)+'" alt="Illustration de la course '+esc(r.name)+'">':
+  '<img src="assets/lpdb.webp" class="team-race-fallback-image" alt="Logo de l’équipe LPDB">';
+ const menuItem=(cmd,label,danger=false)=>'<button type="button" data-team-action="'+cmd+'"'+
+  (danger?' class="is-danger"':'')+'>'+label+'</button>';
+ const menu='<details class="team-race-menu"><summary aria-label="Options de la course '+esc(r.name)+'" title="Options de la course">⋯</summary>'+
+  '<div class="team-race-menu-popover" role="group" aria-label="Actions de '+esc(r.name)+'">'+
+  menuItem('race-'+esc(r.id),'✎ Modifier la course')+
+  menuItem('show-ranking-'+esc(r.id),'▤ Classement et chronos')+
+  (p?menuItem('open-personal-'+esc(p.id),'↗ Ouvrir ma course'):menuItem('new-personal-'+esc(r.id),'＋ Créer ma course'))+
+  '<div class="team-race-menu-divider"></div>'+
+  menuItem('export-race-'+esc(r.id),'↓ Export PNG tableau')+
+  menuItem('export-race-top10-'+esc(r.id),'↓ Export PNG Top 10')+
+  menuItem('export-race-podium-'+esc(r.id),'↓ Export PNG podium')+
+  '<div class="team-race-menu-divider"></div>'+
+  menuItem('delete-race-'+esc(r.id),'× Supprimer la course',true)+'</div></details>';
+ const startText=r.start?
+  new Date(r.start+'T12:00:00').toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'})+
+  (r.startTime?' · '+esc(r.startTime):''):'À renseigner';
+ const statusClass=r.status==='finished'?(checked?'is-complete':'is-pending'):r.status==='live'?'is-live':'is-upcoming';
+ return '<article class="team-race-card'+(r.status==='live'?' team-race-live':'')+'" data-team-race="'+esc(r.id)+'">'+
+ '<div class="team-race-layout">'+
+ '<section class="team-race-left" aria-label="Visuel et départ de course">'+
+ '<div class="team-race-photo">'+img+'<span class="team-race-photo-mark">LPDB · RAPLI REGATTA</span></div>'+
+ '<div class="team-race-intro"><h3 title="'+esc(r.name)+'">'+esc(r.name)+'</h3>'+
+ (r.stageGroup?'<span class="team-race-stage">'+esc(r.stageGroup)+'</span>':'')+
+ '<div class="team-race-departure"><span>DÉPART DE LA COURSE</span><strong>'+startText+'</strong></div>'+
+ (r.personalRaceId?'<p class="team-race-link">'+(p?'↔ Fiche « Mes courses » associée':'⚠ Fiche personnelle introuvable')+'</p>':'')+
+ '</div></section>'+
+ '<section class="team-race-right" aria-label="Résultats des skippers LPDB">'+
+ '<header class="team-race-topline"><div class="team-race-tags">'+
+ (r.boatClass?'<span class="team-race-class">'+esc(r.boatClass)+'</span>':'')+
+ '<span class="team-race-vsr '+esc(r.vsr)+'">'+esc(r.vsr==='hc'?'HC':r.vsr.toUpperCase())+'</span>'+
+ '</div>'+menu+'</header>'+
+ '<span class="team-race-status '+statusClass+'">'+state+'</span>'+
+ (err?'<p class="team-race-alert">'+esc(err)+'</p>':'')+
+ '<div class="team-race-figures">'+
+ '<div><span>SKIPPERS INSCRITS</span><strong>'+num(r.results.length)+'</strong></div>'+
+ '<div><span>CLASSÉS</span><strong>'+num(finished.length)+'</strong></div>'+
+ '<div><span>DNF</span><strong>'+num(dnf)+'</strong></div></div>'+
+ (winner?'<div class="team-race-first"><div><span>🥇 PREMIER LPDB</span><strong>'+esc(names.get(winner.skipperId)||'Skipper')+'</strong></div>'+
+ (winner.elapsedSeconds!=null?'<span class="team-race-clock">'+clockLabel(winner.elapsedSeconds)+'</span>':'')+'</div>':
+ '<p class="team-race-pending">'+(r.status==='live'?'Classement disponible à l’arrivée des skippers.':
+ r.status==='planned'?'Résultats disponibles après le départ.':'Aucun résultat final validé.')+'</p>')+
+ (podium.length>1?'<div class="team-race-podium">'+podium.slice(1).map(x=>
+ '<div><span>'+medal(x.position)+'</span><strong>'+esc(names.get(x.skipperId)||'Skipper')+'</strong></div>').join('')+'</div>':'')+
+ '<div class="team-race-points"><div><span>POINTS PRINCIPAUX</span><strong>'+num(main)+'</strong></div>'+
+ '<div><span>POINTS HISTORIQUES</span><strong>'+num(historical)+'</strong></div></div>'+
+ '</section></div></article>';
+}
+function renderRaces(){
+ const rs=races().slice().sort((a,b)=>(b.start||b.dateEnd||b.createdAt||'').localeCompare(a.start||a.dateEnd||a.createdAt||'')||a.name.localeCompare(b.name,'fr'));
+ const el=$('team-races-panel');if(!el)return;
+ const known=new Map(members().map(m=>[m.id,m]));
+ const groups=unique(rs.map(r=>r.stageGroup).filter(Boolean));
+ el.innerHTML='<div class="team-heading"><div><span>LPDB · RÉSULTATS</span><h2>COURSES DE L’ÉQUIPE</h2><p>Des fiches inspirées de « Mes courses », avec un classement distinct pour chaque skipper.</p></div><img src="assets/lpdb.webp" class="team-emblem" alt="LPDB"></div>'+
+ '<div class="team-toolbar">'+action('new-race','＋ NOUVELLE COURSE','team-primary')+'</div>'+
+ (rs.length?'<div class="team-race-list">'+rs.map(r=>teamRaceCard(r,known)).join('')+'</div>':
+  empty('Aucune course d’équipe. Ajoute la première épreuve du nouveau championnat.'))+
+ (groups.length?'<section class="team-groups"><h3>CLASSEMENTS BONUS · ENSEMBLES D’ÉTAPES</h3><p>Somme des étapes, sans redistribuer de points.</p>'+
+ groups.map(g=>'<div class="team-group-row"><strong>'+esc(g)+'</strong><div>'+action('stage-'+encodeURIComponent(g),'Voir le classement')+action('png-stage-'+encodeURIComponent(g),'↓ PNG')+'</div></div>').join('')+'</section>':'');
 }
 function renderMembers(){
  const ms=members().sort((a,b)=>(b.status==='active')-(a.status==='active')||a.name.localeCompare(b.name,'fr'));
@@ -681,6 +733,7 @@ async function click(ev){
  const remove=ev.target.closest('[data-team-remove]');if(remove&&draft){draft.results=draft.results.filter(x=>x.skipperId!==remove.dataset.teamRemove);draft.newMembers=(draft.newMembers||[]).filter(m=>draft.results.some(r=>r.skipperId===m.id));choices();editorRows();return;}
  const button=ev.target.closest('[data-team-action]');if(!button)return;
  const cmd=button.dataset.teamAction;
+ if(button.closest('.team-race-menu'))button.closest('.team-race-menu').open=false;
  if(cmd==='new-race')return openRace();
  if(cmd.startsWith('show-ranking-'))return showRaceRanking(cmd.slice('show-ranking-'.length));
  if(cmd==='toggle-ranking-import'){

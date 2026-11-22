@@ -348,3 +348,16 @@ Un panneau **BILAN DES 12 DÉPARTS** apparaît si et seulement si les quatre fic
 Limites : polaires ITYC très partielles (NON Full Pack), caps 170°–190°, pilote VMG sud glouton, aucun masque terrestre, ni courant, ni contraintes Virtual Regatta. Ces simulations de latitude témoin ne sont pas des prévisions de passage à l'équateur ni au cap de Bonne-Espérance.
 
 Tests ajoutés dans `tests/regatta-gfs-departures.test.cjs`, `tests/regatta-gfs-motion.test.cjs` et `tests/regatta-gfs-source.test.cjs`. Toujours sur la PR #4 uniquement, validation Safari à venir.
+
+
+## GFS 0,25° · cinquième échéance et 16 départs (PR #4 · prototype 15)
+
+Le test 14 a été validé sur Safari iPhone le 22 novembre 2026. Sur la troisième plage f018/f024, +18 h met 113,0 min, +19 h 120,5 min et +20 h 130,3 min pour atteindre la latitude témoin 47°N ; +21 h est correctement **non calculable**, car aucun cap n'est couvert par les polaires provisoires. Le bilan du test 14 est de 11 départs calculables sur 12, avec le plus court passage +6 h (98,7 min).
+
+Le test 15 ajoute une cinquième échéance **GFS +30 h (f030)** au sélecteur NOAA. La lecture reste manuelle, limitée au vent UGRD/VGRD à 10 m sur la même région 52°N–40°N / 20°O–5°E. La nouvelle paire f024/f030 fournit quatre départs **+24, +25, +26 et +27 h**, chacun simulé pendant 3 heures maximum jusqu'à 47°N avec le même pilote local VMG sud.
+
+Si les cinq échéances NOAA +6/+12/+18/+24/+30 h ont été décodées dans **le même cycle**, le panneau compare seize départs au total. La cinquième plage peut légitimement avoir **0 départ calculable** : le panneau doit l'afficher sans inventer une durée et le bilan doit conserver les départs valides des trois plages précédentes.
+
+Ce travail ne constitue toujours **pas** une comparaison de départs à l'équateur : le domaine géographique, l'horizon de 3 heures, l'absence de terres et les polaires ITYC très partielles (NON Full Pack) interdisent une estimation réaliste du record. Tests automatisés ajoutés aux fichiers `tests/regatta-gfs-source.test.cjs`, `tests/regatta-gfs-motion.test.cjs` et `tests/regatta-gfs-departures.test.cjs`.
+
+Le test 15 doit encore être validé sur Safari iPhone avec de véritables grilles NOAA f030. Production inchangée.

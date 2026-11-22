@@ -91,3 +91,45 @@ test('un cap interdit, une absence météo, et des polaires insuffisantes ne pro
   assert.throws(()=>m.compareFixedHeadings(frame(6),frame(12,{cycle:'2026-11-22T06:00:00.000Z'})),
     /Aucun cap comparable/);
 });
+
+test('pilote adaptatif : six décisions météo et comparaison honnête avec le meilleur cap fixe',()=>{
+  const first=frame(6,{windU:14,windV:-5});
+  const second=frame(12,{windU:14,windV:-5});
+  const result=m.simulateAdaptiveHeading(first,second);
+  assert.equal(result.steps.length,6);
+  assert.equal(result.greedy,true);
+  assert.equal(result.optimized,false);
+  assert.equal(result.provisionalPolar,true);
+  assert.equal(result.startHour,6);
+  assert.equal(result.endHour,9);
+  assert.equal(result.headingChanges,0,'ne jamais forcer des changements de cap artificiels');
+  assert.ok(result.steps.every(s=>m.CANDIDATE_HEADINGS.includes(s.heading)));
+  assert.ok(result.steps.every(s=>s.validCount>=1&&s.boatKnots>0&&s.southVmg>0));
+  assert.ok(result.distanceNm>0&&result.southProgressNm>0);
+  assert.ok(Math.abs(result.deltaSouthNm-(result.southProgressNm-result.bestFixedSouthNm))<0.11);
+});
+test('le pilote peut réellement modifier le cap quand la direction météo évolue',()=>{
+  const byDirection=(degrees,speedKnots)=>{
+    const radians=degrees*Math.PI/180, speedMs=speedKnots/1.9438444924406;
+    return {windU:-speedMs*Math.sin(radians),windV:-speedMs*Math.cos(radians)};
+  };
+  assert.equal(m.selectSouthHeading({knots:30,from:295}).selected.heading,185);
+  assert.equal(m.selectSouthHeading({knots:30,from:275}).selected.heading,175);
+  const result=m.simulateAdaptiveHeading(
+    frame(6,byDirection(295,30)),frame(12,byDirection(255,30))
+  );
+  assert.ok(result.headingChanges>=1,'un changement peut être motivé par le vent');
+  assert.ok(new Set(result.steps.map(s=>s.heading)).size>=2);
+});
+test('le pilote refuse les polaires absentes, les cycles différents et les données manquantes',()=>{
+  assert.throws(()=>m.selectSouthHeading({knots:0,from:180}),/Aucun cap autorisé/);
+  assert.throws(()=>m.simulateAdaptiveHeading(
+    frame(6,{windU:0,windV:0}),frame(12,{windU:0,windV:0})
+  ),/Aucun cap autorisé/);
+  assert.throws(()=>m.simulateAdaptiveHeading(
+    frame(6),frame(12,{cycle:'2026-11-22T06:00:00.000Z'})
+  ),/non compatibles/);
+  const missing=frame(12);
+  missing.motionGrid=null;
+  assert.throws(()=>m.simulateAdaptiveHeading(frame(6),missing),/Grille NOAA/);
+});

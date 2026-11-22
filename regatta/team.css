@@ -219,3 +219,81 @@
  .team-result-points{grid-column:1 / -1;grid-row:3;text-align:right;color:#8dece9}
  .team-import-table{min-width:580px}
 }
+
+/* PR #4 — LPDB race cards mirror the two-column personal Regatta layout, with team-only metrics. */
+.team-race-list{margin-top:14px;gap:14px}
+.team-race-card{display:block;position:relative;overflow:visible;isolation:isolate;padding:14px;border:1px solid #c2dbe1;border-radius:15px;
+ color:#173b4c;background:linear-gradient(125deg,#effafa,#d7e6ed 37%,#fff 73%,#d6e9eb);
+ box-shadow:0 4px 18px #061f2c2a,inset 0 1px 0 #fff}
+.team-race-card:has(.team-race-menu[open]){z-index:30}
+.team-race-card h3{color:#173d51;font:850 clamp(16px,1.5vw,20px)/1.25 Poppins,system-ui,sans-serif;margin:0;overflow-wrap:anywhere}
+.team-race-card p{color:#526e7d}
+.team-race-card .team-race-layout{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.18fr);gap:15px;align-items:start;min-width:0}
+.team-race-card .team-race-left,.team-race-card .team-race-right{min-width:0;display:flex;flex-direction:column}
+.team-race-photo{width:100%;aspect-ratio:16/10;position:relative;overflow:hidden;border:1.5px solid #bfd8e4;border-radius:11px;
+ background:linear-gradient(145deg,#cfe9ed,#dce8f2);box-shadow:0 3px 12px #1c42652b}
+.team-race-photo>img{display:block;width:100%;height:100%;object-fit:contain;object-position:center}
+.team-race-photo>img.team-race-fallback-image{width:50%;height:75%;margin:5% auto;filter:drop-shadow(0 3px 12px #0bb4c263)}
+.team-race-photo-mark{position:absolute;left:9px;bottom:8px;font:850 9px Poppins,sans-serif;letter-spacing:.08em;color:#f4fffe;
+ padding:5px 7px;background:#143e4dcc;border:1px solid #ffffff45;border-radius:6px}
+.team-race-intro{padding:10px 1px 0;display:flex;flex-direction:column;gap:7px}
+.team-race-stage{align-self:flex-start;font:800 9px Poppins,sans-serif;color:#12828d;padding:3px 8px;background:#d6f5f2;border-radius:7px}
+.team-race-departure{display:flex;flex-direction:column;gap:4px;padding:10px;border-radius:10px;border:1px solid #b5d4df;
+ background:linear-gradient(110deg,#edf8fa,#f7fcff);margin-top:2px}
+.team-race-departure span{color:#5b8397;font:850 9px Poppins,sans-serif;letter-spacing:.045em}
+.team-race-departure strong{color:#235068;font:800 13px Poppins,sans-serif;font-variant-numeric:tabular-nums}
+.team-race-link{font:650 10px Poppins,sans-serif!important;color:#247f88!important;margin:1px 0!important}
+.team-race-topline{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;padding-bottom:9px;border-bottom:1px solid #bdd5dd}
+.team-race-tags{display:flex;align-items:center;gap:6px;flex-wrap:wrap;min-width:0}
+.team-race-class,.team-race-vsr{display:inline-flex;align-items:center;min-height:27px;padding:6px 9px;border-radius:9px;
+ font:850 10px Poppins,sans-serif;letter-spacing:.04em;border:1px solid #93bbcb;background:linear-gradient(125deg,#f5fcff,#d3e4eb);color:#24546a}
+.team-race-vsr{border-color:#92d9d5;background:linear-gradient(110deg,#d8f8f2,#c5edf3);color:#155c64}
+.team-race-vsr.hc{background:linear-gradient(110deg,#e6d6a7,#f9eabf);border-color:#d5b96e;color:#655012}
+.team-race-status{align-self:flex-start;display:inline-flex;align-items:center;gap:5px;margin:12px 0 6px;padding:6px 10px;
+ border-radius:8px;font:850 10px Poppins,sans-serif;letter-spacing:.045em;background:#e2f1f2;color:#2a7485}
+.team-race-status.is-complete{background:#d8f4e7;color:#24745b}
+.team-race-status.is-pending{background:#f9ead7;color:#91601f}
+.team-race-status.is-live{background:#fce2ed;color:#9a2756}
+.team-race-status.is-upcoming{background:#e6effc;color:#28618a}
+.team-race-alert{font:600 10px/1.5 Poppins,sans-serif!important;color:#98612e!important;margin:1px 0 8px!important}
+.team-race-figures{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:6px 0 12px}
+.team-race-figures>div{display:flex;flex-direction:column;gap:3px;padding:10px 9px;min-width:0;border:1px solid #ccdee3;
+ background:#f6fbfc;border-radius:10px;text-align:center}
+.team-race-figures span,.team-race-points span,.team-race-first span{color:#638699;font:850 9px/1.35 Poppins,sans-serif}
+.team-race-figures strong{color:#214f66;font:850 22px/1.1 Poppins,sans-serif;font-variant-numeric:tabular-nums}
+.team-race-first{display:flex;align-items:center;justify-content:space-between;gap:8px;border:1px solid #d6c38e;
+ border-radius:10px;padding:10px 12px;background:linear-gradient(110deg,#faf4df,#fffcf4);min-width:0}
+.team-race-first>div{min-width:0;display:flex;flex-direction:column;gap:4px}
+.team-race-first strong{color:#554a2a;font:850 14px Poppins,sans-serif;overflow-wrap:anywhere}
+.team-race-clock{font:800 11px Poppins,sans-serif;color:#726038;white-space:nowrap}
+.team-race-pending{margin:10px 0!important;font:600 11px Poppins,sans-serif!important;color:#8296a1!important}
+.team-race-podium{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:8px}
+.team-race-podium>div{display:flex;align-items:center;gap:6px;min-width:0;padding:8px 9px;border:1px solid #d7e4e9;border-radius:9px;background:#f7fcff}
+.team-race-podium span{font-size:15px}
+.team-race-podium strong{font:750 11px Poppins,sans-serif;color:#2f5363;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.team-race-points{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:auto;padding-top:12px}
+.team-race-points>div{display:flex;flex-direction:column;gap:5px;padding:11px 10px;border:1px solid #a7c8d1;border-radius:10px;
+ background:linear-gradient(125deg,#f0f8fa,#e1f2f3)}
+.team-race-points strong{font:850 19px Poppins,sans-serif;color:#116b78;font-variant-numeric:tabular-nums}
+.team-race-menu{position:relative;flex:none}
+.team-race-menu>summary{display:grid;place-items:center;list-style:none;width:32px;height:32px;border-radius:9px;cursor:pointer;border:1px solid #bfd3de;
+ background:linear-gradient(140deg,#fff,#e2eef3);color:#21485f;font-size:22px;font-weight:900;line-height:1}
+.team-race-menu>summary::-webkit-details-marker{display:none}
+.team-race-menu[open]>summary,.team-race-menu>summary:hover{border-color:#28a7b1;background:#d7f1f2}
+.team-race-menu-popover{position:absolute;top:calc(100% + 6px);right:0;width:min(255px,82vw);padding:6px;z-index:60;display:grid;gap:3px;
+ border-radius:11px;border:1px solid #a6cbd4;background:#fafefe;box-shadow:0 15px 35px #102f4063}
+.team-race-menu-popover button{border:0;border-radius:7px;background:transparent;color:#244c61;min-height:38px;padding:9px;text-align:left;
+ font:700 11px Poppins,sans-serif;cursor:pointer}
+.team-race-menu-popover button:hover{background:#e1f4f6}
+.team-race-menu-popover button.is-danger{color:#a33b53}
+.team-race-menu-divider{height:1px;margin:3px 2px;background:#d5e5e9}
+.team-close-date-help{font:550 11px/1.55 Poppins,sans-serif;color:#a9d5de;margin:13px 0 0}
+@media(max-width:680px){
+ .team-race-card{padding:11px}
+ .team-race-card .team-race-layout{grid-template-columns:1fr;gap:12px}
+ .team-race-photo{aspect-ratio:16/9}
+ .team-race-intro{padding-top:8px}
+ .team-race-right{padding-top:0}
+ .team-race-topline{gap:7px}
+ .team-race-figures strong{font-size:20px}
+}

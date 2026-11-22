@@ -57,5 +57,42 @@
       method:'Interpolation temporelle linéaire U/V entre deux échéances GFS NOAA vérifiées'
     };
   }
-  return {validateFrame,interpolateFrames};
+  function interpolateSpatialFrames(a,b,targetHour){
+    const cycleA=validateFrame(a),cycleB=validateFrame(b);
+    if(cycleA!==cycleB)throw Error('Impossible de mélanger deux cycles GFS.');
+    if(b.forecastHour-a.forecastHour!==6||
+       !finite(targetHour)||targetHour<=a.forecastHour||targetHour>=b.forecastHour)
+      throw Error('Interpolation spatio-temporelle hors intervalle GFS vérifié.');
+    const left=a.spatial,right=b.spatial;
+    if(!left||!right||left.verifiedWind!==true||right.verifiedWind!==true||
+       left.spatiallyInterpolated!==true||right.spatiallyInterpolated!==true||
+       left.gridResolutionDegrees!==0.25||right.gridResolutionDegrees!==0.25||
+       !left.site||!right.site||
+       !finite(left.site.latitude)||!finite(left.site.longitude)||
+       !finite(right.site.latitude)||!finite(right.site.longitude)||
+       Math.abs(left.site.latitude-right.site.latitude)>1e-7||
+       Math.abs(left.site.longitude-right.site.longitude)>1e-7||
+       !finite(left.uMs)||!finite(left.vMs)||
+       !finite(right.uMs)||!finite(right.vMs)||
+       [left.uMs,left.vMs,right.uMs,right.vMs].some(n=>Math.abs(n)>100))
+      throw Error('Échantillons spatiaux U/V incompatibles ou non vérifiés.');
+    const ratio=(targetHour-a.forecastHour)/(b.forecastHour-a.forecastHour);
+    const u=left.uMs+(right.uMs-left.uMs)*ratio;
+    const v=left.vMs+(right.vMs-left.vMs)*ratio;
+    const speed=Math.hypot(u,v);
+    const direction=(Math.atan2(-u,-v)*180/Math.PI+360)%360;
+    return {
+      cycleUTC:a.cycleUTC,forecastHour:targetHour,
+      validUTC:new Date(cycleA+targetHour*3600000).toISOString(),
+      site:{...left.site},
+      uMs:round(u,3),vMs:round(v,3),
+      speedKnots:round(speed*KNOTS,1),
+      directionFromDeg:round(direction,1),
+      spatiallyInterpolated:true,
+      temporallyInterpolated:true,
+      gridResolutionDegrees:0.25,
+      method:'Interpolation bilinéaire spatiale et linéaire temporelle des composantes U/V NOAA'
+    };
+  }
+  return {validateFrame,interpolateFrames,interpolateSpatialFrames};
 });

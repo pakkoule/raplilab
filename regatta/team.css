@@ -297,3 +297,123 @@
  .team-race-topline{gap:7px}
  .team-race-figures strong{font-size:20px}
 }
+
+/* LPDB — very light silver foil. Keep color only for functional ranking/alert accents.
+   Scoped here to preserve the personal Rapli Regatta design and its themes. */
+.lpdb-shell{--lpdb-paper:#f8f9f9;--lpdb-graphite:#30343a;--lpdb-muted:#677078;
+ --lpdb-edge:#cbd0d3;--lpdb-foil:linear-gradient(128deg,#fff 0%,#f6f7f7 17%,#e5e8e9 34%,#fff 53%,#ebedef 70%,#fdfdfd 87%,#e7e9ea 100%);
+ --lpdb-foil-soft:linear-gradient(125deg,#fff,#f4f5f5 34%,#e8ebed 65%,#fff);
+ color:var(--lpdb-graphite)}
+.lpdb-shell .team-panel{color:#30353a;background:var(--lpdb-foil);border:1px solid #c4c9cc;
+ box-shadow:0 5px 22px #34394213,inset 0 1px 1px #fff;padding:20px}
+.lpdb-tabs{background:var(--lpdb-foil)!important;border:1px solid #c8cdd0;box-shadow:0 3px 12px #44474b13,inset 0 1px 0 #fff}
+.lpdb-tab{color:#4c5157;background:transparent}
+.lpdb-tab:hover{background:linear-gradient(135deg,#f8f8f8,#e0e3e4);color:#252a2e}
+.lpdb-tab.active{background:linear-gradient(125deg,#fff,#d9dddf 45%,#f6f7f7 80%,#e3e5e6);
+ border:1px solid #b6bcbf;color:#23282d;box-shadow:inset 0 1px 0 #fff,0 2px 6px #30343b1a}
+.lpdb-tab:focus-visible,.lpdb-shell button:focus-visible,.team-dialog button:focus-visible{outline:2px solid #565b61;outline-offset:2px}
+.lpdb-shell .team-heading{border-bottom:1px solid #d1d5d7}
+.lpdb-shell .team-heading span{color:#6f7379}
+.lpdb-shell .team-heading h2,.lpdb-shell .team-subhead h3{color:#2c3035}
+.lpdb-shell .team-heading p,.lpdb-shell .team-subhead p,.lpdb-shell .team-subhead>strong{color:#666e75}
+.lpdb-shell .team-emblem{background:linear-gradient(145deg,#fff,#e3e6e8 60%,#fff);border:1px solid #d5d8da;filter:drop-shadow(0 2px 6px #494e5119)}
+.lpdb-shell .team-selector label,.lpdb-shell .team-sort-label{color:#50565b}
+.lpdb-shell .team-panel :is(select,input){background:#fdfdfd;color:#282d32;border:1px solid #c4cace}
+.lpdb-shell .team-panel :is(select,input):focus-visible{outline:2px solid #73797d}
+.lpdb-shell .team-stat{background:var(--lpdb-foil-soft);border:1px solid #ced2d4;box-shadow:inset 0 1px 0 #fff}
+.lpdb-shell .team-stat span{color:#73787e}
+.lpdb-shell .team-stat strong{color:#2e343a}
+.lpdb-shell .team-action,.team-dialog .team-action{background:linear-gradient(125deg,#fff,#e5e8e9 44%,#f9fafa);
+ border-color:#b8bec2;color:#3c444b;box-shadow:inset 0 1px 0 #fff}
+.lpdb-shell .team-action:hover,.team-dialog .team-action:hover{background:linear-gradient(125deg,#fff,#d9dfe0,#f5f5f5)}
+.lpdb-shell .team-action.team-primary,.team-dialog .team-action.team-primary{background:linear-gradient(120deg,#e1e4e5,#fff 45%,#cdd2d5);
+ border-color:#aeb5b9;color:#24292e}
+.lpdb-shell .team-action.team-secondary,.team-dialog .team-action.team-secondary{background:linear-gradient(125deg,#fff,#eceeef 65%,#f8f8f8);
+ border-color:#c1c7ca;color:#424a50}
+.lpdb-shell .team-action.team-danger,.team-dialog .team-action.team-danger{background:#f9eff0;border-color:#dbb6bc;color:#9a3542}
+.lpdb-shell .team-table-wrap,.team-dialog .team-table-wrap{border:1px solid #c6ccce;background:#fff}
+.lpdb-shell .team-table thead,.team-dialog .team-table thead{background:linear-gradient(105deg,#e0e3e5,#f9f9f9 52%,#dfe3e5);color:#363c42}
+.lpdb-shell .team-table th,.team-dialog .team-table th{color:#474e53}
+.lpdb-shell .team-table td,.team-dialog .team-table td{color:#343b41;border-top:1px solid #e0e3e4}
+.lpdb-shell .team-table tbody tr:nth-child(odd),.team-dialog .team-table tbody tr:nth-child(odd){background:#fff}
+.lpdb-shell .team-table tbody tr:nth-child(even),.team-dialog .team-table tbody tr:nth-child(even){background:#f3f4f4}
+.lpdb-shell .team-table .team-points,.team-dialog .team-table .team-points{color:#292d32}
+.lpdb-shell .team-skipper-link,.team-dialog .team-skipper-link{color:#292e33}
+.lpdb-shell .team-table small,.lpdb-shell .team-member-card small,.team-dialog .team-table small{color:#70777e}
+.lpdb-shell .team-pages span,.lpdb-shell .team-footnote{color:#626b72}
+.lpdb-shell .team-empty{color:#6f767b;border:1px dashed #c7cbce;background:#f9f9f9}
+.lpdb-shell .team-member-card{background:var(--lpdb-foil-soft);border:1px solid #c7cdd0}
+.lpdb-shell .team-member-card strong,.lpdb-shell .team-group-row strong,.lpdb-shell .team-groups h3{color:#30353a}
+.lpdb-shell .team-group-row{border-color:#d2d6d7}
+.lpdb-shell .team-race-card{background:var(--lpdb-foil)!important;border:1px solid #c9cdcf;color:#32383e;box-shadow:0 4px 14px #3b3f4319,inset 0 1px 0 #fff}
+.lpdb-shell .team-race-card h3{color:#292e34}
+.lpdb-shell .team-race-card p{color:#6f747b}
+.lpdb-shell .team-race-photo{background:linear-gradient(145deg,#eceeef,#fff 45%,#e1e4e6);border-color:#c9cfd1}
+.lpdb-shell .team-race-photo-mark{background:#3d4249d9;border-color:#e2e3e485}
+.lpdb-shell .team-race-departure{background:var(--lpdb-foil-soft);border-color:#d0d4d6}
+.lpdb-shell .team-race-departure span{color:#72787c}
+.lpdb-shell .team-race-departure strong{color:#30353a}
+.lpdb-shell .team-race-stage{background:#e8eceb;color:#5b6268}
+.lpdb-shell .team-race-link{color:#6a747b!important}
+.lpdb-shell .team-race-topline{border-color:#d0d5d6}
+.lpdb-shell .team-race-class,.lpdb-shell .team-race-vsr{background:var(--lpdb-foil-soft);border-color:#c8ced0;color:#363b41}
+.lpdb-shell .team-race-vsr.hc{background:linear-gradient(110deg,#f3e8c7,#fff7dd);border-color:#dfce97;color:#655523}
+.lpdb-shell .team-race-figures>div,.lpdb-shell .team-race-podium>div{background:var(--lpdb-foil-soft);border-color:#d3d7d9}
+.lpdb-shell .team-race-figures span,.lpdb-shell .team-race-points span,.lpdb-shell .team-race-first span{color:#72777b}
+.lpdb-shell .team-race-figures strong,.lpdb-shell .team-race-podium strong{color:#32383f}
+.lpdb-shell .team-race-first{background:linear-gradient(120deg,#f9f4e8,#fffdf9);border-color:#d9cda7}
+.lpdb-shell .team-race-first strong{color:#554d36}
+.lpdb-shell .team-race-points>div{background:var(--lpdb-foil-soft);border-color:#d1d5d7}
+.lpdb-shell .team-race-points strong{color:#30353a}
+.lpdb-shell .team-race-menu>summary{background:var(--lpdb-foil-soft);border-color:#c8cdcf;color:#4a5055}
+.lpdb-shell .team-race-menu-popover{background:#fafafa;border-color:#d1d5d6}
+.lpdb-shell .team-race-menu-popover button{color:#30363b}
+.lpdb-shell .team-race-menu-popover button:hover{background:#eceeef}
+.lpdb-shell .team-race-menu-divider{background:#dadddf}
+/* Forms and ranking modals are at body level, not nested inside .lpdb-shell */
+.team-dialog{background:linear-gradient(130deg,#f9fafa,#e9ebec 50%,#fff);color:#33383d;border:1px solid #c6cbce;box-shadow:0 20px 65px #1b1b1b3a}
+.team-dialog::backdrop{background:#2024299c}
+.team-dialog-head{background:linear-gradient(125deg,#fff,#dfe2e4 48%,#f8f9f9);border-bottom:1px solid #ccd0d2}
+.team-dialog-head h2{color:#31363b}
+.team-dialog-close,.team-remove-row{background:linear-gradient(125deg,#fff,#e2e5e7);color:#41474c;border-color:#bec4c7}
+.team-dialog-scroll{color:#34393e}
+.team-form-grid label,.team-linked-race>label,.team-bulk-label,.team-ranking-label{color:#60666d}
+.team-dialog :is(input,select,textarea){background:#fff;border:1px solid #c3c8cb;color:#2f353a}
+.team-dialog :is(input,select,textarea):focus-visible{outline:2px solid #767c80}
+.team-dialog-footer{background:linear-gradient(125deg,#fff,#e9ebec);border-top:1px solid #d0d3d4}
+.team-dialog-participants{border-top:1px solid #d4d7d8}
+.team-dialog .team-subhead h3,.team-dialog .team-subhead>strong{color:#3a4046}
+.team-dialog .team-footnote,.team-dialog .team-close-date-help{color:#6a7176}
+.team-linked-race{background:var(--lpdb-foil-soft,linear-gradient(120deg,#fff,#e7e9eb,#fafafa));border-color:#cbd0d2}
+.team-linked-image{background:#f2f3f3}
+.team-ranking-import{background:linear-gradient(130deg,#fff,#eceeef);border-color:#d2d5d6}
+.team-result-head{color:#737a80}
+.team-result-row{background:linear-gradient(110deg,#fff,#f4f5f5);border-color:#d3d6d8}
+.team-result-points,.team-race-preview{color:#42494f}
+.team-race-preview{background:#ecedee;border:1px solid #d5d8d9}
+.team-profile-head{border-color:#cbd0d2}
+.team-profile-head h3{color:#30353a}
+.team-profile-head small{color:#6d7379}
+.team-import-table{background:#fff}
+.team-import-table th{color:#40464c;background:linear-gradient(125deg,#e2e4e5,#f6f7f7)}
+.team-import-table td{color:#353b3f;border-color:#dadede}
+.team-bulk-metrics>div{background:var(--lpdb-foil-soft,linear-gradient(125deg,#fff,#e8eaeb));border-color:#d0d4d5}
+.team-bulk-metrics strong{color:#32383d}
+.team-bulk-metrics span{color:#747b80}
+.team-bulk-names,.team-bulk-note{background:#f0f2f2;color:#4b5358}
+.team-dialog #team-ranking-paste,.team-dialog #team-bulk-input{background:#fff;color:#30363b;border-color:#cbd0d2}
+/* General VR ranking: LPDB remains the scored column, VR is supplementary */
+.team-result-head,.team-result-row{grid-template-columns:minmax(100px,1fr) 53px 82px 83px minmax(95px,1fr) minmax(94px,1fr) 86px 28px}
+.team-result-row input[data-team-general-rank]{font-size:11px;font-variant-numeric:tabular-nums}
+@media(max-width:700px){
+ .team-result-head{display:none}
+ .team-result-row{grid-template-columns:minmax(0,1fr) 54px 105px 26px;grid-template-rows:repeat(4,auto);gap:6px;padding:10px 8px}
+ .team-result-name{grid-column:1;grid-row:1}
+ .team-result-row input[data-team-rank]{grid-column:2;grid-row:1}
+ .team-result-row select[data-team-status]{grid-column:3;grid-row:1}
+ .team-remove-row{grid-column:4;grid-row:1}
+ .team-result-row input[data-team-general-rank]{grid-column:1 / -1;grid-row:2;height:36px;font-size:12px}
+ .team-result-row input[data-team-elapsed]{grid-column:1 / 3;grid-row:3}
+ .team-result-row input[data-team-gap]{grid-column:3 / 5;grid-row:3}
+ .team-result-points{grid-column:1 / -1;grid-row:4;color:#434a50}
+}

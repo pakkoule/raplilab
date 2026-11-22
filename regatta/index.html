@@ -123,8 +123,57 @@ html:not([data-rapli-role="editor"]) #rapli-module-cloud-save{display:none!impor
       </div>
     </div>
   </div>
+  <section class="regatta-routing-dashboard" aria-label="Fenêtres de départ Ultim BP XI" id="regatta-routing-dashboard">
+    <div class="regatta-routing-dashboard-header">
+      <div>
+        <span class="regatta-routing-eyebrow">ROUTAGE MÉTÉO · ULTIM BP XI</span>
+        <h2>FENÊTRES DE DÉPART</h2>
+      </div>
+      <span class="regatta-routing-badge">MODÈLE PROVISOIRE</span>
+    </div>
+    <p class="regatta-routing-intro" data-gfs-dashboard-status role="status" aria-live="polite">Les vents GFS 0,25° sont disponibles pour des essais locaux. Pour prévoir le passage à l'équateur et à Bonne-Espérance, il manque encore les polaires Full Pack et un routage océanique validé.</p>
+    <div class="regatta-routing-targets">
+      <div class="regatta-routing-target">
+        <span>ÉQUATEUR</span><strong data-gfs-dashboard-equator>Non calculable</strong>
+        <small>Routage et météo transatlantique requis</small>
+      </div>
+      <div class="regatta-routing-target">
+        <span>CAP DE BONNE-ESPÉRANCE</span><strong data-gfs-dashboard-cape>Non calculable</strong>
+        <small>Fiabilité encore plus limitée à cet horizon</small>
+      </div>
+    </div>
+    <div class="regatta-routing-local">
+      <div>
+        <span>INDICATEUR LOCAL · PASSAGE À 47°N</span>
+        <strong data-gfs-dashboard-best>En attente des données GFS</strong>
+        <small data-gfs-dashboard-local-note>Comparaison expérimentale sur 3 heures, sans valeur prédictive de record.</small>
+      </div>
+      <div class="regatta-routing-coverage">
+        <span>PRÉVISIONS VALIDÉES</span>
+        <strong data-gfs-dashboard-coverage>0 / 6</strong>
+      </div>
+    </div>
+    <div class="regatta-routing-frames" data-gfs-dashboard-frames aria-label="Échéances GFS chargées">
+      <span data-gfs-frame="6">+6 h</span>
+      <span data-gfs-frame="12">+12 h</span>
+      <span data-gfs-frame="18">+18 h</span>
+      <span data-gfs-frame="24">+24 h</span>
+      <span data-gfs-frame="30">+30 h</span>
+      <span data-gfs-frame="36">+36 h</span>
+    </div>
+    <div class="regatta-routing-actions">
+      <button type="button" class="regatta-routing-load" data-gfs-dashboard-load>CHARGER LES 6 PRÉVISIONS GFS</button>
+      <button type="button" class="regatta-routing-stop" data-gfs-dashboard-stop hidden>ARRÊTER</button>
+      <button type="button" class="regatta-routing-technical" data-gfs-dashboard-technical aria-controls="regatta-gfs-lab" aria-expanded="false">DÉTAILS TECHNIQUES</button>
+    </div>
+    <p class="regatta-routing-progress" data-gfs-dashboard-progress>Lecture NOAA uniquement sur demande. Les fichiers sont récupérés successivement pour ménager les serveurs.</p>
+    <div class="regatta-routing-foot">
+      <span data-gfs-dashboard-cycle>Cycle GFS : non chargé</span>
+      <span>Polaires ITYC 30°–120° · NON FULL PACK</span>
+    </div>
+  </section>
   <details class="regatta-gfs-lab" id="regatta-gfs-lab">
-    <summary><span aria-hidden="true">🌬️</span> LAB GFS 0,25° <span class="gfs-lab-pill">TEST NOAA · EXPÉRIMENTAL</span></summary>
+    <summary><span aria-hidden="true">🌬️</span> DIAGNOSTICS GFS <span class="gfs-lab-pill">LAB TECHNIQUE · REPLIABLE</span></summary>
     <div class="gfs-lab-inner">
       <p class="gfs-lab-desc">Données GFS 0,25° réelles pour tester les vents, des trajectoires locales expérimentales et plusieurs heures de départ. Aucun routage océanique ni temps de record n'est encore calculé.</p>
       <div class="gfs-lab-actions">

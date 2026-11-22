@@ -592,137 +592,17 @@ function stageDialog(group){
  $('team-stage-body').innerHTML='<p>Classement bonus des étapes, sans nouveau point attribué au championnat.</p>'+rankTable(data.skippers,{top:false});
  $('team-stage-dialog').showModal();
 }
-function drawRounded(ctx,x,y,w,h,r,fill){
- ctx.fillStyle=fill;ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fill();
-}
-function canvasRow(ctx,cols,y,index,w,height=63){
- drawRounded(ctx,58,y,w-116,height-4,10,index%2?'#122d3b':'#193c4b');
- cols.forEach((col,i)=>{
-  ctx.fillStyle=i===0&&index<3?['#f7d06b','#cad8dd','#dd9f70'][index]:'#f7fcff';
-  ctx.font=i===0?'800 27px Poppins, sans-serif':'650 24px Poppins, sans-serif';
-  ctx.textAlign=i===1?'left':'right';
-  ctx.fillText(col,[110,230,w-520,w-315,w-85][i]||w-85,y+40);
- });
-}
-async function logoImage(){
- return new Promise(resolve=>{
-  const img=new Image();img.onload=()=>resolve(img);img.onerror=()=>resolve(null);
-  img.src='assets/lpdb.webp';
- });
-}
-async function exportStandings(rows,title,{style='table',limit=0,prefix='lpdb-classement'}={}){
+/* One image per export, regardless of the number of skippers.
+   The dedicated renderer adapts row heights to render every complete pseudo. */
+async function exportStandings(rows,title,{style='table',limit=0,prefix='lpdb-classement',race=null}={}){
  if(!rows.length){notify('Aucun classement à exporter.',true);return;}
- const img=await logoImage();
- const source=limit?rows.slice(0,limit):rows;
- const raceTimed=rows.some(r=>r.raceResult===true);
- const batch=style==='table'?25:Math.max(3,limit||10);
- const pages=Math.ceil(source.length/batch);
- for(let p=0;p<pages;p++){
-  const segment=source.slice(p*batch,(p+1)*batch);
-  const w=1080,isPodium=style==='social'&&limit===3,topList=style==='social'&&!isPodium;
-  const unit=style==='table'?63:67,h=isPodium?1150:topList?Math.max(1390,680+unit*segment.length):Math.max(930,520+unit*segment.length);
-  const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
-  const ctx=canvas.getContext('2d');
-  const gradient=ctx.createLinearGradient(0,0,w,h);gradient.addColorStop(0,'#ffffff');gradient.addColorStop(.28,'#e8eaeb');gradient.addColorStop(.62,'#fcfcfc');gradient.addColorStop(1,'#dfe2e3');
-  ctx.fillStyle=gradient;ctx.fillRect(0,0,w,h);
-  ctx.strokeStyle='#aab0b3';ctx.lineWidth=5;ctx.strokeRect(24,24,w-48,h-48);
-  ctx.fillStyle='#8d9498';ctx.fillRect(28,28,12,h-56);
-  if(img){const ratio=img.width/img.height;ctx.drawImage(img,w/2-125,42,250,250/ratio);}
-  ctx.fillStyle='#30353a';ctx.textAlign='center';ctx.font='900 53px Poppins, sans-serif';ctx.fillText('RAPLI REGATTA',w/2,286);
-  ctx.fillStyle='#5b6368';ctx.font='800 26px Poppins, sans-serif';ctx.fillText(title.toLocaleUpperCase('fr').slice(0,56),w/2,331);
-  if(pages>1){ctx.font='600 19px Poppins,sans-serif';ctx.fillText('PAGE '+(p+1)+' / '+pages,w/2,365);}
-  if(isPodium){
-   ctx.fillStyle='#f9e2a0';ctx.textAlign='center';ctx.font='900 33px Poppins,sans-serif';
-   ctx.fillText('LE PODIUM LPDB',w/2,420);
-   const order=[segment[1],segment[0],segment[2]];
-   const colors=['#cbd8e7','#f7d36a','#cf976c'],heights=[385,485,340],tops=[590,490,635];
-   order.forEach((s,i)=>{
-    if(!s)return;
-    const x=65+i*340,y=tops[i],h=heights[i],wid=305;
-    const grad=ctx.createLinearGradient(x,y,x+wid,y+h);
-    grad.addColorStop(0,'#fdfdfd');grad.addColorStop(.52,'#e4e7e8');grad.addColorStop(1,'#f9fafb');
-    drawRounded(ctx,x,y,wid,h,15,grad);
-    ctx.lineWidth=4;ctx.strokeStyle=colors[i];ctx.strokeRect(x+3,y+3,wid-6,h-6);
-    ctx.textAlign='center';ctx.fillStyle=colors[i];ctx.font='900 80px Poppins,sans-serif';
-    ctx.fillText(String(s.rank??i+1),x+wid/2,y+100);
-    ctx.fillStyle='#34393e';ctx.font='850 30px Poppins,sans-serif';
-    ctx.fillText(s.name.slice(0,15).toUpperCase(),x+wid/2,y+166);
-    ctx.fillStyle='#3c4349';ctx.font='900 38px Poppins,sans-serif';
-    ctx.fillText((s.exportValue||num(s.points)+' PTS'),x+wid/2,y+231);
-    ctx.fillStyle='#656e74';ctx.font='600 18px Poppins,sans-serif';
-    ctx.fillText(raceTimed?('CHRONO '+clockLabel(s.elapsedSeconds)).slice(0,28):num(s.participations)+' courses · '+num(s.wins)+' victoire(s)',x+wid/2,raceTimed?y+260:y+283);
-    if(raceTimed){
-     ctx.font='650 17px Poppins,sans-serif';
-     ctx.fillText('ÉCART +'+clockLabel(s.gapSeconds),x+wid/2,y+284);
-     ctx.fillText('GÉNÉRAL VR '+(s.generalRank!=null?'#'+num(s.generalRank):'—'),x+wid/2,y+310);
-    }
-   });
-  }else{
-   const topY=topList?640:445,headY=topList?619:427;
-   if(topList&&segment[0]){
-    drawRounded(ctx,65,389,w-130,180,18,'#e8eaeb');
-    ctx.strokeStyle='#e7bb45';ctx.lineWidth=4;ctx.strokeRect(68,392,w-136,174);
-    ctx.textAlign='left';ctx.fillStyle='#806b35';ctx.font='850 22px Poppins,sans-serif';
-    ctx.fillText('CHAMPION DU CLASSEMENT',105,433);
-    ctx.fillStyle='#32373c';ctx.font='900 41px Poppins,sans-serif';
-    ctx.fillText(segment[0].name.slice(0,22).toUpperCase(),105,490);
-    ctx.fillStyle='#796229';ctx.textAlign='right';ctx.font='900 51px Poppins,sans-serif';
-    ctx.fillText(segment[0].exportValue||num(segment[0].points)+' PTS',w-105,490);
-    if(raceTimed&&segment[0].generalRank!=null){
-     ctx.textAlign='left';ctx.fillStyle='#626a70';ctx.font='700 18px Poppins,sans-serif';
-     ctx.fillText('CLASSEMENT GÉNÉRAL VR · #'+num(segment[0].generalRank),105,534);
-    }
-   }
-   ctx.fillStyle='#545d62';ctx.textAlign='left';ctx.font='700 22px Poppins,sans-serif';
-   ctx.fillText('RANG',70,headY);ctx.fillText('SKIPPER',200,headY);
-   ctx.textAlign='right';ctx.font='700 18px Poppins,sans-serif';
-   if(raceTimed){
-    ctx.fillText('GÉN. VR',w-550,headY);
-    ctx.fillText('CHRONO',w-380,headY);
-    ctx.fillText('ÉCART',w-215,headY);
-   }else{
-    ctx.fillText('COURSES',w-535,headY);
-    ctx.fillText('CHRONO MOY.',w-345,headY);
-    ctx.fillText('ÉCART MOY.',w-170,headY);
-   }
-   ctx.fillText('POINTS',w-75,headY);
-   segment.forEach((s,i)=>{
-    const y=topY+i*unit;
-    drawRounded(ctx,58,y,w-116,unit-5,10,topList&&i===0?'#f5eedc':i%2?'#f8f9f9':'#ebedef');
-    if(topList&&i===0){ctx.strokeStyle='#e7bd46';ctx.lineWidth=3;ctx.strokeRect(60,y+1,w-120,unit-8);}
-    const rank=Number.isInteger(s.rank)?s.rank:p*batch+i+1;
-    const labels=[s.dnf?'DNF':String(rank),s.name,raceTimed?pngClock(s.elapsedSeconds):String(s.participations??0),raceTimed?(s.gapSeconds!=null?'+'+pngClock(s.gapSeconds):'—'):pngClock(s.avgGapSeconds),s.exportValue||num(s.points??0)];
-    ctx.textBaseline='middle';
-    ctx.fillStyle=rank===1&&!s.dnf?'#f5ca63':rank===2&&!s.dnf?'#d6dce6':rank===3&&!s.dnf?'#d5a277' :'#42494f';
-    ctx.textAlign='left';ctx.font='800 29px Poppins,sans-serif';ctx.fillText(labels[0],88,y+unit/2);
-    ctx.fillStyle='#343b40';ctx.font='750 24px Poppins,sans-serif';ctx.fillText(labels[1].slice(0,raceTimed?13:16),200,y+unit/2);
-    ctx.textAlign='right';ctx.font='650 23px Poppins,sans-serif';
-    ctx.font='600 17px Poppins,sans-serif';
-    if(raceTimed){
-     ctx.fillText(s.generalRank!=null?'#'+num(s.generalRank):'—',w-550,y+unit/2);
-     ctx.fillText(labels[2],w-380,y+unit/2);
-     ctx.fillText(labels[3],w-215,y+unit/2);
-    }else{
-     ctx.fillText(labels[2],w-535,y+unit/2);
-     ctx.fillText(pngClock(s.avgTimeSeconds),w-345,y+unit/2);
-     ctx.fillText(labels[3],w-170,y+unit/2);
-    }
-    ctx.font='850 29px Poppins,sans-serif';ctx.fillStyle='#343a40';ctx.fillText(labels[4],w-75,y+unit/2);
-   });
-  }
-  ctx.font='600 20px Poppins,sans-serif';ctx.textAlign='center';ctx.fillStyle='#7a8287';
-  ctx.fillText('LPDB · CHAMPIONNAT DE L’ÉQUIPE',w/2,h-70);
-  const file=prefix+'-'+String(p+1).padStart(2,'0')+'.png';
-  try{
-   await new Promise((resolve,reject)=>canvas.toBlob(blob=>{
-    if(!blob){reject(Error('PNG impossible'));return;}
-    const url=URL.createObjectURL(blob),link=document.createElement('a');
-    link.href=url;link.download=file;document.body.appendChild(link);link.click();link.remove();
-    setTimeout(()=>URL.revokeObjectURL(url),2000);resolve();
-   },'image/png'));
-  }catch(e){notify('Export PNG indisponible : '+e.message,true);return;}
- }
- notify(pages===1?'Export PNG lancé ✓':pages+' PNG générés · vérifie les téléchargements autorisés par le navigateur.');
+ if(!root.RapliTeamExport?.exportPng){notify('Le moteur des exports PNG LPDB n’est pas chargé.',true);return;}
+ try{
+  const exported=await root.RapliTeamExport.exportPng({
+   rows,title,style,limit,filename:prefix,race
+  });
+  notify('PNG premium généré : '+exported.count+' skippers sur une seule image ✓');
+ }catch(error){notify('Export PNG impossible : '+(error?.message||error),true);}
 }
 function doExport(kind,arg){
  const p=period(),data=all();
@@ -744,17 +624,32 @@ function doExport(kind,arg){
  if(kind==='race'||kind==='race-top10'||kind==='race-podium'){
   const race=races().find(x=>x.id===arg);
   if(!race)return;
-  const scores=engine.scoredRace(race,new Map(members().map(m=>[m.id,m])));
-  list=scores.sort((a,b)=>(a.rank??999)-(b.rank??999)).map((s,i)=>({
-   name:members().find(m=>m.id===s.skipperId)?.name||'Inconnu',rank:s.rank??null,dnf:s.dnf,
-   points:viewMode==='historic'?s.historic:s.main,participations:1,wins:Number(s.rank===1),raceResult:true,
-   elapsedSeconds:s.elapsedSeconds??null,gapSeconds:s.gapSeconds??null,generalRank:s.generalRank??null
+  const byId=new Map(members().map(m=>[m.id,m]));
+  const scores=engine.scoredRace(race,byId);
+  const notes=rating.calculate(race,races(),byId,engine);
+  list=scores.sort((a,b)=>(a.rank??999)-(b.rank??999)).map(score=>({
+   name:byId.get(score.skipperId)?.name||'Skipper inconnu',
+   rank:score.rank??null,dnf:score.dnf,
+   points:viewMode==='historic'?score.historic:score.main,
+   participations:1,wins:Number(score.rank===1),
+   raceResult:true,elapsedSeconds:score.elapsedSeconds??null,
+   gapSeconds:score.gapSeconds??null,generalRank:score.generalRank??null,
+   note:notes.scores.get(score.skipperId)||null
   }));
-  if(!list.length){notify('Valide tous les résultats avant d’exporter la course.',true);return;}
-  filename='lpdb-course-'+race.id;
+  if(!list.length){notify('Valide les résultats avant d’exporter la course.',true);return;}
+  filename='lpdb-course-'+race.id+'-'+viewMode;
   if(kind==='race-top10'){style='social';limit=10;}
   if(kind==='race-podium'){style='social';limit=3;}
-  return exportStandings(list,race.name+' · '+race.dateEnd,{style,limit,prefix:filename});
+  const linked=personalById(race.personalRaceId);
+  const metadata={
+   name:race.name,boatClass:race.boatClass||linked?.boatClass||'',
+   vsr:race.vsr,dateEnd:race.dateEnd,stageGroup:race.stageGroup||'',
+   illustration:linked?.icon||'',
+   finishers:race.results.filter(r=>r.status==='finished').length,
+   dnf:race.results.filter(r=>r.status==='dnf').length,
+   average:notes.average
+  };
+  return exportStandings(list,race.name+' · '+race.dateEnd,{style,limit,prefix:filename,race:metadata});
  }
  if(kind==='stage'){
   const group=arg;

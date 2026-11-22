@@ -417,3 +417,22 @@
  .team-result-row input[data-team-gap]{grid-column:3 / 5;grid-row:3}
  .team-result-points{grid-column:1 / -1;grid-row:4;color:#434a50}
 }
+
+/* Silver detail polish: modal statistics, paste preview and long VR positions */
+.team-dialog .team-stat{background:linear-gradient(130deg,#fff,#e8eaeb 55%,#fafbfb);border:1px solid #d0d4d6;box-shadow:inset 0 1px 0 #fff}
+.team-dialog .team-stat span{color:#71777c}
+.team-dialog .team-stat strong{color:#30363b}
+.team-dialog .team-subhead p,.team-dialog .team-pages span{color:#687177}
+.team-dialog .team-empty{border:1px dashed #cdd2d4;background:#fafafa;color:#687077}
+.team-dialog .team-result-row input:disabled{background:#ebedee;color:#6d757b}
+.team-dialog .team-import-table{min-width:790px}
+.team-dialog .team-import-table td[data-overall-rank]{min-width:116px}
+.team-dialog .team-import-table input[data-team-import-general]{min-width:98px}
+.team-dialog .team-ranking-analysis>.team-table-wrap{border:1px solid #d3d7d8;border-radius:9px}
+.team-dialog .team-ranking-analysis .team-bulk-error{background:#fdf1f1;color:#8b424b;border:1px solid #e7c4c9}
+.team-dialog .team-ranking-analysis .team-bulk-note{background:#f5f5f5;color:#626970}
+.team-dialog .team-profile-head h3{color:#31363b}
+@media(max-width:700px){
+ .team-dialog .team-import-table{min-width:760px}
+ .team-result-row input[data-team-general-rank]{background:#fff;border:1px solid #bec5c8;color:#32383e}
+}

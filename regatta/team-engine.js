@@ -26,6 +26,26 @@ function primary(vsr,n,rank){
  const t=(r-1)/Math.max(1,count-1);
  return Math.round(b*factor(count)*(1-.6*t)+tierValue(count,b)*Math.pow(1-t,1.5));
 }
+/* Bulk import: one pasted row = one skipper, with a shared uniqueness rule for active and former members. */
+function prepareMemberBatch(text,existing=[]){
+ const seen=new Set((Array.isArray(existing)?existing:[]).map(x=>fold(x?.name||x)).filter(Boolean));
+ const accepted=[],duplicates=[],invalid=[];
+ const lines=String(text??'').split(/\r\n|\n|\r/);
+ for(let i=0;i<lines.length;i++){
+  const name=lines[i].trim(),line=i+1;
+  if(!name)continue;
+  if(name.length>56||/[\t\u0000-\u001f\u007f]/u.test(name)){
+   invalid.push({line,name,reason:name.length>56?'Pseudo supérieur à 56 caractères.':'Caractère non autorisé (ex. tabulation).'});
+   continue;
+  }
+  const key=fold(name).replace(/\s+/gu,' ');
+  if(seen.has(key))duplicates.push({line,name});
+  else{seen.add(key);accepted.push(name);}
+ }
+ const activeCount=(Array.isArray(existing)?existing:[]).filter(x=>x?.status==='active').length;
+ const available=Math.max(0,50-activeCount);
+ return {accepted,duplicates,invalid,available,overflow:Math.max(0,accepted.length-available)};
+}
 function member(input){
  const id=cleanId(input?.id),name=safe(input?.name,56);
  if(!id.startsWith('lpdb-member-')||!name)return null;
@@ -182,7 +202,7 @@ function periods(entities){
  const years=[...new Set(races.map(r=>r.dateEnd.slice(0,4)))].sort().reverse();
  return {months,quarters,years};
 }
-const api={BASE,PRESTIGE,factor,tier,tierValue,historical,primary,normalize,member,race,resolveLinkedRace,fromPersonal,verifyRace,scoredRace,inPeriod,standings,stageBonus,periods,dateOk};
+const api={BASE,PRESTIGE,factor,tier,tierValue,historical,primary,normalize,member,prepareMemberBatch,race,resolveLinkedRace,fromPersonal,verifyRace,scoredRace,inPeriod,standings,stageBonus,periods,dateOk};
 root.RapliTeamEngine=api;
 if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);

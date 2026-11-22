@@ -174,7 +174,7 @@ function renderRaces(){
  const known=new Map(members().map(m=>[m.id,m]));
  const groups=unique(rs.map(r=>r.stageGroup).filter(Boolean));
  el.innerHTML='<div class="team-heading"><div><span>LPDB · RÉSULTATS</span><h2>COURSES DE L’ÉQUIPE</h2><p>Des fiches inspirées de « Mes courses », avec un classement distinct pour chaque skipper.</p></div><img src="assets/lpdb.webp" class="team-emblem" alt="LPDB"></div>'+
- '<div class="team-toolbar">'+action('new-race','＋ NOUVELLE COURSE','team-primary')+'</div>'+
+ '<div class="team-toolbar">'+action('new-race','＋ NOUVELLE COURSE','team-primary')+action('recalculate-notes','↻ RECALCULER LES NOTES','team-secondary')+'</div>'+
  (rs.length?'<div class="team-race-list">'+rs.map(r=>teamRaceCard(r,known)).join('')+'</div>':
   empty('Aucune course d’équipe. Ajoute la première épreuve du nouveau championnat.'))+
  (groups.length?'<section class="team-groups"><h3>CLASSEMENTS BONUS · ENSEMBLES D’ÉTAPES</h3><p>Somme des étapes, sans redistribuer de points.</p>'+
@@ -207,6 +207,32 @@ function render(){
  preset();renderMain();renderRaces();renderMembers();renderStats();
 }
 function notify(message,error=false){notice=message;api.notify?.(message,error);}
+/* Notes are derived from the latest recorded team results and global VR
+   rankings, so recalculation is intentionally read-only (no changes to points,
+   validation, personal courses, or Supabase records). */
+function recalculateNotes(){
+ const completed=races().filter(r=>r.status==='finished');
+ const allRaces=races(),known=new Map(members().map(m=>[m.id,m]));
+ let rated=0,eligible=0,courses=0,provisional=0;
+ for(const race of completed){
+  const summary=rating.calculate(race,allRaces,known,engine);
+  if(summary.rated)courses++;
+  rated+=summary.rated;
+  eligible+=summary.eligible;
+  for(const note of summary.scores.values())
+   if(note.available&&note.provisional)provisional++;
+ }
+ render();
+ const missing=Math.max(0,eligible-rated);
+ notify(completed.length
+  ?'Notes recalculées : '+rated+' skipper'+(rated>1?'s':'')+
+   ' noté'+(rated>1?'s':'')+' sur '+courses+' course'+(courses>1?'s':'')+
+   (missing?' · '+missing+' note'+(missing>1?'s':'')+' indisponible'+(missing>1?'s':'')+'.':' · Toutes les notes disponibles sont à jour.')+
+   (provisional?' · '+provisional+' provisoire'+(provisional>1?'s':'')+'.':'')
+  :'Aucune course terminée à noter pour le moment.');
+ return {rated,eligible,courses,missing,provisional};
+}
+
 function canWrite(){if(!api.canEdit?.()){notify('Connexion administrateur et synchronisation nécessaires pour modifier le championnat.',true);return false;}return true;}
 async function saveEntity(entity){
  if(!canWrite())return false;
@@ -723,6 +749,7 @@ async function click(ev){
  }
  if(cmd.startsWith('open-personal-')){api.openPersonal?.(cmd.slice(14));return;}
  if(cmd.startsWith('new-personal-')){api.newPersonalFromTeam?.(cmd.slice(13));return;}
+ if(cmd==='recalculate-notes'){recalculateNotes();return;}
  if(cmd==='recalculate'){render();notify('Tous les classements ont été recalculés ✓');return;}
  if(cmd==='select-all'&&draft){
   for(const m of members().filter(active))if(draft.results.length<50&&!draft.results.some(x=>x.skipperId===m.id))

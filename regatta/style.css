@@ -1879,9 +1879,6 @@ button.close{min-width:40px;min-height:40px}
  margin:0;padding:2px 1px;
  color:#547a89;font:750 8px/1.35 Poppins,system-ui,sans-serif
 }
-.cards .card.card--columns .race-prestart-note{
- margin:0;color:#7e96a1;font:550 7px/1.4 Poppins,system-ui,sans-serif
-}
 @media(max-width:580px){
  .cards .card.card--columns .race-prestart-insights{gap:5px;margin-top:7px}
  .cards .card.card--columns .race-prestart-routing{gap:4px;padding:6px;flex-wrap:wrap}
@@ -1898,7 +1895,6 @@ button.close{min-width:40px;min-height:40px}
  .cards .card.card--columns .race-prestart-performance section>strong{font-size:12px}
  .cards .card.card--columns .race-prestart-performance section>small{font-size:7px}
  .cards .card.card--columns .race-prestart-range{font-size:7px}
- .cards .card.card--columns .race-prestart-note{font-size:6.5px}
 }
 @media(max-width:365px){
  .cards .card.card--columns .race-prestart-performance{grid-template-columns:minmax(0,1fr)}

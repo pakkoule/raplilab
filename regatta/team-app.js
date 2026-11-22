@@ -642,7 +642,7 @@ function doExport(kind,arg){
  if(kind==='png-top10'){style='social';limit=10;}
  if(kind==='png-stats'||kind==='png-stats-social'){
   list=[...model.skippers].sort((a,b)=>statMode==='avg'?b.avg-a.avg:statMode==='finish'?b.finishRate-a.finishRate:statMode==='wins'?b.wins-a.wins:statMode==='time'?(a.avgTimeSeconds??Infinity)-(b.avgTimeSeconds??Infinity):statMode==='gap'?(a.avgGapSeconds??Infinity)-(b.avgGapSeconds??Infinity):b.points-a.points);
-  list=list.map((s,i)=>({...s,rank:i+1,points:statMode==='avg'?s.avg:statMode==='finish'?s.finishRate:statMode==='wins'?s.wins:statMode==='time'||statMode==='gap'?s.points:s.points,exportValue:null}));
+  list=list.map((s,i)=>({...s,rank:i+1,points:statMode==='avg'?s.avg:statMode==='finish'?s.finishRate:statMode==='wins'?s.wins:s.points,exportValue:null}));
   if(kind==='png-stats-social'){style='social';limit=10;}
   filename+='-stat-'+statMode;
   title=({avg:'Points par course',finish:'Taux de finition',wins:'Victoires',points:'Points cumulés',time:'Chrono moyen',gap:'Écart moyen'})[statMode]+' · '+labelPeriod();

@@ -3,7 +3,7 @@
 Le championnat LPDB démarre avec la prochaine course enregistrée. **Aucun import des anciens Excel** et aucune migration destructive des fiches de courses personnelles.
 
 ## Accès / navigation
-- **CHAMPIONNAT** (écran principal), **COURSES D'ÉQUIPE**, **SKIPPERS**, **STATS D'ÉQUIPE**.
+- Un unique onglet principal **LPDB** regroupe quatre sous-sections internes : **CHAMPIONNAT**, **COURSES D'ÉQUIPE**, **SKIPPERS**, **STATS D'ÉQUIPE**. La dernière rubrique consultée est conservée lors des allers-retours entre onglets principaux.
 - Les fiches individuelles anciennes restent accessibles dans les onglets « Mes courses · archives », « Mes statistiques » et « Mon palmarès ».
 - Lecture disponible aux visiteurs ; création, correction et suppression réservées à l'éditeur authentifié, selon les mêmes permissions Supabase et RLS que les courses existantes.
 - Les records d'équipe sont stockés dans le même flux de synchronisation Supabase, avec des ID et types dédiés `team-member` et `team-race`, sans réinterpréter les anciens enregistrements.

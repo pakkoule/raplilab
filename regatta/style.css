@@ -1471,12 +1471,16 @@ button.close{min-width:40px;min-height:40px}
 .cards .card.card--columns .race-card-date-item strong.is-live{color:#c23380}
 .cards .card.card--columns .race-card-date-item strong.is-upcoming{color:#386cba}
 .cards .card.card--columns .race-card-clock{
+ container-type:inline-size;
  background:linear-gradient(112deg,#e6f6f6,#dbf2f5 58%,#faf2fa) padding-box,
   linear-gradient(115deg,#7ac3d4,#f2bfdc,#74b8d4) border-box
 }
 .cards .card.card--columns .race-card-clock .race-card-time-value{
- color:#146680;font:900 clamp(13px,1.75vw,18px)/1.3 'Courier Prime','Courier New',monospace;
- font-variant-numeric:tabular-nums;overflow-wrap:anywhere
+ color:#146680;font:900 clamp(10px,1.4vw,18px)/1.3 'Courier Prime','Courier New',monospace;
+ /* The timer must fit the actual left-column width (including seconds) on iPhone. */
+ font-size:clamp(8px,6.8cqi,18px);
+ font-variant-numeric:tabular-nums;letter-spacing:-.02em;
+ white-space:nowrap;overflow-wrap:normal
 }
 .cards .card.card--columns .race-card-clock .race-card-time-value.is-empty{
  color:#70899b;font:800 10px/1.4 Poppins,sans-serif
@@ -1568,7 +1572,6 @@ button.close{min-width:40px;min-height:40px}
  .cards .card.card--columns .race-card-schedule{gap:6px}
  .cards .card.card--columns .race-card-date-item{padding:7px 6px}
  .cards .card.card--columns .race-card-date-item strong{font-size:10px}
- .cards .card.card--columns .race-card-clock .race-card-time-value{font-size:14px}
  .cards .card.card--columns .race-card-meta-tags{gap:4px}
  .cards .card.card--columns .race-card-meta-tags .class-tag,
  .cards .card.card--columns .race-card-meta-tags .vsr-badge,

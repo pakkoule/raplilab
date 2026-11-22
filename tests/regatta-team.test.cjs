@@ -148,3 +148,53 @@ test('editor, selectors, and PNG elements are present without removing personal 
  assert.ok(app.includes('teamRecords'));
  assert.ok(app.includes('window.RapliTeamUI?.init?.'));
 });
+
+
+test('one LPDB main tab contains the four team subsections',()=>{
+ const d=new JSDOM(fs.readFileSync('regatta/index.html','utf8')).window.document;
+ const main=d.querySelector('.workspace-tabs');
+ assert.ok(main);
+ assert.equal(main.querySelectorAll('[id^="view-team"]').length,1);
+ assert.equal(main.querySelector('#view-team').textContent.trim(),'LPDB');
+ assert.equal(main.querySelector('#view-team').getAttribute('aria-controls'),'lpdb-panel');
+ const shell=d.getElementById('lpdb-panel');
+ assert.ok(shell);
+ const ids=['team','team-races','team-skippers','team-stats'];
+ const tablist=shell.querySelector('.lpdb-tabs');
+ assert.equal(tablist.querySelectorAll('.lpdb-tab').length,4);
+ assert.deepEqual([...tablist.querySelectorAll('button')].map(b=>b.id),ids.map(x=>'lpdb-view-'+x));
+ for(const id of ids){
+  const tab=d.getElementById('lpdb-view-'+id),panel=d.getElementById(id+'-panel');
+  assert.equal(tab.getAttribute('aria-controls'),panel.id);
+  assert.equal(panel.getAttribute('aria-labelledby'),tab.id);
+  assert.equal(panel.closest('#lpdb-panel'),shell);
+ }
+ for(const id of ['races','stats','honors'])assert.ok(d.getElementById('view-'+id),'personal workspace remains independent');
+});
+test('LPDB secondary navigation changes panels without losing main workspace',()=>{
+ const d=new JSDOM(fs.readFileSync('regatta/index.html','utf8')).window.document;
+ const src=fs.readFileSync('regatta/app.js','utf8');
+ const start=src.indexOf("const lpdbViews=['team'");
+ const end=src.indexOf('const scoreDialog=',start);
+ assert.ok(start>0&&end>start,'workspace selectors found');
+ const ctx={
+  $:id=>d.getElementById(id),renderTeam:()=>{},
+  renderStatistics:()=>{},renderHonors:()=>{},renderClassColors:()=>{}
+ };
+ const methods=new Function('ctx','with(ctx){'+src.slice(start,end)+';return {selectWorkspace};}')(ctx);
+ methods.selectWorkspace('team-races');
+ assert.equal(d.getElementById('lpdb-panel').hidden,false);
+ assert.equal(d.getElementById('view-team').getAttribute('aria-selected'),'true');
+ assert.equal(d.getElementById('team-panel').hidden,true);
+ assert.equal(d.getElementById('team-races-panel').hidden,false);
+ assert.equal(d.getElementById('lpdb-view-team-races').getAttribute('aria-selected'),'true');
+ methods.selectWorkspace('races');
+ assert.equal(d.getElementById('lpdb-panel').hidden,true);
+ assert.equal(d.getElementById('races-panel').hidden,false);
+ methods.selectWorkspace('team');
+ assert.equal(d.getElementById('team-races-panel').hidden,false,'last LPDB subsection is retained');
+ methods.selectWorkspace('team-stats');
+ assert.equal(d.getElementById('team-stats-panel').hidden,false);
+ assert.equal(d.getElementById('team-races-panel').hidden,true);
+ assert.equal(d.getElementById('lpdb-view-team-stats').getAttribute('aria-selected'),'true');
+});

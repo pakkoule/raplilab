@@ -89,12 +89,12 @@ function plan(rows,{race=false,style='table',limit=0,ctx}={}){
  const items=rankRows(source,{ctx,race});
  const podium=style==='social'&&limit===3;
  const top10=style==='social'&&!podium;
- const heroHeight=race?605:330;
+ const heroHeight=race?435:240;
  const top10Bonus=top10?122:0;
  const tableHead=64;
  const bodyHeight=podium?Math.max(390,items.reduce((sum,i)=>sum+Math.max(105,i.rowHeight),0)):
   items.reduce((sum,i)=>sum+i.rowHeight,0);
- const height=heroHeight+top10Bonus+tableHead+bodyHeight+130;
+ const height=heroHeight+top10Bonus+tableHead+bodyHeight+90;
  return {items,podium,top10,heroHeight,top10Bonus,tableHead,height,width:WIDTH,bodyHeight};
 }
 function drawBackground(ctx,height){
@@ -105,90 +105,86 @@ function drawBackground(ctx,height){
  ctx.fillStyle=backdrop;ctx.fillRect(0,0,WIDTH,height);
  ctx.fillStyle='#ffffff71';ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(WIDTH*.74,0);
  ctx.lineTo(WIDTH*.23,height);ctx.lineTo(0,height);ctx.fill();
- strokeRound(ctx,19,19,WIDTH-38,height-38,0,'#aeb4b8',4);
- strokeRound(ctx,28,28,WIDTH-56,height-56,0,'#ffffff',2);
- fillRound(ctx,34,38,7,height-76,1,'#afb5b7');
+ strokeRound(ctx,19,19,WIDTH-38,height-38,0,'#aeb4b8',2);
+ strokeRound(ctx,28,28,WIDTH-56,height-56,0,'#ffffff',1);
+ fillRound(ctx,34,38,4,height-76,1,'#afb5b7');
 }
 function drawChips(ctx,values,x,y){
  let current=x;
  for(const value of values.filter(Boolean)){
   const text=label(value).toLocaleUpperCase('fr');
-  ctx.font=canvasFont(20,750);
-  const w=ctx.measureText(text).width+30;
-  const gradient=ctx.createLinearGradient(current,y,current+w,y+46);
+  ctx.font=canvasFont(17,690);
+  const w=ctx.measureText(text).width+26;
+  const gradient=ctx.createLinearGradient(current,y,current+w,y+38);
   gradient.addColorStop(0,'#fff');gradient.addColorStop(.5,'#e5e8e9');gradient.addColorStop(1,'#f7f8f8');
-  fillRound(ctx,current,y,w,44,10,gradient);
-  strokeRound(ctx,current,y,w,44,10,'#c8cdd0');
-  ctx.textAlign='left';ctx.fillStyle=COLORS.ink;ctx.fillText(text,current+15,y+30);
-  current+=w+12;
+  fillRound(ctx,current,y,w,36,9,gradient);
+  strokeRound(ctx,current,y,w,36,9,'#c8cdd0',.9);
+  ctx.textAlign='left';ctx.fillStyle=COLORS.ink;ctx.fillText(text,current+13,y+25);
+  current+=w+10;
  }
 }
 function drawHeader(ctx,plan,opts,logo,illustration){
  const race=opts.race||null;
  const compact=Boolean(race);
- const title=label(race?.name||opts.title||'CHAMPIONNAT LPDB');
- ctx.save();ctx.fillStyle='#4d555b';ctx.textAlign='left';ctx.font=canvasFont(19,750);
- ctx.fillText('LPDB  /  CHAMPIONNAT DE L’ÉQUIPE',230,82);
+ const title=label(race?.name||opts.title||'CHAMPIONNAT LPDB').toLocaleUpperCase('fr');
+ ctx.save();ctx.textAlign='left';
  if(logo){
-  fillRound(ctx,66,68,145,123,12,'#fff');
-  const aspect=Math.min(135/logo.width,113/logo.height);
-  const logoW=logo.width*aspect,logoH=logo.height*aspect;
-  ctx.drawImage(logo,72+(135-logoW)/2,73+(113-logoH)/2,logoW,logoH);
+  // Original LPDB artwork is transparent: keep it directly on the foil paper.
+  const aspect=Math.min(116/logo.width,106/logo.height);
+  const w=logo.width*aspect,h=logo.height*aspect;
+  ctx.drawImage(logo,82+(116-w)/2,66+(106-h)/2,w,h);
  }
- ctx.fillStyle=COLORS.ink;ctx.font=canvasFont(59,900);
- ctx.fillText('RAPLI REGATTA',230,145);
- const titleFont=compact?43:37;
- ctx.font=canvasFont(titleFont,850);
- const lines=wrapText(ctx,title.toLocaleUpperCase('fr'),compact?755:1150);
- let shown=lines;
- if(compact&&shown.length>3){
-  ctx.font=canvasFont(33,850);
-  shown=wrapText(ctx,title.toLocaleUpperCase('fr'),810);
+ const x=218,width=compact?808:1155;
+ let fontSize=compact?35:39,lines=[];
+ for(;fontSize>=23;fontSize-=3){
+  ctx.font=canvasFont(fontSize,730);
+  lines=wrapText(ctx,title,width);
+  if(lines.length<=(compact?3:2))break;
  }
- shown=shown.slice(0,compact?3:2);
- ctx.fillStyle='#343a3f';
- shown.forEach((line,i)=>ctx.fillText(line,230,207+i*50));
+ ctx.fillStyle=COLORS.ink;
+ const titleTop=compact?102:112,lineStep=compact?39:43;
+ lines.forEach((line,i)=>ctx.fillText(line,x,titleTop+i*lineStep));
  if(compact){
-  const metaY=218+shown.length*50;
+  const metaY=Math.max(165,titleTop+(lines.length-1)*lineStep+26);
   drawChips(ctx,[race.boatClass||'BATEAU NON RENSEIGNÉ',
-    race.vsr==='hc'?'HC':race.vsr?.toUpperCase()],230,metaY);
+   race.vsr==='hc'?'HC':race.vsr?.toUpperCase()],x,metaY);
   if(race.stageGroup){
-   ctx.textAlign='left';ctx.fillStyle=COLORS.muted;ctx.font=canvasFont(17,650);
-   ctx.fillText(label(race.stageGroup).slice(0,90),230,metaY+67);
-  }
-  if(illustration){
-   fitImage(ctx,illustration,1064,76,344,242);
-   strokeRound(ctx,1064,76,344,242,17,'#aeb5b7',3);
-  }else{
-   const foil=ctx.createLinearGradient(1064,78,1410,318);
-   foil.addColorStop(0,'#fafbfb');foil.addColorStop(.5,'#d2d6d8');foil.addColorStop(1,'#fff');
-   fillRound(ctx,1064,76,344,242,17,foil);
-   strokeRound(ctx,1064,76,344,242,17,'#bdc2c5',2);
-   if(logo)ctx.drawImage(logo,1148,119,173,156);
+   ctx.fillStyle=COLORS.muted;ctx.font=canvasFont(15,630);
+   ctx.fillText(label(race.stageGroup).slice(0,90),x,metaY+57);
   }
   if(race.dateEnd){
-   ctx.fillStyle=COLORS.muted;ctx.font=canvasFont(18,650);
-   ctx.fillText('CLASSEMENT CLÔTURÉ LE '+race.dateEnd.split('-').reverse().join('/'),230,metaY+(race.stageGroup?97:75));
+   ctx.fillStyle=COLORS.muted;ctx.font=canvasFont(15,610);
+   const dateY=metaY+(race.stageGroup?81:59);
+   ctx.fillText('CLASSEMENT CLÔTURÉ LE '+race.dateEnd.split('-').reverse().join('/'),x,dateY);
   }
-  const y=505;
-  const stats=[
-   ['CLASSÉS',num(race.finishers??0)],
-   ['DNF',num(race.dnf??0)],
-   ['NOTE MOYENNE',race.average!=null?num(race.average)+'/100':'—']
-  ];
-  let x=75;
-  for(const [k,value] of stats){
-   const w=435;
-   const silver=ctx.createLinearGradient(x,y,x+w,y+69);
+  if(illustration){
+   fitImage(ctx,illustration,1080,72,326,208);
+   strokeRound(ctx,1080,72,326,208,15,'#aeb5b7',1.5);
+  }else{
+   const foil=ctx.createLinearGradient(1080,72,1406,280);
+   foil.addColorStop(0,'#fafbfb');foil.addColorStop(.5,'#d2d6d8');foil.addColorStop(1,'#fff');
+   fillRound(ctx,1080,72,326,208,15,foil);
+   strokeRound(ctx,1080,72,326,208,15,'#bdc2c5',1.2);
+   if(logo){
+    const ratio=Math.min(165/logo.width,158/logo.height);
+    ctx.drawImage(logo,1160+(165-logo.width*ratio)/2,95+(158-logo.height*ratio)/2,logo.width*ratio,logo.height*ratio);
+   }
+  }
+  // Keep only the three label chips, not the numerical counters.
+  const y=345,labels=['CLASSÉS','DNF','NOTE MOYENNE'];
+  let chipX=75;
+  for(const value of labels){
+   const w=435,silver=ctx.createLinearGradient(chipX,y,chipX+w,y+52);
    silver.addColorStop(0,'#fdfefe');silver.addColorStop(.52,'#e9ebec');silver.addColorStop(1,'#f9fafa');
-   fillRound(ctx,x,y,w,70,12,silver);strokeRound(ctx,x,y,w,70,12,'#ccd1d3');
-   ctx.fillStyle=COLORS.muted;ctx.font=canvasFont(17,800);ctx.fillText(k,x+18,y+25);
-   ctx.fillStyle=COLORS.ink;ctx.font=canvasFont(28,850);ctx.fillText(value,x+18,y+58);
-   x+=445;
+   fillRound(ctx,chipX,y,w,52,10,silver);strokeRound(ctx,chipX,y,w,52,10,'#ccd1d3',.9);
+   ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle=COLORS.muted;
+   ctx.font=canvasFont(16,720);ctx.fillText(value,chipX+w/2,y+26);
+   chipX+=445;
   }
+  ctx.textBaseline='alphabetic';
  }else{
-  ctx.fillStyle=COLORS.muted;ctx.font=canvasFont(23,700);
-  ctx.fillText(opts.title||'Classement LPDB',230,255);
+  ctx.fillStyle=COLORS.muted;ctx.font=canvasFont(17,610);
+  ctx.fillText('CLASSEMENT',x,176);
  }
  ctx.restore();
 }
@@ -206,7 +202,31 @@ function drawTableHeader(ctx,race,y){
  for(const [text,x,align] of labels){ctx.textAlign=align;ctx.fillText(text,x,y+29);}
  ctx.textBaseline='alphabetic';
 }
-function noteText(row){return row.note?.available?num(row.note.value)+'/100'+(row.note.provisional?'*':''):'—';}
+function drawScoreRing(ctx,x,y,score,size=54){
+ const value=Number(score);
+ if(!Number.isFinite(value))return false;
+ const clamped=Math.max(0,Math.min(100,value));
+ const radius=size/2,thickness=Math.max(6,Math.round(size*.14));
+ const start=-Math.PI/2,end=start+(clamped/100)*Math.PI*2;
+ ctx.save();
+ ctx.lineWidth=thickness;ctx.lineCap='butt';
+ ctx.beginPath();ctx.strokeStyle='#d0d5dd';
+ ctx.arc(x,y,radius-thickness/2,0,Math.PI*2);ctx.stroke();
+ if(clamped>0){
+  const gradient=ctx.createLinearGradient(x-radius,y-radius,x+radius,y+radius);
+  gradient.addColorStop(0,'#39aeff');gradient.addColorStop(.56,'#7674d8');
+  gradient.addColorStop(1,'#db48ae');
+  ctx.beginPath();ctx.strokeStyle=gradient;
+  ctx.arc(x,y,radius-thickness/2,start,end);ctx.stroke();
+ }
+ ctx.beginPath();ctx.fillStyle='#172c54';
+ ctx.arc(x,y,radius-thickness,0,Math.PI*2);ctx.fill();
+ ctx.fillStyle='#fff';ctx.textAlign='center';ctx.textBaseline='middle';
+ const shown=num(Math.round(clamped*10)/10);
+ ctx.font=canvasFont(shown.length>=5?Math.max(12,Math.round(size*.24)):Math.round(size*.34),780);
+ ctx.fillText(shown,x,y+1);
+ ctx.restore();return true;
+}
 function drawTableRow(ctx,row,index,y,race){
  const bg=ctx.createLinearGradient(65,y,WIDTH-65,y+row.rowHeight);
  const winner=row.rank===1&&!row.dnf,runner=row.rank===2&&!row.dnf,third=row.rank===3&&!row.dnf;
@@ -231,8 +251,8 @@ function drawTableRow(ctx,row,index,y,race){
   ctx.fillText(row.generalRank!=null?'#'+num(row.generalRank):'—',740,mid);
   ctx.fillText(duration(row.elapsedSeconds),935,mid);
   ctx.fillText(row.gapSeconds!=null?'+ '+duration(row.gapSeconds):'—',1105,mid);
-  ctx.fillStyle=row.note?.available?COLORS.ink:'#858b90';
-  ctx.font=canvasFont(22,850);ctx.fillText(noteText(row),1295,mid);
+  if(row.note?.available)drawScoreRing(ctx,1265,mid,row.note.value,53);
+  else{ctx.fillStyle='#858b90';ctx.font=canvasFont(21,650);ctx.fillText('—',1295,mid);}
  }else{
   ctx.fillText(num(row.participations),820,mid);
   ctx.fillText(duration(row.avgTimeSeconds),1052,mid);
@@ -264,18 +284,23 @@ function drawPodium(ctx,items,y,race){
   display.forEach((line,k)=>ctx.fillText(line,xs[i]+width/2,start+k*23));
   ctx.font=canvasFont(25,900);ctx.fillText(num(row.points)+' PTS',xs[i]+width/2,y+205);
   if(race){
-   ctx.font=canvasFont(17,680);
-   ctx.fillText('NOTE '+noteText(row)+'   ·   '+duration(row.elapsedSeconds),xs[i]+width/2,y+242);
+   if(row.note?.available)drawScoreRing(ctx,xs[i]+width/2-73,y+241,row.note.value,45);
+   ctx.textAlign='center';ctx.textBaseline='middle';
+   ctx.fillStyle=COLORS.muted;ctx.font=canvasFont(16,650);
+   ctx.fillText(duration(row.elapsedSeconds),xs[i]+width/2+35,y+241);
+   ctx.textBaseline='alphabetic';
   }
  }
  ctx.textBaseline='alphabetic';
 }
 function drawFooter(ctx,height,opts){
- const y=height-76;
- ctx.strokeStyle='#cdd2d4';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(76,y-26);ctx.lineTo(WIDTH-76,y-26);ctx.stroke();
- ctx.textAlign='center';ctx.fillStyle='#6b7378';ctx.font=canvasFont(18,700);
- ctx.fillText('LPDB  ·  CHAMPIONNAT DE L’ÉQUIPE  ·  RAPLI REGATTA',WIDTH/2,y+13);
- if(opts.race){ctx.textAlign='right';ctx.font=canvasFont(15,500);ctx.fillText('Notes disponibles · équipement exclu',WIDTH-82,y+45);}
+ const y=height-48;
+ ctx.strokeStyle='#cdd2d4';ctx.lineWidth=1;
+ ctx.beginPath();ctx.moveTo(76,y-20);ctx.lineTo(WIDTH-76,y-20);ctx.stroke();
+ if(opts.race){
+  ctx.textAlign='right';ctx.fillStyle='#707980';ctx.font=canvasFont(14,500);
+  ctx.fillText('Notes calculées sans équipement',WIDTH-82,y+9);
+ }
 }
 async function downloadCanvas(canvas,filename){
  const blob=await new Promise((resolve,reject)=>{
@@ -299,7 +324,7 @@ async function exportPng(opts){
  canvas.width=WIDTH;canvas.height=layout.height;
  const ctx=canvas.getContext('2d');if(!ctx)throw Error('Canvas PNG indisponible.');
  const [logo,illustration]=await Promise.all([
-  loadImage('assets/lpdb.webp'),loadImage(imageSource(opts.race?.illustration))
+  loadImage('assets/lpdb-header-transparent.png?v=20261122-transparent'),loadImage(imageSource(opts.race?.illustration))
  ]);
  drawBackground(ctx,layout.height);drawHeader(ctx,layout,opts,logo,illustration);
  const y=layout.heroHeight;
@@ -329,7 +354,7 @@ async function exportPng(opts){
  await downloadCanvas(canvas,(opts.filename||'lpdb-classement')+'.png');
  return {count:layout.items.length,width:WIDTH,height:layout.height,fileCount:1};
 }
-const api={exportPng,plan,wrapText,duration,imageSource};
+const api={exportPng,plan,wrapText,duration,imageSource,drawScoreRing};
 root.RapliTeamExport=api;
 if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);

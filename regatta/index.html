@@ -16,6 +16,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=Courier+Prime:wght@400;700&family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="team.css">
 <link rel="stylesheet" href="gfs-lab.css">
 <link rel="stylesheet" href="../shared/photo-zoom.css">
   
@@ -25,6 +26,13 @@
 html:not([data-rapli-role="editor"]) [data-action="edit"],
 html:not([data-rapli-role="editor"]) [data-action="delete"],
 html:not([data-rapli-role="editor"]) [data-action="record-close"],
+html:not([data-rapli-role="editor"]) #team-race-dialog .team-action,
+html:not([data-rapli-role="editor"]) #team-member-dialog .team-action,
+html:not([data-rapli-role="editor"]) [data-team-action="new-race"],
+html:not([data-rapli-role="editor"]) [data-team-action="new-member"],
+html:not([data-rapli-role="editor"]) [data-team-action^="race-"],
+html:not([data-rapli-role="editor"]) [data-team-action^="member-"],
+html:not([data-rapli-role="editor"]) [data-team-action^="delete-race-"],
 html:not([data-rapli-role="editor"]) #save-race,
 html:not([data-rapli-role="editor"]) #delete-race,
 html:not([data-rapli-role="editor"]) #vsr-ranking-form,
@@ -77,16 +85,24 @@ html:not([data-rapli-role="editor"]) #rapli-module-cloud-save{display:none!impor
     </span>
   </button>
   <nav class="workspace-tabs" role="tablist" aria-label="Vues Rapli Regatta">
-    <button type="button" id="view-races" class="workspace-tab active" role="tab" aria-selected="true" aria-controls="races-panel">COURSES</button>
-    <button type="button" id="view-stats" class="workspace-tab" role="tab" aria-selected="false" aria-controls="stats-panel" tabindex="-1">STATISTIQUES</button>
-    <button type="button" id="view-honors" class="workspace-tab" role="tab" aria-selected="false" aria-controls="honors-panel" tabindex="-1">PALMARÈS</button>
+    <button type="button" id="view-team" class="workspace-tab active" role="tab" aria-selected="true" aria-controls="team-panel">CHAMPIONNAT</button>
+    <button type="button" id="view-team-races" class="workspace-tab" role="tab" aria-selected="false" aria-controls="team-races-panel" tabindex="-1">COURSES D'ÉQUIPE</button>
+    <button type="button" id="view-team-skippers" class="workspace-tab" role="tab" aria-selected="false" aria-controls="team-skippers-panel" tabindex="-1">SKIPPERS</button>
+    <button type="button" id="view-team-stats" class="workspace-tab" role="tab" aria-selected="false" aria-controls="team-stats-panel" tabindex="-1">STATS D'ÉQUIPE</button>
+    <button type="button" id="view-races" class="workspace-tab" role="tab" aria-selected="false" aria-controls="races-panel" tabindex="-1">MES COURSES · ARCHIVES</button>
+    <button type="button" id="view-stats" class="workspace-tab" role="tab" aria-selected="false" aria-controls="stats-panel" tabindex="-1">MES STATISTIQUES</button>
+    <button type="button" id="view-honors" class="workspace-tab" role="tab" aria-selected="false" aria-controls="honors-panel" tabindex="-1">MON PALMARÈS</button>
     <button type="button" id="view-colors" class="workspace-tab regatta-settings-tab" role="tab" aria-selected="false" aria-controls="colors-panel" tabindex="-1" hidden>COULEURS DES CLASSES</button>
   </nav>
   </div>
   <div class="regatta-cloud-status" id="regatta-cloud-overlay" role="status" aria-live="polite" aria-atomic="true" aria-hidden="true">
     <span id="rapli-shared-status-regatta">Chargement de la collection…</span>
   </div>
-  <div id="races-panel" role="tabpanel" aria-labelledby="view-races">
+  <section id="team-panel" role="tabpanel" aria-labelledby="view-team" class="team-panel"></section>
+  <section id="team-races-panel" role="tabpanel" aria-labelledby="view-team-races" class="team-panel" hidden></section>
+  <section id="team-skippers-panel" role="tabpanel" aria-labelledby="view-team-skippers" class="team-panel" hidden></section>
+  <section id="team-stats-panel" role="tabpanel" aria-labelledby="view-team-stats" class="team-panel" hidden></section>
+  <div id="races-panel" role="tabpanel" aria-labelledby="view-races" hidden>
   <div class="regatta-catalogue-controls">
     <div class="regatta-search" role="search" aria-label="Recherche dans toutes les informations des courses">
       <label class="regatta-search-field" for="search">
@@ -555,6 +571,52 @@ html:not([data-rapli-role="editor"]) #rapli-module-cloud-save{display:none!impor
     <footer class="dialog-footer"><button type="button" class="btn danger" id="delete-race" hidden>SUPPRIMER</button><span class="fill"></span><button type="button" class="btn subtle" data-close>ANNULER</button><button type="submit" class="btn primary" id="save-race">ENREGISTRER LA COURSE</button></footer>
   </form>
 </dialog>
+
+<dialog id="team-race-dialog" class="team-dialog" aria-labelledby="team-race-dialog-title">
+  <form id="team-race-form">
+    <header class="team-dialog-head"><h2 id="team-race-dialog-title">NOUVELLE COURSE D'ÉQUIPE</h2><button type="button" data-team-close class="team-dialog-close" aria-label="Fermer">×</button></header>
+    <div class="team-dialog-scroll">
+      <div class="team-form-grid">
+        <label class="team-wide">NOM DE LA COURSE<input id="team-race-name" maxlength="160" required placeholder="Ex. Pornichet Select"></label>
+        <label>DATE D'ARRIVÉE<input id="team-race-date" type="date"></label>
+        <label>CATÉGORIE VSR<select id="team-race-vsr"><option value="vsr3">VSR 3</option><option value="vsr2">VSR 2</option><option value="vsr1">VSR 1</option><option value="hc">Hors catégorie</option></select></label>
+        <label>STATUT<select id="team-race-status"><option value="planned">À venir</option><option value="live">En cours</option><option value="finished">Terminée et validée</option></select></label>
+        <label>COMPÉTITION / ÉTAPES (FACULTATIF)<input id="team-race-group" maxlength="100" placeholder="Ex. Tour du monde 2027"></label>
+      </div>
+      <div class="team-dialog-participants">
+        <div class="team-subhead"><h3>PARTICIPANTS ET POSITIONS</h3><strong id="team-participants-count">0 / 50 participants</strong></div>
+        <div class="team-input-actions">
+          <select id="team-select-member" aria-label="Choisir un skipper"><option value="">Choisir un skipper…</option></select>
+          <button type="button" data-team-action="add-member" class="team-action">＋ AJOUTER</button>
+          <button type="button" data-team-action="select-all" class="team-action team-secondary">TOUTE L'ÉQUIPE</button>
+        </div>
+        <div class="team-input-actions">
+          <input type="text" id="team-create-member" maxlength="56" placeholder="Nouveau pseudo…" aria-label="Créer rapidement un skipper">
+          <button type="button" data-team-action="create-member" class="team-action team-secondary">CRÉER + AJOUTER</button>
+        </div>
+        <div class="team-result-head"><span>SKIPPER</span><span>RANG</span><span>STATUT</span><span>PRINCIPAL / HIST.</span><span></span></div>
+        <div id="team-result-rows" class="team-result-rows"></div>
+        <p id="team-race-validation" class="team-footnote" role="status"></p>
+        <strong id="team-race-preview" class="team-race-preview"></strong>
+      </div>
+    </div>
+    <footer class="team-dialog-footer"><button type="button" data-team-close class="team-action team-secondary">ANNULER</button><button type="submit" class="team-action team-primary">ENREGISTRER LA COURSE</button></footer>
+  </form>
+</dialog>
+<dialog id="team-member-dialog" class="team-dialog" aria-labelledby="team-member-dialog-title">
+  <form id="team-member-form">
+    <header class="team-dialog-head"><h2 id="team-member-dialog-title">AJOUTER UN SKIPPER</h2><button type="button" data-team-close class="team-dialog-close" aria-label="Fermer">×</button></header>
+    <div class="team-dialog-scroll"><div class="team-form-grid">
+      <label class="team-wide">PSEUDO DU SKIPPER<input id="team-member-name" maxlength="56" required placeholder="Pseudo Virtual Regatta"></label>
+      <label>STATUT<select id="team-member-status"><option value="active">Membre actif</option><option value="former">Ancien membre</option></select></label>
+      <label>DATE D'ENTRÉE (FACULTATIVE)<input id="team-member-from" type="date"></label>
+      <label>DATE DE SORTIE (FACULTATIVE)<input id="team-member-until" type="date"></label>
+    </div><p class="team-footnote">Les changements de pseudo ne suppriment jamais les résultats. Les anciens membres restent dans le championnat.</p></div>
+    <footer class="team-dialog-footer"><button type="button" data-team-close class="team-action team-secondary">ANNULER</button><button type="submit" class="team-action team-primary">ENREGISTRER</button></footer>
+  </form>
+</dialog>
+<dialog id="team-profile-dialog" class="team-dialog" aria-label="Palmarès du skipper"><div class="team-dialog-head"><h2>PALMARÈS DU SKIPPER</h2><button type="button" data-team-close class="team-dialog-close" aria-label="Fermer">×</button></div><div id="team-profile-body" class="team-dialog-scroll"></div></dialog>
+<dialog id="team-stage-dialog" class="team-dialog" aria-labelledby="team-stage-title"><div class="team-dialog-head"><h2 id="team-stage-title">CLASSEMENT DES ÉTAPES</h2><button type="button" data-team-close class="team-dialog-close" aria-label="Fermer">×</button></div><div id="team-stage-body" class="team-dialog-scroll"></div></dialog>
 <dialog id="score-dialog" aria-labelledby="score-dialog-title">
  <header class="dialog-head"><h2 id="score-dialog-title">DÉTAIL DE LA NOTE</h2><button type="button" class="close" data-score-close aria-label="Fermer">×</button></header>
  <div id="score-dialog-body" class="score-dialog-body"></div>
@@ -570,6 +632,8 @@ html:not([data-rapli-role="editor"]) #rapli-module-cloud-save{display:none!impor
 <script defer src="timezone.js"></script>
 <script defer src="honors.js"></script>
 <script defer src="search.js"></script>
+<script defer src="team-engine.js"></script>
+<script defer src="team-app.js"></script>
 <script defer src="app.js"></script>
 <script defer src="gfs-interpolation.js"></script>
 <script defer src="gfs-motion.js"></script>

@@ -56,7 +56,7 @@ function parseClassification(text){
    if(!Number.isSafeInteger(elapsedSeconds)||gapSeconds<0){errors.push('Ligne '+(index+1)+' : chrono « '+line+' » impossible pour « '+pending.name+' » ; le temps calculé doit être supérieur ou égal à celui du premier ('+formatTime(leaderSeconds)+'). Vérifie le signe + et les unités.');pending=null;continue;}
    entries.push({position:entries.length+1,name:pending.name,line:pending.line,elapsedSeconds,gapSeconds});
    pending=null;
-   if(entries.length>50){errors.push('Ligne '+(index+1)+' : 51e skipper détecté (« '+pending.name+' »). Une course LPDB accepte au maximum 50 participants : réduis le classement importé.');break;}
+   if(entries.length>50){errors.push('Ligne '+(index+1)+' : 51e skipper détecté (« '+entries[entries.length-1].name+' »). Une course LPDB accepte au maximum 50 participants : réduis le classement importé.');break;}
    continue;
   }
   if(pending)warnings.push('Ligne '+pending.line+' : « '+pending.name+' » ignoré : aucun chrono n’a été trouvé juste après son pseudo. Colle sa durée sur la ligne suivante.');

@@ -199,7 +199,7 @@ test('rendered tiles use menu-only image actions, preserving live status and foi
   assert.ok(markup.includes('IMOCA FOIL')&&markup.includes('VSR FOIL'),status);
   assert.equal(markup.includes('🌐'),false,status);
   assert.ok(!markup.includes('<div class="shots">'));
-  assert.equal(markup.includes('race-card-rewards'),!record,status);
+  assert.equal(markup.includes('race-card-rewards'),!record&&status!=='live'&&status!=='planned',status);
   assert.equal(markup.includes('data-action="calendar"'),
    status==='planned'||status==='record',status);
  }
@@ -460,7 +460,7 @@ test('two-column race, record and stage cards preserve details, menu and media z
   assert.equal(Boolean(tile.querySelector('.race-card-right .score-orb')),
    kind!=='record'&&status!=='dnf',status);
   assert.equal(Boolean(tile.querySelector('.race-card-right .race-card-rewards')),
-   kind!=='record',status);
+   kind!=='record'&&status!=='live'&&status!=='planned',status);
   assert.ok(tile.querySelector('.race-actions-popover [data-action="edit"]'));
   assert.ok(tile.querySelector('.race-actions-popover [data-action="png"]'));
   assert.equal(tile.querySelectorAll('.card-content').length,1);
@@ -517,4 +517,16 @@ test('future course, stage and record attempts are exportable to iOS Calendar fr
  assert.equal(canExportRaceCalendar(record),false);
  assert.ok(!raceCardMenu(record,'record-live').includes('data-action="calendar"'));
  assert.throws(()=>calendarText(record),/à venir/);
+});
+
+test('upcoming and in-progress races do not show unearned rewards',()=>{
+ const {card}=raceTileHarness();
+ for(const status of ['planned','live']){
+  const doc=new JSDOM(card({...testRace,mockStatus:status,kind:'race'})).window.document;
+  assert.equal(doc.querySelector('.race-card-rewards'),null,status);
+  assert.equal(doc.querySelector('.reward-points'),null,status);
+  assert.equal(doc.querySelector('.reward-credits'),null,status);
+ }
+ const finished=new JSDOM(card({...testRace,mockStatus:'finished',kind:'race'})).window.document;
+ assert.equal(finished.querySelectorAll('.race-card-rewards .stat-chip').length,2);
 });

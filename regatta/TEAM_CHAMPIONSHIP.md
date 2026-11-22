@@ -97,3 +97,14 @@ Le championnat LPDB démarre avec la prochaine course enregistrée. **Aucun impo
 - Les anciennes courses sans classement général restent pleinement compatibles ; le champ est omis, ou affiché par « — ».
 - La rubrique **Statistiques** des skippers conserve le meilleur rang général VR sur les courses où il est connu.
 - Le **classement général VR n'affecte ni le barème principal ni le barème historique**. Il est stocké pour permettre la réutilisation ultérieure du système de notation personnelle, sans anticiper ses règles ni supposer le nombre total de concurrents.
+
+
+## LPDB · notation individuelle sans équipement et classement défilant
+- La mention « ↔ Fiche « Mes courses » associée » est supprimée des tuiles d'équipe. La liaison technique et les actions associées dans le menu « … » restent disponibles.
+- La fenêtre « Classement d'équipe » a une hauteur bornée au viewport et un **contenu défilable verticalement**, indépendant de son en-tête. Le tableau conserve le défilement horizontal sur mobile, notamment dans Safari iOS.
+- La grille « Classement d'équipe » affiche désormais une **NOTE /100 par skipper**. La fiche du skipper affiche également sa note sur les courses de la période.
+- Les notes réutilisent le calcul du système personnel `regatta/score.js`, **sans le critère d'équipement**. Les poids restants sont renormalisés proportionnellement sur 100 : classement relatif **43,75**, progression personnelle **25**, difficulté VSR **12,5**, affluence relative **18,75**.
+- Le nombre **global** de participants VR se renseigne sur la fiche de course d'équipe dans « Effectif global Virtual Regatta ». Les classements généraux VR sont déjà saisis **par skipper** : le rang dans l'équipe et son effectif ne remplacent jamais ces valeurs globales.
+- La **moyenne des notes disponibles** est présentée sur chaque tuile de course. Le compteur `skippers notés / arrivés` accompagne la moyenne ; si aucune note n'est calculable, on affiche « — » et non une note artificielle.
+- Les notes ne sont calculées que sur les épreuves terminées et dont les résultats sont validés. Un DNF n'a pas de note ; une donnée manquante (rang général ou effectif global) n'est pas imputée ; l'historique limité est marqué comme provisoire et les primes de podium personnelles demeurent sous leurs conditions habituelles.
+- Les calculs de points LPDB (barèmes principal et historique) sont **strictement inchangés**. La note est un indicateur indépendant, calculé dynamiquement à partir de l'historique accessible.

@@ -21,7 +21,7 @@ test('Regatta uses its own logo and class colour editor without Sports navigatio
  try{
   const d=dom.window.document;
   assert.equal(d.title,'Rapli Regatta');
-  assert.equal(d.querySelector('.regatta-brand-logo').getAttribute('src'),'assets/logo.webp');
+  assert.match(d.querySelector('.regatta-brand-logo').getAttribute('src'),/^assets\/lpdb-header-foil\.webp\?v=/);
   assert.equal(d.querySelectorAll('.regatta-collection-tabs, .regatta-sports-back, #rapliProfileRegatta').length,0);
   assert.equal(d.querySelector('.workspace-tabs'),null,'team-only workspace has no personal tabs');
   assert.equal(d.querySelector('#view-races'),null);

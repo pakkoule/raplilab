@@ -140,3 +140,11 @@ Le championnat LPDB démarre avec la prochaine course enregistrée. **Aucun impo
 - Il reprend les résultats les plus récents de chaque course terminée, les classements généraux VR, les effectifs globaux, les catégories et l'historique, puis **réévalue les notes individuelles et les moyennes** des tuiles.
 - Une confirmation indique le nombre de skippers notés, de courses évaluées, les notes indisponibles et les notes provisoires. Une absence de course terminée produit un message explicite.
 - Ce recalcul est **en lecture seule** : aucune écriture ni nouvelle validation, aucun changement des rangs, des points LPDB, des fiches personnelles ou des historiques. Les notes sont de toute façon recalculées dynamiquement à partir des données en mémoire ; le bouton fournit un déclenchement manuel et son bilan.
+
+
+## Regatta exclusivement LPDB (PR #4)
+- **LPDB est désormais l'unique espace visible** de Rapli Regatta, ouvert directement sur le **Championnat** : navigation interne entre **Championnat**, **Courses d'équipe**, **Skippers** et **Stats d'équipe**. Les onglets de niveau supérieur « Mes courses », « Mes statistiques » et « Mon palmarès » sont supprimés.
+- Les anciens panneaux personnels sont masqués et rendus **inertes** ; leurs données locales et cloud ne sont **pas supprimées**, pour préserver les illustrations, les métadonnées (Trophée Jules Verne inclus) et les données nécessaires aux courses LPDB déjà associées.
+- Le formulaire d'équipe peut toujours **réutiliser les détails d'une ancienne fiche ou d'un record**, sans proposer d'accéder au journal personnel, de créer une nouvelle course personnelle ou de supprimer les archives. Les actions « Ouvrir ma course » / « Créer ma course » ont disparu du menu « … ».
+- Les **réglages des puces foil bateau et VSR** restent accessibles par le bouton **⚙ PUCES BATEAUX** dans « Courses d'équipe ». Le bouton Retour revient directement aux courses d'équipe.
+- Les anciennes routes de navigation vers les courses personnelles, leurs statistiques ou leur palmarès ne sont plus accessibles par l'interface, y compris par des appels directs au sélecteur de vues. Les mécanismes de stockage et de synchronisation conservent leur compatibilité.

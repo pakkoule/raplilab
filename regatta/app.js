@@ -1374,6 +1374,21 @@ function selectLpdbView(view){
   tab.setAttribute('aria-selected',String(active));
   tab.tabIndex=active?0:-1;
  }
+ const controls=$('lpdb-global-controls');
+ if(controls){
+  controls.dataset.view=view;
+  controls.hidden=false;
+  controls.querySelectorAll('[data-lpdb-action-for]').forEach(button=>{
+   button.hidden=button.dataset.lpdbActionFor!==view;
+  });
+ }
+ const globalSearch=$('lpdb-global-search');
+ if(globalSearch)globalSearch.placeholder=({
+  team:'Rechercher un skipper au championnat…',
+  'team-races':'Rechercher une course, un bateau, un skipper…',
+  'team-skippers':'Rechercher un skipper…',
+  'team-stats':'Rechercher dans les statistiques des skippers…'
+ })[view];
  renderTeam();
 }
 function selectWorkspace(view){
@@ -1384,7 +1399,7 @@ function selectWorkspace(view){
  $('lpdb-panel').hidden=isColors;
  $('colors-panel').hidden=!isColors;
  if(isTeam)selectLpdbView(view);
- if(isColors)renderClassColors();
+ if(isColors){$('lpdb-global-controls').hidden=true;renderClassColors();}
 }
 
 const scoreDialog=$('score-dialog'),recalcDialog=$('score-recalc-dialog');
@@ -2111,7 +2126,7 @@ for(const id of ['regatta-pagination-top','regatta-pagination-bottom'])$(id).add
  regattaPage=next;render({searchOnly:true});
  $('regatta-pagination-top').scrollIntoView?.({behavior:'smooth',block:'start'});
 });
-$('regatta-sync').addEventListener('click',()=>{
+const syncNow=()=>{
  const cloud=window.RapliSharedCollection;
  if(!cloud?.syncNow){
   const notice=$('rapli-shared-status-regatta');
@@ -2127,7 +2142,9 @@ $('regatta-sync').addEventListener('click',()=>{
   return;
  }
  void cloud.syncNow();
-});
+};
+$('regatta-sync').addEventListener('click',syncNow);
+$('regatta-team-sync').addEventListener('click',syncNow);
 $('recalculate-scores').addEventListener('click',openScoreRecalc);
 $('score-recalc-confirm').addEventListener('click',confirmScoreRecalc);
 document.querySelectorAll('[data-score-close]').forEach(x=>x.addEventListener('click',()=>scoreDialog.close()));
@@ -2249,6 +2266,7 @@ window.RapliTeamUI?.init?.({get:()=>teamRecords,personal:()=>rows,
  openPersonal:openPersonalCourse,newPersonalFromTeam:startPersonalFromTeam,
  showTeam:()=>selectWorkspace('team-races'),openColors:()=>selectWorkspace('colors'),
  canEdit:()=>window.RapliSharedCollection?.canEdit?.(),notify:toast});
+selectWorkspace('team');
 (async()=>{try{await openDB();partitionRecords(await load());render();renderTeam();}catch(err){
  console.warn('Regatta : IndexedDB indisponible',err);db=null;
  try{

@@ -135,6 +135,7 @@ html:not([data-rapli-role="editor"]) #rapli-module-cloud-save{display:none!impor
             <option value="12">+12 heures</option>
             <option value="18">+18 heures</option>
             <option value="24">+24 heures</option>
+            <option value="30">+30 heures</option>
           </select>
         </label>
         <button type="button" class="gfs-lab-run" data-gfs-wind-run>LIRE LES VENTS</button>
@@ -182,6 +183,25 @@ html:not([data-rapli-role="editor"]) #rapli-module-cloud-save{display:none!impor
             <span><small>Composantes U/V</small><strong data-gfs-spatial-components>—</strong></span>
           </div>
           <small>Interpolation spatiale des quatre nœuds voisins du GFS 0,25°. Il s'agit d'un calcul sur les vents prévus, pas d'une observation ni d'un routage.</small>
+        </section>
+        <section class="gfs-next-day-departures-panel" aria-label="Quatre fenêtres supplémentaires calculées sur GFS +24 et +30 heures">
+          <div class="gfs-motion-heading">
+            <strong>FENÊTRES DE DÉPART · TEST 15</strong>
+            <span>GFS +24 / +30 H · 47°N</span>
+          </div>
+          <p data-gfs-next-status>Lis +24 h et +30 h d'un même cycle NOAA pour tester les départs +24, +25, +26 et +27 h.</p>
+          <div data-gfs-next-summary hidden>
+            <div><small>Départ le plus rapide</small><strong data-gfs-next-fastest>—</strong></div>
+            <div><small>Durée jusqu’à 47°N</small><strong data-gfs-next-duration>—</strong></div>
+            <div><small>Première arrivée absolue</small><strong data-gfs-next-earliest>—</strong></div>
+          </div>
+          <div data-gfs-next-rows hidden></div>
+          <div class="gfs-all-departures" data-gfs-all-sixteen hidden>
+            <strong>BILAN DES 16 DÉPARTS</strong>
+            <span data-gfs-all-sixteen-best>—</span>
+            <small>Meilleur temps de navigation parmi les 16 créneaux étudiés (+6 à +27 h) si les cinq échéances GFS du même cycle ont toutes été vérifiées.</small>
+          </div>
+          <small>Test local : quatre départs supplémentaires sur f024/f030, simulation de trois heures maximum jusqu'à 47°N. Les polaires ITYC restent partielles, NON Full Pack. Pas de terre, courant, règles Virtual Regatta, ni calcul de passage à l'équateur ou à Bonne-Espérance.</small>
         </section>
         <section class="gfs-evening-departures-panel" aria-label="Quatre fenêtres supplémentaires calculées sur GFS +18 et +24 heures">
           <div class="gfs-motion-heading">

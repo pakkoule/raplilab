@@ -131,39 +131,81 @@ function normalize(entities){
  }
  return result;
 }
-function verifyRace(r,knownMembers){
- const rs=r.results||[],count=rs.length;
- if(!dateOk(r.dateEnd)||!BASE[r.vsr]||count<1||count>50)return 'Renseigne la date de clôture du classement, la catégorie VSR et de 1 à 50 participants.';
- const ids=new Set(),ranks=new Set();
- for(const row of rs){
-  if(!knownMembers.has(row.skipperId)||ids.has(row.skipperId))return 'Skipper inconnu ou ajouté deux fois.';
-  ids.add(row.skipperId);
-  if(row.status==='pending')return 'Des résultats restent à saisir.';
-  if(row.status==='finished'){
-   if(!validPos(row.position,count))return 'Position de classement invalide.';
-   if(ranks.has(Number(row.position)))return 'Deux skippers ont la même position.';
-   if(row.generalRank!=null&&(!Number.isSafeInteger(int(row.generalRank))||int(row.generalRank)<1||int(row.generalRank)>100000000))return 'Classement général VR invalide.';
-   if(row.elapsedSeconds!=null&&(!Number.isSafeInteger(row.elapsedSeconds)||row.elapsedSeconds<0))return 'Chrono de course invalide.';
-   if(row.gapSeconds!=null&&(!Number.isSafeInteger(row.gapSeconds)||row.gapSeconds<0))return 'Écart au vainqueur invalide.';
-   ranks.add(Number(row.position));
+/* Collect actionable validation issues without altering data or scoring.
+   Each issue may point to the exact skipper(s) and input field in the editor. */
+function diagnoseRace(r,knownMembers){
+ const rs=Array.isArray(r?.results)?r.results:[],count=rs.length;
+ const known=knownMembers instanceof Map?knownMembers:new Map();
+ const issues=[],ids=new Map(),ranks=new Map();
+ const add=(code,message,skipperIds=[],field='')=>issues.push({
+  code,message,skipperIds:[...new Set(skipperIds.filter(Boolean))],field
+ });
+ const person=(row,index)=>known.get(row?.skipperId)?.name||('identifiant '+(row?.skipperId||'absent à la ligne '+(index+1)));
+ const quoted=(row,index)=>'« '+person(row,index)+' »';
+ const shown=v=>v==null||v===''?'vide':String(v);
+ if(!dateOk(r?.dateEnd))add('dateEnd','Date de clôture du classement manquante ou invalide : indique la date de validation (AAAA-MM-JJ). Cette date détermine le mois, trimestre et année du championnat.',[],'dateEnd');
+ if(!BASE[r?.vsr])add('vsr','Catégorie VSR non reconnue : sélectionne VSR 3, VSR 2, VSR 1 ou Hors catégorie.',[],'vsr');
+ if(!count)add('participants','Aucun participant dans cette course : ajoute au moins un skipper depuis l’effectif LPDB.',[],'participants');
+ else if(count>50)add('participants','La course contient '+count+' participants : le maximum autorisé est de 50. Retire '+(count-50)+' participant(s).',[],'participants');
+ for(let i=0;i<rs.length;i++){
+  const row=rs[i]||{},id=row.skipperId||'',who=quoted(row,i),line='ligne '+(i+1);
+  if(!known.has(id)){
+   add('unknown-skipper','Skipper introuvable ('+line+') : '+who+'. Aucune fiche de l’effectif LPDB ne correspond à cet identifiant. Vérifie l’onglet Skippers et la synchronisation, puis réassocie ou retire cette participation.',[id],'skipperId');
+  }
+  if(ids.has(id)){
+   add('duplicate-skipper','Skipper présent deux fois : '+who+' apparaît aux lignes '+(ids.get(id)+1)+' et '+(i+1)+'. Conserve une seule participation pour ce skipper.',[id],'skipperId');
+  }else ids.set(id,i);
+  if(row.status==='pending'){
+   add('pending','Résultat non renseigné pour '+who+' ('+line+') : le statut est « À saisir ». Indique « Classé » et son rang LPDB, ou sélectionne « DNF ».',[id],'status');
+  }else if(row.status==='finished'){
+   if(!validPos(row.position,count)){
+    add('position','Rang LPDB invalide pour '+who+' ('+line+') : valeur « '+shown(row.position)+' ». Entre un rang entier compris entre 1 et '+count+'.',[id],'rank');
+   }else{
+    const pos=int(row.position);
+    if(ranks.has(pos)){
+     const other=rs[ranks.get(pos)];
+     add('duplicate-position','Deux skippers ont la même position LPDB #'+pos+' : '+quoted(other,ranks.get(pos))+' et '+who+'. Attribue un rang distinct à chacun.',[other.skipperId,id],'rank');
+    }else ranks.set(pos,i);
+   }
+   if(row.generalRank!=null&&(!Number.isSafeInteger(int(row.generalRank))||int(row.generalRank)<1||int(row.generalRank)>100000000)){
+    add('generalRank','Classement général VR invalide pour '+who+' : valeur « '+shown(row.generalRank)+' ». Entre un entier de 1 à 100 000 000 ou laisse le champ vide.',[id],'generalRank');
+   }
+   if(row.elapsedSeconds!=null&&(!Number.isSafeInteger(row.elapsedSeconds)||row.elapsedSeconds<0)){
+    add('elapsedSeconds','Chrono invalide pour '+who+' : valeur enregistrée « '+shown(row.elapsedSeconds)+' » secondes. Renseigne une durée positive, par exemple 11j 16h 58m.',[id],'elapsedSeconds');
+   }
+   if(row.gapSeconds!=null&&(!Number.isSafeInteger(row.gapSeconds)||row.gapSeconds<0)){
+    add('gapSeconds','Écart au premier invalide pour '+who+' : valeur enregistrée « '+shown(row.gapSeconds)+' » secondes. L’écart doit être positif ou nul.',[id],'gapSeconds');
+   }
   }
  }
- const leader=rs.find(row=>row.status==='finished'&&Number(row.position)===1);
- if(leader&&Number.isSafeInteger(leader.elapsedSeconds)){
-  for(const row of rs.filter(r=>r.status==='finished')){
-   if(row.elapsedSeconds!=null&&row.gapSeconds!=null&&
-      row.elapsedSeconds!==leader.elapsedSeconds+row.gapSeconds)
-    return 'Chrono et écart incohérents avec le vainqueur.';
-   if(row.elapsedSeconds!=null&&row.elapsedSeconds<leader.elapsedSeconds)
-    return 'Un skipper possède un temps inférieur au vainqueur.';
+ const leaderIndex=rs.findIndex(row=>row.status==='finished'&&Number(row.position)===1);
+ if(leaderIndex>=0){
+  const leader=rs[leaderIndex];
+  if(Number.isSafeInteger(leader.elapsedSeconds)&&leader.elapsedSeconds>=0){
+   for(let i=0;i<rs.length;i++){
+    const row=rs[i];if(row.status!=='finished')continue;
+    if(Number.isSafeInteger(row.elapsedSeconds)&&row.elapsedSeconds>=0&&
+       Number.isSafeInteger(row.gapSeconds)&&row.gapSeconds>=0&&
+       row.elapsedSeconds!==leader.elapsedSeconds+row.gapSeconds){
+     add('time-gap','Chrono et écart incohérents pour '+quoted(row,i)+' : chrono '+row.elapsedSeconds+' s, mais chrono du vainqueur ('+leader.elapsedSeconds+' s) + écart ('+row.gapSeconds+' s) = '+(leader.elapsedSeconds+row.gapSeconds)+' s. Corrige le chrono ou l’écart.',[row.skipperId],'gapSeconds');
+    }
+    if(Number.isSafeInteger(row.elapsedSeconds)&&row.elapsedSeconds>=0&&
+       row.elapsedSeconds<leader.elapsedSeconds){
+     add('faster-than-winner','Chrono de '+quoted(row,i)+' ('+row.elapsedSeconds+' s) inférieur à celui du skipper classé 1er ('+leader.elapsedSeconds+' s). Vérifie l’ordre des rangs LPDB.',[row.skipperId,leader.skipperId],'elapsedSeconds');
+    }
+   }
   }
  }
- const timed=rs.filter(row=>row.status==='finished'&&Number.isSafeInteger(row.elapsedSeconds))
-  .sort((a,b)=>Number(a.position)-Number(b.position));
- for(let i=1;i<timed.length;i++)if(timed[i].elapsedSeconds<timed[i-1].elapsedSeconds)
-  return 'L’ordre du classement ne correspond pas aux chronos.';
- return '';
+ const timed=rs.map((row,index)=>({row,index})).filter(x=>x.row.status==='finished'&&Number.isSafeInteger(x.row.elapsedSeconds)&&x.row.elapsedSeconds>=0&&validPos(x.row.position,count))
+  .sort((a,b)=>Number(a.row.position)-Number(b.row.position));
+ for(let i=1;i<timed.length;i++)if(timed[i].row.elapsedSeconds<timed[i-1].row.elapsedSeconds){
+  const a=timed[i-1],b=timed[i];
+  add('chrono-order','Ordre des chronos incohérent : '+quoted(b.row,b.index)+' (rang #'+b.row.position+') termine avant '+quoted(a.row,a.index)+' (rang #'+a.row.position+'). Vérifie les temps ou les positions.',[a.row.skipperId,b.row.skipperId],'elapsedSeconds');
+ }
+ return issues;
 }
+function verifyRace(r,knownMembers){return diagnoseRace(r,knownMembers)[0]?.message||'';}
+
 function scoredRace(r,knownMembers){
  if(r.status!=='finished'||verifyRace(r,knownMembers))return [];
  const n=r.results.length;
@@ -247,7 +289,7 @@ function periods(entities){
  const years=[...new Set(races.map(r=>r.dateEnd.slice(0,4)))].sort().reverse();
  return {months,quarters,years};
 }
-const api={BASE,PRESTIGE,factor,tier,tierValue,historical,primary,normalize,member,prepareMemberBatch,race,resolveLinkedRace,fromPersonal,verifyRace,scoredRace,inPeriod,standings,stageBonus,periods,dateOk};
+const api={BASE,PRESTIGE,factor,tier,tierValue,historical,primary,normalize,member,prepareMemberBatch,race,resolveLinkedRace,fromPersonal,diagnoseRace,verifyRace,scoredRace,inPeriod,standings,stageBonus,periods,dateOk};
 root.RapliTeamEngine=api;
 if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);

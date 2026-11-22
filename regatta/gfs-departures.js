@@ -1,5 +1,5 @@
 /* LAB GFS · prototype 12 : comparaison de quatre heures de départ sur latitude témoin.
- * Franchissement 47°N uniquement, sur un mini-parcours Atlantique et la météo f006/f012.
+ * Franchissement 47°N uniquement, sur un mini-parcours Atlantique : f006/f012 et f012/f018.
  * Ces calculs ne prédisent ni l'équateur ni le cap de Bonne-Espérance.
  */
 (function(root,factory){
@@ -12,6 +12,7 @@
 })(typeof window!=='undefined'?window:null,function(motion){
   'use strict';
   const DEPARTURES=Object.freeze([6,7,8,9]);
+  const LATER_DEPARTURES=Object.freeze([12,13,14,15]);
   const GATE_LATITUDE=47;
   const HORIZON_HOURS=3;
   const STEP_HOURS=.5;
@@ -28,14 +29,15 @@
     if(!motion?.loadFrame||!motion?.windAt||!motion?.selectSouthHeading||!motion?.move)
       throw Error('Moteur météo/nav indisponible.');
     const first=motion.loadFrame(a),second=motion.loadFrame(b);
-    if(first.cycle!==second.cycle||first.hour!==6||second.hour!==12||
+    if(first.cycle!==second.cycle||![6,12].includes(first.hour)||
+       second.hour!==first.hour+6||
        GRID_KEYS.some(key=>first.g[key]!==second.g[key]))
-      throw Error('Prévisions NOAA +6/+12 incompatibles.');
+      throw Error('Prévisions NOAA adjacentes incompatibles.');
     return {first,second};
   }
 
   function sailToGate(first,second,startHour,gateLatitude=GATE_LATITUDE){
-    if(!DEPARTURES.includes(startHour)||
+    if(!(first.hour===6?DEPARTURES:LATER_DEPARTURES).includes(startHour)||
        !finite(gateLatitude)||gateLatitude>=motion.START.latitude||
        gateLatitude<=40)
       throw Error('Départ ou latitude témoin non autorisé.');
@@ -80,9 +82,11 @@
     throw Error('Latitude témoin non franchie dans la fenêtre de 3 heures.');
   }
 
-  function compareDepartureWindows(a,b){
+  function compareForPair(a,b,firstHour){
     const {first,second}=compatibleFrames(a,b);
-    const windows=DEPARTURES.map(startHour=>{
+    if(first.hour!==firstHour)throw Error('Échéances météo non compatibles avec cette plage de départs.');
+    const departures=firstHour===6?DEPARTURES:LATER_DEPARTURES;
+    const windows=departures.map(startHour=>{
       try{return sailToGate(first,second,startHour);}
       catch(error){
         return {startHour,valid:false,reason:String(error?.message||error).slice(0,150)};
@@ -98,6 +102,7 @@
     )[0];
     return {
       cycleUTC:a.cycleUTC,
+      sourceStartHour:firstHour,sourceEndHour:firstHour+6,
       gateLatitude:GATE_LATITUDE,
       horizonHours:HORIZON_HOURS,
       windows,validCount:valid.length,
@@ -110,8 +115,14 @@
       method:'Pilote VMG sud + GFS 0,25°, bilinéaire et interpolation temporelle; pas 30 min'
     };
   }
+  function compareDepartureWindows(a,b){
+    return compareForPair(a,b,6);
+  }
+  function compareLaterDepartureWindows(a,b){
+    return compareForPair(a,b,12);
+  }
   return {
-    DEPARTURES,GATE_LATITUDE,HORIZON_HOURS,STEP_HOURS,
-    compatibleFrames,sailToGate,compareDepartureWindows
+    DEPARTURES,LATER_DEPARTURES,GATE_LATITUDE,HORIZON_HOURS,STEP_HOURS,
+    compatibleFrames,sailToGate,compareDepartureWindows,compareLaterDepartureWindows
   };
 });

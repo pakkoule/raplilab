@@ -383,3 +383,16 @@ Le test 17 ajoute dans `regatta/gfs-motion.js` les **lignes TWA 30°, 35°, 40°
 Le navigateur recalcule les comparaisons existantes après relecture des données NOAA : les anciens résultats (11/16, 98,7 min sur le modèle à 90°–120°) peuvent changer. Si la meilleure VMG sud ne permet pas de rejoindre la latitude témoin 47°N dans les trois heures, le départ reste **non calculable**, avec un diagnostic **porte non atteinte en trois heures** accompagné de la latitude finale et de la distance restante, plutôt que « aucun angle couvert ». Ne pas confondre une couverture d'angle désormais suffisante avec la capacité de parcourir 67,5 M jusqu'à la porte témoin en 3 h.
 
 Le panneau de diagnostic du test 16 indique la nouvelle plage 30°–120° et la provenance météo GFS ; le test 17 réutilise les mêmes panneaux sans nouveau téléchargement NOAA ni changement de production. Le modèle ne comporte pas les équipements Full Pack, masques terrestres, courants, contraintes Virtual Regatta, ni le routage océanique nécessaire au passage à l'équateur ou à Bonne-Espérance. Tests adaptés et étendus dans `tests/regatta-gfs-motion.test.cjs` et `tests/regatta-gfs-departures.test.cjs`. **Validation Safari avec les vraies données NOAA à refaire**.
+
+
+## GFS 0,25° · prolongation à 6 heures vers 47°N (PR #4 · prototype 18)
+
+Le test 17 a été confirmé sur Safari iPhone le 22 novembre 2026 : les quatre départs +24 à +27 h disposent désormais de vitesses calculables grâce à la polaire ITYC provisoire 30°–120° ; mais la porte témoin de 47°N n'est atteinte pour aucun dans la fenêtre de 3 h. Distances restantes observées : **13,2 M, 19,7 M, 27,9 M et 35,1 M**. Le blocage initial était dû à une polaire trop incomplète ; le blocage actuel est la durée insuffisante de l'essai local.
+
+Le test 18 lit une nouvelle échéance **GFS f036**, et conserve les mêmes quatre départs +24/+25/+26/+27 h en prolongeant leur trajectoire à **6 h maximum**. Les six premiers pas de 30 min prennent leurs vents de f024/f030, puis les pas au-delà de +30 h de f030/f036. On recalcule à chaque pas la météo à la position courante et le cap donnant la meilleure VMG sud selon les cinq caps 170/175/180/185/190° et les polaires de test non Full Pack.
+
+Les résultats à 3 h (tests 15–17) demeurent visibles **sans modification** dans leur propre panneau. Le nouveau test affiche un temps de franchissement de 47°N seulement si celui-ci est obtenu dans les 6 heures et dans les plages GFS/ITYC vérifiées. Sinon il affiche l'heure du premier arrêt avec la raison (vent/cap hors polaire, données météo indisponibles ou bateau hors grille) et la distance restant jusqu'à 47°N, ou bien « porte non atteinte après 6 h ».
+
+Les trois échéances f024, f030 et f036 doivent appartenir **au même cycle** et avoir des grilles compatibles. Aucun temps d'arrivée ou extension artificielle des polaires n'est autorisé. Simulation limitée à une zone 52°N–40°N, 20°O–5°E, sans terres, courants ni règles VR. Toujours aucune ETA à l'équateur ni à Bonne-Espérance.
+
+Tests : `tests/regatta-gfs-motion.test.cjs`, `tests/regatta-gfs-departures.test.cjs` et `tests/regatta-gfs-source.test.cjs`. Un contrôle avec de vrais fichiers NOAA sur Safari est nécessaire. Production inchangée.

@@ -105,7 +105,7 @@ function renderMain(){
  const model=engine.standings(all(),period(),viewMode);
  const p=labelPeriod(),list=sortedItems(model.skippers);
  const el=$('team-panel');if(!el)return;
- el.innerHTML='<div class="team-heading"><div><span>LPDB · RAPLI REGATTA</span><h2>CHAMPIONNAT DE L’ÉQUIPE</h2><p>Classement officiel et barème historique, automatiquement recalculés.</p></div><img src="assets/lpdb.webp" alt="LPDB" class="team-emblem"></div>'+
+ el.innerHTML='<div class="team-heading"><div><span>LPDB · RAPLI REGATTA</span><h2>CHAMPIONNAT DE L’ÉQUIPE</h2><p>Classement officiel et barème historique, automatiquement recalculés.</p></div><img src="assets/lpdb-header-transparent.png?v=20261122-transparent" alt="LPDB" class="team-emblem"></div>'+
  selectionControls('team')+statCards([['Épreuves validées',num(model.races.length)],['Skippers classés',num(model.skippersCount)],['Points distribués',num(model.pointsTotal)]])+
  '<div class="team-subhead"><div><h3>CLASSEMENT · '+esc(p.toLocaleUpperCase('fr'))+'</h3><p>'+esc(viewMode==='main'?'Barème principal VSR et primes':'Barème historique bonus')+' · '+esc(String(list.length))+' skippers affichés</p></div><div class="team-toolbar">'+action('recalculate','↻ RECALCULER')+action('png-table','↓ PNG TABLEAU')+action('png-podium','↓ PODIUM')+action('png-top10','↓ TOP 10')+'</div></div>'+
  '<div class="team-filters team-filters--compact"><select id="team-filter" aria-label="Filtrer les skippers">'+opts([{value:'all',label:'Tous les skippers'},{value:'active',label:'Membres actifs'},{value:'former',label:'Anciens membres'}],filter)+'</select></div>'+
@@ -141,7 +141,7 @@ function teamRaceCard(r,known,now=Date.now()){
  const illustration=r.icon||p?.icon||'';
  const img=/^data:image\/(?:png|webp|jpeg|gif);base64,/iu.test(illustration)?
   '<img src="'+esc(illustration)+'" alt="Illustration de la course '+esc(r.name)+'">':
-  '<img src="assets/lpdb.webp" class="team-race-fallback-image" alt="Logo de l’équipe LPDB">';
+  '<img src="assets/lpdb-header-transparent.png?v=20261122-transparent" class="team-race-fallback-image" alt="Logo de l’équipe LPDB">';
  const menuItem=(cmd,label,danger=false)=>'<button type="button" data-team-action="'+cmd+'"'+
   (danger?' class="is-danger"':'')+'>'+label+'</button>';
  const menu='<details class="team-race-menu"><summary aria-label="Options de la course '+esc(r.name)+'" title="Options de la course">⋯</summary>'+
@@ -208,7 +208,7 @@ function renderRaces(now=Date.now()){
  const el=$('team-races-panel');if(!el)return;
  const known=new Map(members().map(m=>[m.id,m]));
  const groups=unique(rs.map(r=>r.stageGroup).filter(Boolean));
- el.innerHTML='<div class="team-heading"><div><span>LPDB · RÉSULTATS</span><h2>COURSES DE L’ÉQUIPE</h2><p>Courses, départs, classements et chronos de l’équipe LPDB.</p></div><img src="assets/lpdb.webp" class="team-emblem" alt="LPDB"></div>'+
+ el.innerHTML='<div class="team-heading"><div><span>LPDB · RÉSULTATS</span><h2>COURSES DE L’ÉQUIPE</h2><p>Courses, départs, classements et chronos de l’équipe LPDB.</p></div><img src="assets/lpdb-header-transparent.png?v=20261122-transparent" class="team-emblem" alt="LPDB"></div>'+
 
  (rs.length?'<div class="team-race-list">'+rs.map(r=>teamRaceCard(r,known,now)).join('')+'</div>':
   empty(search?'Aucune course ne correspond à ta recherche.':'Aucune course d’équipe. Ajoute la première épreuve du championnat.'))+
@@ -233,7 +233,7 @@ function refreshLiveStatuses(now=Date.now()){
 function renderMembers(){
  const ms=members().filter(m=>matchesSearch([m.name,m.status])).sort((a,b)=>(b.status==='active')-(a.status==='active')||a.name.localeCompare(b.name,'fr'));
  const el=$('team-skippers-panel');if(!el)return;
- el.innerHTML='<div class="team-heading"><div><span>LPDB · EFFECTIF</span><h2>LES SKIPPERS</h2><p>Jusqu’à 50 membres actifs · historique sans limite.</p></div><img class="team-emblem" src="assets/lpdb.webp" alt="LPDB"></div>'+
+ el.innerHTML='<div class="team-heading"><div><span>LPDB · EFFECTIF</span><h2>LES SKIPPERS</h2><p>Jusqu’à 50 membres actifs · historique sans limite.</p></div><img class="team-emblem" src="assets/lpdb-header-transparent.png?v=20261122-transparent" alt="LPDB"></div>'+
  statCards([['Effectif actif',num(ms.filter(active).length)+' / 50'],['Anciens membres',num(ms.filter(m=>!active(m)).length)],['Skippers historiques',num(ms.length)]])+
 
  (ms.length?'<div class="team-member-list">'+ms.map(m=>'<div class="team-member-card"><div><strong>'+esc(m.name)+'</strong><small>'+esc(active(m)?'Membre actif':'Ancien membre')+(m.from?' · Depuis '+esc(m.from):'')+'</small></div><div class="team-toolbar">'+action('member-'+esc(m.id),'Modifier','team-secondary')+action('profile-'+esc(m.id),'Palmarès')+'</div></div>').join('')+'</div>':empty(search?'Aucun skipper ne correspond à ta recherche.':'L’effectif est vide. Ajoute les skippers pour créer des courses.'))+
@@ -245,7 +245,7 @@ function renderStats(){
  const sortTime=(a,b,key)=>(a[key]??Infinity)-(b[key]??Infinity);
  const sorted=[...model.skippers].sort((a,b)=>statMode==='avg'?b.avg-a.avg:statMode==='finish'?b.finishRate-a.finishRate:statMode==='wins'?b.wins-a.wins:statMode==='time'?sortTime(a,b,'avgTimeSeconds'):statMode==='gap'?sortTime(a,b,'avgGapSeconds'):b.points-a.points||b.hybrid-a.hybrid)
   .map((m,i)=>({...m,statsRank:i+1})).filter(m=>matchesSearch([m.name]));
- el.innerHTML='<div class="team-heading"><div><span>LPDB · ANALYSE</span><h2>STATISTIQUES D’ÉQUIPE</h2><p>Points par course, efficacité, assiduité, victoires et palmarès.</p></div><img class="team-emblem" src="assets/lpdb.webp" alt="LPDB"></div>'+
+ el.innerHTML='<div class="team-heading"><div><span>LPDB · ANALYSE</span><h2>STATISTIQUES D’ÉQUIPE</h2><p>Points par course, efficacité, assiduité, victoires et palmarès.</p></div><img class="team-emblem" src="assets/lpdb-header-transparent.png?v=20261122-transparent" alt="LPDB"></div>'+
  selectionControls('team-stats')+statCards([['Participations',num(model.skippers.reduce((s,m)=>s+m.participations,0))],['Moyenne globale',num(model.skippers.reduce((s,m)=>s+m.points,0)/Math.max(1,model.skippers.reduce((s,m)=>s+m.participations,0)))+' pts/course'],['Fin de course',num(model.skippers.reduce((s,m)=>s+m.finished,0)/Math.max(1,model.skippers.reduce((s,m)=>s+m.participations,0))*100)+' %'],['Chronos relevés',num(model.skippers.reduce((s,m)=>s+m.timedRaces,0))]])+
  '<div class="team-subhead"><h3>COMPARATIF DE PERFORMANCE</h3><div class="team-toolbar">'+action('png-stats','↓ PNG TABLEAU')+action('png-stats-social','↓ TOP 10')+'</div></div>'+
  '<label class="team-sort-label">CRITÈRE <select id="team-stat-mode">'+opts([{value:'avg',label:'Points / course'},{value:'finish',label:'Taux de finition'},{value:'wins',label:'Victoires'},{value:'points',label:'Points totaux'},{value:'time',label:'Chrono moyen'},{value:'gap',label:'Écart moyen au vainqueur'}],statMode)+'</select></label>'+

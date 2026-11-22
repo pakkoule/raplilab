@@ -1396,10 +1396,10 @@ function selectLpdbView(view){
  }
  const globalSearch=$('lpdb-global-search');
  if(globalSearch)globalSearch.placeholder=({
-  team:'Rechercher un skipper au championnat…',
-  'team-races':'Rechercher une course, un bateau, un skipper…',
+  team:'Rechercher un skipper…',
+  'team-races':'Rechercher une course…',
   'team-skippers':'Rechercher un skipper…',
-  'team-stats':'Rechercher dans les statistiques des skippers…'
+  'team-stats':'Rechercher des statistiques…'
  })[view];
  renderTeam();
 }

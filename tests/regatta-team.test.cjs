@@ -1213,3 +1213,68 @@ test('upcoming LPDB cards show theoretical podium only for enrolled skippers wit
  assert.equal(d.querySelector('[data-team-race="'+old.id+'"] .team-forecast'),null);
  dom.window.close();
 });
+
+test('LPDB validation reports every exact error with affected skipper(s) and a correction',()=>{
+ const roster=[m('Alpha'),m('Beta')],known=new Map(roster.map(x=>[x.id,x]));
+ const invalid=r('Errors','','vsr2','finished',[
+  rr('Alpha',1),rr('Alpha',1),rr('Missing',3),rr('Beta',null,'pending')
+ ]);
+ const issues=E.diagnoseRace(invalid,known);
+ const codes=issues.map(x=>x.code);
+ for(const code of ['dateEnd','duplicate-skipper','unknown-skipper','duplicate-position','pending'])
+  assert.ok(codes.includes(code),code+' absent from '+JSON.stringify(codes));
+ assert.match(issues.find(x=>x.code==='duplicate-skipper').message,/Alpha.*lignes 1 et 2/);
+ assert.match(issues.find(x=>x.code==='unknown-skipper').message,/ligne 3.*lpdb-member-Missing/);
+ assert.match(issues.find(x=>x.code==='duplicate-position').message,/Alpha.*Alpha/);
+ assert.match(issues.find(x=>x.code==='pending').message,/Beta.*Classé.*DNF/);
+ assert.equal(E.verifyRace(invalid,known),issues[0].message,'verifyRace remains backwards-compatible');
+ const valid=r('Valid','2026-12-02','vsr2','finished',[rr('Alpha',1),rr('Beta',2)]);
+ assert.deepEqual(E.diagnoseRace(valid,known),[]);
+});
+test('LPDB validation explains inconsistent chrono and ranking values with named skippers',()=>{
+ const members=[m('Alpha'),m('Beta')],known=new Map(members.map(x=>[x.id,x]));
+ const invalid=r('Chronos','2026-12-02','hc','finished',[
+  {...rr('Alpha',1),elapsedSeconds:1000,gapSeconds:0},
+  {...rr('Beta',2),elapsedSeconds:800,gapSeconds:300,generalRank:100000001}
+ ]);
+ const issues=E.diagnoseRace(invalid,known);
+ for(const code of ['generalRank','time-gap','faster-than-winner','chrono-order']){
+  assert.ok(issues.some(x=>x.code===code),code);
+ }
+ assert.match(issues.find(x=>x.code==='time-gap').message,/Beta.*800 s.*1 000|Beta.*800 s.*1000/);
+ assert.ok(issues.find(x=>x.code==='faster-than-winner').skipperIds.includes(id('member','Beta')));
+});
+test('LPDB editor exposes multiple actionable errors and marks the exact invalid row',()=>{
+ const dom=new JSDOM(fs.readFileSync('regatta/index.html','utf8'),{runScripts:'outside-only',url:'https://example.org/regatta/'});
+ const w=dom.window,d=w.document;
+ w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};
+ w.HTMLDialogElement.prototype.close=function(){this.open=false;};
+ w.RapliTeamEngine=E;w.RapliTeamTime=require('../regatta/team-time.js');
+ w.eval(fs.readFileSync('regatta/score.js','utf8'));
+ w.eval(fs.readFileSync('regatta/team-rating.js','utf8'));
+ w.eval(fs.readFileSync('regatta/team-app.js','utf8'));
+ const roster=[m('Alpha')],race=r('Errors','2026-12-02','vsr2','finished',[
+  rr('Alpha',1),rr('Removed-skipper',2)
+ ]);
+ const saved=[];
+ w.RapliTeamUI.init({get:()=>[...roster,race],personal:()=>[],canEdit:()=>true,notify:()=>{},
+  saveRaceBundle:async(...a)=>saved.push(a),save:async()=>{},remove:async()=>{}});
+ const edit=d.querySelector('[data-team-action="race-'+race.id+'"]');
+ assert.ok(edit,'course edit action exists');edit.click();
+ const summary=d.getElementById('team-race-validation');
+ assert.match(summary.textContent,/Skipper introuvable/);
+ assert.match(summary.textContent,/Removed-skipper/);
+ const row=[...d.querySelectorAll('#team-result-rows .team-result-row')]
+  .find(x=>x.dataset.teamRow===id('member','Removed-skipper'));
+ assert.ok(row);
+ assert.equal(row.dataset.error,'true');
+ const rank=row.querySelector('[data-team-rank]');
+ rank.value='';
+ rank.dispatchEvent(new w.Event('input',{bubbles:true}));
+ assert.match(summary.textContent,/Rang LPDB invalide/);
+ assert.equal(rank.getAttribute('aria-invalid'),'true');
+ d.getElementById('team-race-form').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));
+ assert.equal(saved.length,0,'invalid course is never saved');
+ assert.ok(summary.querySelectorAll('li').length>=2);
+ dom.window.close();
+});

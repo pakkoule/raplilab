@@ -6,7 +6,7 @@ const {
   DEPARTURES,LATER_DEPARTURES,EVENING_DEPARTURES,NEXT_DAY_DEPARTURES,GATE_LATITUDE,HORIZON_HOURS,
   compatibleFrames,sailToGate,compareDepartureWindows,compareLaterDepartureWindows,compareAllDepartureWindows,
   compareEveningDepartureWindows,compareTwelveDepartureWindows,
-  compareNextDayDepartureWindows,compareSixteenDepartureWindows,diagnoseDeparture
+  compareNextDayDepartureWindows,compareSixteenDepartureWindows,diagnoseDeparture,compareExtendedNextDayDepartures
 }=require('../regatta/gfs-departures.js');
 const CYCLE='2026-11-22T00:00:00.000Z';
 function packed(values){
@@ -271,4 +271,62 @@ test('test17 : vent de 234° et 12,2 nœuds est désormais couvert par une parti
   assert.ok(comparison.windows.every(w=>!w.diagnostic||
     w.diagnostic.allowedTwaMin===30||w.diagnostic.type==='GATE_NOT_REACHED'));
   assert.ok(uv.u!==0);
+});
+
+test('test18 : quatre départs prolongés six heures, paires météo +24/+30 et +30/+36',()=>{
+  const result=compareExtendedNextDayDepartures(frame(24),frame(30),frame(36));
+  assert.equal(result.horizonHours,6);
+  assert.equal(result.fullPack,false);
+  assert.equal(result.isEquatorForecast,false);
+  assert.equal(result.windows.length,4);
+  assert.deepEqual(result.windows.map(w=>w.startHour),[24,25,26,27]);
+  assert.equal(result.validCount,4);
+  for(const candidate of result.windows){
+    assert.equal(candidate.valid,true);
+    assert.ok(candidate.elapsedMinutes>0&&candidate.elapsedMinutes<=360);
+    assert.ok(candidate.crossingForecastHour<=36);
+    assert.ok(candidate.crossingForecastHour<=candidate.startHour+6);
+    assert.ok(Math.abs(
+      (Date.parse(candidate.crossingUTC)-Date.parse(candidate.departureUTC))/60000-
+        candidate.elapsedMinutes
+    )<.1);
+  }
+});
+test('test18 : un vent défavorable conserve une distance restante sans inventer de passage',()=>{
+  const a=frame(24,{direction:234,windSpeed:12.2});
+  const b=frame(30,{direction:210,windSpeed:16});
+  const c=frame(36,{direction:195,windSpeed:18});
+  const result=compareExtendedNextDayDepartures(a,b,c);
+  assert.equal(result.windows.length,4);
+  for(const candidate of result.windows){
+    if(candidate.valid){
+      assert.ok(candidate.elapsedMinutes>0&&candidate.elapsedMinutes<=360);
+    }else{
+      assert.ok(candidate.failureType==='POLAR_UNAVAILABLE'||
+        candidate.failureType==='GATE_NOT_REACHED'||
+        candidate.failureType==='GFS_UNAVAILABLE');
+      assert.ok(Number.isFinite(candidate.distanceRemainingNm));
+      assert.ok(candidate.distanceRemainingNm>=0);
+      assert.equal(candidate.crossingUTC,undefined);
+    }
+  }
+});
+test('test18 : GFS de cycles incompatibles et domaines incohérents refusés',()=>{
+  assert.throws(()=>compareExtendedNextDayDepartures(
+    frame(24),frame(30),frame(36,{cycle:'2026-11-22T06:00:00.000Z'})
+  ),/incompatibles/);
+  assert.throws(()=>compareExtendedNextDayDepartures(frame(18),frame(24),frame(30)),
+    /nécessaires/);
+  const bad=frame(36);
+  bad.motionGrid.ni=16;
+  assert.throws(()=>compareExtendedNextDayDepartures(frame(24),frame(30),bad),
+    /Grille NOAA|incompatibles/);
+});
+test('test18 : vent nul arrête chaque trajectoire sans produire de durée fictive',()=>{
+  const a=frame(24,{windSpeed:0}),b=frame(30,{windSpeed:0}),c=frame(36,{windSpeed:0});
+  const result=compareExtendedNextDayDepartures(a,b,c);
+  assert.equal(result.validCount,0);
+  assert.equal(result.fastestStartHour,null);
+  assert.equal(result.fastestElapsedMinutes,null);
+  assert.ok(result.windows.every(w=>w.valid===false&&w.failureType==='POLAR_UNAVAILABLE'));
 });

@@ -143,8 +143,17 @@ Le championnat LPDB démarre avec la prochaine course enregistrée. **Aucun impo
 
 
 ## Regatta exclusivement LPDB (PR #4)
-- **LPDB est désormais l'unique espace visible** de Rapli Regatta, ouvert directement sur le **Championnat** : navigation interne entre **Championnat**, **Courses d'équipe**, **Skippers** et **Stats d'équipe**. Les onglets de niveau supérieur « Mes courses », « Mes statistiques » et « Mon palmarès » sont supprimés.
+- **LPDB est désormais l'unique espace visible** de Rapli Regatta, ouvert directement sur le **Championnat** : les quatre onglets **Championnat**, **Courses d'équipe**, **Skippers** et **Stats d'équipe** sont regroupés dans le header, à la place des onglets personnels. Les onglets de niveau supérieur « Mes courses », « Mes statistiques » et « Mon palmarès » sont supprimés.
 - Les anciens panneaux personnels sont masqués et rendus **inertes** ; leurs données locales et cloud ne sont **pas supprimées**, pour préserver les illustrations, les métadonnées (Trophée Jules Verne inclus) et les données nécessaires aux courses LPDB déjà associées.
 - Le formulaire d'équipe peut toujours **réutiliser les détails d'une ancienne fiche ou d'un record**, sans proposer d'accéder au journal personnel, de créer une nouvelle course personnelle ou de supprimer les archives. Les actions « Ouvrir ma course » / « Créer ma course » ont disparu du menu « … ».
 - Les **réglages des puces foil bateau et VSR** restent accessibles par le bouton **⚙ PUCES BATEAUX** dans « Courses d'équipe ». Le bouton Retour revient directement aux courses d'équipe.
 - Les anciennes routes de navigation vers les courses personnelles, leurs statistiques ou leur palmarès ne sont plus accessibles par l'interface, y compris par des appels directs au sélecteur de vues. Les mécanismes de stockage et de synchronisation conservent leur compatibilité.
+
+
+## Header LPDB, recherche globale et boutons d'action (PR #4)
+- La navigation des **4 onglets LPDB** est dans le **header**, à côté du logo Rapli Regatta. Les anciens « Mes courses », « Mes statistiques » et « Mon palmarès » restent retirés de la navigation visible.
+- Sous le header, la grande **barre de recherche** retrouve son emplacement d'origine et sa présentation argentée, accompagnée des boutons d'action compacts et du menu Profil/administrateur (rétabli hors des archives masquées).
+- **Recherche contextuelle et persistante** : Championnat et Stats → skipper ; Courses d'équipe → course, bateau, catégorie VSR, statut et participants ; Skippers → pseudo ou statut. Recherche accent-insensible ; effacement via × ou Échap, sans retirer le focus pendant la saisie.
+- **Boutons contextuels** de la barre : Championnat → recalcul des classements ; Courses d'équipe → recalcul des notes, nouvelle course et personnalisation des puces bateaux ; Skippers → ajout individuel ou par bloc. Synchronisation cloud disponible dans toutes les rubriques ; droits d'édition respectés.
+- Sur mobile : onglets en **grille 2×2 dans le header**, puis recherche pleine largeur et barre compacte des icônes/profil. Sur desktop : onglets alignés dans le header et recherche + icônes + profil sur la même ligne.
+- Suppression des boutons d'ajout et de recalcul en double dans les panneaux Courses d'équipe et Skippers ; les exports PNG propres au Championnat et aux Stats restent dans leurs rubriques. Les réglages de foil sont toujours accessibles depuis les commandes du header LPDB.

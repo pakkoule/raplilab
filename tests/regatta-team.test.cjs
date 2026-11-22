@@ -766,7 +766,7 @@ test('LPDB can link Trophée Jules Verne record using latest attempt without sha
  assert.equal(linked.personalRaceId,record.id);
  assert.equal(linked.name,'Trophée Jules Verne');
  assert.equal(linked.boatClass,'ULTIM');
- assert.equal(linked.vsr,'hc');
+ assert.equal(linked.vsr,'vsr1','LPDB VSR remains independent for a Record');
  assert.equal(linked.start,'2026-11-16','use most recent record departure');
  assert.equal(linked.startTime,'13:20');
  assert.equal(linked.dateEnd,'2026-12-29','team closure must not come from personal record');
@@ -780,6 +780,7 @@ test('LPDB can link Trophée Jules Verne record using latest attempt without sha
  assert.equal(updated.startTime,'09:00');
  assert.equal(updated.dateEnd,'2026-12-29');
  assert.equal(updated.status,'live');
+ assert.equal(updated.vsr,'vsr1');
  assert.equal(updated.results.length,1);
  assert.equal(updated.equipment,'');
  assert.equal(E.resolveLinkedRace(linked,null).name,'Trophée Jules Verne');
@@ -811,11 +812,13 @@ test('Jules Verne record is selectable from LPDB creation on iPhone-sized DOM',(
  assert.equal(doc.getElementById('team-race-name').value,'Trophée Jules Verne');
  assert.equal(doc.getElementById('team-race-start').value,'2026-11-19');
  assert.equal(doc.getElementById('team-race-start-time').value,'17:45');
- assert.equal(doc.getElementById('team-race-vsr').value,'hc');
+ assert.equal(doc.getElementById('team-race-vsr').value,'vsr2','team default category is not forced by record');
+ assert.equal(doc.getElementById('team-race-vsr').disabled,false,'VSR category stays editable for a linked Record');
  assert.equal(doc.getElementById('team-race-date').disabled,false,'LPDB closure must remain editable');
  assert.equal(doc.getElementById('team-race-name').disabled,true,'record owns its name');
  assert.equal(doc.getElementById('team-race-date').value,'');
  assert.match(doc.getElementById('team-linked-help').textContent,/Record personnel lié/);
+ doc.getElementById('team-race-vsr').value='hc';
  doc.getElementById('team-race-date').value='2026-12-05';
  assert.equal(doc.getElementById('team-race-date').value,'2026-12-05');
  dom.window.close();

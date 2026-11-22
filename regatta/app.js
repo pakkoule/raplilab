@@ -320,6 +320,42 @@ async function removeTeamEntity(id){
  teamRecords=teamRecords.filter(r=>r.id!==id);
  renderTeam();window.RapliSharedCollection?.changed?.();
 }
+let teamRaceBundleBusy=false;
+async function saveTeamRaceBundle(record,extraMembers=[]){
+ if(!window.RapliSharedCollection?.canEdit?.())throw Error('Connexion administrateur requise.');
+ if(storageRecoveryBlocked)throw Error('Stockage indisponible : aucune course enregistrée.');
+ if(teamRaceBundleBusy)throw Error('Enregistrement déjà en cours.');
+ const incoming=extraMembers.map(teamEngine.member);
+ const savedRace=teamEngine.race(record);
+ if(!savedRace||incoming.some(m=>!m||m.status!=='active'))throw Error('Course ou skippers invalides.');
+ const existing=teamRecords.filter(x=>x.type==='team-member');
+ if(incoming.length){
+  const check=teamEngine.prepareMemberBatch(incoming.map(m=>m.name).join('\n'),existing);
+  if(check.invalid.length||check.duplicates.length||check.overflow||check.accepted.length!==incoming.length||
+   new Set(incoming.map(m=>m.id)).size!==incoming.length||
+   incoming.some(m=>teamRecords.some(row=>row.id===m.id)))throw Error('Doublon ou effectif de 50 dépassé.');
+ }
+ const byId=new Map([...existing,...incoming].map(m=>[m.id,m]));
+ if(savedRace.status==='finished'){
+  const error=teamEngine.verifyRace(savedRace,byId);if(error)throw Error(error);
+ }
+ teamRaceBundleBusy=true;
+ try{
+  if(db){
+   const tx=db.transaction('races','readwrite'),store=tx.objectStore('races');
+   incoming.forEach(m=>store.put(m));
+   store.put(savedRace);
+   await done(tx);
+  }else{
+   localStorage.setItem('rapli-regatta-v1',JSON.stringify([...rows,
+    ...teamRecords.filter(row=>row.id!==savedRace.id),...incoming,savedRace]));
+  }
+  teamRecords=teamEngine.normalize([...teamRecords.filter(row=>row.id!==savedRace.id),...incoming,savedRace]);
+  renderTeam();
+  window.RapliSharedCollection?.changed?.();
+ }finally{teamRaceBundleBusy=false;}
+}
+
 /* Commit the entire pasted roster in one IndexedDB transaction, then signal one cloud sync.
    On error nothing is appended to in-memory team data. */
 let bulkMemberWriteBusy=false;
@@ -2195,7 +2231,7 @@ const bridge=window.RapliModuleBridge={module:'regatta',ready:false,
  }};
 window.RapliRegatta={getCount:()=>rows.length,teamCount:()=>teamRecords.length};
 window.RapliTeamUI?.init?.({get:()=>teamRecords,personal:()=>rows,
- save:saveTeamEntity,saveBatch:saveTeamMembersBatch,remove:removeTeamEntity,
+ save:saveTeamEntity,saveBatch:saveTeamMembersBatch,saveRaceBundle:saveTeamRaceBundle,remove:removeTeamEntity,
  openPersonal:openPersonalCourse,newPersonalFromTeam:startPersonalFromTeam,
  showTeam:()=>selectWorkspace('team-races'),
  canEdit:()=>window.RapliSharedCollection?.canEdit?.(),notify:toast});

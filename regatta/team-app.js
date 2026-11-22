@@ -830,6 +830,7 @@ function change(ev){
  if(el.id==='team-race-status'||el.id==='team-race-vsr'||el.id==='team-race-date'){
   if(draft){draft.vsr=$('team-race-vsr').value;draft.status=$('team-race-status').value;editorRows();}
  }
+ if(el.dataset.teamImportGeneral!==undefined&&rankingImport){previewImport();return;}
  if(el.dataset.teamImportSelect!==undefined&&rankingImport){
   const item=rankingImport.rows[Number(el.dataset.teamImportSelect)];
   if(item){item.skipperId=el.value;previewImport();}

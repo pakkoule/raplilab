@@ -172,13 +172,23 @@ html:not([data-rapli-role="editor"]) #rapli-module-cloud-save{display:none!impor
             <strong data-gfs-point-2-dir>—</strong>
           </div>
         </div>
+        <section class="gfs-spatial-panel" aria-label="Vent interpolé entre quatre points de grille NOAA">
+          <div class="gfs-spatial-title"><strong>VENT ENTRE LES MAILLES · BILINÉAIRE</strong><span>47,125°N · 9,125°O</span></div>
+          <p data-gfs-spatial-status>Lis une échéance GFS pour calculer le vent sur une position intermédiaire du golfe de Gascogne.</p>
+          <div class="gfs-spatial-values" data-gfs-spatial-values hidden>
+            <span><small>Vitesse calculée</small><strong data-gfs-spatial-speed>—</strong></span>
+            <span><small>Direction d'origine</small><strong data-gfs-spatial-direction>—</strong></span>
+            <span><small>Composantes U/V</small><strong data-gfs-spatial-components>—</strong></span>
+          </div>
+          <small>Interpolation spatiale des quatre nœuds voisins du GFS 0,25°. Il s'agit d'un calcul sur les vents prévus, pas d'une observation ni d'un routage.</small>
+        </section>
         <section class="gfs-temporal-panel" aria-label="Interpolations temporelles GFS">
           <strong>ÉVOLUTION DU VENT · ENTRE DEUX PRÉVISIONS</strong>
           <p data-gfs-interpolation-status>Lis +6 h puis +12 h sur le même cycle GFS pour calculer les vents intermédiaires à +9 h.</p>
           <div data-gfs-interpolation-results hidden></div>
-          <small>Interpolation des composantes U/V réelles, uniquement entre deux échéances vérifiées du même cycle. Pas d'interpolation spatiale, de nouvelle prévision NOAA ni de routage.</small>
+          <small>Interpolation des composantes U/V réelles, uniquement entre deux échéances vérifiées du même cycle. Interpolation temporelle indépendante de la lecture bilinéaire spatiale ci-dessus ; pas de nouvelle prévision NOAA ni de routage.</small>
         </section>
-        <p class="gfs-wind-note">Vitesses en nœuds · directions météorologiques d'origine. Chaque point utilise le nœud de grille le plus proche. Pour limiter les accès NOAA, espace les tests d'au moins 10 secondes.</p>
+        <p class="gfs-wind-note">Vitesses en nœuds · directions météorologiques d'origine. Les trois points de référence utilisent le nœud le plus proche ; le quatrième est interpolé spatialement. Pour limiter les accès NOAA, espace les tests d'au moins 10 secondes.</p>
       </section>
       <p class="gfs-lab-limit">Source NOAA NOMADS · vents à 10 m réellement décodés · échéance choisie avec marge de publication, sans simulation de navigation à ce stade.</p>
     </div>

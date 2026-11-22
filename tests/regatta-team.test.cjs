@@ -124,18 +124,19 @@ test('linked personal race supplies shared details without overwriting team resu
  assert.equal(E.resolveLinkedRace(linked,null).name,'Route du Rhum');
  assert.deepEqual(E.normalize([linked])[0],linked);
 });
-test('personal/team linking is available in both editors and respects read-only access',()=>{
+test('team courses may reuse existing historical records without exposing personal editors',()=>{
  const html=fs.readFileSync('regatta/index.html','utf8');
  const app=fs.readFileSync('regatta/app.js','utf8');
  const teamApp=fs.readFileSync('regatta/team-app.js','utf8');
  const d=new JSDOM(html).window.document;
  for(const id of ['team-race-personal','team-linked-help','team-race-class','team-race-start','team-race-date'])assert.ok(d.getElementById(id));
- assert.match(html,/data-action="team-link"/);
  assert.match(teamApp,/link-existing/);
- assert.match(teamApp,/new-personal/);
- assert.match(teamApp,/open-personal/);
- assert.match(app,/linkTeamAfterPersonalSave/);
- assert.match(app,/startPersonalFromTeam/);
+ assert.match(teamApp,/unlink-personal/);
+ assert.ok(!html.includes('data-team-action="new-personal"'));
+ assert.ok(!html.includes('data-team-action="open-personal"'));
+ assert.ok(!teamApp.includes("menuItem('new-personal-"));
+ assert.ok(!teamApp.includes("menuItem('open-personal-"));
+ assert.match(app,/linkTeamAfterPersonalSave/,'historical records are still loaded for compatibility');
  assert.match(app,/renderTeam\(\)/);
 });
 
@@ -173,7 +174,7 @@ test('Rapli Regatta becomes an LPDB-only workspace with four team subsections',(
  for(const id of ['races','stats','honors']){
   assert.equal(d.getElementById('view-'+id),null,'no visible personal tab for '+id);
   const historic=d.getElementById(id+'-panel');
-  assert.ok(historic&&historic.hidden&&historic.inert,'legacy '+id+' preserved but inaccessible');
+  assert.ok(historic&&historic.hidden&&historic.hasAttribute('inert'),'legacy '+id+' preserved but inaccessible');
  }
  assert.ok(d.getElementById('colors-panel').hidden,'foil settings can be reached from team courses');
  assert.equal(d.getElementById('vsr-header-ranking').hidden,true,'personal VSR widget is hidden');

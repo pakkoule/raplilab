@@ -48,6 +48,19 @@ test('URL NOAA f006 : vent 10m U/V + coordonnées atlantiques bornées', ()=>{
   assert.equal(url.searchParams.get('bottomlat'),'40');
 });
 
+test('trois échéances GFS autorisées sur le même cycle',()=>{
+ const cycle=chooseCycle(Date.parse('2026-11-22T08:00:00Z'));
+ for(const hour of [6,12,18]){
+   const url=new URL(buildUrl(cycle,hour));
+   assert.equal(url.searchParams.get('file'),
+     'gfs.t00z.pgrb2.0p25.f'+String(hour).padStart(3,'0'));
+   assert.equal(url.searchParams.get('var_UGRD'),'on');
+   assert.equal(url.searchParams.get('lev_10_m_above_ground'),'on');
+ }
+ assert.throws(()=>buildUrl(cycle,0),/Échéance GFS/);
+ assert.throws(()=>buildUrl(cycle,120),/Échéance GFS/);
+});
+
 test('GRIB2 : exige les deux composantes du vent sans fabriquer des vitesses', ()=>{
   assert.deepEqual(inspectGrib2(winds()),{
     edition:2, messages:2, fields:2, variables:['UGRD','VGRD']

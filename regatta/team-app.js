@@ -90,6 +90,17 @@ const medal=r=>r===1?'🥇':r===2?'🥈':r===3?'🥉':num(r);
    Skipper profiles remain accessible from the Skippers tab. */
 const podiumClass=(rank,eligible=true)=>eligible?({1:'team-podium-gold',2:'team-podium-silver',3:'team-podium-bronze'}[rank]||''):'';
 const skipperLabel=name=>'<span class="team-skipper-name">'+esc(name)+'</span>';
+/* Shared rating display: native conic arc, 0=empty / 100=full.
+   Keep semantic note details for accessibility and provisional markers. */
+function scoreRing(value,{size='small',label='Note',provisional=false,mention=''}={}){
+ const raw=Number(value);
+ if(value===null||value===undefined||value===''||!Number.isFinite(raw))return '<span class="team-note-unavailable">—</span>';
+ const score=Math.max(0,Math.min(100,raw));
+ const formatted=num(score);
+ const aria=label+' : '+formatted+' sur 100'+(provisional?' · provisoire':'')+(mention?' · '+mention:'');
+ return '<span class="team-score-ring team-score-ring--'+esc(size)+'" role="img" aria-label="'+esc(aria)+'" title="'+esc(aria)+'" style="--score:'+score+'"><span aria-hidden="true">'+esc(formatted)+'</span></span>'+
+  (provisional?'<span class="team-note-provisional" aria-label="Note provisoire" title="Note provisoire">*</span>':'');
+}
 const clockLabel=value=>Number.isSafeInteger(value)&&value>=0?clock.formatTime(value):'—';
 const pngClock=value=>clockLabel(value).replace(/(\d{2})j (\d{2})h (\d{2})m (\d{2})s/u,'$1j $2:$3:$4').replace(/(\d{2})h (\d{2})m (\d{2})s/u,'$1:$2:$3');
 function sortedItems(items){
@@ -198,7 +209,7 @@ function teamRaceCard(r,known,now=Date.now()){
  (podium.length>1?'<div class="team-race-podium">'+podium.slice(1).map(x=>
  '<div><span>'+medal(x.position)+'</span><strong>'+esc(names.get(x.skipperId)||'Skipper')+'</strong></div>').join('')+'</div>':'')+
  '<div class="team-race-average" title="Moyenne des notes disponibles, équipement exclu"><span>NOTE MOYENNE DE LA COURSE</span>'+
- '<strong>'+(notes.average!==null?num(notes.average)+'/100':'—')+'</strong>'+
+ '<div class="team-race-average-value">'+scoreRing(notes.average,{size:'medium',label:'Note moyenne de la course'})+'</div>'+
  '<small>'+(notes.rated?num(notes.rated)+' / '+num(notes.eligible)+' skippers notés':'En attente du classement général et de la flotte VR')+'</small></div>'+
  '<div class="team-race-points"><div><span>POINTS PRINCIPAUX</span><strong>'+num(main)+'</strong></div>'+
  '<div><span>POINTS HISTORIQUES</span><strong>'+num(historical)+'</strong></div></div>':'')+
@@ -786,7 +797,7 @@ function showProfile(id){
  '<div class="team-table-wrap"><table class="team-table"><thead><tr><th>COURSE</th><th>RANG LPDB</th><th>GÉNÉRAL VR</th><th>VSR</th><th>CHRONO</th><th>ÉCART</th><th>NOTE</th><th>POINTS</th></tr></thead><tbody>'+
  s.records.slice().sort((a,b)=>b.dateEnd.localeCompare(a.dateEnd)).map(r=>{
   const note=notes.get(r.raceId);
-  return '<tr><td>'+esc(r.raceName)+'<small>'+esc(r.dateEnd)+'</small></td><td>'+ (r.dnf?'DNF':r.rank)+'</td><td>'+(r.generalRank!=null?'#'+num(r.generalRank):'—')+'</td><td>'+esc(r.vsr.toUpperCase())+'</td><td>'+clockLabel(r.elapsedSeconds)+'</td><td>'+clockLabel(r.gapSeconds)+'</td><td>'+(note?.available?num(note.value)+'/100':'—')+'</td><td>'+num(viewMode==='historic'?r.historic:r.main)+'</td></tr>';
+  return '<tr><td>'+esc(r.raceName)+'<small>'+esc(r.dateEnd)+'</small></td><td>'+ (r.dnf?'DNF':r.rank)+'</td><td>'+(r.generalRank!=null?'#'+num(r.generalRank):'—')+'</td><td>'+esc(r.vsr.toUpperCase())+'</td><td>'+clockLabel(r.elapsedSeconds)+'</td><td>'+clockLabel(r.gapSeconds)+'</td><td>'+(note?.available?scoreRing(note.value,{provisional:note.provisional,mention:note.mention}):'<span class="team-note-unavailable">—</span>')+'</td><td>'+num(viewMode==='historic'?r.historic:r.main)+'</td></tr>';
  }).join('')+'</tbody></table></div>':empty('Aucune participation sur cette période.'));
  $('team-profile-body').innerHTML=content;
  $('team-profile-dialog').showModal();
@@ -805,7 +816,7 @@ function showRaceRanking(id){
  '<div class="team-table-wrap"><table class="team-table"><thead><tr><th>RANG LPDB</th><th>SKIPPER</th><th>GÉNÉRAL VR</th><th>CHRONO TOTAL</th><th>ÉCART AU 1ER</th><th>NOTE /100</th><th>PRINCIPAL</th><th>HISTORIQUE</th></tr></thead><tbody>'+
  rows.map(row=>{
   const points=byId.get(row.skipperId),mark=notes.scores.get(row.skipperId);
-  const note=mark?.available?'<strong class="team-individual-note" title="'+esc(mark.mention+(mark.provisional?' · provisoire':''))+'">'+num(mark.value)+'/100'+(mark.provisional?' *':'')+'</strong>':'<span title="'+esc(mark?.reason||'Note en attente du rang général VR et de l’effectif global')+'">—</span>';
+  const note=mark?.available?scoreRing(mark.value,{provisional:mark.provisional,mention:mark.mention}):'<span class="team-note-unavailable" title="'+esc(mark?.reason||'Note en attente du rang général VR et de l’effectif global')+'">—</span>';
   return '<tr class="'+podiumClass(row.position,row.status==='finished')+'"><td>'+(row.status==='dnf'?'DNF':row.position??'—')+'</td><td>'+skipperLabel(names.get(row.skipperId)||'Skipper inconnu')+'</td>'+ 
    '<td>'+(row.generalRank!=null?'#'+num(row.generalRank):'—')+'</td>'+
    '<td>'+clockLabel(row.elapsedSeconds)+'</td><td>'+(row.gapSeconds!=null?'+ '+clockLabel(row.gapSeconds):'—')+'</td>'+ 

@@ -221,22 +221,22 @@ test('bilan de seize départs et rejet des cycles NOAA divergents',()=>{
  assert.throws(()=>sailToGate(first,second,27,40.1),/non franchie/);
 });
 
-test('diagnostic test16 : explique les angles hors des polaires sans créer de vitesse',()=>{
+test('diagnostic test16 : angle inférieur à 30° reste hors polaire, sans vitesse inventée',()=>{
   const {first,second}=compatibleFrames(
-    frame(24,{direction:240,windSpeed:30}),
-    frame(30,{direction:240,windSpeed:30})
+    frame(24,{direction:195,windSpeed:30}),
+    frame(30,{direction:195,windSpeed:30})
   );
   const report=diagnoseDeparture(first,second,24);
   assert.equal(report.type,'ANGLE_OUTSIDE_POLAR');
   assert.equal(report.startHour,24);
   assert.ok(report.windKnots>29.9&&report.windKnots<30.1);
-  assert.equal(report.windDirection,240);
-  assert.ok(report.twaMax<90);
-  assert.equal(report.allowedTwaMin,90);
+  assert.equal(report.windDirection,195);
+  assert.ok(report.twaMax<30);
+  assert.equal(report.allowedTwaMin,30);
   assert.equal(report.allowedTwaMax,120);
   const result=compareNextDayDepartureWindows(
-    frame(24,{direction:240,windSpeed:30}),
-    frame(30,{direction:240,windSpeed:30})
+    frame(24,{direction:195,windSpeed:30}),
+    frame(30,{direction:195,windSpeed:30})
   );
   assert.equal(result.validCount,0);
   assert.ok(result.windows.every(w=>!w.valid&&w.diagnostic?.type==='ANGLE_OUTSIDE_POLAR'));
@@ -252,4 +252,23 @@ test('diagnostic test16 : les départs valides ne sont pas déclarés hors polai
  const comparison=compareNextDayDepartureWindows(frame(24),frame(30));
  assert.equal(comparison.validCount,4);
  assert.ok(comparison.windows.every(w=>w.valid&&w.diagnostic===undefined));
+});
+
+test('test17 : vent de 234° et 12,2 nœuds est désormais couvert par une partie des angles 30–120°',()=>{
+  const from=234,knots=12.2;
+  const uv=components(from,knots);
+  const synthetic=(hour)=>frame(hour,{direction:from,windSpeed:knots});
+  const {first,second}=compatibleFrames(synthetic(24),synthetic(30));
+  const wind=motion.windAt(first,second,24,motion.START.latitude,motion.START.longitude);
+  const choice=motion.selectSouthHeading(wind);
+  assert.ok(choice.validCount>0);
+  assert.ok(choice.selected.twa>=30&&choice.selected.twa<=120);
+  const report=diagnoseDeparture(first,second,24);
+  assert.notEqual(report.type,'ANGLE_OUTSIDE_POLAR');
+  const comparison=compareNextDayDepartureWindows(synthetic(24),synthetic(30));
+  assert.equal(comparison.windows.length,4);
+  assert.ok(comparison.windows.every(w=>w.valid||w.reason));
+  assert.ok(comparison.windows.every(w=>!w.diagnostic||
+    w.diagnostic.allowedTwaMin===30||w.diagnostic.type==='GATE_NOT_REACHED'));
+  assert.ok(uv.u!==0);
 });

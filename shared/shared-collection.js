@@ -275,7 +275,7 @@
         overlay.setAttribute('aria-hidden', 'false');
         // In LPDB the notification is now a persistent profile-menu detail,
         // not a floating toast that vanishes before a skipper can read it.
-        if (overlay.closest('#rapliProfileMenu')) {
+        if (typeof overlay.closest === 'function' && overlay.closest('#rapliProfileMenu')) {
           statusHideTimer = null;
         } else {
           statusHideTimer = setTimeout(() => {

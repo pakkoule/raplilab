@@ -1137,3 +1137,54 @@
  .lpdb-shell .team-table td,
  .team-dialog .team-table td{padding-top:10px;padding-bottom:10px}
 }
+
+/* LPDB rating rings — same proportional navy/cyan/violet/pink look as PNGs.
+   A score of 0 has no colored arc, 100 has a completely colored circle. */
+.lpdb-shell .team-score-ring,
+.team-dialog .team-score-ring{
+ --size:49px;--thickness:8px;
+ display:inline-grid;place-items:center;position:relative;isolation:isolate;
+ vertical-align:middle;flex:0 0 auto;
+ width:var(--size);height:var(--size);aspect-ratio:1;
+ border-radius:50%;
+ background:conic-gradient(from 0deg,
+  #39adff 0deg,#7770d9 var(--score-mid),
+  #db48ae var(--score-end),#d7dce2 var(--score-end) 360deg);
+ box-shadow:0 2px 7px #122f4d24;
+}
+.lpdb-shell .team-score-ring::before,
+.team-dialog .team-score-ring::before{
+ content:"";position:absolute;inset:var(--thickness);border-radius:50%;
+ background:#172c54;z-index:-1;
+}
+.lpdb-shell .team-score-ring>span,
+.team-dialog .team-score-ring>span{
+ color:#fff!important;font:800 15px/1 Poppins,system-ui,sans-serif;
+ letter-spacing:-.03em;font-variant-numeric:tabular-nums;
+ text-shadow:none;white-space:nowrap;
+}
+.lpdb-shell .team-score-ring--medium,.team-dialog .team-score-ring--medium{
+ --size:66px;--thickness:10px;
+}
+.lpdb-shell .team-score-ring--medium>span,
+.team-dialog .team-score-ring--medium>span{font-size:19px}
+.lpdb-shell .team-race-average-value{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto}
+.lpdb-shell .team-race-average{min-height:80px}
+.lpdb-shell .team-race-average>small{font-size:9px}
+.lpdb-shell .team-note-unavailable,.team-dialog .team-note-unavailable{color:#858b90;font:700 14px Poppins,sans-serif}
+.lpdb-shell .team-note-provisional,.team-dialog .team-note-provisional{
+ display:inline-block;vertical-align:top;margin-left:2px;color:#a55f76;
+ font:800 11px/1 Poppins,sans-serif;
+}
+#team-classification-body .team-score-ring,
+#team-profile-body .team-score-ring{--size:49px;--thickness:8px}
+#team-classification-body .team-table td,
+#team-profile-body .team-table td{vertical-align:middle}
+@media(max-width:700px){
+ #team-classification-body .team-score-ring,
+ #team-profile-body .team-score-ring{--size:43px;--thickness:7px}
+ #team-classification-body .team-score-ring>span,
+ #team-profile-body .team-score-ring>span{font-size:13px}
+ .lpdb-shell .team-score-ring--medium{--size:58px;--thickness:9px}
+ .lpdb-shell .team-score-ring--medium>span{font-size:17px}
+}

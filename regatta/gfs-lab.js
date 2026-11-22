@@ -49,45 +49,65 @@
   });
 
   const windRun=root.querySelector('[data-gfs-wind-run]');
+  const windHour=root.querySelector('[data-gfs-wind-hour]');
   const windStatus=root.querySelector('[data-gfs-wind-status]');
-  const windValues=root.querySelector('[data-gfs-wind-values]');
+  const windPoints=root.querySelector('[data-gfs-wind-points]');
+  const windMeta=root.querySelector('[data-gfs-wind-meta]');
   const windText=(name,value)=>{
-    const cell=root.querySelector('[data-gfs-wind-'+name+']');
-    if(cell)cell.textContent=value;
+    const node=root.querySelector('[data-gfs-'+name+']');
+    if(node)node.textContent=value;
   };
+  windHour.addEventListener('change',()=>{
+    windPoints.hidden=true;
+    windMeta.hidden=true;
+    windStatus.dataset.state='idle';
+    windStatus.textContent='Échéance +'+windHour.value+' h sélectionnée · lance une nouvelle lecture.';
+  });
   windRun.addEventListener('click',async()=>{
+    const hour=windHour.value;
+    if(!['6','12','18'].includes(hour))return;
     windRun.disabled=true;
-    windValues.hidden=true;
+    windHour.disabled=true;
+    windPoints.hidden=true;
+    windMeta.hidden=true;
     windStatus.dataset.state='loading';
-    windStatus.textContent='Décodage du GRIB2 NOAA et lecture du vent en cours…';
+    windStatus.textContent='Lecture GFS +'+hour+' h, trois points atlantiques…';
     const controller=new AbortController();
     const timer=setTimeout(()=>controller.abort(),25000);
     try{
-      const response=await fetch('/.netlify/functions/gfs-wind',{
+      const response=await fetch('/.netlify/functions/gfs-wind?forecastHour='+hour,{
         signal:controller.signal,cache:'no-store'
       });
       let result;
       try{result=await response.json();}catch(_){throw Error('Réponse météo non lisible.');}
-      if(!response.ok||!result.ok||result.wind?.verifiedWind!==true){
-        throw Error(result.error||('Lecture NOAA non confirmée (HTTP '+response.status+')'));
+      if(!response.ok||!result.ok)throw Error(result.error||('Lecture NOAA non confirmée (HTTP '+response.status+')'));
+      if(result.forecastHour!==Number(hour)||!Array.isArray(result.points)||result.points.length!==3)
+        throw Error('Réponse météo incomplète ou échéance incorrecte.');
+      for(let i=0;i<result.points.length;i++){
+        const wind=result.points[i];
+        if(wind.verifiedWind!==true||!Number.isFinite(wind.speedKnots)||
+           !Number.isFinite(wind.directionFromDeg)||
+           !Number.isFinite(wind.uMs)||!Number.isFinite(wind.vMs)){
+          throw Error('Lecture GFS invalide au point '+(i+1)+'.');
+        }
+        windText('point-'+i+'-speed',wind.speedKnots.toFixed(1)+' nds');
+        windText('point-'+i+'-dir',wind.directionFromDeg.toFixed(0)+'°');
       }
-      const wind=result.wind;
-      if(!Number.isFinite(wind.speedKnots)||!Number.isFinite(wind.directionFromDeg)||
-         !Number.isFinite(wind.uMs)||!Number.isFinite(wind.vMs))throw Error('Valeurs décodées invalides.');
-      windText('speed',wind.speedKnots.toFixed(1)+' nds');
-      windText('direction',wind.directionFromDeg.toFixed(0)+'°');
-      windText('components',wind.uMs.toFixed(2)+' / '+wind.vMs.toFixed(2)+' m/s');
-      windText('valid',frenchTime(result.validUTC));
-      windValues.hidden=false;
+      windText('wind-cycle',frenchTime(result.cycleUTC));
+      windText('wind-valid',frenchTime(result.validUTC));
+      windPoints.hidden=false;
+      windMeta.hidden=false;
       windStatus.dataset.state='success';
-      windStatus.textContent='Vent NOAA décodé et validé · '+(result.cached?'lecture en cache · ':'')+
-        'point de grille à '+wind.nearestGridpoint.distanceKm.toFixed(1)+' km.';
+      windStatus.textContent='3 vents réels décodés sur le même cycle NOAA · '+
+        (result.cached?'résultat en cache.':'lecture validée.');
     }catch(error){
       windStatus.dataset.state='error';
-      windStatus.textContent='Aucune mesure confirmée : '+String(error.message||error);
+      windStatus.textContent='Lecture indisponible : '+String(error.message||error)+
+        ' Aucune vitesse fictive affichée.';
     }finally{
       clearTimeout(timer);
       windRun.disabled=false;
+      windHour.disabled=false;
     }
   });
 })();

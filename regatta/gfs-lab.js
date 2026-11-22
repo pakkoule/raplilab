@@ -86,6 +86,43 @@
   };
   const verifiedFrames=new Map();
   const interpolationEngine=window.RapliGfsInterpolation;
+  const trackStatus=root.querySelector('[data-gfs-demo-track-status]');
+  const trackResults=root.querySelector('[data-gfs-demo-track-results]');
+  const renderDemoTrack=()=>{
+    trackResults.replaceChildren();
+    if(!interpolationEngine?.interpolateDemonstrationTrack||
+       !verifiedFrames.has(6)||!verifiedFrames.has(12)){
+      trackResults.hidden=true;
+      trackStatus.dataset.state='idle';
+      trackStatus.textContent='Lis +6 h et +12 h du même cycle pour calculer le vent aux trois positions témoins.';
+      return;
+    }
+    try{
+      const track=interpolationEngine.interpolateDemonstrationTrack(
+        verifiedFrames.get(6),verifiedFrames.get(12)
+      );
+      for(const step of track){
+        const card=document.createElement('div');
+        card.className='gfs-demo-track-step';
+        const heading=document.createElement('strong');
+        heading.textContent=step.label+' · +'+step.forecastHour+' h · '+frenchTime(step.validUTC);
+        const location=document.createElement('small');
+        const longitude=Math.abs(step.longitude).toFixed(3);
+        location.textContent=step.latitude.toFixed(3)+'°N · '+longitude+'°O';
+        const wind=document.createElement('b');
+        wind.textContent=step.speedKnots.toFixed(1)+' nds · '+step.directionFromDeg.toFixed(0)+'°';
+        card.append(heading,location,wind);
+        trackResults.appendChild(card);
+      }
+      trackResults.hidden=false;
+      trackStatus.dataset.state='success';
+      trackStatus.textContent='3 positions et heures témoins calculées à partir des vrais vecteurs GFS du même cycle.';
+    }catch(error){
+      trackResults.hidden=true;
+      trackStatus.dataset.state='error';
+      trackStatus.textContent='Parcours météo témoin indisponible : '+String(error.message||error);
+    }
+  };
   const spaceTimeStatus=root.querySelector('[data-gfs-spatiotemporal-status]');
   const spaceTimeResults=root.querySelector('[data-gfs-spatiotemporal-results]');
   const renderSpaceTime=()=>{
@@ -241,6 +278,7 @@
       verifiedFrames.set(result.forecastHour,result);
       renderInterpolations();
       renderSpaceTime();
+      renderDemoTrack();
       windStatus.dataset.state='success';
       windStatus.textContent='3 vents réels décodés sur le même cycle NOAA · '+
         (result.cached?'résultat en cache.':'lecture validée.');

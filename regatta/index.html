@@ -576,12 +576,32 @@ html:not([data-rapli-role="editor"]) #rapli-module-cloud-save{display:none!impor
   <form id="team-race-form">
     <header class="team-dialog-head"><h2 id="team-race-dialog-title">NOUVELLE COURSE D'ÉQUIPE</h2><button type="button" data-team-close class="team-dialog-close" aria-label="Fermer">×</button></header>
     <div class="team-dialog-scroll">
+      <div class="team-linked-race">
+        <label>FICHE « MES COURSES » ASSOCIÉE
+          <select id="team-race-personal" aria-label="Associer cette course à une fiche personnelle"><option value="">Aucune · course indépendante</option></select>
+        </label>
+        <div class="team-toolbar">
+          <button type="button" class="team-action team-secondary" data-team-action="link-existing">UTILISER SES DÉTAILS</button>
+          <button type="button" class="team-action team-secondary" data-team-action="open-personal">OUVRIR MES COURSES</button>
+          <button type="button" class="team-action team-secondary" data-team-action="new-personal">CRÉER MA FICHE PERSONNELLE</button>
+          <button type="button" class="team-action team-secondary" data-team-action="unlink-personal">DISSOCIER</button>
+        </div>
+        <div id="team-linked-help" class="team-footnote">Associe une course personnelle pour partager automatiquement ses détails (nom, bateau, VSR, dates…). Les résultats et les points de l’équipe restent indépendants.</div>
+        <div id="team-linked-image" class="team-linked-image" hidden></div>
+      </div>
       <div class="team-form-grid">
         <label class="team-wide">NOM DE LA COURSE<input id="team-race-name" maxlength="160" required placeholder="Ex. Pornichet Select"></label>
         <label>DATE D'ARRIVÉE<input id="team-race-date" type="date"></label>
         <label>CATÉGORIE VSR<select id="team-race-vsr"><option value="vsr3">VSR 3</option><option value="vsr2">VSR 2</option><option value="vsr1">VSR 1</option><option value="hc">Hors catégorie</option></select></label>
         <label>STATUT<select id="team-race-status"><option value="planned">À venir</option><option value="live">En cours</option><option value="finished">Terminée et validée</option></select></label>
         <label>COMPÉTITION / ÉTAPES (FACULTATIF)<input id="team-race-group" maxlength="100" placeholder="Ex. Tour du monde 2027"></label>
+        <label>CLASSE DE BATEAU<input id="team-race-class" maxlength="100" placeholder="Ex. IMOCA"></label>
+        <label>TYPE DE PARCOURS<select id="team-race-route"><option value="">Non renseigné</option><option value="tour-du-monde">Tour du monde</option><option value="transatlantique">Transatlantique</option><option value="cotier">Côtier</option><option value="etapes">Course à étapes</option><option value="record-distance">Record de distance</option><option value="autre">Autre parcours</option></select></label>
+        <label>DATE DE DÉPART<input id="team-race-start" type="date"></label>
+        <label>HEURE DE DÉPART<input id="team-race-start-time" type="time"></label>
+        <label>HEURE D'ARRIVÉE<input id="team-race-end-time" type="time"></label>
+        <label>ÉQUIPEMENT<select id="team-race-equipment"><option value="">Non renseigné</option><option value="pdd">PDD</option><option value="half-fp">1/2 FP</option><option value="full-pack">Full Pack</option></select></label>
+        <label>FUSEAU HORAIRE<input id="team-race-timezone" maxlength="80" placeholder="Ex. Europe/Paris"></label>
       </div>
       <div class="team-dialog-participants">
         <div class="team-subhead"><h3>PARTICIPANTS ET POSITIONS</h3><strong id="team-participants-count">0 / 50 participants</strong></div>

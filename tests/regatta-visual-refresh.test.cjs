@@ -177,7 +177,7 @@ test('old color settings migrate without loss; custom labels and foil properties
  assert.equal(custom.classColors.IMOCA,'#445566');
 });
 test('persistent Regatta collection and search continue unchanged',()=>{
- assert.ok(js.includes("getState:()=>({records:rows,logos:colorSettingsState()})"));
+ assert.ok(js.includes("getState:()=>({records:[...rows,...teamRecords],logos:colorSettingsState()})"));
  assert.ok(js.includes("storeClassSettings({...classSettings,[mapKey]:styles})"));
  assert.ok(js.includes("window.RapliSharedCollection?.changed?.()"));
  assert.ok(html.includes('src="search.js"'));

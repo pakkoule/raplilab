@@ -31,7 +31,7 @@
     if(!motion?.loadFrame||!motion?.windAt||!motion?.selectSouthHeading||!motion?.move)
       throw Error('Moteur météo/nav indisponible.');
     const first=motion.loadFrame(a),second=motion.loadFrame(b);
-    if(first.cycle!==second.cycle||![6,12,18,24].includes(first.hour)||
+    if(first.cycle!==second.cycle||![6,12,18,24,30].includes(first.hour)||
        second.hour!==first.hour+6||
        GRID_KEYS.some(key=>first.g[key]!==second.g[key]))
       throw Error('Prévisions NOAA adjacentes incompatibles.');

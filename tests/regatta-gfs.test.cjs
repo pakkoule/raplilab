@@ -8,8 +8,8 @@ const css=fs.readFileSync('regatta/style.css','utf8');
 const from=js.indexOf('/* GFS windows are anchored');
 const to=js.indexOf('function raceCardSchedule(r,status){',from);
 assert.ok(from>=0&&to>from,'GFS functions are present before the card helper');
-const {gfsWeatherState,gfsCardMarkup,updateGfsWidgets}=
- new Function(js.slice(from,to)+';return {gfsWeatherState,gfsCardMarkup,updateGfsWidgets};')();
+const {gfsWeatherState,gfsCardMarkup,updateGfsWidgets,gfsBriefingForDeparture}=
+ new Function(js.slice(from,to)+';return {gfsWeatherState,gfsCardMarkup,updateGfsWidgets,gfsBriefingForDeparture,gfsBriefingMarkup,gfsBriefingForRace,updateGfsBriefings};')();
 
 const state=date=>gfsWeatherState(Date.parse(date));
 
@@ -77,6 +77,57 @@ test('GFS timer updates progress and countdown in place without remounting image
   updateGfsWidgets(Date.parse('2026-11-22T11:00:00Z'));
   assert.equal(widget.dataset.gfsStage,'ready');
   assert.equal(widget.querySelector('[data-gfs-percent]').textContent,'100 %');
+ }finally{
+  if(original===undefined)delete global.document;
+  else global.document=original;
+  dom.window.close();
+ }
+});
+
+test('upcoming course briefing uses only GFS cycles usable before departure',()=>{
+ const winter=gfsBriefingForDeparture(
+  Date.parse('2026-11-22T16:00:00Z'),Date.parse('2026-11-22T07:00:00Z'));
+ assert.equal(winter.usableLocal,'10:40');
+ assert.equal(winter.consultLocal,'12:00');
+ assert.equal(winter.followingLocal,'16:40');
+ assert.equal(winter.loadsAtDeparture,true);
+ assert.equal(winter.phase,'pending');
+ const review=gfsBriefingForDeparture(
+  Date.parse('2026-11-22T16:00:00Z'),Date.parse('2026-11-22T12:00:00Z'));
+ assert.equal(review.phase,'review');
+ const summer=gfsBriefingForDeparture(
+  Date.parse('2026-07-22T15:00:00Z'),Date.parse('2026-07-22T07:00:00Z'));
+ assert.equal(summer.usableLocal,'11:40');
+ assert.equal(summer.consultLocal,'13:00');
+ assert.equal(summer.followingLocal,'17:40');
+ assert.equal(summer.loadsAtDeparture,false);
+ assert.equal(gfsBriefingForDeparture(Date.now()-10000),null);
+});
+test('pre-departure GFS timetable stays correct across spring and autumn clock changes',()=>{
+ const spring=gfsBriefingForDeparture(
+  Date.parse('2026-03-29T09:00:00Z'),Date.parse('2026-03-29T05:00:00Z'));
+ assert.equal(spring.usableLocal,'05:40');
+ assert.equal(spring.followingLocal,'11:40');
+ const autumn=gfsBriefingForDeparture(
+  Date.parse('2026-10-25T10:00:00Z'),Date.parse('2026-10-25T05:00:00Z'));
+ assert.equal(autumn.usableLocal,'04:40');
+ assert.equal(autumn.followingLocal,'10:40');
+});
+test('briefing updates a status label without replacing race photo or card',()=>{
+ const original=global.document;
+ const dom=new JSDOM('<section id="cards"><article><img id="poster">'+
+  '<aside data-gfs-briefing data-gfs-ready="3000" data-gfs-departure="20000" data-gfs-briefing-phase="pending">'+
+  '<span data-gfs-briefing-status>À PRÉPARER</span></aside></article></section>');
+ try{
+  global.document=dom.window.document;
+  const image=dom.window.document.querySelector('#poster');
+  const briefing=dom.window.document.querySelector('[data-gfs-briefing]');
+  updateGfsBriefings(3000);
+  assert.equal(briefing.dataset.gfsBriefingPhase,'review');
+  assert.equal(briefing.querySelector('[data-gfs-briefing-status]').textContent,'À CONSULTER');
+  assert.equal(dom.window.document.querySelector('#poster'),image);
+  updateGfsBriefings(20000);
+  assert.equal(briefing.querySelector('[data-gfs-briefing-status]').textContent,'DÉPART À VÉRIFIER');
  }finally{
   if(original===undefined)delete global.document;
   else global.document=original;

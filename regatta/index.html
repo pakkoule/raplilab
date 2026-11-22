@@ -172,7 +172,13 @@ html:not([data-rapli-role="editor"]) #rapli-module-cloud-save{display:none!impor
             <strong data-gfs-point-2-dir>—</strong>
           </div>
         </div>
-        <p class="gfs-wind-note">Vitesses en nœuds · directions météorologiques d'origine. Lecture du point de grille le plus proche, sans interpolation ni routage. Pour limiter les accès NOAA, change d'échéance en espaçant les tests d'au moins 10 secondes.</p>
+        <section class="gfs-temporal-panel" aria-label="Interpolations temporelles GFS">
+          <strong>ÉVOLUTION DU VENT · ENTRE DEUX PRÉVISIONS</strong>
+          <p data-gfs-interpolation-status>Lis +6 h puis +12 h sur le même cycle GFS pour calculer les vents intermédiaires à +9 h.</p>
+          <div data-gfs-interpolation-results hidden></div>
+          <small>Interpolation des composantes U/V réelles, uniquement entre deux échéances vérifiées du même cycle. Pas d'interpolation spatiale, de nouvelle prévision NOAA ni de routage.</small>
+        </section>
+        <p class="gfs-wind-note">Vitesses en nœuds · directions météorologiques d'origine. Chaque point utilise le nœud de grille le plus proche. Pour limiter les accès NOAA, espace les tests d'au moins 10 secondes.</p>
       </section>
       <p class="gfs-lab-limit">Source NOAA NOMADS · vents à 10 m réellement décodés · échéance choisie avec marge de publication, sans simulation de navigation à ce stade.</p>
     </div>
@@ -332,6 +338,7 @@ html:not([data-rapli-role="editor"]) #rapli-module-cloud-save{display:none!impor
 <script defer src="honors.js"></script>
 <script defer src="search.js"></script>
 <script defer src="app.js"></script>
+<script defer src="gfs-interpolation.js"></script>
 <script defer src="gfs-lab.js"></script>
 <script defer src="../shared/photo-zoom.js"></script>
 <script defer src="../shared/admin-access.js"></script>

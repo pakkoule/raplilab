@@ -155,6 +155,87 @@ function compareFixedHeadings(first,second){
    note:'Comparaison limitée, aucune route optimisée, polaires non Full Pack.'
  };
 }
+
+/**
+ * Test 10 — pilote GREEDY VMG sud : recalcule le cap chaque demi-heure.
+ * Il ne s'agit NI d'une optimisation globale ni d'un routage record.
+ * Un cap hors polaires n'est jamais extrapolé ; aucune trajectoire n'est
+ * publiée si le segment manque de météo valide.
+ */
+function selectSouthHeading(wind){
+  if(!wind||!finite(wind.knots)||!finite(wind.from))
+    throw Error('Vecteur météo indisponible.');
+  const candidates=CANDIDATE_HEADINGS.map(heading=>{
+    const twa=Math.abs(norm(wind.from-heading+180)-180);
+    try{
+      const speed=polarSpeed(wind.knots,twa);
+      const southVmg=speed*Math.cos((heading-180)*Math.PI/180);
+      if(!finite(speed)||!finite(southVmg)||speed<=0)
+        throw Error('Vitesse bateau incohérente.');
+      return {heading,valid:true,twa,boatKnots:speed,southVmg};
+    }catch(error){
+      return {heading,valid:false,reason:String(error?.message||error).slice(0,120)};
+    }
+  });
+  const valid=candidates.filter(x=>x.valid).sort((a,b)=>
+    b.southVmg-a.southVmg||
+    Math.abs(a.heading-180)-Math.abs(b.heading-180)||
+    a.heading-b.heading
+  );
+  if(!valid.length)throw Error('Aucun cap autorisé par les polaires provisoires.');
+  return {selected:valid[0],validCount:valid.length,candidates};
+}
+
+function simulateAdaptiveHeading(first,second){
+  const a=loadFrame(first),b=loadFrame(second);
+  const keys=['ni','nj','latitudeOfFirstGridPoint','longitudeOfFirstGridPoint',
+    'iDirectionIncrement','jDirectionIncrement','iScansNegatively',
+    'jScansPositively','jPointsAreConsecutive','alternativeRowScanning'];
+  if(keys.some(key=>a.g[key]!==b.g[key])||a.cycle!==b.cycle)
+    throw Error('Grilles NOAA ou cycles non compatibles.');
+  let pos={...START},distanceNm=0,previousHeading=null,changes=0;
+  const steps=[];
+  for(let i=0;i<6;i++){
+    const hour=6+i*.5;
+    const wind=windAt(a,b,hour,pos.latitude,pos.longitude);
+    const choice=selectSouthHeading(wind);
+    const selected=choice.selected;
+    if(previousHeading!==null&&previousHeading!==selected.heading)changes++;
+    previousHeading=selected.heading;
+    const next=move(pos,selected.heading,selected.boatKnots,.5);
+    // Refuser le segment final s'il sort du domaine, même si le point de départ était valide.
+    windAt(a,b,hour+.5,next.latitude,next.longitude);
+    steps.push({
+      hour,heading:selected.heading,
+      latitude:round(pos.latitude,5),longitude:round(pos.longitude,5),
+      windKnots:round(wind.knots,1),windDirection:round(wind.from,0),
+      twa:round(selected.twa,1),
+      boatKnots:round(selected.boatKnots,1),
+      southVmg:round(selected.southVmg,1),
+      validCount:choice.validCount
+    });
+    distanceNm+=selected.boatKnots*.5;
+    pos=next;
+  }
+  const southProgressNm=(START.latitude-pos.latitude)*60;
+  const comparison=compareFixedHeadings(first,second);
+  return {
+    cycleUTC:first.cycleUTC,
+    startHour:6,endHour:9,stepHours:.5,
+    steps,headingChanges:changes,
+    distanceNm:round(distanceNm,1),
+    southProgressNm:round(southProgressNm,1),
+    finalLatitude:round(pos.latitude,5),
+    finalLongitude:round(pos.longitude,5),
+    bestFixedHeading:comparison.best.heading,
+    bestFixedSouthNm:comparison.best.southProgressNm,
+    deltaSouthNm:round(southProgressNm-comparison.best.southProgressNm,1),
+    provisionalPolar:true,greedy:true,optimized:false,
+    method:'VMG sud instantanée maximale parmi 5 caps à chaque pas de 30 min',
+    note:'Pas de routage global, pas de prise en compte des terres, des courants ni du Full Pack.'
+  };
+}
 return {TWS,ANGLES,POLAR,START,HEADING,CANDIDATE_HEADINGS,decodeBase64Float32,loadFrame,gridIndex,
-  sampleGrid,windAt,polarSpeed,move,simulateMotion,compareFixedHeadings};
+  sampleGrid,windAt,polarSpeed,move,simulateMotion,compareFixedHeadings,
+  selectSouthHeading,simulateAdaptiveHeading};
 });

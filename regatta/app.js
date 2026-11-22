@@ -337,6 +337,7 @@ async function replaceRows(next){if(storageRecoveryBlocked)throw Error('Stockage
      el.textContent=delta<0&&el.dataset.raceClock==='countdown'?'DÉPART IMMINENT':formatRaceClock(delta);
    });
    updateGfsWidgets(now);
+   updateGfsBriefings(now);
  }
  function raceClockMarkup(row){
    const clock=raceClockInfo(row);
@@ -410,6 +411,77 @@ const GFS_ROUTING_DELAY_MS=30*60*1000;
 const GFS_PARIS_CLOCK=new Intl.DateTimeFormat('fr-FR',{
  timeZone:'Europe/Paris',hour:'2-digit',minute:'2-digit',hourCycle:'h23'
 });
+/* Pre-start briefing uses the same UTC GFS schedule, evaluated at the
+   scheduled departure. The estimate is not a forecast or a live VR feed. */
+const GFS_CYCLE_MS=6*60*60*1000;
+const GFS_ANCHOR_MS=(3*60+40)*60000;
+const GFS_PARIS_DAY=new Intl.DateTimeFormat('fr-FR',{
+ timeZone:'Europe/Paris',day:'2-digit',month:'2-digit'
+});
+function gfsBriefingForDeparture(departure,timestamp=Date.now()){
+ if(!Number.isFinite(departure)||departure<=timestamp)return null;
+ const last=GFS_ANCHOR_MS+
+  Math.floor((departure-GFS_ANCHOR_MS)/GFS_CYCLE_MS)*GFS_CYCLE_MS;
+ const usable=last+GFS_LOAD_ESTIMATE_MS<=departure?last:last-GFS_CYCLE_MS;
+ const following=usable+GFS_CYCLE_MS;
+ const loadsAtDeparture=following<=departure;
+ const consultation=usable+GFS_LOAD_ESTIMATE_MS;
+ const clock=ms=>GFS_PARIS_CLOCK.format(new Date(ms));
+ const day=ms=>GFS_PARIS_DAY.format(new Date(ms));
+ return {usable,following,consultation,loadsAtDeparture,
+  usableLocal:clock(usable),usableDay:day(usable),
+  consultLocal:clock(consultation),followingLocal:clock(following),
+  followingDay:day(following),
+  phase:timestamp<consultation?'pending':'review',
+  warning:loadsAtDeparture?
+   'Nouveau GFS peu avant le départ : chargement probablement en cours.':
+   'Pas de nouveau cycle GFS prévu avant le départ.'};
+}
+function gfsBriefingForRace(r,timestamp=Date.now()){
+ const latest=r.kind==='record'?recordEngine.latestStart(r.attempts):null;
+ const day=latest?.date||r.start,time=latest?.time||r.startTime;
+ if(!day||!time)return null;
+ const departure=localDateTime(day,time,r.timezone);
+ const result=gfsBriefingForDeparture(departure,timestamp);
+ return result?{...result,departure}:null;
+}
+function gfsBriefingMarkup(r){
+ const plan=gfsBriefingForRace(r);
+ if(!plan)return '<aside class="race-gfs-briefing" aria-label="Briefing météo GFS avant départ">'+
+  '<div class="race-gfs-briefing-header"><strong>☁ BRIEFING MÉTÉO</strong>'+
+  '<span>À PRÉPARER</span></div>'+
+  '<p class="race-gfs-briefing-empty">Vérifie la date et l’heure de départ pour afficher les cycles GFS utiles.</p></aside>';
+ return '<aside class="race-gfs-briefing" data-gfs-briefing data-gfs-ready="'+plan.consultation+
+  '" data-gfs-departure="'+plan.departure+'" data-gfs-briefing-phase="'+plan.phase+
+  '" aria-label="Briefing météo avant départ, horaires GFS estimés" title="Horaires estimés à partir des cycles GFS, sans confirmation de chargement Virtual Regatta.">'+
+  '<div class="race-gfs-briefing-header"><strong><span aria-hidden="true">☁</span> BRIEFING MÉTÉO <small>· estimation</small></strong>'+
+  '<span data-gfs-briefing-status>'+(plan.phase==='pending'?'À PRÉPARER':'À CONSULTER')+'</span></div>'+
+  '<div class="race-gfs-briefing-grid">'+
+  '<div class="race-gfs-briefing-chip"><span>DERNIER GFS EXPLOITABLE*</span>'+
+  '<strong>'+plan.usableLocal+'</strong>'+
+  '<small>'+plan.usableDay+' · à consulter vers '+plan.consultLocal+'</small></div>'+
+  '<div class="race-gfs-briefing-chip"><span>GFS SUIVANT</span>'+
+  '<strong>'+plan.followingLocal+'</strong>'+
+  '<small>'+plan.followingDay+' · '+(plan.loadsAtDeparture?'chargement au départ':'après le départ')+'</small></div>'+
+  '</div>'+
+  '<div class="race-gfs-briefing-tip"><span aria-hidden="true">ⓘ</span>'+
+  '<span>'+plan.warning+'</span></div>'+
+  '<p class="race-gfs-briefing-disclaimer">* Cycle théoriquement intégré avant le départ ; vérifie les vents dans VR.</p>'+
+  '</aside>';
+}
+/* A small text-only refresh: photos and the rest of each card stay mounted. */
+function updateGfsBriefings(timestamp=Date.now()){
+ for(const el of document.querySelectorAll('#cards [data-gfs-briefing]')){
+  const ready=Number(el.dataset.gfsReady),departure=Number(el.dataset.gfsDeparture);
+  const phase=timestamp>=departure?'expired':timestamp>=ready?'review':'pending';
+  if(el.dataset.gfsBriefingPhase===phase)continue;
+  el.dataset.gfsBriefingPhase=phase;
+  const label=el.querySelector('[data-gfs-briefing-status]');
+  if(label)label.textContent=phase==='expired'?'DÉPART À VÉRIFIER':
+   phase==='review'?'À CONSULTER':'À PRÉPARER';
+ }
+}
+
 function gfsWeatherState(timestamp=Date.now()){
  const now=Number.isFinite(timestamp)?timestamp:Date.now();
  const utcDay=Math.floor(now/86400000)*86400000;
@@ -607,7 +679,7 @@ function card(r){
    raceCardMenu(r,status)+'</div>'+
    '<div class="card-boat">'+safe(r.boat)+(r.routeType?' · '+
     safe(ROUTE_TYPES[r.routeType]):'')+'</div></div>'+
-   (isLive?gfsCardMarkup():rankContent)+
+   (isLive?gfsCardMarkup():(status==='planned'||(record&&recordHasFutureStart(r)))?gfsBriefingMarkup(r):rankContent)+
    (record?recordCardContent(r):'')+
    (!score.available&&!record&&(status==='dnf'||status==='finished')?
     '<p class="score-pending">'+safe(score.reason||'Note en attente')+'</p>':'')+

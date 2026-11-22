@@ -60,6 +60,13 @@ test('une paire de champs réellement décodés produit un vent au point demand�
   assert.deepEqual(result.nearestGridpoint,{latitude:48.5,longitude:-8,distanceKm:0});
 });
 
+test('GFS convertit la longitude NOAA 352° en 8° ouest',async()=>{
+  const decoder=fakeDecoder();
+  decoder.nearestGridpoint=()=>({index:1,latitude:48.5,longitude:352,distanceKm:0});
+  const sample=await decodeWindPoint(Buffer.alloc(40),SAMPLE,decoder);
+  assert.equal(sample.nearestGridpoint.longitude,-8);
+});
+
 test('aucune valeur affichée si les champs sont absents ou corrompus',async()=>{
   const decoder=fakeDecoder();
   decoder.parseFields=()=>[];

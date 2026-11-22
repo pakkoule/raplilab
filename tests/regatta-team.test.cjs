@@ -1367,7 +1367,7 @@ test('LPDB quick-create skipper stays provisional until course save and avoids d
 
 test('LPDB VSR foil badge always keeps VSR 1, VSR 2 and VSR 3 on one line',()=>{
  const css=fs.readFileSync('regatta/team.css','utf8');
- const start=css.lastIndexOf('.lpdb-shell .team-race-tags .vsr-badge{');
+ const start=css.indexOf('\n.lpdb-shell .team-race-tags .vsr-badge{');
  assert.ok(start!==-1,'LPDB VSR override exists');
  const rule=css.slice(start,css.indexOf('}',start));
  for(const condition of ['white-space:nowrap','min-width:max-content','flex:0 0 auto','overflow-wrap:normal']){

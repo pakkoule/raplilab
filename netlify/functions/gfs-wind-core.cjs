@@ -29,7 +29,7 @@ function isTenMetreWind(field, product) {
       ![2, 3].includes(product.parameterNumber)) return false;
   // Surface 103 = altitude au-dessus du sol. Template 4.0, octets 23–28.
   const s = field.section4;
-  if (!s || s.length < 28 || s[22] !== 103 || s[23] === 255) return false;
+  if (!s || s.length < 28 || s[7] !== 0 || s[8] !== 0 || s[22] !== 103 || s[23] === 255) return false;
   const scale = s[23] & 0x7f;
   const negativeScale = (s[23] & 0x80) !== 0;
   const raw = ((s[24] & 0x7f) * 16777216 + s[25] * 65536 + s[26] * 256 + s[27]);

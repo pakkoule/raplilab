@@ -526,6 +526,7 @@ async function exportStandings(rows,title,{style='table',limit=0,prefix='lpdb-cl
  if(!rows.length){notify('Aucun classement à exporter.',true);return;}
  const img=await logoImage();
  const source=limit?rows.slice(0,limit):rows;
+ const raceTimed=rows.some(r=>r.raceResult===true);
  const batch=style==='table'?25:Math.max(3,limit||10);
  const pages=Math.ceil(source.length/batch);
  for(let p=0;p<pages;p++){
@@ -559,9 +560,10 @@ async function exportStandings(rows,title,{style='table',limit=0,prefix='lpdb-cl
     ctx.fillStyle='#faffff';ctx.font='850 30px Poppins,sans-serif';
     ctx.fillText(s.name.slice(0,15).toUpperCase(),x+wid/2,y+166);
     ctx.fillStyle='#72fffa';ctx.font='900 38px Poppins,sans-serif';
-    ctx.fillText(num(s.points)+' PTS',x+wid/2,y+231);
+    ctx.fillText((s.exportValue||num(s.points)+' PTS'),x+wid/2,y+231);
     ctx.fillStyle='#afdae3';ctx.font='600 18px Poppins,sans-serif';
-    ctx.fillText(num(s.participations)+' courses · '+num(s.wins)+' victoire(s)',x+wid/2,y+283);
+    ctx.fillText(raceTimed?('CHRONO '+clockLabel(s.elapsedSeconds)).slice(0,28):num(s.participations)+' courses · '+num(s.wins)+' victoire(s)',x+wid/2,y+283);
+    if(raceTimed){ctx.fillText('ÉCART +'+clockLabel(s.gapSeconds),x+wid/2,y+324);}
    });
   }else{
    const topY=topList?640:445,headY=topList?619:427;
@@ -573,23 +575,23 @@ async function exportStandings(rows,title,{style='table',limit=0,prefix='lpdb-cl
     ctx.fillStyle='#fff';ctx.font='900 41px Poppins,sans-serif';
     ctx.fillText(segment[0].name.slice(0,22).toUpperCase(),105,490);
     ctx.fillStyle='#ffde7c';ctx.textAlign='right';ctx.font='900 51px Poppins,sans-serif';
-    ctx.fillText(num(segment[0].points)+' PTS',w-105,490);
+    ctx.fillText(segment[0].exportValue||num(segment[0].points)+' PTS',w-105,490);
    }
    ctx.fillStyle='#bdedf1';ctx.textAlign='left';ctx.font='700 22px Poppins,sans-serif';
    ctx.fillText('RANG',70,headY);ctx.fillText('SKIPPER',200,headY);
-   ctx.textAlign='right';ctx.fillText('COURSES',w-520,headY);ctx.fillText('VICT.',w-315,headY);ctx.fillText('POINTS',w-85,headY);
+   ctx.textAlign='right';ctx.fillText(raceTimed?'CHRONO':'COURSES',w-520,headY);ctx.fillText(raceTimed?'ÉCART':'ÉCART MOY.',w-315,headY);ctx.fillText('POINTS',w-85,headY);
    segment.forEach((s,i)=>{
     const y=topY+i*unit;
     drawRounded(ctx,58,y,w-116,unit-5,10,topList&&i===0?'#244d50':i%2?'#0a2432':'#183846');
     if(topList&&i===0){ctx.strokeStyle='#e7bd46';ctx.lineWidth=3;ctx.strokeRect(60,y+1,w-120,unit-8);}
     const rank=Number.isInteger(s.rank)?s.rank:p*batch+i+1;
-    const labels=[s.dnf?'DNF':String(rank),s.name,String(s.participations??0),String(s.wins??0),num(s.points??0)];
+    const labels=[s.dnf?'DNF':String(rank),s.name,raceTimed?clockLabel(s.elapsedSeconds):String(s.participations??0),raceTimed?(s.gapSeconds!=null?'+'+clockLabel(s.gapSeconds):'—'):clockLabel(s.avgGapSeconds),s.exportValue||num(s.points??0)];
     ctx.textBaseline='middle';
     ctx.fillStyle=rank===1&&!s.dnf?'#f5ca63':rank===2&&!s.dnf?'#d6dce6':rank===3&&!s.dnf?'#d5a277':'#f5f8fa';
     ctx.textAlign='left';ctx.font='800 29px Poppins,sans-serif';ctx.fillText(labels[0],88,y+unit/2);
     ctx.fillStyle='#f8ffff';ctx.font='750 24px Poppins,sans-serif';ctx.fillText(labels[1].slice(0,20),200,y+unit/2);
     ctx.textAlign='right';ctx.font='650 23px Poppins,sans-serif';
-    ctx.fillText(labels[2],w-520,y+unit/2);ctx.fillText(labels[3],w-315,y+unit/2);
+    ctx.font='600 19px Poppins,sans-serif';ctx.fillText(labels[2],w-520,y+unit/2);ctx.fillText(labels[3],w-315,y+unit/2);
     ctx.font='850 29px Poppins,sans-serif';ctx.fillStyle='#69f3ed';ctx.fillText(labels[4],w-85,y+unit/2);
    });
   }
@@ -618,22 +620,26 @@ function doExport(kind,arg){
  }
  if(kind==='png-top10'){style='social';limit=10;}
  if(kind==='png-stats'||kind==='png-stats-social'){
-  list=[...model.skippers].sort((a,b)=>statMode==='avg'?b.avg-a.avg:statMode==='finish'?b.finishRate-a.finishRate:statMode==='wins'?b.wins-a.wins:b.points-a.points);
-  list=list.map((s,i)=>({...s,rank:i+1,points:statMode==='avg'?s.avg:statMode==='finish'?s.finishRate:statMode==='wins'?s.wins:s.points}));
+  list=[...model.skippers].sort((a,b)=>statMode==='avg'?b.avg-a.avg:statMode==='finish'?b.finishRate-a.finishRate:statMode==='wins'?b.wins-a.wins:statMode==='time'?(a.avgTimeSeconds??Infinity)-(b.avgTimeSeconds??Infinity):statMode==='gap'?(a.avgGapSeconds??Infinity)-(b.avgGapSeconds??Infinity):b.points-a.points);
+  list=list.map((s,i)=>({...s,rank:i+1,points:statMode==='avg'?s.avg:statMode==='finish'?s.finishRate:statMode==='wins'?s.wins:statMode==='time'?s.avgTimeSeconds??0:statMode==='gap'?s.avgGapSeconds??0:s.points,exportValue:statMode==='time'?clockLabel(s.avgTimeSeconds):statMode==='gap'?clockLabel(s.avgGapSeconds):null}));
   if(kind==='png-stats-social'){style='social';limit=10;}
   filename+='-stat-'+statMode;
-  title=({avg:'Points par course',finish:'Taux de finition',wins:'Victoires',points:'Points cumulés'})[statMode]+' · '+labelPeriod();
+  title=({avg:'Points par course',finish:'Taux de finition',wins:'Victoires',points:'Points cumulés',time:'Chrono moyen',gap:'Écart moyen'})[statMode]+' · '+labelPeriod();
  }
- if(kind==='race'){
+ if(kind==='race'||kind==='race-top10'||kind==='race-podium'){
   const race=races().find(x=>x.id===arg);
   if(!race)return;
   const scores=engine.scoredRace(race,new Map(members().map(m=>[m.id,m])));
   list=scores.sort((a,b)=>(a.rank??999)-(b.rank??999)).map((s,i)=>({
    name:members().find(m=>m.id===s.skipperId)?.name||'Inconnu',rank:s.rank??null,dnf:s.dnf,
-   points:viewMode==='historic'?s.historic:s.main,participations:1,wins:Number(s.rank===1)
+   points:viewMode==='historic'?s.historic:s.main,participations:1,wins:Number(s.rank===1),raceResult:true,
+   elapsedSeconds:s.elapsedSeconds??null,gapSeconds:s.gapSeconds??null
   }));
   if(!list.length){notify('Valide tous les résultats avant d’exporter la course.',true);return;}
-  filename='lpdb-course-'+race.id;return exportStandings(list,race.name+' · '+race.dateEnd,{style,prefix:filename});
+  filename='lpdb-course-'+race.id;
+  if(kind==='race-top10'){style='social';limit=10;}
+  if(kind==='race-podium'){style='social';limit=3;}
+  return exportStandings(list,race.name+' · '+race.dateEnd,{style,limit,prefix:filename});
  }
  if(kind==='stage'){
   const group=arg;
@@ -703,7 +709,9 @@ async function click(ev){
  if(cmd.startsWith('member-'))return openMember(cmd.slice(7));
  if(cmd.startsWith('profile-'))return showProfile(cmd.slice(8));
  if(cmd.startsWith('delete-race-'))return void deleteRace(cmd.slice(12));
- if(cmd.startsWith('export-race-'))return void doExport('race',cmd.slice(12));
+ if(cmd.startsWith('export-race-top10-'))return void doExport('race-top10',cmd.slice('export-race-top10-'.length));
+ if(cmd.startsWith('export-race-podium-'))return void doExport('race-podium',cmd.slice('export-race-podium-'.length));
+ if(cmd.startsWith('export-race-'))return void doExport('race',cmd.slice('export-race-'.length));
  if(cmd.startsWith('stage-'))return stageDialog(decodeURIComponent(cmd.slice(6)));
  if(cmd.startsWith('png-stage-'))return void doExport('stage',decodeURIComponent(cmd.slice(10)));
  if(cmd.startsWith('png-'))return void doExport(cmd);

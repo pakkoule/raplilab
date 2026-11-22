@@ -28,7 +28,7 @@ function primary(vsr,n,rank){
 }
 /* Bulk import: one pasted row = one skipper, with a shared uniqueness rule for active and former members. */
 function prepareMemberBatch(text,existing=[]){
- const seen=new Set((Array.isArray(existing)?existing:[]).map(x=>fold(x?.name||x)).filter(Boolean));
+ const seen=new Set((Array.isArray(existing)?existing:[]).map(x=>fold(x?.name||x).replace(/\s+/gu,' ')).filter(Boolean));
  const accepted=[],duplicates=[],invalid=[];
  const lines=String(text??'').split(/\r\n|\n|\r/);
  for(let i=0;i<lines.length;i++){

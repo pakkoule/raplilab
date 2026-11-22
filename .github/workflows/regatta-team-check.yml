@@ -30,6 +30,7 @@ jobs:
         run: |
           node --check regatta/team-engine.js
           node --check regatta/team-time.js
+          node --check regatta/team-rating.js
           node --check regatta/team-app.js
           node --check regatta/app.js
       - name: Validate Regatta and collection regression tests

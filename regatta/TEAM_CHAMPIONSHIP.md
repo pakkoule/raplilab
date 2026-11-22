@@ -133,3 +133,10 @@ Le championnat LPDB démarre avec la prochaine course enregistrée. **Aucun impo
 - **Les classements, les résultats des skippers et la date de clôture LPDB restent indépendants**. La date de clôture du classement reste modifiable même lorsqu'une fiche personnelle est liée. Pour une fiche de type Record, la catégorie VSR du championnat reste également réglable séparément.
 - Une fiche Record peut être ouverte depuis le menu de course LPDB et le menu « … » de la fiche personnelle propose dorénavant **Utiliser pour le championnat LPDB**. Les dossiers de type `event` ne sont pas proposés.
 - La liaison d'une fiche n'affecte pas ses résultats personnels, ses tentatives, ses durées ou son statut ; elle ne présume pas non plus que les arrivées d'équipe sont identiques.
+
+
+## Recalcul manuel des notes (PR #4)
+- Dans **LPDB → Courses d'équipe**, le bouton **« ↻ RECALCULER LES NOTES »** est situé à côté de « Nouvelle course ».
+- Il reprend les résultats les plus récents de chaque course terminée, les classements généraux VR, les effectifs globaux, les catégories et l'historique, puis **réévalue les notes individuelles et les moyennes** des tuiles.
+- Une confirmation indique le nombre de skippers notés, de courses évaluées, les notes indisponibles et les notes provisoires. Une absence de course terminée produit un message explicite.
+- Ce recalcul est **en lecture seule** : aucune écriture ni nouvelle validation, aucun changement des rangs, des points LPDB, des fiches personnelles ou des historiques. Les notes sont de toute façon recalculées dynamiquement à partir des données en mémoire ; le bouton fournit un déclenchement manuel et son bilan.

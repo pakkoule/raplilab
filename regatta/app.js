@@ -2148,7 +2148,7 @@ const syncNow=()=>{
    overlay.dataset.visible='true';overlay.dataset.status='pending';
    overlay.setAttribute('aria-hidden','false');
    // Status belongs to the profile menu; keep the latest result accessible.
-   if(!overlay.closest('#rapliProfileMenu'))setTimeout(()=>{if(overlay.dataset.visible==='true'){
+   if(typeof overlay.closest!=='function'||!overlay.closest('#rapliProfileMenu'))setTimeout(()=>{if(overlay.dataset.visible==='true'){
     overlay.dataset.visible='false';overlay.setAttribute('aria-hidden','true');
    }},3200);
   }

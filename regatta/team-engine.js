@@ -30,8 +30,12 @@ function member(input){
  const id=cleanId(input?.id),name=safe(input?.name,56);
  if(!id.startsWith('lpdb-member-')||!name)return null;
  const from=dateOk(input.from)?input.from:'',until=dateOk(input.until)?input.until:'';
+ const memberships=Array.isArray(input.memberships)?input.memberships.slice(0,100).map(w=>({
+  from:dateOk(w?.from)?w.from:'',until:dateOk(w?.until)?w.until:''
+ })).filter(w=>!w.from||!w.until||w.from<=w.until):[];
+ if(!memberships.length)memberships.push({from,until});
  return {id,type:'team-member',name,status:input.status==='former'?'former':'active',
-  from,until,createdAt:safe(input.createdAt,40),updatedAt:safe(input.updatedAt,40)};
+  from,until,memberships,createdAt:safe(input.createdAt,40),updatedAt:safe(input.updatedAt,40)};
 }
 function race(input){
  const id=cleanId(input?.id),name=safe(input?.name,160);
@@ -111,7 +115,8 @@ function standings(entities,period,mode='main'){
  }
  const scored=Array.from(records,( [id,results] )=>{
   const skipper=known.get(id),finished=results.filter(r=>!r.dnf);
-  const eligible=finalized.filter(r=>(!skipper.from||r.dateEnd>=skipper.from)&&(!skipper.until||r.dateEnd<=skipper.until));
+  const periods=skipper.memberships?.length?skipper.memberships:[{from:skipper.from,until:skipper.until}];
+  const eligible=finalized.filter(r=>periods.some(w=>(!w.from||r.dateEnd>=w.from)&&(!w.until||r.dateEnd<=w.until)));
   const attempts=results.length,finish=finished.length,totalMain=results.reduce((s,r)=>s+r.main,0),totalHistoric=results.reduce((s,r)=>s+r.historic,0);
   const prestige=finish?finished.reduce((s,r)=>s+PRESTIGE[r.vsr],0)/finish:0;
   const attendance=eligible.length?Math.min(100,100*attempts/eligible.length):100;

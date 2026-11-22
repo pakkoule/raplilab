@@ -273,11 +273,17 @@
         overlay.dataset.visible = 'true';
         overlay.dataset.status = level;
         overlay.setAttribute('aria-hidden', 'false');
-        statusHideTimer = setTimeout(() => {
-          overlay.dataset.visible = 'false';
-          overlay.setAttribute('aria-hidden', 'true');
+        // In LPDB the notification is now a persistent profile-menu detail,
+        // not a floating toast that vanishes before a skipper can read it.
+        if (overlay.closest('#rapliProfileMenu')) {
           statusHideTimer = null;
-        }, level === 'error' ? 6500 : level === 'pending' ? 4800 : 3600);
+        } else {
+          statusHideTimer = setTimeout(() => {
+            overlay.dataset.visible = 'false';
+            overlay.setAttribute('aria-hidden', 'true');
+            statusHideTimer = null;
+          }, level === 'error' ? 6500 : level === 'pending' ? 4800 : 3600);
+        }
       }
     }
     if (window.parent !== window)
@@ -570,8 +576,8 @@
   }
   window.RapliSharedCollection={changed,canEdit,refresh:()=>refresh(true),syncNow,
     getStatus:()=>({initialized,revision,dirty,blocked,busy,mediaIncomplete,busyLoading})};
-  // Manual sync has a dedicated, permanent icon in the Regatta toolbar.
-  // No second button is appended next to the transient status overlay.
+  // Manual LPDB sync and its latest status are available from the profile menu.
+  // Other workspaces may still rely on their legacy sync controls.
   window.addEventListener('rapli-module-ready',()=>{void boot();},{once:true});
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)scheduleRefresh();});
   window.addEventListener('focus',scheduleRefresh);

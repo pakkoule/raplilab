@@ -2147,7 +2147,8 @@ const syncNow=()=>{
    notice.textContent='Synchronisation en cours d’initialisation…';
    overlay.dataset.visible='true';overlay.dataset.status='pending';
    overlay.setAttribute('aria-hidden','false');
-   setTimeout(()=>{if(overlay.dataset.visible==='true'){
+   // Status belongs to the profile menu; keep the latest result accessible.
+   if(!overlay.closest('#rapliProfileMenu'))setTimeout(()=>{if(overlay.dataset.visible==='true'){
     overlay.dataset.visible='false';overlay.setAttribute('aria-hidden','true');
    }},3200);
   }

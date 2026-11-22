@@ -1005,3 +1005,95 @@
  .lpdb-shell .team-stat{padding:10px}
  .lpdb-shell .team-stat strong{font-size:19px}
 }
+
+/* LPDB global tools — search, visible actions and profile on one shared line. */
+.lpdb-global-controls{
+ display:grid;grid-template-columns:minmax(0,1fr) max-content max-content;
+ align-items:center;column-gap:7px;min-width:0;
+}
+.lpdb-global-controls>.regatta-search{
+ grid-column:1!important;grid-row:1!important;min-width:0;width:100%;
+}
+.lpdb-global-controls>.regatta-inline-actions{
+ grid-column:2!important;grid-row:1!important;justify-self:end;min-width:0;
+}
+.lpdb-global-controls>.regatta-navigation{
+ grid-column:3!important;grid-row:1!important;justify-self:end;min-width:0;
+}
+.lpdb-global-controls #rapliProfileMenu{
+ z-index:180;overflow:visible;min-width:0;
+}
+.lpdb-global-controls #rapliProfileMenu .rapli-profile-sync-button{
+ display:flex;align-items:center;justify-content:flex-start;gap:10px;
+ font:750 11px/1.4 Poppins,system-ui,sans-serif;
+ text-align:left;white-space:normal;
+}
+.lpdb-global-controls #rapliProfileMenu .rapli-profile-sync-button svg{flex:0 0 18px}
+.lpdb-global-controls #rapliProfileMenu .rapli-profile-sync-group{
+ display:grid;gap:5px;padding:8px 9px;
+ border:1px solid #c7d9df;border-radius:10px;
+ background:linear-gradient(130deg,#f9fffd,#ecf5f7 65%,#fff8fc);
+}
+.lpdb-global-controls #rapliProfileMenu .rapli-profile-sync-group>strong{
+ font:800 9px/1.4 Poppins,system-ui,sans-serif;
+ letter-spacing:.045em;color:#596d78;
+}
+.lpdb-global-controls #rapliProfileMenu #regatta-cloud-overlay{
+ position:static!important;top:auto!important;right:auto!important;
+ z-index:auto!important;display:block;width:100%;max-width:100%;min-width:0;
+ margin:0;padding:6px 8px;border:1px solid #cbdce2;
+ border-radius:8px;background:#ffffffba;box-shadow:none;
+ backdrop-filter:none;-webkit-backdrop-filter:none;
+ color:#335769;font:650 11px/1.5 Poppins,system-ui,sans-serif;
+ opacity:1!important;visibility:visible!important;transform:none!important;
+ transition:none;pointer-events:auto;
+}
+.lpdb-global-controls #rapliProfileMenu #regatta-cloud-overlay[data-status="error"]{
+ color:#94354b;background:#fff0f3;border-color:#efb5c3;
+}
+.lpdb-global-controls #rapliProfileMenu #regatta-cloud-overlay[data-status="pending"]{
+ color:#205e80;background:#edf8fc;border-color:#a9d6e5;
+}
+@media(max-width:620px){
+ .lpdb-global-controls{
+  display:grid!important;
+  max-width:calc(100% - 18px);
+  grid-template-columns:minmax(0,1fr) max-content max-content!important;
+  align-items:center;column-gap:5px;row-gap:0!important;
+ }
+ .lpdb-global-controls>.regatta-search{
+  grid-column:1!important;grid-row:1!important;min-width:0;max-width:100%!important;
+ }
+ .lpdb-global-controls>.regatta-inline-actions{
+  grid-column:2!important;grid-row:1!important;justify-content:flex-end;
+  justify-self:end;gap:4px;
+ }
+ .lpdb-global-controls>.regatta-navigation{
+  grid-column:3!important;grid-row:1!important;justify-self:end;
+ }
+ .lpdb-global-controls .regatta-search-field{
+  min-width:0;width:100%;gap:5px;padding-left:8px;padding-right:8px;
+ }
+ .lpdb-global-controls .regatta-search-field svg{width:16px;height:16px;flex:0 0 16px}
+ .lpdb-global-controls .regatta-search-field input[type=search]{
+  width:100%;min-width:0;font-size:16px!important;
+ }
+ .lpdb-global-controls .regatta-inline-actions .regatta-icon-action{
+  width:35px!important;min-width:35px!important;height:38px!important;
+  min-height:38px!important;flex:0 0 35px!important;
+ }
+ .lpdb-global-controls #rapliProfileToggle.rapli-profile-toggle{
+  width:38px!important;height:38px!important;min-height:38px!important;
+ }
+}
+@media(max-width:370px){
+ .lpdb-global-controls{column-gap:4px}
+ .lpdb-global-controls>.regatta-inline-actions{gap:3px}
+ .lpdb-global-controls .regatta-inline-actions .regatta-icon-action{
+  width:30px!important;min-width:30px!important;flex-basis:30px!important;
+  height:35px!important;min-height:35px!important;
+ }
+ .lpdb-global-controls #rapliProfileToggle.rapli-profile-toggle{
+  width:35px!important;height:35px!important;min-height:35px!important;
+ }
+}

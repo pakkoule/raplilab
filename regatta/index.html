@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=Courier+Prime:wght@400;700&family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
-<link rel="stylesheet" href="team.css?v=20261122-lpdb-tabs-type-v3">
+<link rel="stylesheet" href="team.css?v=20261122-profile-sync-inline-v4">
 <link rel="stylesheet" href="gfs-lab.css">
 <link rel="stylesheet" href="../shared/photo-zoom.css">
   
@@ -106,7 +106,6 @@ html:not([data-rapli-role="editor"]) #rapli-module-cloud-save{display:none!impor
       <button type="button" id="lpdb-search-clear" class="regatta-search-clear" aria-label="Effacer la recherche" title="Effacer la recherche" hidden>×</button>
     </div>
     <div class="cloud-actions regatta-inline-actions" role="group" aria-label="Actions LPDB">
-      <button type="button" id="regatta-team-sync" class="btn subtle tiny regatta-icon-action" aria-label="Synchroniser LPDB" title="Synchroniser avec Supabase"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M5.7 9a7.5 7.5 0 0 1 13-2l1.3 5M4 12l1.3 5a7.5 7.5 0 0 0 13-2"/></svg></button>
       <button type="button" class="btn subtle tiny regatta-icon-action" data-team-action="recalculate" data-lpdb-action-for="team" aria-label="Recalculer le championnat" title="Recalculer les classements"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M5.7 9a7.5 7.5 0 0 1 13-2l1.3 5M4 12l1.3 5a7.5 7.5 0 0 0 13-2"/></svg></button>
       <button type="button" class="btn subtle tiny regatta-icon-action" data-team-action="recalculate-notes" data-lpdb-action-for="team-races" aria-label="Recalculer les notes" title="Recalculer les notes des skippers"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="5" y="2.5" width="14" height="19" rx="2"/><path d="M8 6.5h8M8 11h2m4 0h2M8 15h2m4 0h2M8 19h2"/></svg></button>
       <button type="button" class="btn primary tiny regatta-icon-action" data-team-action="new-race" data-lpdb-action-for="team-races" aria-label="Ajouter une course d’équipe" title="Ajouter une course d’équipe">＋</button>
@@ -121,15 +120,19 @@ html:not([data-rapli-role="editor"]) #rapli-module-cloud-save{display:none!impor
         </button>
         <div id="rapliProfileMenu" class="rapli-profile-menu" hidden>
           <div class="rapli-profile-menu-title">MON PROFIL · RAPLI REGATTA</div>
+          <button type="button" id="regatta-team-sync" class="rapli-profile-sync-button" aria-label="Synchroniser LPDB" title="Actualiser les données Supabase"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M5.7 9a7.5 7.5 0 0 1 13-2l1.3 5M4 12l1.3 5a7.5 7.5 0 0 0 13-2"/></svg><span>Synchroniser LPDB</span></button>
+          <div class="rapli-profile-sync-group">
+            <strong>ÉTAT DE LA SYNCHRONISATION</strong>
+            <div class="regatta-cloud-status" id="regatta-cloud-overlay" role="status" aria-live="polite" aria-atomic="true" aria-hidden="false">
+              <span id="rapli-shared-status-regatta">Chargement de la collection…</span>
+            </div>
+          </div>
           <button id="rapliProfileLogin" type="button">🔒 Connexion administrateur</button>
           <button id="rapliProfileLogout" type="button" hidden>Se déconnecter</button>
           <div id="rapliProfileMessage" class="rapli-profile-message" role="status" aria-live="polite">Consultation libre</div>
         </div>
       </div>
     </div>
-  </div>
-  <div class="regatta-cloud-status" id="regatta-cloud-overlay" role="status" aria-live="polite" aria-atomic="true" aria-hidden="true">
-    <span id="rapli-shared-status-regatta">Chargement de la collection…</span>
   </div>
   <section id="lpdb-panel" class="lpdb-shell" role="region" aria-label="LPDB — Championnat de l’équipe">
 
@@ -732,7 +735,7 @@ html:not([data-rapli-role="editor"]) #rapli-module-cloud-save{display:none!impor
 <script defer src="team-prediction.js"></script>
 <script defer src="team-time.js"></script>
 <script defer src="team-export.js"></script>
-<script defer src="team-app.js?v=20261122-lpdb-responsive-v2"></script>
+<script defer src="team-app.js?v=20261122-profile-sync-inline-v4"></script>
 <script defer src="app.js?v=20261122-lpdb-responsive-v2"></script>
 <script defer src="gfs-interpolation.js"></script>
 <script defer src="gfs-motion.js"></script>
@@ -743,7 +746,7 @@ html:not([data-rapli-role="editor"]) #rapli-module-cloud-save{display:none!impor
 <script defer src="../shared/photo-zoom.js"></script>
 <script defer src="../shared/admin-access.js"></script>
 <script defer src="../shared/collection-diff.js"></script>
-<script defer src="../shared/shared-collection.js"></script>
+<script defer src="../shared/shared-collection.js?v=20261122-profile-sync-inline-v4"></script>
 <script defer src="../shared/profile-menu.js"></script>
 </body>
 </html>

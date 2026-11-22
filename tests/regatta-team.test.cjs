@@ -906,10 +906,12 @@ test('LPDB tabs live in the real header with a wide search, profile and contextu
  ]);
  assert.equal(d.querySelector('#lpdb-panel>.lpdb-tabs'),null,'team tabs must not be duplicated inside the body');
  const controls=d.getElementById('lpdb-global-controls');
- assert.ok(controls&&controls.nextElementSibling?.id==='regatta-cloud-overlay','search bar precedes LPDB content');
+ assert.ok(controls&&controls.nextElementSibling?.id==='lpdb-panel','search actions are immediately followed by LPDB content');
  assert.ok(controls.querySelector('.regatta-search-field #lpdb-global-search'));
  assert.ok(controls.querySelector('#lpdb-search-clear'));
- assert.ok(controls.querySelector('#regatta-team-sync'));
+ assert.ok(controls.querySelector('#rapliProfileMenu #regatta-team-sync'));
+ assert.equal(controls.querySelector('.regatta-inline-actions #regatta-team-sync'),null,'sync is no longer shown as a standalone header icon');
+ assert.ok(controls.querySelector('#rapliProfileMenu #regatta-cloud-overlay #rapli-shared-status-regatta'));
  assert.ok(controls.querySelector('#rapliProfileToggle'));
  assert.ok(!d.getElementById('rapliProfile').closest('#races-panel'),'profile is outside hidden personal archives');
  for(const cmd of ['recalculate','recalculate-notes','new-race','new-member','bulk-members','team-colors'])
@@ -1415,8 +1417,8 @@ test('LPDB course image displays live course status instead of branding, without
  const css=fs.readFileSync('regatta/team.css','utf8');
  assert.match(css,/\.lpdb-shell \.team-race-photo \.team-race-photo-status\{/);
  const html=fs.readFileSync('regatta/index.html','utf8');
- assert.match(html,/team\.css\?v=20261122-lpdb-tabs-type-v3/,'team badge CSS stays cache-busted');
-assert.match(html,/team-app\.js\?v=20261122-lpdb-responsive-v2/,'team badge markup script stays cache-busted');
+ assert.match(html,/team\.css\?v=20261122-profile-sync-inline-v4/,'team badge CSS stays cache-busted');
+assert.match(html,/team-app\.js\?v=20261122-profile-sync-inline-v4/,'team badge markup script stays cache-busted');
  dom.window.close();
 });
 
@@ -1433,7 +1435,7 @@ test('LPDB pirate header uses the requested logo and premium foil without changi
  assert.match(css,/LPDB premium pirate foil header/);
  assert.match(css,/\.regatta-topbar>\.lpdb-tabs \.lpdb-tab\.active\{/);
  assert.match(css,/@media\(max-width:620px\)\{/);
- assert.match(html,/team\.css\?v=20261122-lpdb-tabs-type-v3/);
+ assert.match(html,/team\.css\?v=20261122-profile-sync-inline-v4/);
  const logoPath=require('node:path').join('regatta','assets','lpdb-header-transparent.png');
  assert.ok(fs.existsSync(logoPath),'new header logo exists in PR');
  const logo=fs.readFileSync(logoPath);
@@ -1454,9 +1456,9 @@ test('LPDB mobile selectors use a full-width barème and readable compact type',
  assert.match(css,/\.lpdb-shell \.team-selector select\{[^}]*text-overflow:ellipsis/s);
  assert.match(css,/\.lpdb-shell \.team-stats-grid\{grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
  assert.match(css,/\.lpdb-shell \.team-emblem\{[^}]*background:transparent!important/s);
- assert.match(html,/team\.css\?v=20261122-lpdb-tabs-type-v3/);
- assert.match(html,/team-app\.js\?v=20261122-lpdb-responsive-v2/);
- assert.match(html,/app\.js\?v=20261122-lpdb-responsive-v2/);
+ assert.match(html,/team\.css\?v=20261122-profile-sync-inline-v4/);
+ assert.match(html,/team-app\.js\?v=20261122-profile-sync-inline-v4/);
+ assert.match(html,/app\.js\?v=20261122-profile-sync-inline-v4/);
  assert.equal(ui.includes('assets/lpdb.webp'),false,'all section headings and race fallback use the new transparent emblem');
  assert.equal(ui.split('assets/lpdb-header-transparent.png').length-1,5,'all five emblem instances are replaced');
  assert.match(app,/team:'Rechercher un skipper…'/);
@@ -1473,5 +1475,29 @@ test('LPDB navigation labels do not use heavy text shadows',()=>{
  assert.match(navRule,/text-shadow:none!important/);
  assert.match(navRule,/-webkit-text-stroke:0/);
  assert.doesNotMatch(css,/color:#f0fdfc;text-shadow:0 1px 2px #092630e0/);
- assert.match(html,/team\.css\?v=20261122-lpdb-tabs-type-v3/);
+ assert.match(html,/team\.css\?v=20261122-profile-sync-inline-v4/);
+});
+
+test('LPDB profile holds manual sync and live status, remaining icons stay next to search on iPhone',()=>{
+ const d=new JSDOM(fs.readFileSync('regatta/index.html','utf8')).window.document;
+ const controls=d.querySelector('#lpdb-global-controls'),menu=d.getElementById('rapliProfileMenu');
+ assert.ok(controls&&menu);
+ assert.equal(controls.querySelectorAll('#regatta-team-sync').length,1);
+ assert.ok(menu.contains(d.getElementById('regatta-team-sync')));
+ const overlay=d.getElementById('regatta-cloud-overlay');
+ assert.ok(menu.contains(overlay));
+ assert.equal(overlay.getAttribute('aria-live'),'polite');
+ assert.equal(overlay.getAttribute('aria-hidden'),'false');
+ assert.ok(menu.contains(d.getElementById('rapli-shared-status-regatta')));
+ assert.equal(d.querySelectorAll('#regatta-cloud-overlay').length,1);
+ assert.equal(controls.querySelector('.regatta-inline-actions [data-team-action="recalculate"]')?.dataset.lpdbActionFor,'team');
+ const css=fs.readFileSync('regatta/team.css','utf8');
+ assert.match(css,/LPDB global tools — search, visible actions and profile on one shared line/);
+ assert.match(css,/grid-template-columns:minmax\(0,1fr\) max-content max-content!important/);
+ assert.match(css,/\.lpdb-global-controls>\.regatta-search\{[^}]*grid-column:1!important;grid-row:1!important/s);
+ assert.match(css,/\.lpdb-global-controls>\.regatta-inline-actions\{[^}]*grid-column:2!important;grid-row:1!important/s);
+ assert.match(css,/\.lpdb-global-controls>\.regatta-navigation\{[^}]*grid-column:3!important;grid-row:1!important/s);
+ const shared=fs.readFileSync('shared/shared-collection.js','utf8');
+ assert.match(shared,/overlay\.closest\('#rapliProfileMenu'\)/);
+ assert.match(css,/#rapliProfileMenu #regatta-cloud-overlay\{[^}]*position:static!important/s);
 });

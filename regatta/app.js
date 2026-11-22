@@ -286,6 +286,29 @@ function partitionRecords(items){
  teamRecords=teamEngine.normalize(records.filter(x=>x?.type==='team-member'||x?.type==='team-race'));
 }
 function renderTeam(){window.RapliTeamUI?.render?.();}
+let linkTeamAfterPersonalSave='';
+function openPersonalCourse(id){
+ const record=rows.find(r=>r.id===id&&r.kind==='race');
+ if(!record){toast('Fiche personnelle introuvable.',true);return;}
+ selectWorkspace('races');openEditor(record);
+}
+function startPersonalFromTeam(teamId){
+ if(!window.RapliSharedCollection?.canEdit?.()){
+  toast('Connexion administrateur requise pour créer une fiche personnelle.',true);return;
+ }
+ const team=teamRecords.find(r=>r.id===teamId&&r.type==='team-race');
+ if(!team){toast('Course d’équipe introuvable.',true);return;}
+ const linked=rows.find(r=>r.kind==='race'&&r.id===team.personalRaceId);
+ if(linked){openPersonalCourse(linked.id);return;}
+ const data=normal({kind:'race',name:team.name,vsr:team.vsr,boatClass:team.boatClass,
+  routeType:team.routeType,start:team.start,startTime:team.startTime,
+  end:team.dateEnd,endTime:team.endTime,timezone:team.timezone,equipment:team.equipment});
+ linkTeamAfterPersonalSave=team.id;
+ selectWorkspace('races');
+ openEditor({...data,id:''});
+ toast('Fiche personnelle préremplie. Complète tes résultats, puis enregistre pour la lier à l’équipe.');
+}
+
 async function saveTeamEntity(entity){
  if(!entity||!['team-member','team-race'].includes(entity.type))throw Error('Fiche d’équipe non valide.');
  await saveRow(entity);
@@ -716,6 +739,7 @@ function raceCardMenu(r,status){
   (showImages&&validImage(r.result)?action('view-result',r.kind==='record'?'Voir la capture du record':'Voir le classement final','▣'):'')+
   (showImages&&validImage(r.route)?action('view-route','Voir le tracé','⌁'):'')+
   action('edit','Modifier la tuile','✎')+
+  (r.kind==='race'?action('team-link','Utiliser pour le championnat LPDB','🏴‍☠️'):'')+
   action('png','Exporter en PNG','↓')+
   (canCalendar?action('calendar','Ajouter au calendrier iOS','▦'):'')+
   (r.kind==='record'&&!r.recordClosed?action('record-close','Clôturer le record','✓'):'')+
@@ -1435,7 +1459,7 @@ function openEditor(r){
  getField('name').focus({preventScroll:true});
 }
 const closeEditor=()=>{if(dialog.open)dialog.close();};
-dialog.addEventListener('close',()=>{document.body.style.overflow='';editId='';});dialog.addEventListener('click',e=>{if(e.target===dialog)closeEditor();});
+dialog.addEventListener('close',()=>{document.body.style.overflow='';editId='';linkTeamAfterPersonalSave='';});dialog.addEventListener('click',e=>{if(e.target===dialog)closeEditor();});
 document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',closeEditor));
 async function saveEditor(e){
  e.preventDefault();if(writeBusy||uploads)return;
@@ -1489,7 +1513,24 @@ async function saveEditor(e){
  }else{r.attempts=[];r.recordClosed=false;}
  if(r.kind!=='record'&&!old?.scoreSnapshot){const initial=scoreEngine.scoreFor(r,[...rows.filter(x=>x.id!==r.id),r],raceStatus);if(initial.available)r.scoreSnapshot={...initial,signature:scoreEngine.signature(r),calculatedAt:now()};}
  writeBusy=true;$('save-race').disabled=true;
- try{await saveRow(r);rows=[...rows.filter(x=>x.id!==r.id),r];render();window.RapliSharedCollection?.changed?.();closeEditor();toast('Course enregistrée ✓');}
+ try{
+  await saveRow(r);
+  rows=[...rows.filter(x=>x.id!==r.id),r];
+  const pendingLink=linkTeamAfterPersonalSave;linkTeamAfterPersonalSave='';
+  render();renderTeam();
+  window.RapliSharedCollection?.changed?.();
+  closeEditor();
+  if(pendingLink){
+   const team=teamRecords.find(x=>x.id===pendingLink);
+   if(team){
+    try{
+     const linked=teamEngine.fromPersonal(r,{...team,updatedAt:now()});
+     await saveTeamEntity(linked);
+     toast('Mes courses et championnat LPDB associés ✓');
+    }catch(linkError){console.error(linkError);toast('Fiche personnelle enregistrée, mais association à l’équipe impossible : '+linkError.message,true);}
+   }else toast('Fiche personnelle enregistrée, mais sa course d’équipe est introuvable.',true);
+  }else toast('Course enregistrée ✓');
+ }
  catch(err){console.error(err);toast('Impossible de sauvegarder : '+err.message,true);}
  finally{writeBusy=false;$('save-race').disabled=false;}
 }
@@ -1516,7 +1557,7 @@ async function closeRecord(id){
 }
 async function deleteRace(id){
  const r=rows.find(x=>x.id===id);if(!r||!confirm('Supprimer « '+r.name+' » et ses images ?'))return;
- try{await deleteRow(id);rows=rows.filter(x=>x.id!==id);closeEditor();render();window.RapliSharedCollection?.changed?.();toast('Course supprimée ✓');}
+ try{await deleteRow(id);rows=rows.filter(x=>x.id!==id);closeEditor();render();renderTeam();window.RapliSharedCollection?.changed?.();toast('Course supprimée ✓');}
  catch(err){toast('Suppression impossible : '+err.message,true);}
 }
 async function fileData(file,key){
@@ -2056,6 +2097,7 @@ $('cards').addEventListener('click',event=>{
  const action=btn.dataset.action;
  closeRaceMenus();
  if(action==='edit')openEditor(r);
+ else if(action==='team-link')window.RapliTeamUI?.openFromPersonal?.(r.id);
  else if(action==='record-close')void closeRecord(r.id);
  else if(action==='delete')void deleteRace(r.id);
  else if(action==='png')void exportPNG(r);
@@ -2103,7 +2145,10 @@ const bridge=window.RapliModuleBridge={module:'regatta',ready:false,
   storeClassSettings(data.logos[0]||defaultClassSettings(),{notifyCloud:false});
  }};
 window.RapliRegatta={getCount:()=>rows.length,teamCount:()=>teamRecords.length};
-window.RapliTeamUI?.init?.({get:()=>teamRecords,save:saveTeamEntity,remove:removeTeamEntity,canEdit:()=>window.RapliSharedCollection?.canEdit?.(),notify:toast});
+window.RapliTeamUI?.init?.({get:()=>teamRecords,personal:()=>rows,
+ save:saveTeamEntity,remove:removeTeamEntity,
+ openPersonal:openPersonalCourse,newPersonalFromTeam:startPersonalFromTeam,
+ canEdit:()=>window.RapliSharedCollection?.canEdit?.(),notify:toast});
 (async()=>{try{await openDB();partitionRecords(await load());render();renderTeam();}catch(err){
  console.warn('Regatta : IndexedDB indisponible',err);db=null;
  try{

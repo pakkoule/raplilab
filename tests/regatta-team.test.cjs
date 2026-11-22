@@ -327,3 +327,45 @@ test('VR quick import UI includes mapping, time editing, classification view and
  assert.match(app,/saveTeamRaceBundle/);
  assert.match(app,/saveRaceBundle:saveTeamRaceBundle/);
 });
+
+
+test('VR pasted classification can be previewed, reconciled and saved as one team race',async()=>{
+ const dom=new JSDOM(fs.readFileSync('regatta/index.html','utf8'),{runScripts:'outside-only',url:'https://example.org/regatta/'});
+ const {window:w}=dom,doc=w.document;
+ w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};
+ w.HTMLDialogElement.prototype.close=function(){this.open=false;};
+ w.RapliTeamEngine=E;
+ w.RapliTeamTime=require('../regatta/team-time.js');
+ w.eval(fs.readFileSync('regatta/team-app.js','utf8'));
+ const roster=[m('Rapli'),m('RX8')],saved=[];
+ w.RapliTeamUI.init({
+  get:()=>roster,personal:()=>[],canEdit:()=>true,notify:()=>{},
+  saveRaceBundle:async(race,incoming)=>{saved.push({race,incoming});},
+  save:async()=>{},remove:async()=>{}
+ });
+ doc.querySelector('[data-team-action="new-race"]').click();
+ const dialog=doc.getElementById('team-race-dialog');
+ assert.equal(dialog.open,true);
+ doc.getElementById('team-race-name').value='Classement expérimental';
+ doc.getElementById('team-race-date').value='2026-12-03';
+ doc.getElementById('team-race-status').value='finished';
+ doc.getElementById('team-race-status').dispatchEvent(new w.Event('change',{bubbles:true}));
+ doc.querySelector('[data-team-action="toggle-ranking-import"]').click();
+ doc.getElementById('team-ranking-paste').value='Rapli LPDB\n09j 15h 32m 50s\nRX8-LPDB\n+ 03h 54m 01s\nDanymaill _LPDB\n+ 10h 03m 09s';
+ doc.querySelector('[data-team-action="analyze-ranking"]').click();
+ assert.equal(doc.querySelectorAll('.team-import-table tbody tr').length,3);
+ assert.equal(doc.getElementById('team-ranking-apply').disabled,false);
+ doc.querySelector('[data-team-action="apply-ranking"]').click();
+ assert.equal(doc.querySelectorAll('#team-result-rows .team-result-row').length,3);
+ assert.match(doc.getElementById('team-result-rows').textContent,/Danymaill/);
+ doc.getElementById('team-race-form').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));
+ for(let i=0;i<12&&!saved.length;i++)await new Promise(resolve=>setTimeout(resolve,0));
+ assert.equal(saved.length,1);
+ assert.equal(saved[0].incoming.length,1);
+ assert.equal(saved[0].incoming[0].name,'Danymaill');
+ assert.equal(saved[0].race.results.length,3);
+ assert.equal(saved[0].race.results[0].elapsedSeconds,9*86400+15*3600+32*60+50);
+ assert.equal(saved[0].race.results[1].gapSeconds,3*3600+54*60+1);
+ assert.equal(saved[0].race.status,'finished');
+ dom.window.close();
+});

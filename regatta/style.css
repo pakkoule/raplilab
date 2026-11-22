@@ -1607,3 +1607,94 @@ button.close{min-width:40px;min-height:40px}
 @media(prefers-reduced-motion:reduce){
  .cards .card.card--columns .race-actions-menu>summary{transition:none}
 }
+
+
+/* PR #4 — compact forecast-cycle estimator across the base of active race cards.
+   Its percentages reflect elapsed time within a GFS publication window, not
+   actual data downloaded from Virtual Regatta. */
+.cards .card.card--columns .race-gfs-widget{
+ grid-column:1 / -1;min-width:0;margin-top:1px;padding:10px 12px;
+ border:1px solid #c5dce7;border-radius:11px;
+ background:linear-gradient(115deg,#f5fbfd 0%,#ecf6f8 51%,#f7f4fb 100%);
+ box-shadow:inset 0 1px 0 #ffffff,0 2px 9px #1c597013;
+ color:#31576c;font-family:Poppins,system-ui,sans-serif
+}
+.cards .card.card--columns .race-gfs-topline,
+.cards .card.card--columns .race-gfs-progress-row,
+.cards .card.card--columns .race-gfs-bottomline{
+ display:flex;align-items:center;justify-content:space-between;
+ gap:9px;min-width:0
+}
+.cards .card.card--columns .race-gfs-title{
+ font:850 10px/1.35 Poppins,sans-serif;letter-spacing:.035em;
+ color:#245977;white-space:nowrap
+}
+.cards .card.card--columns .race-gfs-title small{
+ font-size:8px;font-weight:600;letter-spacing:0;color:#7995a5
+}
+.cards .card.card--columns .race-gfs-status{
+ text-align:right;font:850 9px/1.3 Poppins,sans-serif;
+ letter-spacing:.01em;color:#3575aa
+}
+.cards .card.card--columns .race-gfs-progress-row{margin-top:8px}
+.cards .card.card--columns .race-gfs-progress{
+ flex:1 1 auto;min-width:0;overflow:hidden;height:8px;border-radius:99px;
+ background:#dce9ef;box-shadow:inset 0 1px 3px #36647e22
+}
+.cards .card.card--columns .race-gfs-progress-fill{
+ display:block;height:100%;width:0;border-radius:inherit;
+ background:linear-gradient(90deg,#61b8d8,#81d6cb 64%,#cda5dc);
+ transition:width .4s ease
+}
+.cards .card.card--columns .race-gfs-percent{
+ flex:0 0 43px;text-align:right;white-space:nowrap;
+ font:850 11px/1 'Courier Prime','Courier New',monospace;
+ color:#266e8d;font-variant-numeric:tabular-nums
+}
+.cards .card.card--columns .race-gfs-bottomline{margin-top:7px;align-items:flex-end}
+.cards .card.card--columns .race-gfs-advice{
+ flex:1 1 auto;min-width:0;
+ font:650 9px/1.4 Poppins,sans-serif;color:#57798c
+}
+.cards .card.card--columns .race-gfs-next{
+ display:flex;align-items:baseline;justify-content:flex-end;gap:7px;
+ flex-wrap:wrap;min-width:0;text-align:right
+}
+.cards .card.card--columns .race-gfs-next [data-gfs-next-label]{
+ font:800 8px/1.3 Poppins,sans-serif;color:#638497;
+ white-space:nowrap
+}
+.cards .card.card--columns .race-gfs-countdown{
+ font:850 12px/1.1 'Courier Prime','Courier New',monospace;
+ color:#285a79;font-variant-numeric:tabular-nums;white-space:nowrap
+}
+.cards .card.card--columns .race-gfs-widget[data-gfs-stage="consult"]{
+ border-color:#90d7cb;background:linear-gradient(110deg,#effbf7,#ecf9f4 55%,#f7f8fc)
+}
+.cards .card.card--columns .race-gfs-widget[data-gfs-stage="ready"]{
+ border-color:#acd8cb;background:linear-gradient(110deg,#f3fbf7,#e9f7f0 55%,#f8fafc)
+}
+.cards .card.card--columns .race-gfs-widget[data-gfs-stage="consult"] .race-gfs-status,
+.cards .card.card--columns .race-gfs-widget[data-gfs-stage="ready"] .race-gfs-status{
+ color:#23826f
+}
+@media(max-width:580px){
+ .cards .card.card--columns .race-gfs-widget{padding:8px 9px}
+ .cards .card.card--columns .race-gfs-topline{gap:4px}
+ .cards .card.card--columns .race-gfs-title{font-size:9px}
+ .cards .card.card--columns .race-gfs-title small{font-size:7px}
+ .cards .card.card--columns .race-gfs-status{font-size:8px}
+ .cards .card.card--columns .race-gfs-bottomline{align-items:flex-start}
+ .cards .card.card--columns .race-gfs-advice{font-size:8px}
+ .cards .card.card--columns .race-gfs-next{gap:3px;flex-direction:column;align-items:flex-end}
+ .cards .card.card--columns .race-gfs-next [data-gfs-next-label]{font-size:7px}
+ .cards .card.card--columns .race-gfs-countdown{font-size:11px}
+}
+@media(max-width:360px){
+ .cards .card.card--columns .race-gfs-bottomline{gap:4px}
+ .cards .card.card--columns .race-gfs-advice{max-width:45%}
+ .cards .card.card--columns .race-gfs-next [data-gfs-next-label]{font-size:6.5px}
+}
+@media(prefers-reduced-motion:reduce){
+ .cards .card.card--columns .race-gfs-progress-fill{transition:none}
+}

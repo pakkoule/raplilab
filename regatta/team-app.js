@@ -105,8 +105,8 @@ function renderMain(){
  '<div class="team-filters team-filters--compact"><select id="team-filter" aria-label="Filtrer les skippers">'+opts([{value:'all',label:'Tous les skippers'},{value:'active',label:'Membres actifs'},{value:'former',label:'Anciens membres'}],filter)+'</select></div>'+
  rankTable(list)+'<p class="team-footnote">Le filtre ne modifie pas les rangs officiels. Les DNF comptent comme participations, avec 0 point. Les anciennes périodes restent recalculables.</p>';
 }
-function teamRaceCard(r,known){
- const status=effectiveRaceStatus(r);
+function teamRaceCard(r,known,now=Date.now()){
+ const status=effectiveRaceStatus(r,now);
  const displayed=status===r.status?r:{...r,status};
  const p=personalById(r.personalRaceId);
  const results=engine.scoredRace(r,known);
@@ -184,7 +184,7 @@ function teamRaceCard(r,known){
  '<div><span>POINTS HISTORIQUES</span><strong>'+num(historical)+'</strong></div></div>':'')+
  '</section></div></article>';
 }
-function renderRaces(){
+function renderRaces(now=Date.now()){
  const skipperNames=new Map(members().map(m=>[m.id,m.name]));
  const rs=races().filter(r=>matchesSearch([r.name,r.boatClass,r.vsr,r.stageGroup,r.routeType,r.status,
   ...(r.results||[]).map(row=>skipperNames.get(row.skipperId))]))
@@ -194,7 +194,7 @@ function renderRaces(){
  const groups=unique(rs.map(r=>r.stageGroup).filter(Boolean));
  el.innerHTML='<div class="team-heading"><div><span>LPDB · RÉSULTATS</span><h2>COURSES DE L’ÉQUIPE</h2><p>Courses, départs, classements et chronos de l’équipe LPDB.</p></div><img src="assets/lpdb.webp" class="team-emblem" alt="LPDB"></div>'+
 
- (rs.length?'<div class="team-race-list">'+rs.map(r=>teamRaceCard(r,known)).join('')+'</div>':
+ (rs.length?'<div class="team-race-list">'+rs.map(r=>teamRaceCard(r,known,now)).join('')+'</div>':
   empty(search?'Aucune course ne correspond à ta recherche.':'Aucune course d’équipe. Ajoute la première épreuve du championnat.'))+
  (groups.length?'<section class="team-groups"><h3>CLASSEMENTS BONUS · ENSEMBLES D’ÉTAPES</h3><p>Somme des étapes, sans redistribuer de points.</p>'+
  groups.map(g=>'<div class="team-group-row"><strong>'+esc(g)+'</strong><div>'+action('stage-'+encodeURIComponent(g),'Voir le classement')+action('png-stage-'+encodeURIComponent(g),'↓ PNG')+'</div></div>').join('')+'</section>':'');
@@ -211,7 +211,7 @@ function refreshLiveStatuses(now=Date.now()){
   const race=map.get(card.dataset.teamRace);
   return race&&effectiveRaceStatus(race,now)!==card.dataset.teamState;
  });
- if(changed)renderRaces();
+ if(changed)renderRaces(now);
  return changed;
 }
 function renderMembers(){

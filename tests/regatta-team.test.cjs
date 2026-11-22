@@ -141,7 +141,7 @@ test('personal/team linking is available in both editors and respects read-only 
 
 test('editor, selectors, and PNG elements are present without removing personal archive',()=>{
  const doc=new JSDOM(fs.readFileSync('regatta/index.html','utf8')).window.document;
- for(const id of ['team-panel','team-races-panel','team-skippers-panel','team-stats-panel','team-race-form','team-member-form','team-profile-dialog','view-races','races-panel'])assert.ok(doc.getElementById(id),id);
+ for(const id of ['team-panel','team-races-panel','team-skippers-panel','team-stats-panel','team-race-form','team-member-form','team-profile-dialog','races-panel'])assert.ok(doc.getElementById(id),id);
  for(const script of ['team-engine.js','team-app.js'])assert.ok([...doc.querySelectorAll('script')].some(el=>el.getAttribute('src')===script),script);
  const code=fs.readFileSync('regatta/team-app.js','utf8');
  const png=fs.readFileSync('regatta/team-export.js','utf8');
@@ -154,15 +154,12 @@ test('editor, selectors, and PNG elements are present without removing personal 
 });
 
 
-test('one LPDB main tab contains the four team subsections',()=>{
+test('Rapli Regatta becomes an LPDB-only workspace with four team subsections',()=>{
  const d=new JSDOM(fs.readFileSync('regatta/index.html','utf8')).window.document;
- const main=d.querySelector('.workspace-tabs');
- assert.ok(main);
- assert.equal(main.querySelectorAll('[id^="view-team"]').length,1);
- assert.equal(main.querySelector('#view-team').textContent.trim(),'LPDB');
- assert.equal(main.querySelector('#view-team').getAttribute('aria-controls'),'lpdb-panel');
+ assert.equal(d.querySelector('.workspace-tabs'),null,'no personal workspace navigation remains');
  const shell=d.getElementById('lpdb-panel');
  assert.ok(shell);
+ assert.equal(shell.hidden,false,'LPDB is the landing workspace');
  const ids=['team','team-races','team-skippers','team-stats'];
  const tablist=shell.querySelector('.lpdb-tabs');
  assert.equal(tablist.querySelectorAll('.lpdb-tab').length,4);
@@ -173,36 +170,45 @@ test('one LPDB main tab contains the four team subsections',()=>{
   assert.equal(panel.getAttribute('aria-labelledby'),tab.id);
   assert.equal(panel.closest('#lpdb-panel'),shell);
  }
- for(const id of ['races','stats','honors'])assert.ok(d.getElementById('view-'+id),'personal workspace remains independent');
+ for(const id of ['races','stats','honors']){
+  assert.equal(d.getElementById('view-'+id),null,'no visible personal tab for '+id);
+  const historic=d.getElementById(id+'-panel');
+  assert.ok(historic&&historic.hidden&&historic.inert,'legacy '+id+' preserved but inaccessible');
+ }
+ assert.ok(d.getElementById('colors-panel').hidden,'foil settings can be reached from team courses');
+ assert.equal(d.getElementById('vsr-header-ranking').hidden,true,'personal VSR widget is hidden');
 });
-test('LPDB secondary navigation changes panels without losing main workspace',()=>{
+test('LPDB navigation keeps archives hidden while foil settings remain reachable',()=>{
  const d=new JSDOM(fs.readFileSync('regatta/index.html','utf8')).window.document;
  const src=fs.readFileSync('regatta/app.js','utf8');
  const start=src.indexOf("const lpdbViews=['team'");
  const end=src.indexOf('const scoreDialog=',start);
- assert.ok(start>0&&end>start,'workspace selectors found');
- const ctx={
-  $:id=>d.getElementById(id),renderTeam:()=>{},
-  renderStatistics:()=>{},renderHonors:()=>{},renderClassColors:()=>{}
- };
- const methods=new Function('ctx','with(ctx){'+src.slice(start,end)+';return {selectWorkspace};}')(ctx);
- methods.selectWorkspace('team-races');
+ assert.ok(start>0&&end>start,'LPDB workspace selectors found');
+ let colorRenders=0;
+ const ctx={$:id=>d.getElementById(id),renderTeam:()=>{},renderClassColors:()=>colorRenders++};
+ const {selectWorkspace}=new Function('ctx','with(ctx){'+src.slice(start,end)+';return {selectWorkspace};}')(ctx);
+ selectWorkspace('team-races');
  assert.equal(d.getElementById('lpdb-panel').hidden,false);
- assert.equal(d.getElementById('view-team').getAttribute('aria-selected'),'true');
  assert.equal(d.getElementById('team-panel').hidden,true);
  assert.equal(d.getElementById('team-races-panel').hidden,false);
  assert.equal(d.getElementById('lpdb-view-team-races').getAttribute('aria-selected'),'true');
- methods.selectWorkspace('races');
+ for(const forbidden of ['races','stats','honors']){
+  selectWorkspace(forbidden);
+  assert.equal(d.getElementById('lpdb-panel').hidden,false);
+  assert.equal(d.getElementById(forbidden+'-panel').hidden,true);
+ }
+ selectWorkspace('colors');
  assert.equal(d.getElementById('lpdb-panel').hidden,true);
- assert.equal(d.getElementById('races-panel').hidden,false);
- methods.selectWorkspace('team');
- assert.equal(d.getElementById('team-races-panel').hidden,true,'returning to LPDB resets to Championnat');
- assert.equal(d.getElementById('team-panel').hidden,false,'Championnat must be visible');
- assert.equal(d.getElementById('lpdb-view-team').getAttribute('aria-selected'),'true');
- methods.selectWorkspace('team-stats');
- assert.equal(d.getElementById('team-stats-panel').hidden,false);
+ assert.equal(d.getElementById('colors-panel').hidden,false);
+ assert.equal(colorRenders,1);
+ selectWorkspace('team-races');
+ assert.equal(d.getElementById('colors-panel').hidden,true);
+ assert.equal(d.getElementById('team-races-panel').hidden,false);
+ selectWorkspace('team');
+ assert.equal(d.getElementById('team-panel').hidden,false);
  assert.equal(d.getElementById('team-races-panel').hidden,true);
- assert.equal(d.getElementById('lpdb-view-team-stats').getAttribute('aria-selected'),'true');
+ selectWorkspace('team-stats');
+ assert.equal(d.getElementById('team-stats-panel').hidden,false);
 });
 
 
@@ -379,14 +385,14 @@ test('VR pasted classification can be previewed, reconciled and saved as one tea
 });
 
 
-test('LPDB Championship opens directly after visiting Skippers and a personal workspace',()=>{
+test('LPDB Championship opens directly after Skippers or team foil settings',()=>{
  const d=new JSDOM(fs.readFileSync('regatta/index.html','utf8')).window.document;
  const src=fs.readFileSync('regatta/app.js','utf8'),start=src.indexOf("const lpdbViews=['team'"),end=src.indexOf('const scoreDialog=',start);
- const ctx={$:id=>d.getElementById(id),renderTeam:()=>{},renderStatistics:()=>{},renderHonors:()=>{},renderClassColors:()=>{}};
+ const ctx={$:id=>d.getElementById(id),renderTeam:()=>{},renderClassColors:()=>{}};
  const {selectWorkspace}=new Function('ctx','with(ctx){'+src.slice(start,end)+';return {selectWorkspace};}')(ctx);
  selectWorkspace('team-skippers');
  assert.equal(d.getElementById('team-skippers-panel').hidden,false);
- selectWorkspace('races');
+ selectWorkspace('colors');
  selectWorkspace('team');
  assert.equal(d.getElementById('lpdb-panel').hidden,false);
  assert.equal(d.getElementById('team-panel').hidden,false);

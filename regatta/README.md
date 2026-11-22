@@ -244,3 +244,16 @@ Le LAB GFS combine désormais les deux interpolations vérifiées précédemment
 - Aucun téléchargement additionnel n'est requis : le calcul réutilise les échantillons bilinéaires du LAB, uniquement en mémoire dans la page ouverte.
 - Il s'agit encore d'un **point fixe**, et non d'un vent évalué le long d'une trajectoire mobile ou d'un routage de l'Ultim BP XI. Aucune fenêtre de départ ou temps de passage n'est encore calculé.
 - Les essais d'intégration réels sur Safari iPhone doivent confirmer l'affichage. Les tests automatisés sont dans `tests/regatta-gfs-spatiotemporal.test.cjs`.
+
+
+## GFS 0,25° · parcours météo témoin à trois positions (PR #4 · prototype 7)
+
+Les résultats des prototypes 1 à 6 ont été validés sur iPhone, notamment l'interpolation spatiale et temporelle à +9 h (27,8 nds, 287°) et +15 h (22,8 nds, 281°) pour le point fixe 47,125°N / 9,125°O, sur le cycle GFS du 22 novembre 2026.
+
+Ce septième prototype est **une trajectoire météo témoin, et non un calcul de navigation** : les trois positions et horaires sont prédéfinis dans `TRACK_SITES`, sur la zone Atlantique nord-est (A : +7 h à 48,125°N/8,625°O, B : +9 h à 47,625°N/9,125°O, C : +11 h à 47,125°N/9,625°O).
+
+Deux fichiers NOAA réels d'un même cycle, f006 et f012, sont récupérés manuellement comme avant. Lors de chaque lecture, les composantes U/V des quatre coins voisins de chacun des trois emplacements sont échantillonnées bilinéairement **en une seule passe de décodage par variable**. Le navigateur interpole ensuite les vecteurs météorologiques entre +6 h et +12 h, en utilisant pour chaque emplacement son heure propre +7 / +9 / +11 h. Le code exige les deux échéances du même cycle, des coordonnées fixes cohérentes, des champs U/V finis, et des lectures spatiales valides. Aucun nouveau téléchargement NOAA et aucune sauvegarde de course.
+
+Un moteur de routage réel devra ultérieurement calculer les déplacements à partir des **polaires Full Pack** correctes, des consignes de navigation, des terres et contraintes de course, et des vents sur une zone géographique beaucoup plus étendue. Les positions témoins actuelles ne prouvent pas la capacité à optimiser une fenêtre de départ.
+
+Tests : `tests/regatta-gfs-track.test.cjs` et extension des tests de lecture multi-points. La validation sur Safari de la nouvelle section « PARCOURS MÉTÉO TÉMOIN · TEST 7 » reste à effectuer.

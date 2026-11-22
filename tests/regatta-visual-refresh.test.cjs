@@ -456,9 +456,9 @@ test('two-column race, record and stage cards preserve details, menu and media z
   assert.equal(layout.querySelector('.race-card-left .race-actions-menu'),null);
   assert.ok(layout.querySelector('.race-card-right .race-card-meta-tags>.race-card-badges'));
   assert.ok(tile.querySelector('.race-card-right .rank-plate.rank-main')||status==='dnf'||
-    (kind==='record'&&!closed));
+    status==='live'||(kind==='record'&&!closed));
   assert.equal(Boolean(tile.querySelector('.race-card-right .score-orb')),
-   kind!=='record'&&status!=='dnf',status);
+   kind!=='record'&&status!=='dnf'&&status!=='live',status);
   assert.equal(Boolean(tile.querySelector('.race-card-right .race-card-rewards')),
    kind!=='record'&&status!=='live'&&status!=='planned',status);
   assert.ok(tile.querySelector('.race-actions-popover [data-action="edit"]'));

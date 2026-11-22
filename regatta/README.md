@@ -282,3 +282,17 @@ Chaque cap part du même point (48,125°N/8,625°O), de la même échéance GFS 
 Les caps dont les TWA/TWS sortent des 4 lignes de polaires provisoires (90°, 100°, 110°, 120°) sont indiqués comme **non calculables** et exclus du classement. Le résultat est uniquement « meilleur des caps fixes calculables dans ce test », pas la meilleure route, ni une prédiction de fenêtre de départ. Les polaires Full Pack seront substituées ultérieurement.
 
 Le prototype ne vérifie pas les terres, les zones interdites, les courants, ni les règles de course et n'extrapole pas au-delà de sa couverture météo. Tests ajoutés dans `tests/regatta-gfs-motion.test.cjs`. Validation Safari iPhone à effectuer.
+
+
+## GFS 0,25° · pilote glouton à cap variable (PR #4 · prototype 10)
+
+Après validation du test 9 sur iPhone (170° et 190° exclus par les polaires partielles ; 180° meilleur des trois caps calculables à 123,1 milles vers le sud), le test 10 permet au pilote expérimental de **réévaluer son cap tous les 30 minutes**, à partir de la météo à sa nouvelle position.
+
+- Cinq caps candidates fixes : 170°, 175°, 180°, 185°, 190°. Une fois les champs U/V interpolés dans l'espace et le temps, chaque cap est examiné uniquement si les polaires provisoires TWA 90–120° et TWS 4–40 nds couvrent les conditions.
+- Le cap choisi maximise la **VMG sud immédiate** (vitesse bateau × cosinus de l'écart au sud). La stratégie est **gloutonne**, sans exploration des conséquences futures. Un cap peut rester inchangé pendant les six étapes si la météo ne justifie pas de changement.
+- Point de départ et durée inchangés : 48,125°N / 8,625°O, six pas de 30 min entre +6 et +9 h du même cycle. Aucun nouvel appel NOAA : données compactes f006/f012 déjà récupérées par le test 8.
+- Le laboratoire affiche la progression vers le sud, la distance parcourue, le nombre de changements de cap et l'écart au meilleur des caps **fixes** calculables du test 9, plus la liste des six décisions et leur météo.
+- Aucune extrapolation de polaires ; aucun résultat n'est renvoyé si le segment sort de la zone GFS, s'il n'existe aucun cap valide, ou si les grilles/cycles ne correspondent pas.
+- **Ce n'est pas une optimisation globale ni un routage record** : pas de terres, courants, zones de course, ni polaires Full Pack. La progression vers l'équateur et les fenêtres de départ exigent un moteur beaucoup plus complet.
+
+Tests d'intégration simulée : `tests/regatta-gfs-motion.test.cjs`, incluant un scénario où le cap reste fixe et un scénario de vent tournant qui déclenche un changement. Test réel Safari iPhone à confirmer.

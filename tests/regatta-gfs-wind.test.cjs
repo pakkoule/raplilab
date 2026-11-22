@@ -3,7 +3,7 @@
 const {test} = require('node:test');
 const assert = require('node:assert/strict');
 const {
-  windFromComponents, isTenMetreWind, decodeWindPoint, SAMPLE
+  windFromComponents, isTenMetreWind, decodeWindPoint, decodeWindPoints, SAMPLE, SITES
 } = require('../netlify/functions/gfs-wind-core.cjs');
 
 function section4(level=10) {
@@ -65,6 +65,44 @@ test('GFS convertit la longitude NOAA 352° en 8° ouest',async()=>{
   decoder.nearestGridpoint=()=>({index:1,latitude:48.5,longitude:352,distanceKm:0});
   const sample=await decodeWindPoint(Buffer.alloc(40),SAMPLE,decoder);
   assert.equal(sample.nearestGridpoint.longitude,-8);
+});
+
+test('trois points GFS sont décodés depuis les mêmes champs UGRD/VGRD',async()=>{
+  let decodes=0;
+  const u={discipline:0,section4:section4(10),section3:new Uint8Array(72)};
+  const v={discipline:0,section4:section4(10),section3:new Uint8Array(72)};
+  const decoder={
+    splitMessages:()=>['fake'],
+    parseFields:()=>[u,v],
+    parseProduct:section=>({parameterCategory:2,parameterNumber:section===u.section4?2:3}),
+    parseGrid:()=>({}),
+    nearestGridpoint:(_grid,lat,lon)=>({
+      index:lat===48.5?0:lat===44.5?1:2,
+      latitude:lat,longitude:lon<0?lon+360:lon,distanceKm:0
+    }),
+    decodeFieldValues:field=>{
+      decodes++;
+      return {values:field===u?[5,10,15]:[0,-5,-10]};
+    }
+  };
+  const points=await decodeWindPoints(Buffer.alloc(40),SITES,decoder);
+  assert.equal(points.length,3);
+  assert.equal(decodes,2,'le décodage doit rester effectué une seule fois par variable');
+  assert.deepEqual(points.map(p=>p.nearestGridpoint.longitude),[-8,-12,-15]);
+  assert.deepEqual(points.map(p=>p.uMs),[5,10,15]);
+  assert.deepEqual(points.map(p=>p.vMs),[0,-5,-10]);
+  assert.ok(points.every(p=>p.verifiedWind===true));
+  assert.throws(()=>decodeWindPoints(Buffer.alloc(40),[]),/Coordonnées météo invalides/);
+});
+
+test('seules +6, +12 et +18 h sont acceptées dans le laboratoire',()=>{
+  const {selectForecastHour}=require('../netlify/functions/gfs-wind.js');
+  assert.equal(selectForecastHour({queryStringParameters:{forecastHour:'6'}}),6);
+  assert.equal(selectForecastHour({queryStringParameters:{forecastHour:'12'}}),12);
+  assert.equal(selectForecastHour({queryStringParameters:{forecastHour:'18'}}),18);
+  assert.equal(selectForecastHour({queryStringParameters:{forecastHour:'06'}}),null);
+  assert.equal(selectForecastHour({queryStringParameters:{forecastHour:'999'}}),null);
+  assert.equal(selectForecastHour({}),6);
 });
 
 test('aucune valeur affichée si les champs sont absents ou corrompus',async()=>{

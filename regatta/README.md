@@ -257,3 +257,17 @@ Deux fichiers NOAA réels d'un même cycle, f006 et f012, sont récupérés manu
 Un moteur de routage réel devra ultérieurement calculer les déplacements à partir des **polaires Full Pack** correctes, des consignes de navigation, des terres et contraintes de course, et des vents sur une zone géographique beaucoup plus étendue. Les positions témoins actuelles ne prouvent pas la capacité à optimiser une fenêtre de départ.
 
 Tests : `tests/regatta-gfs-track.test.cjs` et extension des tests de lecture multi-points. La validation sur Safari de la nouvelle section « PARCOURS MÉTÉO TÉMOIN · TEST 7 » reste à effectuer.
+
+
+## GFS 0,25° · première simulation de déplacement (PR #4 · prototype 8)
+
+Les captures du test 7 montrent la lecture de trois positions météo préétablies, à +7, +9, +11 h. Le test 8 remplace cette succession de positions préétablies par un **déplacement calculé**.
+
+- Au clic habituel sur les échéances +6 et +12 h du même cycle, les mêmes fichiers NOAA fournissent maintenant la grille U/V 0,25° compacte au navigateur (encodage Float32 LE base64, uniquement dans la page ouverte). **Aucun appel NOAA supplémentaire** n'est nécessaire.
+- Point initial de la simulation : 48,125°N, 8,625°O. Départ simulé à +6 h ; **cap fixe 180°**, intégration toutes les 30 minutes pendant **3 h**. Les vents U/V sont interrogés à la position actuelle du bateau, interpolés bilinéairement sur la grille et linéairement entre +6 h et +12 h.
+- La vitesse du bateau est calculée par interpolation dans **seulement quatre lignes provisoires** des polaires ITYC visibles sur les captures : TWA 90°, 100°, 110°, 120° et TWS 4 à 40 nœuds. Ces données ne sont **PAS Full Pack** et le prototype refuse de calculer une vitesse si le vent ou l'angle sort de cette couverture. Le modèle est isolé dans `regatta/gfs-motion.js` afin de pouvoir remplacer ces valeurs plus tard sans changer la mécanique météo.
+- La trajectoire est une démonstration de cinématique à cap fixe, **pas un moteur de routage** : pas de choix optimal de cap, pas de courants, pas de masque terrestre, ni de zones interdites ou de règles VR. Aucun temps de passage à l'équateur ni fenêtre de départ n'est présenté.
+- Le panneau montre la distance totale simulée, la position finale et des étapes horaires (force et provenance du vent, TWA et vitesse de bateau). Les résultats ne doivent jamais être interprétés comme une prévision de record.
+- Tests isolés : `tests/regatta-gfs-grid.test.cjs` pour le transport météo compact, et `tests/regatta-gfs-motion.test.cjs` pour la cinématique, les polaires partielles et le refus d'extrapolation. La vérification en situation réelle sur Safari iPhone reste requise.
+
+Toujours uniquement dans la PR #4 ; aucun changement Supabase, production ou données de courses.

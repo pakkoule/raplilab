@@ -1,77 +1,93 @@
 'use strict';
 
 const {
-  chooseCycle, buildUrl, inspectGrib2, readLimited, MAX_BYTES
-} = require('./gfs-source-core.cjs');
-const {decodeWindPoint, SAMPLE} = require('./gfs-wind-core.cjs');
+  chooseCycle,buildUrl,inspectGrib2,readLimited,MAX_BYTES,FORECAST_HOURS
+}=require('./gfs-source-core.cjs');
+const {decodeWindPoints,SITES}=require('./gfs-wind-core.cjs');
 
-// L'analyse n'est lancée que par un clic. Aucun sondage automatique NOAA.
-// Cache par instance, y compris des erreurs pour éviter les répétitions rapides.
-const TTL_OK = 15 * 60 * 1000;
-const TTL_FAIL = 3 * 60 * 1000;
-let last = null;
-let expiresAt = 0;
-let pending = null;
+// Chaque clic = une seule échéance météo, trois points échantillonnés.
+// Limiter l'accès NOMADS (cache et espacement >= 10 s par instance).
+const TTL_OK=15*60*1000;
+const TTL_FAIL=3*60*1000;
+const NOAA_MIN_INTERVAL_MS=10000;
+const cache=new Map();
+const pending=new Map();
+let lastNoaaRequestAt=-Infinity;
 
-function respond(statusCode, data) {
-  return {statusCode, headers:{
+function respond(statusCode,data){
+  return {statusCode,headers:{
     'Content-Type':'application/json; charset=utf-8',
-    'Cache-Control':'no-store', 'X-Content-Type-Options':'nosniff'
-  }, body:JSON.stringify(data)};
+    'Cache-Control':'no-store','X-Content-Type-Options':'nosniff'
+  },body:JSON.stringify(data)};
 }
 
-async function retrieveWind() {
-  const cycle = chooseCycle();
-  const url = buildUrl(cycle);
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 15000);
-  try {
-    const response = await fetch(url, {
-      signal:controller.signal,
-      headers:{Accept:'application/octet-stream', 'User-Agent':'Rapli-Regatta-GFS-Lab/1.0'}
-    });
-    if (!response.ok) throw Error('Source NOAA indisponible (HTTP ' + response.status + ').');
-    const file = await readLimited(response, MAX_BYTES);
-    const metadata = inspectGrib2(file);
-    const wind = await decodeWindPoint(file, SAMPLE);
+function selectForecastHour(event) {
+  const raw=event?.queryStringParameters?.forecastHour;
+  if (raw===undefined||raw===null||raw==='') return 6;
+  if (typeof raw!=='string'||!/^(6|12|18)$/.test(raw)) return null;
+  const hour=Number(raw);
+  return FORECAST_HOURS.includes(hour)?hour:null;
+}
+
+async function retrieveWind(cycle,forecastHour){
+  const url=buildUrl(cycle,forecastHour);
+  const controller=new AbortController();
+  const timer=setTimeout(()=>controller.abort(),15000);
+  try{
+    const response=await fetch(url,{signal:controller.signal,headers:{
+      Accept:'application/octet-stream','User-Agent':'Rapli-Regatta-GFS-Lab/1.0'
+    }});
+    if(!response.ok) throw Error('Source NOAA indisponible (HTTP '+response.status+').');
+    const file=await readLimited(response,MAX_BYTES);
+    const metadata=inspectGrib2(file);
+    const points=await decodeWindPoints(file,SITES);
     return {
-      source:'NOAA NOMADS', model:'GFS 0,25°',
-      cycleUTC:cycle.iso, forecastHour:6,
-      validUTC:new Date(Date.parse(cycle.iso) + 6*3600000).toISOString(),
+      source:'NOAA NOMADS',model:'GFS 0,25°',
+      cycleUTC:cycle.iso,forecastHour,
+      validUTC:new Date(Date.parse(cycle.iso)+forecastHour*3600000).toISOString(),
       bounds:{top:52,bottom:40,left:-20,right:5},
-      fileBytes:file.length, fields:metadata.variables,
-      wind
+      fileBytes:file.length,fields:metadata.variables,points,
+      // Compatibilité des clients utilisant l'ancienne lecture au large de Brest.
+      wind:points[0]
     };
-  } finally {
+  }finally{
     clearTimeout(timer);
   }
 }
 
-exports.handler = async function handler(event) {
-  if (event.httpMethod !== 'GET') {
-    return respond(405,{ok:false,error:'Méthode non autorisée.'});
+exports.handler=async function handler(event){
+  if(event.httpMethod!=='GET') return respond(405,{ok:false,error:'Méthode non autorisée.'});
+  const forecastHour=selectForecastHour(event);
+  if(forecastHour===null) return respond(400,{ok:false,error:'Échéance météo non autorisée.'});
+  const cycle=chooseCycle();
+  const key=cycle.iso+':'+forecastHour;
+  const now=Date.now();
+  const cached=cache.get(key);
+  if(cached&&now<cached.expiresAt) return respond(cached.statusCode,{...cached.body,cached:true});
+  if(pending.has(key)){
+    const shared=await pending.get(key);
+    return respond(shared.statusCode,{...shared.body,cached:false});
   }
-  const current = Date.now();
-  if (last && current < expiresAt) {
-    return respond(last.statusCode,{...last.body,cached:true});
-  }
-  if (!pending) {
-    pending = retrieveWind().then(
-      data => {
-        last = {statusCode:200,body:{ok:true,...data}};
-        expiresAt = Date.now() + TTL_OK;
-        return last;
-      },
-      err => {
-        last = {
-          statusCode:503,
-          body:{ok:false,error:'Vent GFS non vérifié : '+String(err?.message||err).slice(0,220)}
-        };
-        expiresAt = Date.now() + TTL_FAIL;
-        return last;
-      }
-    ).finally(()=>{pending=null;});
-  }
-  const result = await pending;
+  const remaining=NOAA_MIN_INTERVAL_MS-(now-lastNoaaRequestAt);
+  if(remaining>0) return respond(429,{
+    ok:false,error:'NOAA : patienter '+Math.ceil(remaining/1000)+' s avant une nouvelle échéance.',
+    retryAfterSeconds:Math.ceil(remaining/1000)
+  });
+
+  lastNoaaRequestAt=now;
+  const task=retrieveWind(cycle,forecastHour).then(
+    data=>{
+      const entry={statusCode:200,body:{ok:true,...data},expiresAt:Date.now()+TTL_OK};
+      cache.set(key,entry);return entry;
+    },
+    err=>{
+      const entry={statusCode:503,body:{
+        ok:false,error:'Vent GFS non vérifié : '+String(err?.message||err).slice(0,200)
+      },expiresAt:Date.now()+TTL_FAIL};
+      cache.set(key,entry);return entry;
+    }
+  ).finally(()=>pending.delete(key));
+  pending.set(key,task);
+  const result=await task;
   return respond(result.statusCode,{...result.body,cached:false});
 };

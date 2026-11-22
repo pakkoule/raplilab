@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#ecf5f4">
-<meta name="description" content="Rapli Regatta — collection privée de courses Virtual Regatta.">
+<meta name="description" content="Rapli Regatta — championnat, courses, skippers et statistiques de l’équipe LPDB.">
 <title>Rapli Regatta</title>
 <link rel="icon" type="image/webp" href="/regatta/assets/logo.webp">
 <link rel="apple-touch-icon" href="/regatta/assets/logo.webp">
@@ -67,7 +67,7 @@ html:not([data-rapli-role="editor"]) #rapli-module-cloud-save{display:none!impor
   <header class="regatta-brand-header" aria-label="Rapli Regatta">
     <img class="regatta-brand-logo" src="assets/logo.webp" alt="Rapli Regatta" width="216" height="94" loading="eager">
   </header>
-  <button type="button" id="vsr-header-ranking" class="vsr-header-ranking"
+  <button type="button" id="vsr-header-ranking" class="vsr-header-ranking" hidden aria-hidden="true" tabindex="-1"
     title="Ouvrir l’évolution de mon classement VSR" aria-label="Voir mon classement VSR dans Statistiques"
     aria-controls="stats-panel">
     <span class="vsr-header-ranking-symbol" aria-hidden="true">
@@ -85,18 +85,12 @@ html:not([data-rapli-role="editor"]) #rapli-module-cloud-save{display:none!impor
       </span>
     </span>
   </button>
-  <nav class="workspace-tabs" role="tablist" aria-label="Vues Rapli Regatta">
-    <button type="button" id="view-team" class="workspace-tab active" role="tab" aria-selected="true" aria-controls="lpdb-panel">LPDB</button>
-    <button type="button" id="view-races" class="workspace-tab" role="tab" aria-selected="false" aria-controls="races-panel" tabindex="-1">MES COURSES · ARCHIVES</button>
-    <button type="button" id="view-stats" class="workspace-tab" role="tab" aria-selected="false" aria-controls="stats-panel" tabindex="-1">MES STATISTIQUES</button>
-    <button type="button" id="view-honors" class="workspace-tab" role="tab" aria-selected="false" aria-controls="honors-panel" tabindex="-1">MON PALMARÈS</button>
-    <button type="button" id="view-colors" class="workspace-tab regatta-settings-tab" role="tab" aria-selected="false" aria-controls="colors-panel" tabindex="-1" hidden>COULEURS DES CLASSES</button>
-  </nav>
+
   </div>
   <div class="regatta-cloud-status" id="regatta-cloud-overlay" role="status" aria-live="polite" aria-atomic="true" aria-hidden="true">
     <span id="rapli-shared-status-regatta">Chargement de la collection…</span>
   </div>
-  <section id="lpdb-panel" class="lpdb-shell" role="tabpanel" aria-labelledby="view-team">
+  <section id="lpdb-panel" class="lpdb-shell" role="region" aria-label="LPDB — Championnat de l’équipe">
     <nav class="lpdb-tabs" role="tablist" aria-label="Rubriques de l’équipe LPDB">
       <button type="button" id="lpdb-view-team" class="lpdb-tab active" role="tab" aria-selected="true" aria-controls="team-panel">CHAMPIONNAT</button>
       <button type="button" id="lpdb-view-team-races" class="lpdb-tab" role="tab" aria-selected="false" aria-controls="team-races-panel" tabindex="-1">COURSES D'ÉQUIPE</button>
@@ -108,7 +102,7 @@ html:not([data-rapli-role="editor"]) #rapli-module-cloud-save{display:none!impor
     <section id="team-skippers-panel" role="tabpanel" aria-labelledby="lpdb-view-team-skippers" class="team-panel" hidden></section>
     <section id="team-stats-panel" role="tabpanel" aria-labelledby="lpdb-view-team-stats" class="team-panel" hidden></section>
   </section>
-  <div id="races-panel" role="tabpanel" aria-labelledby="view-races" hidden>
+  <div id="races-panel" role="region" aria-label="Archives historiques personnelles masquées" hidden inert>
   <div class="regatta-catalogue-controls">
     <div class="regatta-search" role="search" aria-label="Recherche dans toutes les informations des courses">
       <label class="regatta-search-field" for="search">
@@ -447,7 +441,7 @@ html:not([data-rapli-role="editor"]) #rapli-module-cloud-save{display:none!impor
     <button type="button" id="empty-add" class="btn primary">＋ MA PREMIÈRE COURSE</button>
   </div>
   </div>
-  <section id="stats-panel" class="stats-panel" role="tabpanel" aria-labelledby="view-stats" hidden>
+  <section id="stats-panel" class="stats-panel" role="region" aria-label="Anciennes statistiques personnelles masquées" hidden inert>
     <div class="counters" role="group" aria-label="Compteurs de courses, mis à jour avec la collection">
       <div class="counter"><strong id="count-total">0</strong><span>COURSES</span></div>
       <div class="counter"><strong id="count-live">0</strong><span>EN COURS</span></div>
@@ -473,12 +467,12 @@ html:not([data-rapli-role="editor"]) #rapli-module-cloud-save{display:none!impor
     </section>
     <div id="stats-content" class="stats-content"></div>
   </section>
-  <section id="honors-panel" class="honors-panel" role="tabpanel" aria-labelledby="view-honors" hidden>
+  <section id="honors-panel" class="honors-panel" role="region" aria-label="Ancien palmarès personnel masqué" hidden inert>
     <div class="honors-heading"><div><span class="honors-kicker">RAPLI REGATTA · MES EXPLOITS</span><h2>MON PALMARÈS</h2><p>Mes meilleurs classements, podiums et records, calculés à partir des courses enregistrées.</p></div><span class="honors-symbol" aria-hidden="true">🏆</span></div>
     <div id="honors-content" class="honors-content" aria-live="polite"></div>
   </section>
-  <section id="colors-panel" class="colors-panel" role="tabpanel" aria-labelledby="view-colors" hidden>
-    <div class="colors-heading"><strong>ÉTIQUETTES FOIL · BATEAUX &amp; VSR</strong><button type="button" class="btn subtle tiny" id="colors-back-races">← Retour aux courses</button><p>Personnalise les deux couleurs du foil, la bordure, le texte et le libellé affiché. Les couleurs et les noms se retrouvent sur toutes les tuiles concernées, sans modifier leur catégorie réelle.</p></div>
+  <section id="colors-panel" class="colors-panel" role="region" aria-label="Personnalisation des puces bateau et VSR LPDB" hidden>
+    <div class="colors-heading"><strong>ÉTIQUETTES FOIL · BATEAUX &amp; VSR</strong><button type="button" class="btn subtle tiny" id="colors-back-races">← Retour aux courses d’équipe</button><p>Personnalise les deux couleurs du foil, la bordure, le texte et le libellé affiché. Les couleurs et les noms se retrouvent sur toutes les tuiles concernées, sans modifier leur catégorie réelle.</p></div>
     <div class="color-global">
       <label for="default-class-color">COULEUR GLOBALE DES TAGS <input type="color" id="default-class-color" value="#008fa1" aria-label="Couleur globale des classes de bateaux"></label>
       <p>Modifier cette couleur l'applique à <strong>toutes les courses</strong> et réinitialise les couleurs spécifiques. Tu peux ensuite attribuer une couleur différente à une classe ci-dessous.</p>
@@ -583,16 +577,14 @@ html:not([data-rapli-role="editor"]) #rapli-module-cloud-save{display:none!impor
     <header class="team-dialog-head"><h2 id="team-race-dialog-title">NOUVELLE COURSE D'ÉQUIPE</h2><button type="button" data-team-close class="team-dialog-close" aria-label="Fermer">×</button></header>
     <div class="team-dialog-scroll">
       <div class="team-linked-race">
-        <label>FICHE « MES COURSES » ASSOCIÉE
-          <select id="team-race-personal" aria-label="Associer cette course à une fiche personnelle"><option value="">Aucune · course indépendante</option></select>
+        <label>RÉUTILISER UNE ANCIENNE FICHE OU UN RECORD (FACULTATIF)
+          <select id="team-race-personal" aria-label="Réutiliser l’illustration et les détails d’une fiche historique"><option value="">Aucune · course indépendante</option></select>
         </label>
         <div class="team-toolbar">
           <button type="button" class="team-action team-secondary" data-team-action="link-existing">UTILISER SES DÉTAILS</button>
-          <button type="button" class="team-action team-secondary" data-team-action="open-personal">OUVRIR MES COURSES</button>
-          <button type="button" class="team-action team-secondary" data-team-action="new-personal">CRÉER MA FICHE PERSONNELLE</button>
-          <button type="button" class="team-action team-secondary" data-team-action="unlink-personal">DISSOCIER</button>
+                              <button type="button" class="team-action team-secondary" data-team-action="unlink-personal">DISSOCIER</button>
         </div>
-        <div id="team-linked-help" class="team-footnote">Associe une course personnelle pour partager automatiquement ses détails (nom, bateau, VSR, dates…). Les arrivées et équipements individuels restent indépendants. La clôture du classement LPDB se renseigne séparément.</div>
+        <div id="team-linked-help" class="team-footnote">Tu peux réutiliser le visuel et les données d’une ancienne course enregistrée, notamment le Trophée Jules Verne. Les classements et notes LPDB restent indépendants.</div>
         <div id="team-linked-image" class="team-linked-image" hidden></div>
       </div>
       <div class="team-form-grid">

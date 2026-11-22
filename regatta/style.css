@@ -1609,11 +1609,10 @@ button.close{min-width:40px;min-height:40px}
 }
 
 
-/* PR #4 — compact forecast-cycle estimator across the base of active race cards.
-   Its percentages reflect elapsed time within a GFS publication window, not
-   actual data downloaded from Virtual Regatta. */
-.cards .card.card--columns .race-gfs-widget{
- grid-column:1 / -1;min-width:0;margin-top:1px;padding:10px 12px;
+/* PR #4 — compact forecast-cycle estimator in the right column in place
+   of rankings on active races; no confirmed Virtual Regatta download status. */
+.cards .card.card--columns .race-card-right .race-gfs-widget{
+ width:100%;min-width:0;margin-top:10px;padding:10px 12px;
  border:1px solid #c5dce7;border-radius:11px;
  background:linear-gradient(115deg,#f5fbfd 0%,#ecf6f8 51%,#f7f4fb 100%);
  box-shadow:inset 0 1px 0 #ffffff,0 2px 9px #1c597013;
@@ -1697,4 +1696,38 @@ button.close{min-width:40px;min-height:40px}
 }
 @media(prefers-reduced-motion:reduce){
  .cards .card.card--columns .race-gfs-progress-fill{transition:none}
+}
+
+/* Fit the GFS block inside the narrower right column on an iPhone. */
+.cards .card.card--columns .race-card-right .race-gfs-topline{
+ flex-wrap:wrap;justify-content:flex-start;column-gap:7px;row-gap:3px
+}
+.cards .card.card--columns .race-card-right .race-gfs-status{min-width:0;text-align:left}
+.cards .card.card--columns .race-card-right .race-gfs-bottomline{
+ flex-direction:column;align-items:stretch;gap:5px
+}
+.cards .card.card--columns .race-card-right .race-gfs-next{
+ display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;
+ gap:4px;text-align:left
+}
+.cards .card.card--columns .race-card-right .race-gfs-countdown{
+ margin-left:auto;font-variant-numeric:tabular-nums
+}
+@media(max-width:580px){
+ .cards .card.card--columns .race-card-right .race-gfs-widget{
+  margin-top:8px;padding:8px 7px
+ }
+ .cards .card.card--columns .race-card-right .race-gfs-title small{display:none}
+ .cards .card.card--columns .race-card-right .race-gfs-next{
+  flex-direction:column;align-items:flex-start;gap:3px
+ }
+ .cards .card.card--columns .race-card-right .race-gfs-next [data-gfs-next-label]{
+  white-space:normal;overflow-wrap:break-word;font-size:7px
+ }
+ .cards .card.card--columns .race-card-right .race-gfs-countdown{
+  margin:0;align-self:flex-start;font-size:12px
+ }
+ .cards .card.card--columns .race-card-right .race-gfs-percent{
+  flex-basis:38px;font-size:10px
+ }
 }

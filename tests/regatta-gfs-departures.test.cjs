@@ -3,9 +3,10 @@ const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const motion=require('../regatta/gfs-motion.js');
 const {
-  DEPARTURES,LATER_DEPARTURES,EVENING_DEPARTURES,GATE_LATITUDE,HORIZON_HOURS,
+  DEPARTURES,LATER_DEPARTURES,EVENING_DEPARTURES,NEXT_DAY_DEPARTURES,GATE_LATITUDE,HORIZON_HOURS,
   compatibleFrames,sailToGate,compareDepartureWindows,compareLaterDepartureWindows,compareAllDepartureWindows,
-  compareEveningDepartureWindows,compareTwelveDepartureWindows
+  compareEveningDepartureWindows,compareTwelveDepartureWindows,
+  compareNextDayDepartureWindows,compareSixteenDepartureWindows
 }=require('../regatta/gfs-departures.js');
 const CYCLE='2026-11-22T00:00:00.000Z';
 function packed(values){
@@ -170,4 +171,52 @@ test('troisième plage refuse mauvais cycle, échéance et polaires non couverte
     frame(6),frame(12),frame(18),
     frame(24,{cycle:'2026-11-22T06:00:00.000Z'})
   ),/incompatibles/);
+});
+
+test('quatre départs +24/+25/+26/+27 sur une paire f024/f030',()=>{
+ const result=compareNextDayDepartureWindows(frame(24),frame(30));
+ assert.deepEqual(NEXT_DAY_DEPARTURES,[24,25,26,27]);
+ assert.equal(result.sourceStartHour,24);
+ assert.equal(result.sourceEndHour,30);
+ assert.equal(result.windows.length,4);
+ assert.equal(result.validCount,4);
+ for(const window of result.windows){
+   assert.equal(window.valid,true);
+   assert.ok(window.crossingForecastHour>=window.startHour);
+   assert.ok(window.crossingForecastHour<=30);
+   assert.ok(window.elapsedMinutes>0&&window.elapsedMinutes<=180);
+   assert.ok(Math.abs((Date.parse(window.crossingUTC)-Date.parse(window.departureUTC))/60000-window.elapsedMinutes)<.1);
+ }
+});
+test('bilan de seize départs conserve les quinze premiers si la dernière plage devient hors polaire',()=>{
+ const calm=compareNextDayDepartureWindows(frame(24,{windSpeed:0}),frame(30,{windSpeed:0}));
+ assert.equal(calm.windows.length,4);
+ assert.equal(calm.validCount,0);
+ assert.equal(calm.fastestStartHour,null);
+ assert.ok(calm.windows.every(w=>!w.valid));
+ const total=compareSixteenDepartureWindows(
+   frame(6),frame(12),frame(18),frame(24,{windSpeed:0}),frame(30,{windSpeed:0})
+ );
+ assert.equal(total.windows.length,16);
+ assert.ok(total.validCount>=1&&total.validCount<=12);
+ assert.ok(total.windows.slice(-4).every(w=>!w.valid));
+ assert.ok(total.fastestElapsedMinutes>0);
+});
+test('bilan de seize départs et rejet des cycles NOAA divergents',()=>{
+ const total=compareSixteenDepartureWindows(frame(6),frame(12),frame(18),frame(24),frame(30));
+ assert.equal(total.windows.length,16);
+ assert.equal(total.validCount,16);
+ assert.deepEqual(total.windows.map(w=>w.startHour),
+   [6,7,8,9,12,13,14,15,18,19,20,21,24,25,26,27]);
+ assert.equal(total.fastestElapsedMinutes,Math.min(...total.windows.map(w=>w.elapsedMinutes)));
+ assert.equal(total.fullPack,false);
+ assert.equal(total.isEquatorForecast,false);
+ assert.throws(()=>compareSixteenDepartureWindows(
+   frame(6),frame(12),frame(18),frame(24),
+   frame(30,{cycle:'2026-11-22T06:00:00.000Z'})
+ ),/incompatibles/);
+ assert.throws(()=>compareNextDayDepartureWindows(frame(18),frame(24)),/non compatibles/);
+ const {first,second}=compatibleFrames(frame(24),frame(30));
+ assert.throws(()=>sailToGate(first,second,28,47),/non autorisé/);
+ assert.throws(()=>sailToGate(first,second,27,40.1),/non franchie/);
 });

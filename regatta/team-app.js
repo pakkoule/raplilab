@@ -67,7 +67,7 @@ function rankTable(list,{top=false}={}){
  page=Math.min(Math.max(1,page),limit);
  const sliced=top?list.slice(0,10):list.slice((page-1)*pageSize,page*pageSize);
  return '<div class="team-table-wrap"><table class="team-table"><thead><tr><th>#</th><th>SKIPPER</th><th>COURSES</th><th>V.</th><th>POD.</th><th>POINTS</th><th>PTS/COURSE</th></tr></thead><tbody>'+
- sliced.map(s=>'<tr><td>'+medal(s.rank)+'</td><td><button class="team-skipper-link" data-team-profile="'+esc(s.id)+'">'+esc(s.name)+'</button>'+(s.status==='former'?'<small>Ancien membre</small>':'')+'</td><td>'+num(s.participations)+'</td><td>'+num(s.wins)+'</td><td>'+num(s.podiums)+'</td><td class="team-points">'+num(s.points)+'</td><td>'+num(s.avg)+'</td></tr>').join('')+'</tbody></table></div>'+
+ sliced.map(s=>'<tr><td>'+(s.points>0?medal(s.rank):num(s.rank))+'</td><td><button class="team-skipper-link" data-team-profile="'+esc(s.id)+'">'+esc(s.name)+'</button>'+(s.status==='former'?'<small>Ancien membre</small>':'')+'</td><td>'+num(s.participations)+'</td><td>'+num(s.wins)+'</td><td>'+num(s.podiums)+'</td><td class="team-points">'+num(s.points)+'</td><td>'+num(s.avg)+'</td></tr>').join('')+'</tbody></table></div>'+
  (!top&&limit>1?'<nav class="team-pages">'+action('previous','← Précédent','team-secondary')+'<span>Page '+page+' / '+limit+'</span>'+action('next','Suivant →','team-secondary')+'</nav>':'');
 }
 function renderMain(){
@@ -235,7 +235,9 @@ function showProfile(id){
  $('team-profile-body').innerHTML=content;
  $('team-profile-dialog').showModal();
 }
+let currentStage='';
 function stageDialog(group){
+ currentStage=group;
  const data=engine.stageBonus(all(),group,viewMode);
  $('team-stage-title').textContent=group.toLocaleUpperCase('fr');
  $('team-stage-body').innerHTML='<p>Classement bonus des étapes, sans nouveau point attribué au championnat.</p>'+rankTable(data.skippers,{top:false});
@@ -349,7 +351,10 @@ function doExport(kind,arg){
  const model=engine.standings(data,p,viewMode);
  let title=(viewMode==='main'?'Principal':'Historique')+' · '+labelPeriod();
  let list=sortedItems(model.skippers),style='table',limit=0,filename='lpdb-'+viewMode+'-'+periodType;
- if(kind==='png-podium'){style='social';limit=3;}
+ if(kind==='png-podium'){
+  if(!list.some(s=>s.points>0)){notify('Aucun podium récompensé avant la première course classée.',true);return;}
+  style='social';limit=3;
+ }
  if(kind==='png-top10'){style='social';limit=10;}
  if(kind==='png-stats'||kind==='png-stats-social'){
   list=[...model.skippers].sort((a,b)=>statMode==='avg'?b.avg-a.avg:statMode==='finish'?b.finishRate-a.finishRate:statMode==='wins'?b.wins-a.wins:b.points-a.points);
@@ -398,8 +403,8 @@ async function click(ev){
  }
  if(cmd==='add-member'&&draft){const id=$('team-select-member').value;if(id)addMemberToDraft(id);return;}
  if(cmd==='create-member'&&draft)return void quickMember();
- if(cmd==='previous'){page=Math.max(1,page-1);renderMain();return;}
- if(cmd==='next'){page++;renderMain();return;}
+ if(cmd==='previous'){page=Math.max(1,page-1);if($('team-stage-dialog')?.open)stageDialog(currentStage);else renderMain();return;}
+ if(cmd==='next'){page++;if($('team-stage-dialog')?.open)stageDialog(currentStage);else renderMain();return;}
  if(cmd.startsWith('race-'))return openRace(cmd.slice(5));
  if(cmd.startsWith('member-'))return openMember(cmd.slice(7));
  if(cmd.startsWith('profile-'))return showProfile(cmd.slice(8));

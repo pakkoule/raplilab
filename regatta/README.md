@@ -139,12 +139,14 @@ Module autonome et seul espace actif de Rapli Lab dans la PR #4.
 
 ## Indicateur météo GFS (PR #4)
 
-Les tuiles de course ou de record avec le statut **En cours** affichent automatiquement un mini-bloc météo GFS **dans la colonne de droite, à la place du classement non disponible**. Les autres statuts (à venir, terminé, DNF, record clôturé) ne l'affichent pas. Aucun champ n'est enregistré et aucune donnée des courses n'est modifiée.
+Les tuiles de course ou de record avec le statut **En cours** affichent automatiquement un mini-bloc météo GFS **dans la colonne de droite, à la place du classement non disponible**. Les courses **À venir** (et les records avec une prochaine tentative future) affichent un **briefing météo pré-départ** dans cette même zone, sans classements prématurés. Les tuiles terminées, DNF et records clôturés gardent leur vue de résultats. Aucun champ n'est enregistré et aucune donnée des courses n'est modifiée.
 
 - Cycles de premières données estimés à **03h40, 09h40, 15h40 et 21h40 UTC**, d'après [l'assistance Virtual Regatta Offshore](https://virtualregatta.zendesk.com/hc/fr/articles/115001441254-Pr%C3%A9visions-M%C3%A9t%C3%A9orologiques-et-Mise-%C3%A0-Jour).
 - Heure de prochaine actualisation présentée dans le fuseau **Europe/Paris**, automatiquement adaptée à CET/CEST, y compris lors des changements d'heure.
 - Compte à rebours **HH:MM:SS**, recalculé à chaque seconde, et estimation de progression de **0 à 100 %** sur une fenêtre indicative de 80 minutes après le début d'un cycle. Message « Intégration estimée » pendant les 30 premières minutes, « Consultation pertinente » de 30 à 80 minutes, puis « Météo à consulter ».
 - **Aucune API météo Virtual Regatta n'est consultée** : l'avancement et le conseil sont exclusivement des **estimations horaires**. Les données affichées dans Virtual Regatta font foi ; retards et durées de diffusion peuvent différer. L'interface précise « estimation » et son infobulle rappelle la limite.
 - Le rafraîchissement se fait **en place** sur le texte et la barre de progression ; aucune recréation de tuile ou de photo. Reprise immédiate au retour sur l'onglet, sans écriture Supabase/IndexedDB.
+- Le **briefing d'avant-course** affiche le dernier GFS estimé exploitable avant le départ (avec horaire indicatif de consultation, +80 minutes), le cycle suivant et son rapport avec l'heure de départ (chargement éventuellement en cours). Un fin bandeau de conseil de routage occupe l'espace libre. Les dates/heures sont calculées depuis le départ de la course dans son fuseau, puis converties en Europe/Paris avec changement été/hiver automatique. Si l'heure de départ manque, il invite à la renseigner. Le statut « À préparer / À consulter » suit le cycle sans recharger les photos. Le statut À venir ne montre pas les points/crédits encore non acquis.
+
 
 Tests : `tests/regatta-gfs.test.cjs` (cycles UTC, hiver/été, bascules DST, compte à rebours, progression, statut, préservation du nœud image).

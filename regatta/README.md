@@ -220,3 +220,16 @@ Après lecture **réussie** de deux échéances voisines (+6 et +12, ou +12 et +
 - L'interpolation **spatiale** n'est pas encore implémentée : les trois sites restent des lectures au nœud de grille le plus proche. Aucun calcul de trajectoire, départ optimal, équateur ou cap de Bonne-Espérance n'est affiché.
 
 Tests : `tests/regatta-gfs-interpolation.test.cjs`. Le déploiement reste strictement limité à la PR #4.
+
+
+## GFS 0,25° · interpolation spatiale bilinéaire (PR #4 · prototype 5)
+
+Un quatrième échantillon sur **47,125°N / 9,125°O** (golfe de Gascogne) est désormais calculé entre les mailles de la grille NOAA GFS 0,25° :
+
+- Les **4 nœuds voisins** sont lus sur la grille GRIB2 régulière, dont les directions de balayage (i/j, lignes ou colonnes et lignes alternées) sont gérées par le décodeur. Aucun point hors du domaine téléchargé n'est extrapolé.
+- Les composantes **U et V sont interpolées séparément**, puis les vitesses en nœuds et directions d'origine sont recalculées à partir du vecteur obtenu.
+- Le résultat est étiqueté **bilinéaire** et reste distinct des trois mesures au nœud NOAA le plus proche. Aucune navigation ni fenêtre de départ n'est calculée pour cette étape.
+- Si l'interpolation spatiale échoue ou si le maillage n'est pas reconnu, les **trois points NOAA déjà validés restent affichés** avec un état d'erreur explicite pour ce test expérimental.
+- Aucun nouveau téléchargement NOAA par lecture : on réutilise le même fichier GRIB2 que les trois points. La lecture reste volontairement manuelle, avec cache et espacement, sur la PR #4 uniquement.
+
+Tests de grille synthétique : `tests/regatta-gfs-spatial.test.cjs` (poids bilinéaires, balayage GRIB, franchissement 360°/0°, refus d'extrapolation et cellules absentes). La validation réelle du nouvel échantillon dans Safari iPhone reste à faire.

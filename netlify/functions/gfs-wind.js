@@ -42,13 +42,19 @@ async function retrieveWind(cycle,forecastHour){
     const file=await readLimited(response,MAX_BYTES);
     const metadata=inspectGrib2(file);
     const points=await decodeWindPoints(file,SITES);
-    const spatial=await decodeWindSpatial(file,SPATIAL_SITE);
+    let spatial=null,spatialError=null;
+    try{
+      spatial=await decodeWindSpatial(file,SPATIAL_SITE);
+    }catch(error){
+      // GFS space sampling is experimental; keep 3 proven NOAA readings available.
+      spatialError=String(error?.message||error).slice(0,130);
+    }
     return {
       source:'NOAA NOMADS',model:'GFS 0,25°',
       cycleUTC:cycle.iso,forecastHour,
       validUTC:new Date(Date.parse(cycle.iso)+forecastHour*3600000).toISOString(),
       bounds:{top:52,bottom:40,left:-20,right:5},
-      fileBytes:file.length,fields:metadata.variables,points,spatial,
+      fileBytes:file.length,fields:metadata.variables,points,spatial,spatialError,
       // Compatibilité des clients utilisant l'ancienne lecture au large de Brest.
       wind:points[0]
     };

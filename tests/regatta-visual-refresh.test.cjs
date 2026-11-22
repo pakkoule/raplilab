@@ -44,9 +44,10 @@ function raceTileHarness(){
   safe:value=>String(value??''),validImage:value=>String(value??'').startsWith('data:image'),
   imageTag:(src,alt)=>'<img src="'+src+'" alt="'+alt+'">',
   recordCardContent:()=>'<div class="record-card">RECORD ATTEMPTS</div>',
-  equipmentModes:{fp:'FULL PACK'},ROUTE_TYPES:{transat:'Transatlantique'},
+  equipmentModes:{pdd:'PDD','half-fp':'1/2 FP','full-pack':'FULL PACK',fp:'FULL PACK'},
+  ROUTE_TYPES:{transat:'Transatlantique'},
   moneyNumber:value=>value!==''&&value!==undefined&&value!==null,
-  validEquipment:value=>value==='fp',
+  validEquipment:value=>['pdd','half-fp','full-pack','fp'].includes(value),
   dateTimeFR:(day,time)=>day+(time?' · '+time:''),
  };
  const methods=new Function('ctx','with(ctx){'+js.slice(start,end)+
@@ -376,7 +377,7 @@ test('responsive duration never wraps the seconds on narrow race cards',()=>{
 
 test('reward chips share one row and title/date styling stays responsive',()=>{
  const titleRule=css.split('.cards .card.card--columns .card-title-row{')[1]?.split('}')[0];
- assert.match(titleRule,/align-items:center/,'title and options button align vertically');
+ assert.match(titleRule,/display:block/,'title spans the whole left column after moving the menu');
  const rewardRule=css.split('.cards .card.card--columns .race-card-rewards{')[1]?.split('}')[0];
  assert.match(rewardRule,/display:grid;grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
  const smallPhoneRule=css.split('@media(max-width:580px){').pop();
@@ -389,6 +390,28 @@ test('reward chips share one row and title/date styling stays responsive',()=>{
  const {card}=raceTileHarness();
  const tile=new JSDOM(card({...testRace,mockStatus:'finished'})).window.document;
  assert.equal(tile.querySelectorAll('.race-card-rewards .stat-chip').length,2);
+});
+
+test('equipment uses designation only and options stay at the tile upper-right',()=>{
+ const {card}=raceTileHarness();
+ for(const [equipment,label] of [['pdd','PDD'],['half-fp','1/2 FP'],['full-pack','FULL PACK']]){
+  const doc=new JSDOM(card({...testRace,equipment,mockStatus:'finished'})).window.document;
+  const tags=doc.querySelector('.race-card-right .race-card-meta-tags');
+  const badge=tags.querySelector('.race-card-badges .equipment');
+  assert.equal(badge.textContent,label,'equipment chip must show only the designation');
+  assert.equal(tags.lastElementChild.className,'race-actions-menu',
+   'the action menu follows the badges on the same top row');
+  assert.equal(doc.querySelectorAll('.race-actions-menu').length,1);
+  assert.ok(tags.querySelector('.race-card-badges .class-tag'));
+  assert.ok(tags.querySelector('.race-card-badges .vsr-badge'));
+ }
+ const badgeCss=css.split('.cards .card.card--columns .race-card-meta-tags{')[1]?.split('}')[0];
+ assert.match(badgeCss,/flex-wrap:nowrap/);
+ assert.ok(css.includes('.cards .card.card--columns .race-card-badges{'));
+ const optionsCss=css.split('.cards .card.card--columns .race-actions-menu{')[1]?.split('}')[0];
+ assert.match(optionsCss,/margin:0 0 0 auto/);
+ const popoverCss=css.split('.cards .card.card--columns .race-actions-popover{')[1]?.split('}')[0];
+ assert.match(popoverCss,/right:0;left:auto/,'popover opens inward from the right edge');
 });
 
 test('premium gradients preserve meaning of original ranking and chip colors',()=>{
@@ -429,7 +452,9 @@ test('two-column race, record and stage cards preserve details, menu and media z
   assert.ok(layout.querySelector('.race-card-left .race-card-schedule'));
   assert.ok(layout.querySelector('.race-card-right .race-card-meta-tags .class-tag'));
   assert.ok(layout.querySelector('.race-card-right .race-card-meta-tags .vsr-badge'));
-  assert.ok(layout.querySelector('.race-card-left .card-title-row .race-actions-menu>summary'));
+  assert.ok(layout.querySelector('.race-card-right .race-card-meta-tags>.race-actions-menu>summary'));
+  assert.equal(layout.querySelector('.race-card-left .race-actions-menu'),null);
+  assert.ok(layout.querySelector('.race-card-right .race-card-meta-tags>.race-card-badges'));
   assert.ok(tile.querySelector('.race-card-right .rank-plate.rank-main')||status==='dnf'||
     (kind==='record'&&!closed));
   assert.equal(Boolean(tile.querySelector('.race-card-right .score-orb')),

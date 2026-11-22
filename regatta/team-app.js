@@ -547,10 +547,16 @@ async function submitMember(ev){
 function showProfile(id){
  const m=members().find(x=>x.id===id);if(!m)return;
  const model=engine.standings(all(),period(),viewMode),s=model.skippers.find(x=>x.id===id);
+ const known=new Map(members().map(m=>[m.id,m]));
+ const raceHistory=races();
+ const notes=new Map(raceHistory.map(r=>[r.id,rating.calculate(r,raceHistory,known,engine).scores.get(id)]));
  const content='<div class="team-profile-head"><h3>'+esc(m.name)+'</h3><small>'+esc(m.status==='active'?'Membre actif':'Ancien membre')+' · '+esc(labelPeriod())+'</small><small>'+esc((m.memberships||[]).filter(w=>w.from||w.until).map(w=>(w.from||'Début inconnu')+' → '+(w.until||'En cours')).join(' · '))+'</small></div>'+
  (s?statCards([['Points',num(s.points)],['Points / course',num(s.avg)],['Courses terminées',num(s.finished)],['Victoires',num(s.wins)],['Podiums',num(s.podiums)],['Assiduité',num(s.attendance)+' %'],['Prestige moyen',num(s.prestige)],['Départage hybride',num(s.hybrid)],['Courses chronométrées',num(s.timedRaces)],['Chrono moyen',clockLabel(s.avgTimeSeconds)],['Écart moyen',clockLabel(s.avgGapSeconds)],['Meilleur rang général VR',s.bestGeneralRank!=null?'#'+num(s.bestGeneralRank):'—']])+
- '<div class="team-table-wrap"><table class="team-table"><thead><tr><th>COURSE</th><th>RANG LPDB</th><th>GÉNÉRAL VR</th><th>VSR</th><th>CHRONO</th><th>ÉCART</th><th>POINTS</th></tr></thead><tbody>'+
- s.records.slice().sort((a,b)=>b.dateEnd.localeCompare(a.dateEnd)).map(r=>'<tr><td>'+esc(r.raceName)+'<small>'+esc(r.dateEnd)+'</small></td><td>'+ (r.dnf?'DNF':r.rank)+'</td><td>'+(r.generalRank!=null?'#'+num(r.generalRank):'—')+'</td><td>'+esc(r.vsr.toUpperCase())+'</td><td>'+clockLabel(r.elapsedSeconds)+'</td><td>'+clockLabel(r.gapSeconds)+'</td><td>'+num(viewMode==='historic'?r.historic:r.main)+'</td></tr>').join('')+'</tbody></table></div>':empty('Aucune participation sur cette période.'));
+ '<div class="team-table-wrap"><table class="team-table"><thead><tr><th>COURSE</th><th>RANG LPDB</th><th>GÉNÉRAL VR</th><th>VSR</th><th>CHRONO</th><th>ÉCART</th><th>NOTE</th><th>POINTS</th></tr></thead><tbody>'+
+ s.records.slice().sort((a,b)=>b.dateEnd.localeCompare(a.dateEnd)).map(r=>{
+  const note=notes.get(r.raceId);
+  return '<tr><td>'+esc(r.raceName)+'<small>'+esc(r.dateEnd)+'</small></td><td>'+ (r.dnf?'DNF':r.rank)+'</td><td>'+(r.generalRank!=null?'#'+num(r.generalRank):'—')+'</td><td>'+esc(r.vsr.toUpperCase())+'</td><td>'+clockLabel(r.elapsedSeconds)+'</td><td>'+clockLabel(r.gapSeconds)+'</td><td>'+(note?.available?num(note.value)+'/100':'—')+'</td><td>'+num(viewMode==='historic'?r.historic:r.main)+'</td></tr>';
+ }).join('')+'</tbody></table></div>':empty('Aucune participation sur cette période.'));
  $('team-profile-body').innerHTML=content;
  $('team-profile-dialog').showModal();
 }

@@ -37,6 +37,32 @@ function member(input){
  return {id,type:'team-member',name,status:input.status==='former'?'former':'active',
   from,until,memberships,createdAt:safe(input.createdAt,40),updatedAt:safe(input.updatedAt,40)};
 }
+/* A linked personal race owns shared metadata; team standings own their finish status and results.
+   Reconciliation is read-only and never rewrites the personal journal. */
+function resolveLinkedRace(team,personal){
+ const r=race(team);
+ if(!r||!r.personalRaceId||!personal||personal.id!==r.personalRaceId||personal.kind!=='race')return r;
+ const name=safe(personal.name,160)||r.name;
+ const dateEnd=dateOk(personal.end)?personal.end:r.dateEnd;
+ const vsr=BASE[personal.vsr]?personal.vsr:r.vsr;
+ return {...r,name,dateEnd,vsr,
+  boatClass:safe(personal.boatClass,100)||r.boatClass,
+  start:dateOk(personal.start)?personal.start:r.start,
+  startTime:safe(personal.startTime,8)||r.startTime,
+  endTime:safe(personal.endTime,8)||r.endTime,
+  routeType:safe(personal.routeType,40)||r.routeType,
+  timezone:safe(personal.timezone,80)||r.timezone,
+  equipment:safe(personal.equipment,30)||r.equipment};
+}
+function fromPersonal(personal,base={}){
+ if(!personal||personal.kind!=='race')return null;
+ return race({...base,personalRaceId:personal.id,
+  name:safe(personal.name,160)||safe(base.name,160),
+  dateEnd:dateOk(personal.end)?personal.end:base.dateEnd,
+  vsr:BASE[personal.vsr]?personal.vsr:base.vsr,
+  boatClass:personal.boatClass,start:personal.start,startTime:personal.startTime,
+  endTime:personal.endTime,routeType:personal.routeType,timezone:personal.timezone,equipment:personal.equipment});
+}
 function race(input){
  const id=cleanId(input?.id),name=safe(input?.name,160);
  if(!id.startsWith('lpdb-race-')||!name)return null;
@@ -52,6 +78,10 @@ function race(input){
  return {id,type:'team-race',name,dateEnd:dateOk(input.dateEnd)?input.dateEnd:'',
   vsr:BASE[input.vsr]?input.vsr:'vsr2',
   status:['planned','live','finished'].includes(input.status)?input.status:'planned',
+  personalRaceId:safe(input.personalRaceId,130),
+  boatClass:safe(input.boatClass,100),routeType:safe(input.routeType,40),
+  start:dateOk(input.start)?input.start:'',startTime:safe(input.startTime,8),endTime:safe(input.endTime,8),
+  timezone:safe(input.timezone,80),equipment:safe(input.equipment,30),
   stageGroup:safe(input.stageGroup,100),results,
   createdAt:safe(input.createdAt,40),updatedAt:safe(input.updatedAt,40)};
 }
@@ -152,7 +182,7 @@ function periods(entities){
  const years=[...new Set(races.map(r=>r.dateEnd.slice(0,4)))].sort().reverse();
  return {months,quarters,years};
 }
-const api={BASE,PRESTIGE,factor,tier,tierValue,historical,primary,normalize,member,race,verifyRace,scoredRace,inPeriod,standings,stageBonus,periods,dateOk};
+const api={BASE,PRESTIGE,factor,tier,tierValue,historical,primary,normalize,member,race,resolveLinkedRace,fromPersonal,verifyRace,scoredRace,inPeriod,standings,stageBonus,periods,dateOk};
 root.RapliTeamEngine=api;
 if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);

@@ -784,3 +784,11 @@
  .team-dialog .team-result-row input[data-team-gap]{grid-column:3 / 5;grid-row:3}
  .team-dialog .team-result-points{grid-column:1 / -1;grid-row:4}
 }
+
+/* Import preview: precisely identify rows with unresolved/skipper mapping errors. */
+.team-dialog .team-import-table tr.team-import-row-error{background:#fff2f3!important}
+.team-dialog .team-import-table tr.team-import-row-error td{border-top-color:#e5b2ba}
+.team-dialog .team-import-table tr.team-import-row-error td:first-child{
+ border-left:3px solid #b8596c;color:#9d4050
+}
+.team-dialog .team-import-warning{color:#983e4f!important;font-weight:750;line-height:1.5}

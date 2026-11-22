@@ -501,3 +501,95 @@ test('user can edit overall VR rankings in a pasted classification without chang
  assert.deepEqual(saved[0].race.results.map(x=>x.position),[1,2]);
  dom.window.close();
 });
+
+
+test('LPDB race scores reuse personal scoring without equipment, on /100',()=>{
+ const root={};
+ new Function('window',fs.readFileSync('regatta/score.js','utf8'))(root);
+ new Function('window',fs.readFileSync('regatta/team-rating.js','utf8'))(root);
+ const [a,b]=[m('Alpha'),m('Beta')],known=new Map([[a.id,a],[b.id,b]]);
+ const race=r('rated','2027-05-22','hc','finished',[
+  {...rr('Alpha',1),generalRank:290},{...rr('Beta',2),generalRank:456}
+ ]);
+ race.start='2027-05-01';race.boatClass='IMOCA';race.fleetTotal=20000;
+ const saved=E.race({...race,equipment:'pdd'});
+ const other=E.race({...race,equipment:'full-pack'});
+ const one=root.RapliTeamRating.calculate(saved,[saved],known,E,root.RapliRegattaScore);
+ const two=root.RapliTeamRating.calculate(other,[other],known,E,root.RapliRegattaScore);
+ assert.equal(one.rated,2);
+ assert.equal(one.average,78.5);
+ assert.deepEqual([...one.scores.values()].map(s=>s.value),[79,78]);
+ assert.deepEqual([...one.scores.values()].map(s=>s.value),[...two.scores.values()].map(s=>s.value));
+ assert.equal(one.scores.get(a.id).parts.equipment,undefined);
+ assert.deepEqual(root.RapliTeamRating.WEIGHTS,{relative:43.75,progress:25,vsr:12.5,attendance:18.75});
+});
+test('LPDB race rating remains unavailable with missing VR rank or global fleet',()=>{
+ const root={};new Function('window',fs.readFileSync('regatta/score.js','utf8'))(root);
+ new Function('window',fs.readFileSync('regatta/team-rating.js','utf8'))(root);
+ const [a,b,c]=[m('Alpha'),m('Beta'),m('Gamma')],known=new Map([a,b,c].map(x=>[x.id,x]));
+ const race=r('partial','2027-05-22','vsr2','finished',[
+  {...rr('Alpha',1),generalRank:100},rr('Beta',2),rr('Gamma',null,'dnf')
+ ]);
+ race.start='2027-05-01';race.boatClass='IMOCA';race.fleetTotal=1000;
+ const saved=E.race(race);
+ const results=root.RapliTeamRating.calculate(saved,[saved],known,E,root.RapliRegattaScore);
+ assert.equal(results.eligible,2);
+ assert.equal(results.rated,1);
+ assert.equal(results.scores.get(a.id).available,true);
+ assert.equal(results.scores.get(b.id).available,false);
+ assert.equal(results.scores.has(c.id),false);
+ assert.equal(results.average,results.scores.get(a.id).value);
+ const noFleet=E.race({...race,fleetTotal:null});
+ const empty=root.RapliTeamRating.calculate(noFleet,[noFleet],known,E,root.RapliRegattaScore);
+ assert.equal(empty.average,null);
+ assert.equal(empty.rated,0);
+ assert.equal(empty.scores.get(a.id).available,false);
+ const planning=E.race({...race,status:'live'});
+ assert.equal(root.RapliTeamRating.calculate(planning,[planning],known,E,root.RapliRegattaScore).rated,0);
+});
+test('LPDB tile removes personal-link label and adds mean rating while classification scrolls',()=>{
+ const ui=fs.readFileSync('regatta/team-app.js','utf8');
+ const css=fs.readFileSync('regatta/team.css','utf8');
+ const html=fs.readFileSync('regatta/index.html','utf8');
+ const d=new JSDOM(html).window.document;
+ assert.ok(d.getElementById('team-race-fleet'));
+ assert.ok([...d.querySelectorAll('script')].some(x=>x.getAttribute('src')==='team-rating.js'));
+ assert.equal(ui.includes('↔ Fiche « Mes courses » associée'),false);
+ assert.match(ui,/NOTE MOYENNE DE LA COURSE/);
+ assert.match(ui,/<th>NOTE \/100<\/th>/);
+ assert.match(ui,/rating\.calculate/);
+ assert.match(css,/#team-race-classification-dialog\[open\]/);
+ assert.match(css,/#team-classification-body\{flex:1 1 auto;min-height:0/);
+ assert.match(css,/overflow-y:auto;overflow-x:hidden/);
+ assert.match(css,/\.team-race-average/);
+});
+test('LPDB classification dialog renders an independent note for each skipper',()=>{
+ const dom=new JSDOM(fs.readFileSync('regatta/index.html','utf8'),{runScripts:'outside-only',url:'https://example.org/regatta/'});
+ const w=dom.window,d=w.document;
+ w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};
+ w.HTMLDialogElement.prototype.close=function(){this.open=false;};
+ w.RapliTeamEngine=E;w.RapliTeamTime=require('../regatta/team-time.js');
+ w.eval(fs.readFileSync('regatta/score.js','utf8'));
+ w.eval(fs.readFileSync('regatta/team-rating.js','utf8'));
+ w.eval(fs.readFileSync('regatta/team-app.js','utf8'));
+ const [a,b]=[m('Alpha'),m('Beta')];
+ const race=E.race({...r('rating','2027-05-22','hc','finished',[
+  {...rr('Alpha',1),generalRank:290},{...rr('Beta',2),generalRank:456}
+ ]),start:'2027-05-01',boatClass:'IMOCA',fleetTotal:20000});
+ w.RapliTeamUI.init({get:()=>[a,b,race],personal:()=>[],canEdit:()=>false,notify:()=>{},
+  save:async()=>{},remove:async()=>{}});
+ const tile=d.querySelector('.team-race-card');
+ assert.ok(tile);
+ assert.match(tile.textContent,/NOTE MOYENNE DE LA COURSE/);
+ assert.match(tile.textContent,/78,5\/100/);
+ d.querySelector('[data-team-action="show-ranking-'+race.id+'"]').click();
+ const dialog=d.getElementById('team-race-classification-dialog');
+ assert.equal(dialog.open,true);
+ const noteHeader=[...dialog.querySelectorAll('th')].find(x=>x.textContent.includes('NOTE'));
+ assert.ok(noteHeader);
+ const cells=dialog.querySelectorAll('tbody tr');
+ assert.equal(cells.length,2);
+ assert.match(cells[0].textContent,/79\/100/);
+ assert.match(cells[1].textContent,/78\/100/);
+ dom.window.close();
+});

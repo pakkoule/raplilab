@@ -284,3 +284,51 @@
 .regatta-gfs-lab .gfs-heading-panel>small{
   display:block;margin-top:9px;font-size:9px;line-height:1.55;color:#816e78
 }
+
+
+/* Test 10 : choix local du cap à chaque pas de 30 min, non optimisé globalement. */
+.regatta-gfs-lab .gfs-adaptive-panel{
+  margin-top:12px;padding:11px;border:1px solid #bfdbd9;border-radius:11px;
+  background:linear-gradient(120deg,#eef8fa,#f8f8fc)
+}
+.regatta-gfs-lab .gfs-adaptive-panel>p{
+  font-size:10px;line-height:1.6;color:#547587;margin:8px 0
+}
+.regatta-gfs-lab .gfs-adaptive-panel>p[data-state="success"]{color:#176d63}
+.regatta-gfs-lab .gfs-adaptive-panel>p[data-state="error"]{color:#a74652}
+.regatta-gfs-lab [data-gfs-adaptive-summary][hidden],
+.regatta-gfs-lab [data-gfs-adaptive-steps][hidden]{display:none}
+.regatta-gfs-lab [data-gfs-adaptive-summary]{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin:9px 0
+}
+.regatta-gfs-lab [data-gfs-adaptive-summary]>div{
+  min-width:0;padding:9px;background:#fff;border:1px solid #d3e9e8;border-radius:9px
+}
+.regatta-gfs-lab [data-gfs-adaptive-summary] small{
+  display:block;font-size:9px;color:#688796
+}
+.regatta-gfs-lab [data-gfs-adaptive-summary] strong{
+  font-size:13px;color:#1b6672;overflow-wrap:anywhere
+}
+.regatta-gfs-lab [data-gfs-adaptive-steps]{display:grid;gap:6px;margin:9px 0}
+.regatta-gfs-lab .gfs-adaptive-step{
+  display:grid;grid-template-columns:56px 75px minmax(0,1fr);
+  gap:3px 8px;align-items:baseline;padding:9px;
+  background:#fff;border:1px solid #d9e7eb;border-radius:9px
+}
+.regatta-gfs-lab .gfs-adaptive-step strong{font-size:10px;color:#557786}
+.regatta-gfs-lab .gfs-adaptive-step b{font-size:11px;color:#22687b}
+.regatta-gfs-lab .gfs-adaptive-step span{font-size:10px;color:#245b6e}
+.regatta-gfs-lab .gfs-adaptive-step small{
+  grid-column:2/4;font-size:9px;color:#718894
+}
+.regatta-gfs-lab .gfs-adaptive-panel>small{
+  display:block;font-size:9px;line-height:1.55;color:#806e78;margin-top:9px
+}
+@media(max-width:440px){
+ .regatta-gfs-lab .gfs-adaptive-step{
+   grid-template-columns:48px 1fr;column-gap:6px
+ }
+ .regatta-gfs-lab .gfs-adaptive-step span{grid-column:2}
+ .regatta-gfs-lab .gfs-adaptive-step small{grid-column:2}
+}

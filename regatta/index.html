@@ -16,6 +16,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=Courier+Prime:wght@400;700&family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="gfs-lab.css">
 <link rel="stylesheet" href="../shared/photo-zoom.css">
   
   <link rel="stylesheet" href="../shared/ios-input-focus.css">
@@ -122,6 +123,26 @@ html:not([data-rapli-role="editor"]) #rapli-module-cloud-save{display:none!impor
       </div>
     </div>
   </div>
+  <details class="regatta-gfs-lab" id="regatta-gfs-lab">
+    <summary><span aria-hidden="true">🌬️</span> LAB GFS 0,25° <span class="gfs-lab-pill">TEST NOAA · EXPÉRIMENTAL</span></summary>
+    <div class="gfs-lab-inner">
+      <p class="gfs-lab-desc">Premier test météo : validation réelle d'un fichier NOAA (vents UGRD et VGRD à 10 m), sur l'Atlantique nord-est. Aucun routage ni temps de passage n'est encore calculé.</p>
+      <div class="gfs-lab-actions">
+        <button type="button" class="gfs-lab-run" data-gfs-lab-run>TESTER LES DONNÉES NOAA</button>
+        <a href="https://nomads.ncep.noaa.gov/gribfilter.php?ds=gfs_0p25" target="_blank" rel="noopener noreferrer">Source officielle NOAA</a>
+      </div>
+      <p class="gfs-lab-status" role="status" aria-live="polite" data-gfs-lab-status>Test à lancer manuellement. Aucune requête NOAA au chargement du site.</p>
+      <div class="gfs-lab-results" data-gfs-lab-results hidden>
+        <div class="gfs-lab-cell"><span>Cycle · heure française</span><strong data-gfs-lab-cycle>—</strong></div>
+        <div class="gfs-lab-cell"><span>Vent prévu pour</span><strong data-gfs-lab-forecast>—</strong></div>
+        <div class="gfs-lab-cell"><span>Latitudes</span><strong data-gfs-lab-grid>—</strong></div>
+        <div class="gfs-lab-cell"><span>Taille du fichier</span><strong data-gfs-lab-size>—</strong></div>
+        <div class="gfs-lab-cell"><span>Variables vérifiées</span><strong data-gfs-lab-fields>—</strong></div>
+        <div class="gfs-lab-cell"><span>Messages GRIB2</span><strong data-gfs-lab-messages>—</strong></div>
+      </div>
+      <p class="gfs-lab-limit">Source NOAA NOMADS · cycle choisi avec une marge de diffusion · aucun décodage des vitesses ni simulation de navigation à ce stade.</p>
+    </div>
+  </details>
   <div class="regatta-pagination-host" id="regatta-pagination-top" aria-label="Pagination supérieure des courses"></div>
   <section id="cards" class="cards" aria-live="polite"></section>
   <div class="regatta-pagination-host" id="regatta-pagination-bottom" aria-label="Pagination inférieure des courses"></div>
@@ -277,6 +298,7 @@ html:not([data-rapli-role="editor"]) #rapli-module-cloud-save{display:none!impor
 <script defer src="honors.js"></script>
 <script defer src="search.js"></script>
 <script defer src="app.js"></script>
+<script defer src="gfs-lab.js"></script>
 <script defer src="../shared/photo-zoom.js"></script>
 <script defer src="../shared/admin-access.js"></script>
 <script defer src="../shared/collection-diff.js"></script>

@@ -1415,7 +1415,7 @@ test('LPDB course image displays live course status instead of branding, without
  const css=fs.readFileSync('regatta/team.css','utf8');
  assert.match(css,/\.lpdb-shell \.team-race-photo \.team-race-photo-status\{/);
  const html=fs.readFileSync('regatta/index.html','utf8');
- assert.match(html,/team\.css\?v=20261122-lpdb-responsive-v2/,'team badge CSS stays cache-busted');
+ assert.match(html,/team\.css\?v=20261122-lpdb-tabs-type-v3/,'team badge CSS stays cache-busted');
 assert.match(html,/team-app\.js\?v=20261122-lpdb-responsive-v2/,'team badge markup script stays cache-busted');
  dom.window.close();
 });
@@ -1433,7 +1433,7 @@ test('LPDB pirate header uses the requested logo and premium foil without changi
  assert.match(css,/LPDB premium pirate foil header/);
  assert.match(css,/\.regatta-topbar>\.lpdb-tabs \.lpdb-tab\.active\{/);
  assert.match(css,/@media\(max-width:620px\)\{/);
- assert.match(html,/team\.css\?v=20261122-lpdb-responsive-v2/);
+ assert.match(html,/team\.css\?v=20261122-lpdb-tabs-type-v3/);
  const logoPath=require('node:path').join('regatta','assets','lpdb-header-transparent.png');
  assert.ok(fs.existsSync(logoPath),'new header logo exists in PR');
  const logo=fs.readFileSync(logoPath);
@@ -1454,11 +1454,24 @@ test('LPDB mobile selectors use a full-width barème and readable compact type',
  assert.match(css,/\.lpdb-shell \.team-selector select\{[^}]*text-overflow:ellipsis/s);
  assert.match(css,/\.lpdb-shell \.team-stats-grid\{grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
  assert.match(css,/\.lpdb-shell \.team-emblem\{[^}]*background:transparent!important/s);
- assert.match(html,/team\.css\?v=20261122-lpdb-responsive-v2/);
+ assert.match(html,/team\.css\?v=20261122-lpdb-tabs-type-v3/);
  assert.match(html,/team-app\.js\?v=20261122-lpdb-responsive-v2/);
  assert.match(html,/app\.js\?v=20261122-lpdb-responsive-v2/);
  assert.equal(ui.includes('assets/lpdb.webp'),false,'all section headings and race fallback use the new transparent emblem');
  assert.equal(ui.split('assets/lpdb-header-transparent.png').length-1,5,'all five emblem instances are replaced');
  assert.match(app,/team:'Rechercher un skipper…'/);
  assert.match(app,/'team-races':'Rechercher une course…'/);
+});
+
+test('LPDB navigation labels do not use heavy text shadows',()=>{
+ const css=fs.readFileSync('regatta/team.css','utf8');
+ const html=fs.readFileSync('regatta/index.html','utf8');
+ const marker=css.indexOf('/* Clear typography for LPDB navigation: no pseudo-bold shadow on iOS. */');
+ assert.ok(marker>=0,'LPDB navigation-specific typography override exists');
+ const navRule=css.slice(marker,marker+330);
+ assert.match(navRule,/\.regatta-topbar>\.lpdb-tabs \.lpdb-tab\{[^}]*font-weight:700/s);
+ assert.match(navRule,/text-shadow:none!important/);
+ assert.match(navRule,/-webkit-text-stroke:0/);
+ assert.doesNotMatch(css,/color:#f0fdfc;text-shadow:0 1px 2px #092630e0/);
+ assert.match(html,/team\.css\?v=20261122-lpdb-tabs-type-v3/);
 });

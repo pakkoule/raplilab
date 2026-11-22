@@ -876,7 +876,7 @@
  filter:drop-shadow(0 1px 5px #0005);
 }
 .regatta-topbar>.lpdb-tabs .lpdb-tab:not(.active){
- color:#f0fdfc;text-shadow:0 1px 2px #092630e0;
+ color:#f0fdfc;text-shadow:none;
  border-color:transparent;
 }
 .regatta-topbar>.lpdb-tabs .lpdb-tab:not(.active):hover{
@@ -886,6 +886,13 @@
  color:#143e44;text-shadow:none;border:1px solid #d2f8f1;
  background:linear-gradient(116deg,#fafffd,#c0f0e8 29%,#ecf1f0 57%,#b5dddb 80%,#fff 100%);
  box-shadow:inset 0 1px 0 #fff,0 2px 8px #051c2645;
+}
+/* Clear typography for LPDB navigation: no pseudo-bold shadow on iOS. */
+.regatta-topbar>.lpdb-tabs .lpdb-tab{
+ font-weight:700;
+ text-shadow:none!important;
+ -webkit-text-stroke:0;
+ text-rendering:optimizeLegibility;
 }
 .regatta-topbar>.lpdb-tabs .lpdb-tab:focus-visible{
  outline:2px solid #efffff;outline-offset:2px;

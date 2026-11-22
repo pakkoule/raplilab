@@ -139,7 +139,7 @@ function editorRows(){
   const n=draft.results.length,sc=row.status==='finished'&&row.position?engine.primary(draft.vsr,n,row.position):0;
   const hc=row.status==='finished'&&row.position?engine.historical(row.position):0;
   return '<div class="team-result-row" data-team-row="'+esc(row.skipperId)+'"><span class="team-result-name" title="'+esc(name)+'">'+esc(name)+'</span>'+
-   '<input type="number" min="1" max="50" step="1" inputmode="numeric" data-team-rank="'+esc(row.skipperId)+'" aria-label="Rang de '+esc(name)+'" value="'+(row.position??'')+'"'+(row.status!=='finished'?' disabled':'')+' placeholder="Rang">'+
+   '<input type="number" min="1" max="50" step="1" inputmode="numeric" data-team-rank="'+esc(row.skipperId)+'" aria-label="Rang de '+esc(name)+'" value="'+(row.position??'')+'"'+(row.status==='dnf'?' disabled':'')+' placeholder="Rang">'+
    '<select data-team-status="'+esc(row.skipperId)+'" aria-label="Résultat de '+esc(name)+'">'+opts([{value:'pending',label:'À saisir'},{value:'finished',label:'Classé'},{value:'dnf',label:'DNF'}],row.status)+'</select>'+
    '<strong class="team-result-points">'+(row.status==='dnf'?'0 / 0':row.status==='finished'?num(sc)+' / '+num(hc):'—')+'</strong><button type="button" class="team-remove-row" data-team-remove="'+esc(row.skipperId)+'" title="Retirer '+esc(name)+'">×</button></div>';
  }).join('')||empty('Ajoute les participants depuis l’effectif.');
@@ -453,7 +453,17 @@ function input(ev){
  if(el.id==='team-search'){search=el.value;page=1;renderMain();$('team-search')?.focus();$('team-search')?.setSelectionRange(search.length,search.length);return;}
  if(el.dataset.teamRank&&draft){
   const row=draft.results.find(r=>r.skipperId===el.dataset.teamRank);
-  if(row){row.position=el.value?Number(el.value):null;editorSummary();}
+  if(row){
+   row.position=el.value?Number(el.value):null;
+   if(row.status==='pending'&&row.position!==null){
+    row.status='finished';
+    const select=el.closest('.team-result-row')?.querySelector('[data-team-status]');
+    if(select)select.value='finished';
+   }
+   const n=draft.results.length,p=el.closest('.team-result-row')?.querySelector('.team-result-points');
+   if(p)p.textContent=row.status==='finished'&&row.position?num(engine.primary(draft.vsr,n,row.position))+' / '+num(engine.historical(row.position)):'—';
+   editorSummary();
+  }
  }
 }
 function init(bridge){

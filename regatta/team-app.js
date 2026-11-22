@@ -272,8 +272,10 @@ function applyRanking(){
    if(!newMember)throw Error('Pseudo invalide.');
    newMembers.push(newMember);id=newMember.id;
   }
+  const previous=(draft.results||[]).find(row=>row.skipperId===id);
   return {skipperId:id,status:'finished',position:item.position,
-   elapsedSeconds:item.elapsedSeconds,gapSeconds:item.gapSeconds};
+   elapsedSeconds:item.elapsedSeconds,gapSeconds:item.gapSeconds,
+   generalRank:previous?.generalRank??null};
  });
  const kept=(draft.results||[]).filter(r=>r.status==='dnf'&&!next.some(row=>row.skipperId===r.skipperId));
  if(next.length+kept.length>50){notify('La course dépasserait 50 participants.',true);return;}
@@ -531,7 +533,7 @@ function showProfile(id){
  const m=members().find(x=>x.id===id);if(!m)return;
  const model=engine.standings(all(),period(),viewMode),s=model.skippers.find(x=>x.id===id);
  const content='<div class="team-profile-head"><h3>'+esc(m.name)+'</h3><small>'+esc(m.status==='active'?'Membre actif':'Ancien membre')+' · '+esc(labelPeriod())+'</small><small>'+esc((m.memberships||[]).filter(w=>w.from||w.until).map(w=>(w.from||'Début inconnu')+' → '+(w.until||'En cours')).join(' · '))+'</small></div>'+
- (s?statCards([['Points',num(s.points)],['Points / course',num(s.avg)],['Courses terminées',num(s.finished)],['Victoires',num(s.wins)],['Podiums',num(s.podiums)],['Assiduité',num(s.attendance)+' %'],['Prestige moyen',num(s.prestige)],['Départage hybride',num(s.hybrid)],['Courses chronométrées',num(s.timedRaces)],['Chrono moyen',clockLabel(s.avgTimeSeconds)],['Écart moyen',clockLabel(s.avgGapSeconds)]])+
+ (s?statCards([['Points',num(s.points)],['Points / course',num(s.avg)],['Courses terminées',num(s.finished)],['Victoires',num(s.wins)],['Podiums',num(s.podiums)],['Assiduité',num(s.attendance)+' %'],['Prestige moyen',num(s.prestige)],['Départage hybride',num(s.hybrid)],['Courses chronométrées',num(s.timedRaces)],['Chrono moyen',clockLabel(s.avgTimeSeconds)],['Écart moyen',clockLabel(s.avgGapSeconds)],['Meilleur rang général VR',s.bestGeneralRank!=null?'#'+num(s.bestGeneralRank):'—']])+
  '<div class="team-table-wrap"><table class="team-table"><thead><tr><th>COURSE</th><th>RANG LPDB</th><th>GÉNÉRAL VR</th><th>VSR</th><th>CHRONO</th><th>ÉCART</th><th>POINTS</th></tr></thead><tbody>'+
  s.records.slice().sort((a,b)=>b.dateEnd.localeCompare(a.dateEnd)).map(r=>'<tr><td>'+esc(r.raceName)+'<small>'+esc(r.dateEnd)+'</small></td><td>'+ (r.dnf?'DNF':r.rank)+'</td><td>'+(r.generalRank!=null?'#'+num(r.generalRank):'—')+'</td><td>'+esc(r.vsr.toUpperCase())+'</td><td>'+clockLabel(r.elapsedSeconds)+'</td><td>'+clockLabel(r.gapSeconds)+'</td><td>'+num(viewMode==='historic'?r.historic:r.main)+'</td></tr>').join('')+'</tbody></table></div>':empty('Aucune participation sur cette période.'));
  $('team-profile-body').innerHTML=content;

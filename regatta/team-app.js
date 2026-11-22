@@ -207,10 +207,8 @@ function fromPersonalId(id){
  if(!canWrite())return;
  const p=personalById(id);if(!p){notify('Fiche personnelle introuvable.',true);return;}
  const existing=races().find(r=>r.personalRaceId===id);
- if(existing)return openRace(existing.id);
- const base={id:uuid('race'),type:'team-race',name:p.name||'',dateEnd:p.end||'',
-  vsr:p.vsr||'vsr2',status:'planned',stageGroup:'',results:[],createdAt:stamp()};
- draft=engine.fromPersonal(p,base);
+ if(existing){api.showTeam?.();return openRace(existing.id);}
+ api.showTeam?.();
  openRace(null,id);
 }
 function openRace(id,personalId=''){

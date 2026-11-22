@@ -506,9 +506,7 @@ function preStartInsightsMarkup(r,history){
   performance.median===null?'Historique comparable insuffisant':
   'Top médian '+percent(performance.median)+' · '+fmt(performance.count)+' au départ';
  const range=performance.range?
-  'Fourchette historique : #'+fmt(performance.range[0])+' à #'+fmt(performance.range[1]):
-  performance.estimated!==null?'Projection indicative · '+performance.rates.length+
-   ' course'+(performance.rates.length>1?'s':'')+' comparable'+(performance.rates.length>1?'s':''):'';
+  'Fourchette historique : #'+fmt(performance.range[0])+' à #'+fmt(performance.range[1]):'';
  return '<div class="race-prestart-insights" aria-label="Préparation de la course">'+
   '<section class="race-prestart-routing"'+(present?' data-gfs-route-at="'+briefing.consultation+
    '" data-gfs-route-departure="'+briefing.departure+'"':'')+' data-gfs-route-state="'+routingState+
@@ -526,7 +524,6 @@ function preStartInsightsMarkup(r,history){
   '<strong>'+projection+'</strong>'+
   '<small>'+safe(projectionHint)+'</small></section></div>'+
   (range?'<p class="race-prestart-range">'+safe(range)+'</p>':'')+
-  '<p class="race-prestart-note">Estimation statistique personnelle, non prédiction du classement final.</p>'+
   '</div>';
 }
 function plannedRightColumnMarkup(r){

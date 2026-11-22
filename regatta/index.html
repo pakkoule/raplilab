@@ -620,7 +620,20 @@ html:not([data-rapli-role="editor"]) #rapli-module-cloud-save{display:none!impor
           <input type="text" id="team-create-member" maxlength="56" placeholder="Nouveau pseudo…" aria-label="Créer rapidement un skipper">
           <button type="button" data-team-action="create-member" class="team-action team-secondary">CRÉER + AJOUTER</button>
         </div>
-        <div class="team-result-head"><span>SKIPPER</span><span>RANG</span><span>STATUT</span><span>PRINCIPAL / HIST.</span><span></span></div>
+        <section class="team-ranking-import">
+          <button type="button" class="team-action team-secondary" data-team-action="toggle-ranking-import" aria-expanded="false" aria-controls="team-ranking-import-body">＋ COLLER UN CLASSEMENT + CHRONOS</button>
+          <div id="team-ranking-import-body" hidden>
+            <p class="team-footnote">Colle un classement Virtual Regatta : pseudo sur une ligne, chrono du premier (ex. 09j 15h 32m 50s), puis écarts des suivants préfixés par +. Les rangs isolés et puces sont ignorés.</p>
+            <label class="team-ranking-label" for="team-ranking-paste">CLASSEMENT À IMPORTER</label>
+            <textarea id="team-ranking-paste" rows="9" maxlength="15000" spellcheck="false" autocapitalize="off" placeholder="Rapli LPDB&#10;09j 15h 32m 50s&#10;RX8 - LPDB&#10;+ 03h 54m 01s"></textarea>
+            <div class="team-input-actions">
+              <button type="button" class="team-action" data-team-action="analyze-ranking">ANALYSER LE CLASSEMENT</button>
+              <button type="button" class="team-action team-primary" id="team-ranking-apply" data-team-action="apply-ranking" disabled>AJOUTER AU CLASSEMENT</button>
+            </div>
+            <div id="team-ranking-analysis" class="team-ranking-analysis" role="status" aria-live="polite"></div>
+          </div>
+        </section>
+        <div class="team-result-head"><span>SKIPPER</span><span>RANG</span><span>STATUT</span><span>CHRONO</span><span>ÉCART AU 1ER</span><span>PRINCIPAL / HIST.</span><span></span></div>
         <div id="team-result-rows" class="team-result-rows"></div>
         <p id="team-race-validation" class="team-footnote" role="status"></p>
         <strong id="team-race-preview" class="team-race-preview"></strong>
@@ -628,6 +641,10 @@ html:not([data-rapli-role="editor"]) #rapli-module-cloud-save{display:none!impor
     </div>
     <footer class="team-dialog-footer"><button type="button" data-team-close class="team-action team-secondary">ANNULER</button><button type="submit" class="team-action team-primary">ENREGISTRER LA COURSE</button></footer>
   </form>
+</dialog>
+<dialog id="team-race-classification-dialog" class="team-dialog" aria-labelledby="team-classification-title">
+  <header class="team-dialog-head"><h2 id="team-classification-title">CLASSEMENT D'ÉQUIPE</h2><button type="button" data-team-close class="team-dialog-close" aria-label="Fermer">×</button></header>
+  <div id="team-classification-body" class="team-dialog-scroll"></div>
 </dialog>
 <dialog id="team-bulk-dialog" class="team-dialog team-bulk-dialog" aria-labelledby="team-bulk-dialog-title">
   <form id="team-bulk-form">
@@ -678,6 +695,7 @@ html:not([data-rapli-role="editor"]) #rapli-module-cloud-save{display:none!impor
 <script defer src="honors.js"></script>
 <script defer src="search.js"></script>
 <script defer src="team-engine.js"></script>
+<script defer src="team-time.js"></script>
 <script defer src="team-app.js"></script>
 <script defer src="app.js"></script>
 <script defer src="gfs-interpolation.js"></script>

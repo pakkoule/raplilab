@@ -830,3 +830,59 @@ test('the personal Record menu also provides LPDB association and record opening
  assert.match(src,/r=>r\.id===id&&\(r\.kind==='race'\|\|r\.kind==='record'\)/);
  assert.match(ui,/const personalById=id=>personal\(\)\.find\(x=>x\.id===id&&\(x\.kind==='race'\|\|x\.kind==='record'\)\)/);
 });
+
+
+test('LPDB Recalculer les notes button refreshes ratings without modifying stored race or points',()=>{
+ const dom=new JSDOM(fs.readFileSync('regatta/index.html','utf8'),{runScripts:'outside-only',url:'https://example.org/regatta/'});
+ const w=dom.window,doc=w.document,messages=[],mutations=[];
+ w.RapliTeamEngine=E;w.RapliTeamTime=require('../regatta/team-time.js');
+ w.eval(fs.readFileSync('regatta/score.js','utf8'));
+ w.eval(fs.readFileSync('regatta/team-rating.js','utf8'));
+ w.eval(fs.readFileSync('regatta/team-app.js','utf8'));
+ const members=[m('Alpha'),m('Beta')],race=E.race({...r('recalc','2027-04-12','hc','finished',[
+  {...rr('Alpha',1),generalRank:200},{...rr('Beta',2),generalRank:600}
+ ]),name:'Course des notes',boatClass:'IMOCA',fleetTotal:10000,start:'2027-04-01'});
+ const records=[...members,race];
+ w.RapliTeamUI.init({get:()=>records,personal:()=>[],canEdit:()=>false,
+  notify:text=>messages.push(text),save:async data=>mutations.push(data),remove:async data=>mutations.push(data)});
+ const button=doc.querySelector('#team-races-panel [data-team-action="recalculate-notes"]');
+ assert.ok(button,'visible recalculate button in course workspace');
+ const oldPoints=E.scoredRace(race,new Map(members.map(x=>[x.id,x]))).map(s=>s.main);
+ const oldAverage=doc.querySelector('.team-race-average strong')?.textContent;
+ assert.ok(oldAverage&&oldAverage.includes('/100'));
+ button.click();
+ assert.match(messages.at(-1),/Notes recalculées : 2 skippers notés sur 1 course/);
+ assert.equal(doc.querySelector('.team-race-average strong')?.textContent,oldAverage);
+ assert.equal(mutations.length,0,'the manual recalculation is purely read-only');
+ const newRace=E.race({...race,results:race.results.map((row,i)=>({...row,generalRank:i===0?100:400}))});
+ records.splice(2,1,newRace);
+ const previous=doc.querySelector('.team-race-average strong')?.textContent;
+ doc.querySelector('#team-races-panel [data-team-action="recalculate-notes"]').click();
+ const after=doc.querySelector('.team-race-average strong')?.textContent;
+ assert.ok(after&&after.includes('/100'));
+ assert.notEqual(after,previous,'recalculation reflects latest race data, not a cached score');
+ assert.deepEqual(E.scoredRace(newRace,new Map(members.map(x=>[x.id,x]))).map(s=>s.main),oldPoints);
+ assert.equal(mutations.length,0,'recalculation does not save data or change LPDB championship');
+ dom.window.close();
+});
+test('LPDB Recalculer les notes reports missing notes and has an empty-state message',()=>{
+ const dom=new JSDOM(fs.readFileSync('regatta/index.html','utf8'),{runScripts:'outside-only',url:'https://example.org/regatta/'});
+ const w=dom.window,doc=w.document,messages=[];
+ w.RapliTeamEngine=E;w.RapliTeamTime=require('../regatta/team-time.js');
+ w.eval(fs.readFileSync('regatta/score.js','utf8'));
+ w.eval(fs.readFileSync('regatta/team-rating.js','utf8'));
+ w.eval(fs.readFileSync('regatta/team-app.js','utf8'));
+ const members=[m('Alpha'),m('Beta')];
+ const race=E.race({...r('partial-notes','2027-04-12','vsr2','finished',[
+  {...rr('Alpha',1),generalRank:150},rr('Beta',2)
+ ]),name:'Course incomplète en VR',boatClass:'IMOCA',fleetTotal:1000,start:'2027-04-01'});
+ const data=[...members,race];
+ w.RapliTeamUI.init({get:()=>data,personal:()=>[],canEdit:()=>false,notify:text=>messages.push(text),save:async()=>{},remove:async()=>{}});
+ doc.querySelector('#team-races-panel [data-team-action="recalculate-notes"]').click();
+ assert.match(messages.at(-1),/Notes recalculées : 1 skipper noté sur 1 course/);
+ assert.match(messages.at(-1),/1 note indisponible/);
+ data.splice(2);
+ doc.querySelector('#team-races-panel [data-team-action="recalculate-notes"]').click();
+ assert.equal(messages.at(-1),'Aucune course terminée à noter pour le moment.');
+ dom.window.close();
+});

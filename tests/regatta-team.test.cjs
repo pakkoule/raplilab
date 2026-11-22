@@ -893,3 +893,102 @@ test('LPDB Recalculer les notes reports missing notes and has an empty-state mes
  assert.equal(messages.at(-1),'Aucune course terminée à noter pour le moment.');
  dom.window.close();
 });
+
+
+test('LPDB tabs live in the real header with a wide search, profile and contextual icon actions',()=>{
+ const html=fs.readFileSync('regatta/index.html','utf8');
+ const d=new JSDOM(html).window.document;
+ const header=d.querySelector('.regatta-topbar');
+ const tabs=header?.querySelector('.lpdb-tabs');
+ assert.ok(tabs,'all four team tabs should be inside the header');
+ assert.deepEqual([...tabs.querySelectorAll('button')].map(b=>b.id),[
+  'lpdb-view-team','lpdb-view-team-races','lpdb-view-team-skippers','lpdb-view-team-stats'
+ ]);
+ assert.equal(d.querySelector('#lpdb-panel>.lpdb-tabs'),null,'team tabs must not be duplicated inside the body');
+ const controls=d.getElementById('lpdb-global-controls');
+ assert.ok(controls&&controls.nextElementSibling?.id==='regatta-cloud-overlay','search bar precedes LPDB content');
+ assert.ok(controls.querySelector('.regatta-search-field #lpdb-global-search'));
+ assert.ok(controls.querySelector('#lpdb-search-clear'));
+ assert.ok(controls.querySelector('#regatta-team-sync'));
+ assert.ok(controls.querySelector('#rapliProfileToggle'));
+ assert.ok(!d.getElementById('rapliProfile').closest('#races-panel'),'profile is outside hidden personal archives');
+ for(const cmd of ['recalculate','recalculate-notes','new-race','new-member','bulk-members','team-colors'])
+  assert.ok(controls.querySelector('[data-team-action="'+cmd+'"]'),cmd+' action is in the header');
+ const css=fs.readFileSync('regatta/team.css','utf8');
+ assert.match(css,/\.regatta-topbar>\.lpdb-tabs/);
+ assert.match(css,/\.lpdb-global-controls \.regatta-search-field/);
+ assert.match(css,/@media\(max-width:620px\)/);
+ assert.match(css,/\.lpdb-global-controls \[data-lpdb-action-for\]\[hidden\]/);
+ assert.ok(!d.getElementById('view-races')&&!d.getElementById('view-stats')&&!d.getElementById('view-honors'));
+});
+test('header tab navigation updates search hints and action buttons for each LPDB area',()=>{
+ const d=new JSDOM(fs.readFileSync('regatta/index.html','utf8')).window.document;
+ const src=fs.readFileSync('regatta/app.js','utf8');
+ const start=src.indexOf("const lpdbViews=['team'"),end=src.indexOf('const scoreDialog=',start);
+ let renderCount=0,colors=0;
+ const ctx={$:id=>d.getElementById(id),renderTeam:()=>renderCount++,renderClassColors:()=>colors++};
+ const {selectWorkspace}=new Function('ctx','with(ctx){'+src.slice(start,end)+';return {selectWorkspace};}')(ctx);
+ const header=d.getElementById('lpdb-global-controls'),input=d.getElementById('lpdb-global-search');
+ for(const [view,expected] of [
+  ['team',['recalculate']],
+  ['team-races',['recalculate-notes','new-race','team-colors']],
+  ['team-skippers',['new-member','bulk-members']],
+  ['team-stats',[]]
+ ]){
+  selectWorkspace(view);
+  assert.equal(header.dataset.view,view);
+  assert.ok(input.placeholder.length>10);
+  const visible=[...header.querySelectorAll('[data-lpdb-action-for]')]
+   .filter(b=>!b.hidden).map(b=>b.dataset.teamAction);
+  assert.deepEqual(visible,expected,'contextual actions for '+view);
+  assert.equal(d.getElementById(view+'-panel').hidden,false);
+ }
+ selectWorkspace('colors');
+ assert.equal(header.hidden,true);
+ assert.equal(d.getElementById('colors-panel').hidden,false);
+ selectWorkspace('team-races');
+ assert.equal(header.hidden,false);
+ assert.equal(d.getElementById('colors-panel').hidden,true);
+ assert.ok(renderCount>=5);
+ assert.equal(colors,1);
+});
+test('global header search filters LPDB courses and skippers without replacing input focus',()=>{
+ const dom=new JSDOM(fs.readFileSync('regatta/index.html','utf8'),{
+  runScripts:'outside-only',url:'https://example.org/regatta/'});
+ const w=dom.window,d=w.document;
+ w.RapliTeamEngine=E;w.RapliTeamTime=require('../regatta/team-time.js');
+ w.eval(fs.readFileSync('regatta/score.js','utf8'));
+ w.eval(fs.readFileSync('regatta/team-rating.js','utf8'));
+ w.eval(fs.readFileSync('regatta/team-app.js','utf8'));
+ const roster=[m('Rapli'),m('Tintinultra'),m('Mémphré')];
+ const courseOne=E.race({...r('g-search-a','2027-04-25','vsr2','planned',[
+  {skipperId:roster[0].id,status:'pending',position:null}
+ ]),name:'Trophée Jules Verne',boatClass:'ULTIM',start:'2027-04-01'});
+ const courseTwo=E.race({...r('g-search-b','2027-05-25','hc','planned',[
+  {skipperId:roster[1].id,status:'pending',position:null}
+ ]),name:'Course du Morbihan',boatClass:'IMOCA',start:'2027-05-01'});
+ w.RapliTeamUI.init({get:()=>[...roster,courseOne,courseTwo],personal:()=>[],canEdit:()=>false,
+  notify:()=>{},save:async()=>{},remove:async()=>{}});
+ const input=d.getElementById('lpdb-global-search');
+ const type=value=>{input.value=value;input.dispatchEvent(new w.Event('input',{bubbles:true}));};
+ d.getElementById('lpdb-global-controls').dataset.view='team-races';
+ type('jules');
+ assert.equal(d.querySelectorAll('#team-races-panel .team-race-card').length,1);
+ assert.match(d.querySelector('#team-races-panel').textContent,/Trophée Jules Verne/);
+ type('tintinultra');
+ assert.equal(d.querySelectorAll('#team-races-panel .team-race-card').length,1,'course is searchable by skipper');
+ assert.match(d.querySelector('#team-races-panel').textContent,/Morbihan/);
+ type('imoca');
+ assert.equal(d.querySelectorAll('#team-races-panel .team-race-card').length,1,'search also matches boat class');
+ type('inconnu');
+ assert.match(d.getElementById('team-races-panel').textContent,/Aucune course ne correspond/);
+ assert.equal(d.getElementById('lpdb-global-search'),input,'the search input is not destroyed on render');
+ d.getElementById('lpdb-global-controls').dataset.view='team-skippers';
+ type('mEmPhRe');
+ assert.equal(d.querySelectorAll('#team-skippers-panel .team-member-card').length,1,'accent-insensitive skipper search');
+ assert.match(d.querySelector('#team-skippers-panel .team-member-card').textContent,/Mémphré/);
+ d.getElementById('lpdb-search-clear').click();
+ assert.equal(input.value,'');
+ assert.equal(d.querySelectorAll('#team-skippers-panel .team-member-card').length,3);
+ dom.window.close();
+});

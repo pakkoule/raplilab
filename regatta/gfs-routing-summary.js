@@ -51,15 +51,17 @@
         const result=engine[pair.method](map.get(pair.from),map.get(pair.to));
         if(!Array.isArray(result.windows)||result.windows.length!==4)
           throw Error('Réponse de comparaison incomplète.');
-        output.windowsEvaluated+=4;
-        output.evaluatedPairs.push([pair.from,pair.to]);
+        const pairValid=[];
         for(const candidate of result.windows){
           if(!candidate.valid)continue;
           if(!Number.isFinite(candidate.elapsedMinutes)||candidate.elapsedMinutes<=0||
              !Number.isFinite(candidate.startHour))
             throw Error('Durée de franchissement invalide.');
-          valid.push(candidate);
+          pairValid.push(candidate);
         }
+        output.windowsEvaluated+=4;
+        output.evaluatedPairs.push([pair.from,pair.to]);
+        valid.push(...pairValid);
       }catch(error){
         const reason=String(error?.message||error);
         if(reason.includes('Aucun départ n’atteint')){

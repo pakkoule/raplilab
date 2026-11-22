@@ -91,3 +91,6 @@ exports.handler=async function handler(event){
   const result=await task;
   return respond(result.statusCode,{...result.body,cached:false});
 };
+
+// Fonctions de contrôle exportées pour les tests automatisés (sans requête NOAA).
+exports.selectForecastHour=selectForecastHour;

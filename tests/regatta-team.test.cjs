@@ -1501,3 +1501,20 @@ test('LPDB profile holds manual sync and live status, remaining icons stay next 
  assert.match(shared,/overlay\.closest\('#rapliProfileMenu'\)/);
  assert.match(css,/#rapliProfileMenu #regatta-cloud-overlay\{[^}]*position:static!important/s);
 });
+
+test('LPDB classement tables use plain skipper names and podium gold silver bronze',()=>{
+ const ui=fs.readFileSync('regatta/team-app.js','utf8');
+ const css=fs.readFileSync('regatta/team.css','utf8');
+ assert.ok(ui.includes('const podiumClass=(rank,eligible=true)'));
+ assert.ok(ui.includes("const skipperLabel=name=>'<span class=\"team-skipper-name\">'"));
+ assert.equal(ui.includes('<button class="team-skipper-link"'),false,'ranking names no longer render as buttons');
+ assert.ok(ui.includes('podiumClass(s.rank,s.points>0)'),'championship uses official rank');
+ assert.ok(ui.includes('podiumClass(s.statsRank)'),'statistics podium follows selected metric');
+ assert.ok(ui.includes("podiumClass(row.position,row.status==='finished')"),'race classification excludes DNF');
+ for(const color of ['gold','silver','bronze']){
+  assert.match(css,new RegExp('tr\\.team-podium-'+color+'\\{'));
+  assert.match(css,new RegExp('\\.team-podium-'+color+' \\.team-skipper-name'));
+ }
+ assert.match(css,/team-skipper-name\{[^}]*background:none/s);
+ assert.ok(ui.includes("action('profile-'+esc(m.id),'Palmarès')"),'profile access remains in skipper section');
+});

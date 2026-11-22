@@ -1097,3 +1097,43 @@
   width:35px!important;height:35px!important;min-height:35px!important;
  }
 }
+
+/* Standings: skipper names are plain text, never foil action buttons.
+   Rank belongs to its original competition, even when filters are active. */
+.lpdb-shell .team-table .team-skipper-name,
+.team-dialog .team-table .team-skipper-name{
+ display:inline;max-width:none;padding:0;margin:0;border:0;border-radius:0;
+ background:none;box-shadow:none;text-shadow:none;
+ color:#303942;font:750 12px/1.5 Poppins,system-ui,sans-serif;
+ white-space:nowrap;
+}
+.lpdb-shell .team-table tbody tr.team-podium-gold,
+.team-dialog .team-table tbody tr.team-podium-gold{
+ background:linear-gradient(103deg,#fff4cd 0%,#fffbec 43%,#fff7e1 100%)!important;
+}
+.lpdb-shell .team-table tbody tr.team-podium-silver,
+.team-dialog .team-table tbody tr.team-podium-silver{
+ background:linear-gradient(103deg,#e9eef3 0%,#fbfcff 45%,#edf0f4 100%)!important;
+}
+.lpdb-shell .team-table tbody tr.team-podium-bronze,
+.team-dialog .team-table tbody tr.team-podium-bronze{
+ background:linear-gradient(103deg,#f5dfcf 0%,#fff9f3 45%,#fcece0 100%)!important;
+}
+.lpdb-shell .team-table tbody tr.team-podium-gold td:first-child,
+.team-dialog .team-table tbody tr.team-podium-gold td:first-child{border-left:3px solid #bc9130}
+.lpdb-shell .team-table tbody tr.team-podium-silver td:first-child,
+.team-dialog .team-table tbody tr.team-podium-silver td:first-child{border-left:3px solid #899aa8}
+.lpdb-shell .team-table tbody tr.team-podium-bronze td:first-child,
+.team-dialog .team-table tbody tr.team-podium-bronze td:first-child{border-left:3px solid #bb7b52}
+.lpdb-shell .team-table .team-podium-gold .team-skipper-name,
+.team-dialog .team-table .team-podium-gold .team-skipper-name{color:#795612}
+.lpdb-shell .team-table .team-podium-silver .team-skipper-name,
+.team-dialog .team-table .team-podium-silver .team-skipper-name{color:#4b5e6d}
+.lpdb-shell .team-table .team-podium-bronze .team-skipper-name,
+.team-dialog .team-table .team-podium-bronze .team-skipper-name{color:#875137}
+@media(max-width:700px){
+ .lpdb-shell .team-table .team-skipper-name,
+ .team-dialog .team-table .team-skipper-name{font-size:12px;line-height:1.45}
+ .lpdb-shell .team-table td,
+ .team-dialog .team-table td{padding-top:10px;padding-bottom:10px}
+}

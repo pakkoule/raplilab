@@ -86,6 +86,10 @@ function statCards(items){return '<div class="team-stats-grid">'+items.map(([k,v
 const action=(cmd,label,cls='')=>'<button type="button" class="team-action '+cls+'" data-team-action="'+cmd+'">'+label+'</button>';
 const empty=message=>'<div class="team-empty">'+esc(message)+'</div>';
 const medal=r=>r===1?'🥇':r===2?'🥈':r===3?'🥉':num(r);
+/* Podium visuals reflect each ranking's actual rank, not filtered row order.
+   Skipper profiles remain accessible from the Skippers tab. */
+const podiumClass=(rank,eligible=true)=>eligible?({1:'team-podium-gold',2:'team-podium-silver',3:'team-podium-bronze'}[rank]||''):'';
+const skipperLabel=name=>'<span class="team-skipper-name">'+esc(name)+'</span>';
 const clockLabel=value=>Number.isSafeInteger(value)&&value>=0?clock.formatTime(value):'—';
 const pngClock=value=>clockLabel(value).replace(/(\d{2})j (\d{2})h (\d{2})m (\d{2})s/u,'$1j $2:$3:$4').replace(/(\d{2})h (\d{2})m (\d{2})s/u,'$1:$2:$3');
 function sortedItems(items){
@@ -98,7 +102,7 @@ function rankTable(list,{top=false}={}){
  page=Math.min(Math.max(1,page),limit);
  const sliced=top?list.slice(0,10):list.slice((page-1)*pageSize,page*pageSize);
  return '<div class="team-table-wrap"><table class="team-table"><thead><tr><th>#</th><th>SKIPPER</th><th>COURSES</th><th>V.</th><th>POD.</th><th>POINTS</th><th>PTS/COURSE</th><th>CHRONO MOY.</th><th>ÉCART MOY.</th></tr></thead><tbody>'+
- sliced.map(s=>'<tr><td>'+(s.points>0?medal(s.rank):num(s.rank))+'</td><td><button class="team-skipper-link" data-team-profile="'+esc(s.id)+'">'+esc(s.name)+'</button>'+(s.status==='former'?'<small>Ancien membre</small>':'')+'</td><td>'+num(s.participations)+'</td><td>'+num(s.wins)+'</td><td>'+num(s.podiums)+'</td><td class="team-points">'+num(s.points)+'</td><td>'+num(s.avg)+'</td><td>'+clockLabel(s.avgTimeSeconds)+'</td><td>'+clockLabel(s.avgGapSeconds)+'</td></tr>').join('')+'</tbody></table></div>'+
+ sliced.map(s=>'<tr class="'+podiumClass(s.rank,s.points>0)+'"><td>'+(s.points>0?medal(s.rank):num(s.rank))+'</td><td>'+skipperLabel(s.name)+(s.status==='former'?'<small>Ancien membre</small>':'')+'</td><td>'+num(s.participations)+'</td><td>'+num(s.wins)+'</td><td>'+num(s.podiums)+'</td><td class="team-points">'+num(s.points)+'</td><td>'+num(s.avg)+'</td><td>'+clockLabel(s.avgTimeSeconds)+'</td><td>'+clockLabel(s.avgGapSeconds)+'</td></tr>').join('')+'</tbody></table></div>'+
  (!top&&limit>1?'<nav class="team-pages">'+action('previous','← Précédent','team-secondary')+'<span>Page '+page+' / '+limit+'</span>'+action('next','Suivant →','team-secondary')+'</nav>':'');
 }
 function renderMain(){
@@ -250,7 +254,7 @@ function renderStats(){
  '<div class="team-subhead"><h3>COMPARATIF DE PERFORMANCE</h3><div class="team-toolbar">'+action('png-stats','↓ PNG TABLEAU')+action('png-stats-social','↓ TOP 10')+'</div></div>'+
  '<label class="team-sort-label">CRITÈRE <select id="team-stat-mode">'+opts([{value:'avg',label:'Points / course'},{value:'finish',label:'Taux de finition'},{value:'wins',label:'Victoires'},{value:'points',label:'Points totaux'},{value:'time',label:'Chrono moyen'},{value:'gap',label:'Écart moyen au vainqueur'}],statMode)+'</select></label>'+
  (sorted.length?'<div class="team-table-wrap"><table class="team-table"><thead><tr><th>#</th><th>SKIPPER</th><th>COURSES</th><th>PTS/COURSE</th><th>CHRONO MOY.</th><th>ÉCART MOY.</th><th>FINITIONS</th><th>VICT.</th><th>POINTS</th></tr></thead><tbody>'+
- sorted.map((s,i)=>'<tr><td>'+medal(s.statsRank)+'</td><td><button class="team-skipper-link" data-team-profile="'+esc(s.id)+'">'+esc(s.name)+'</button></td><td>'+num(s.participations)+'</td><td class="team-points">'+num(s.avg)+'</td><td>'+clockLabel(s.avgTimeSeconds)+'</td><td>'+clockLabel(s.avgGapSeconds)+'</td><td>'+num(s.finishRate)+' %</td><td>'+num(s.wins)+'</td><td>'+num(s.points)+'</td></tr>').join('')+'</tbody></table></div>':empty(search?'Aucun skipper ne correspond à ta recherche.':'Les statistiques apparaîtront après la première course validée.'))+
+ sorted.map(s=>'<tr class="'+podiumClass(s.statsRank)+'"><td>'+medal(s.statsRank)+'</td><td>'+skipperLabel(s.name)+'</td><td>'+num(s.participations)+'</td><td class="team-points">'+num(s.avg)+'</td><td>'+clockLabel(s.avgTimeSeconds)+'</td><td>'+clockLabel(s.avgGapSeconds)+'</td><td>'+num(s.finishRate)+' %</td><td>'+num(s.wins)+'</td><td>'+num(s.points)+'</td></tr>').join('')+'</tbody></table></div>':empty(search?'Aucun skipper ne correspond à ta recherche.':'Les statistiques apparaîtront après la première course validée.'))+
  '<p class="team-footnote">Chronos et écarts moyens : statistiques descriptives. Comparer des parcours différents ne mesure pas directement la performance sportive.</p>';
 }
 function render(){
@@ -802,7 +806,7 @@ function showRaceRanking(id){
  rows.map(row=>{
   const points=byId.get(row.skipperId),mark=notes.scores.get(row.skipperId);
   const note=mark?.available?'<strong class="team-individual-note" title="'+esc(mark.mention+(mark.provisional?' · provisoire':''))+'">'+num(mark.value)+'/100'+(mark.provisional?' *':'')+'</strong>':'<span title="'+esc(mark?.reason||'Note en attente du rang général VR et de l’effectif global')+'">—</span>';
-  return '<tr><td>'+(row.status==='dnf'?'DNF':row.position??'—')+'</td><td>'+esc(names.get(row.skipperId)||'Skipper inconnu')+'</td>'+ 
+  return '<tr class="'+podiumClass(row.position,row.status==='finished')+'"><td>'+(row.status==='dnf'?'DNF':row.position??'—')+'</td><td>'+skipperLabel(names.get(row.skipperId)||'Skipper inconnu')+'</td>'+ 
    '<td>'+(row.generalRank!=null?'#'+num(row.generalRank):'—')+'</td>'+
    '<td>'+clockLabel(row.elapsedSeconds)+'</td><td>'+(row.gapSeconds!=null?'+ '+clockLabel(row.gapSeconds):'—')+'</td>'+ 
    '<td>'+note+'</td>'+

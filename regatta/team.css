@@ -436,3 +436,30 @@
  .team-dialog .team-import-table{min-width:760px}
  .team-result-row input[data-team-general-rank]{background:#fff;border:1px solid #bec5c8;color:#32383e}
 }
+
+/* Restore vertical scrolling in the course-classification dialog on iOS/Safari.
+   The table is horizontally scrollable, while the dialog content scrolls vertically. */
+#team-race-classification-dialog[open]{
+ display:flex;flex-direction:column;height:min(86dvh,850px);max-height:calc(100dvh - 20px);
+ min-height:0;overflow:hidden;margin:auto;
+}
+#team-race-classification-dialog .team-dialog-head{flex:0 0 auto;z-index:1}
+#team-classification-body{flex:1 1 auto;min-height:0;min-width:0;overflow-y:auto;overflow-x:hidden;
+ -webkit-overflow-scrolling:touch;overscroll-behavior-y:contain;touch-action:pan-y;
+ padding-bottom:max(30px,env(safe-area-inset-bottom))}
+#team-classification-body .team-table-wrap{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y}
+#team-classification-body .team-table{min-width:895px}
+.lpdb-shell .team-race-average{display:flex;align-items:center;gap:8px;justify-content:space-between;flex-wrap:wrap;
+ margin:10px 0 0;padding:11px 12px;border:1px solid #bec4c7;border-radius:10px;
+ background:linear-gradient(115deg,#fff,#e5e7e8 42%,#fafbfb 80%,#dfe2e4);
+ box-shadow:inset 0 1px 0 #fff}
+.lpdb-shell .team-race-average>span{font:850 10px Poppins,system-ui,sans-serif;letter-spacing:.025em;color:#676c70}
+.lpdb-shell .team-race-average>strong{font:900 20px Poppins,system-ui,sans-serif;color:#343a3e;font-variant-numeric:tabular-nums}
+.lpdb-shell .team-race-average>small{flex:1 1 100%;font:600 10px Poppins,system-ui,sans-serif;color:#6d7479}
+.team-individual-note{display:inline-block;font:850 12px Poppins,system-ui,sans-serif;color:#343a3d;
+ padding:4px 7px;border-radius:7px;border:1px solid #c7cbcd;background:linear-gradient(120deg,#fff,#e9ebec)}
+@media(max-width:700px){
+ #team-race-classification-dialog[open]{height:calc(100dvh - 20px);max-height:calc(100dvh - 20px)}
+ #team-classification-body{padding:12px 9px max(30px,env(safe-area-inset-bottom))}
+ #team-classification-body .team-table{min-width:865px}
+}

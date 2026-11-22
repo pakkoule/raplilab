@@ -1388,7 +1388,7 @@ button.close{min-width:40px;min-height:40px}
 }
 .cards .card.card--columns .card-title-row{
  display:grid;grid-template-columns:34px minmax(0,1fr);
- gap:7px;align-items:start;justify-content:initial;
+ gap:7px;align-items:center;justify-content:initial;
  margin:0 0 5px;min-width:0
 }
 .cards .card.card--columns .card-title-row h2{
@@ -1462,6 +1462,17 @@ button.close{min-width:40px;min-height:40px}
   linear-gradient(110deg,#c3dae6,#e7f4f8,#b6d5e3) border-box;
  box-shadow:0 2px 6px #245a7610
 }
+/* A slightly cooler departure and a soft mint arrival clarify the chronology. */
+.cards .card.card--columns .race-card-departure{
+ background:linear-gradient(115deg,#f3f9fd,#e9f3fa 65%,#f6f9fe) padding-box,
+  linear-gradient(110deg,#b9d7e9,#e0edf7,#b2cfe4) border-box
+}
+.cards .card.card--columns .race-card-arrival{
+ background:linear-gradient(115deg,#f5fcf8,#eaf7f1 65%,#f5fbf8) padding-box,
+  linear-gradient(110deg,#aed9c9,#e0f1e7,#a8d3c1) border-box
+}
+.cards .card.card--columns .race-card-arrival .race-card-field-label{color:#588777}
+.cards .card.card--columns .race-card-arrival strong{color:#286b61}
 .cards .card.card--columns .race-card-field-label{
  color:#648697;font:900 8px/1.35 Poppins,sans-serif;letter-spacing:.04em
 }
@@ -1533,12 +1544,13 @@ button.close{min-width:40px;min-height:40px}
 .cards .card.card--columns .race-alt-ranks .rank-type{font-size:7px}
 .cards .card.card--columns .race-alt-ranks strong{font-size:18px}
 .cards .card.card--columns .race-card-rewards{
- display:flex;flex-wrap:wrap;align-items:center;
- gap:6px;margin-top:11px;min-width:0
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+ align-items:stretch;gap:6px;margin-top:11px;min-width:0
 }
 .cards .card.card--columns .race-card-rewards .stat-chip{
- flex:1 1 116px;min-width:0;font-size:9px;
- text-align:center;padding:8px 7px;overflow-wrap:anywhere
+ display:flex;align-items:center;justify-content:center;
+ min-width:0;font-size:9px;line-height:1.35;
+ text-align:center;padding:8px 5px;overflow-wrap:break-word
 }
 .cards .card.card--columns .race-card-rank-empty{
  padding:11px 9px;margin:11px 0 0;border:1px dashed #cfdee8;
@@ -1580,7 +1592,7 @@ button.close{min-width:40px;min-height:40px}
  .cards .card.card--columns .rank-main-row .score-orb{flex-basis:45px;width:45px;height:45px;font-size:17px}
  .cards .card.card--columns .race-alt-ranks .rank-plate{padding:6px 4px;gap:3px}
  .cards .card.card--columns .race-alt-ranks strong{font-size:17px}
- .cards .card.card--columns .race-card-rewards .stat-chip{flex-basis:100%;font-size:9px}
+ .cards .card.card--columns .race-card-rewards .stat-chip{font-size:8px;padding:7px 4px;min-height:40px}
 }
 @media(max-width:360px){
  .cards .card.card--columns .race-card-layout{grid-template-columns:minmax(0,.82fr) minmax(0,1.18fr);gap:7px}

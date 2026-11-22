@@ -89,7 +89,9 @@
   const laterStatus=root.querySelector('[data-gfs-later-status]');
   const laterSummary=root.querySelector('[data-gfs-later-summary]');
   const laterRows=root.querySelector('[data-gfs-later-rows]');
+  const allDeparturePanel=root.querySelector('[data-gfs-all-departures]');
   const renderLaterDepartures=()=>{
+    allDeparturePanel.hidden=true;
     laterSummary.hidden=true;
     laterRows.hidden=true;
     laterRows.replaceChildren();
@@ -135,6 +137,21 @@
       laterRows.hidden=false;
       laterStatus.dataset.state='success';
       laterStatus.textContent=comparison.validCount+' départ(s) tardif(s) calculable(s) sur 4 · temps de passage à 47°N.';
+      if(verifiedFrames.has(6)&&engine.compareAllDepartureWindows){
+        try{
+          const overall=engine.compareAllDepartureWindows(
+            verifiedFrames.get(6),verifiedFrames.get(12),verifiedFrames.get(18)
+          );
+          allDeparturePanel.querySelector('[data-gfs-all-best]').textContent=
+            'Meilleur départ : +'+overall.fastestStartHour+' h · '+
+            overall.fastestElapsedMinutes.toFixed(1)+' min jusqu’à 47°N ('+
+            overall.validCount+' départs calculables sur 8).';
+          allDeparturePanel.hidden=false;
+        }catch(_){
+          // Aucun classement global affiché si la première fenêtre est absente ou invalide.
+          allDeparturePanel.hidden=true;
+        }
+      }
     }catch(error){
       laterStatus.dataset.state='error';
       laterStatus.textContent='Départs tardifs non calculables : '+String(error.message||error)+

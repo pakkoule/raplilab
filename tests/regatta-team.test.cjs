@@ -1247,6 +1247,7 @@ test('LPDB validation explains inconsistent chrono and ranking values with named
 test('LPDB editor exposes multiple actionable errors and marks the exact invalid row',()=>{
  const dom=new JSDOM(fs.readFileSync('regatta/index.html','utf8'),{runScripts:'outside-only',url:'https://example.org/regatta/'});
  const w=dom.window,d=w.document;
+ w.structuredClone=global.structuredClone;
  w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};
  w.HTMLDialogElement.prototype.close=function(){this.open=false;};
  w.RapliTeamEngine=E;w.RapliTeamTime=require('../regatta/team-time.js');

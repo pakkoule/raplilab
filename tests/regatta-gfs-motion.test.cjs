@@ -85,7 +85,7 @@ test('comparaison limitée à cinq caps fixes, classement sur progression vers l
   assert.ok(eligible.every(x=>x.distanceNm>0&&x.finalLatitude<m.START.latitude));
 });
 test('un cap interdit, une absence météo, et des polaires insuffisantes ne produisent aucun faux résultat',()=>{
-  assert.throws(()=>m.simulateMotion(frame(6),frame(12),160),/non autorisée/);
+  assert.throws(()=>m.simulateMotion(frame(6),frame(12),160),/hors de la sélection autorisée/);
   assert.throws(()=>m.compareFixedHeadings(frame(6,{windU:0,windV:0}),
     frame(12,{windU:0,windV:0})),/Aucun cap comparable/);
   assert.throws(()=>m.compareFixedHeadings(frame(6),frame(12,{cycle:'2026-11-22T06:00:00.000Z'})),

@@ -48,7 +48,8 @@ test('GFS integration estimate advises when routing review becomes relevant',()=
 test('active courses and records replace the right-column ranking area with a GFS widget',()=>{
  const cardCode=js.slice(js.indexOf('function card(r){'),js.indexOf('/* Ajustement dynamique'));
  assert.match(cardCode,/const isLive=status==='live'\|\|status==='record-live'/);
- assert.match(cardCode,/\(isLive\?gfsCardMarkup\(\):rankContent\)/);
+ assert.match(cardCode,/\(isLive\?gfsCardMarkup\(\):\(status==='planned'/);
+ assert.match(cardCode,/\?plannedRightColumnMarkup\(r\):rankContent\)/);
  assert.doesNotMatch(cardCode,/rankContent\+\s*\(isLive\?gfsCardMarkup/);
  assert.match(css,/\.race-card-right \.race-gfs-widget\{[\s\S]*?width:100%/);
  assert.doesNotMatch(css,/\.race-gfs-widget\{\s*grid-column:1 \/ -1/);

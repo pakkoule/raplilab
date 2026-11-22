@@ -86,6 +86,54 @@
   };
   const verifiedFrames=new Map();
   const interpolationEngine=window.RapliGfsInterpolation;
+  const spaceTimeStatus=root.querySelector('[data-gfs-spatiotemporal-status]');
+  const spaceTimeResults=root.querySelector('[data-gfs-spatiotemporal-results]');
+  const renderSpaceTime=()=>{
+    spaceTimeResults.replaceChildren();
+    const pairs=[[6,12,9],[12,18,15]];
+    const completed=[];
+    let failure='';
+    if(interpolationEngine?.interpolateSpatialFrames){
+      for(const [from,to,middle] of pairs){
+        if(!verifiedFrames.has(from)||!verifiedFrames.has(to))continue;
+        try{
+          completed.push(interpolationEngine.interpolateSpatialFrames(
+            verifiedFrames.get(from),verifiedFrames.get(to),middle
+          ));
+        }catch(error){
+          failure=String(error.message||error);
+        }
+      }
+    }
+    for(const wind of completed){
+      const card=document.createElement('div');
+      card.className='gfs-space-time-result';
+      const heading=document.createElement('strong');
+      heading.textContent='+'+wind.forecastHour+' h · '+frenchTime(wind.validUTC)+' · INTERPOLÉ 2D + TEMPS';
+      const detail=document.createElement('span');
+      detail.textContent=wind.speedKnots.toFixed(1)+' nds · '+wind.directionFromDeg.toFixed(0)+'°';
+      const uv=document.createElement('small');
+      uv.textContent='U/V : '+wind.uMs.toFixed(2)+' / '+wind.vMs.toFixed(2)+' m/s';
+      card.append(heading,detail,uv);
+      spaceTimeResults.appendChild(card);
+    }
+    spaceTimeResults.hidden=completed.length===0;
+    const count=[...verifiedFrames.keys()].sort((a,b)=>a-b);
+    if(completed.length){
+      spaceTimeStatus.dataset.state='success';
+      spaceTimeStatus.textContent='Vent interpolé dans l’espace ET dans le temps, à partir de '+(completed.length+1)+
+        ' échéances GFS vérifiées.'+(failure?' Un autre intervalle est indisponible.':'');
+    }else if(failure){
+      spaceTimeStatus.dataset.state='error';
+      spaceTimeStatus.textContent='Calcul spatio-temporel indisponible : '+failure;
+    }else{
+      spaceTimeStatus.dataset.state='idle';
+      spaceTimeStatus.textContent=count.length?
+        'Échéance(s) disponible(s) : '+count.map(h=>'+'+h+' h').join(', ')+
+        '. Il faut deux échéances voisines du même cycle avec lecture spatiale validée.':
+        'Lis +6 h et +12 h (ou +12 h et +18 h) sur le même cycle pour calculer le vent spatio-temporel.';
+    }
+  };
   const interpolationStatus=root.querySelector('[data-gfs-interpolation-status]');
   const interpolationResults=root.querySelector('[data-gfs-interpolation-results]');
   const renderInterpolations=()=>{
@@ -192,6 +240,7 @@
       }
       verifiedFrames.set(result.forecastHour,result);
       renderInterpolations();
+      renderSpaceTime();
       windStatus.dataset.state='success';
       windStatus.textContent='3 vents réels décodés sur le même cycle NOAA · '+
         (result.cached?'résultat en cache.':'lecture validée.');

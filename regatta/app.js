@@ -435,9 +435,9 @@ function raceCardSchedule(r,status){
    safe(r.duration||'—')+'</strong>';
  }
  return '<div class="race-card-schedule">'+
-  '<div class="race-card-date-item"><span class="race-card-field-label">'+startLabel+'</span><strong>'+
+  '<div class="race-card-date-item race-card-departure"><span class="race-card-field-label">'+startLabel+'</span><strong>'+
    safe(startValue)+'</strong></div>'+
-  '<div class="race-card-date-item"><span class="race-card-field-label">'+finishLabel+'</span>'+
+  '<div class="race-card-date-item race-card-arrival"><span class="race-card-field-label">'+finishLabel+'</span>'+
    '<strong class="'+(live?'is-live':planned?'is-upcoming':'')+'">'+safe(finishText)+'</strong></div>'+
   '<div class="race-card-date-item race-card-clock"><span class="race-card-field-label">'+timeLabel+'</span>'+
    timeDisplay+'</div></div>';

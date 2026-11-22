@@ -322,3 +322,16 @@ Le calcul différencie deux indicateurs : la **durée de navigation jusqu'à 47�
 Le test reste volontairement borné aux prévisions GFS +6/+12 h et à la zone Atlantique nord-est, avec les polaires provisoires ITYC non Full Pack. Il n'inclut ni terres, ni courants, ni contraintes de course et **ne prédit pas encore les ETA à l'équateur ou au cap de Bonne-Espérance**. La comparaison doit encore être confirmée sur Safari avec les vrais champs météo.
 
 Code : `regatta/gfs-departures.js`. Tests automatisés : `tests/regatta-gfs-departures.test.cjs`. Toujours dans la PR #4 uniquement.
+
+
+## GFS 0,25° · seconde plage de départs (PR #4 · prototype 13)
+
+Le test 12 a été validé sur iPhone le 22 novembre 2026 : les quatre départs simulés +6/+7/+8/+9 h ont tous franchi la latitude témoin 47°N, avec des durées de 98,7, 99,1, 99,6 et 100,2 minutes. L'écart maximal est de 1,5 minute et ne permet aucune conclusion fiable sur une fenêtre de départ au record.
+
+Le prototype 13 réutilise le **même modèle météo, les mêmes polaires partielles et la même porte fictive à 47°N**, mais ajoute les quatre départs +12/+13/+14/+15 h en exploitant les grilles GFS réelles +12 et +18 h, toujours issues d'un seul cycle NOAA. Le fichier f018 contient désormais lui aussi la grille U/V compacte, récupérée uniquement lorsque l'utilisateur lance manuellement la lecture +18 h. Aucun téléchargement supplémentaire par clic.
+
+Chaque départ dure au maximum trois heures et utilise les vents bilinéaires/temporalisés de sa paire NOAA (+6/+12 ou +12/+18). Les séquences ne sont jamais extrapolées au-delà de +12 h ou +18 h. Quand les trois échéances sont validées, l'interface présente **un bilan des huit départs**, avec le plus court temps de navigation jusqu'à la latitude témoin. Il ne s'agit pas d'un classement global de trajectoires océanique.
+
+Correction d'interface connexe : après une lecture réelle +6/+12/+18, le récapitulatif GRIB2 initial est resynchronisé sur **l'échéance effectivement sélectionnée** (date, taille, UGRD/VGRD, nombre de messages), supprimant l'impression que le panneau analyse encore +6 h lorsque le navigateur vient de récupérer +12 h.
+
+Toujours aucune estimation d'ETA à l'équateur ou au cap de Bonne-Espérance. Les polaires sont des relevés partiels ITYC **non Full Pack**, et les simulations restent limitées géographiquement, sans terres/courants/règles Virtual Regatta. Tests automatisés prolongés dans `tests/regatta-gfs-motion.test.cjs` et `tests/regatta-gfs-departures.test.cjs`. Validation sur Safari iPhone du test 13 à effectuer, production inchangée.

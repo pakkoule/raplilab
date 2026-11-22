@@ -629,6 +629,25 @@ html:not([data-rapli-role="editor"]) #rapli-module-cloud-save{display:none!impor
     <footer class="team-dialog-footer"><button type="button" data-team-close class="team-action team-secondary">ANNULER</button><button type="submit" class="team-action team-primary">ENREGISTRER LA COURSE</button></footer>
   </form>
 </dialog>
+<dialog id="team-bulk-dialog" class="team-dialog team-bulk-dialog" aria-labelledby="team-bulk-dialog-title">
+  <form id="team-bulk-form">
+    <header class="team-dialog-head">
+      <h2 id="team-bulk-dialog-title">AJOUTER PLUSIEURS SKIPPERS</h2>
+      <button type="button" data-team-close class="team-dialog-close" aria-label="Fermer">×</button>
+    </header>
+    <div class="team-dialog-scroll">
+      <p class="team-footnote">Colle une liste de pseudos (depuis Excel ou ailleurs) : <strong>une ligne = un skipper</strong>. Les lignes vides et les doublons sont ignorés.</p>
+      <label class="team-bulk-label" for="team-bulk-input">PSEUDOS À IMPORTER
+        <textarea id="team-bulk-input" rows="10" maxlength="10000" placeholder="Lucasiz29&#10;RX8&#10;Tomza&#10;Débi" spellcheck="false" autocapitalize="off" autocomplete="off"></textarea>
+      </label>
+      <div class="team-bulk-preview" id="team-bulk-preview" role="status" aria-live="polite"></div>
+    </div>
+    <footer class="team-dialog-footer">
+      <button type="button" data-team-close class="team-action team-secondary">ANNULER</button>
+      <button type="submit" id="team-bulk-submit" class="team-action team-primary" disabled>AJOUTER LES SKIPPERS</button>
+    </footer>
+  </form>
+</dialog>
 <dialog id="team-member-dialog" class="team-dialog" aria-labelledby="team-member-dialog-title">
   <form id="team-member-form">
     <header class="team-dialog-head"><h2 id="team-member-dialog-title">AJOUTER UN SKIPPER</h2><button type="button" data-team-close class="team-dialog-close" aria-label="Fermer">×</button></header>

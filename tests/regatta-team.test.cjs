@@ -1416,7 +1416,7 @@ test('LPDB course image displays live course status instead of branding, without
  assert.match(css,/\.lpdb-shell \.team-race-photo \.team-race-photo-status\{/);
  const html=fs.readFileSync('regatta/index.html','utf8');
  assert.match(html,/team\.css\?v=20261122-lpdb-responsive-v2/,'team badge CSS stays cache-busted');
- assert.match(html,/team-app\.js\?v=20261122-status-photo-fix/,'team badge markup script is cache-busted');
+assert.match(html,/team-app\.js\?v=20261122-lpdb-responsive-v2/,'team badge markup script stays cache-busted');
  dom.window.close();
 });
 

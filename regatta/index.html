@@ -129,6 +129,7 @@ html:not([data-rapli-role="editor"]) #rapli-module-cloud-save{display:none!impor
       <p class="gfs-lab-desc">Premier test météo : validation réelle d'un fichier NOAA (vents UGRD et VGRD à 10 m), sur l'Atlantique nord-est. Aucun routage ni temps de passage n'est encore calculé.</p>
       <div class="gfs-lab-actions">
         <button type="button" class="gfs-lab-run" data-gfs-lab-run>TESTER LES DONNÉES NOAA</button>
+        <button type="button" class="gfs-lab-run" data-gfs-wind-run>MESURER LE VENT RÉEL</button>
         <a href="https://nomads.ncep.noaa.gov/gribfilter.php?ds=gfs_0p25" target="_blank" rel="noopener noreferrer">Source officielle NOAA</a>
       </div>
       <p class="gfs-lab-status" role="status" aria-live="polite" data-gfs-lab-status>Test à lancer manuellement. Aucune requête NOAA au chargement du site.</p>
@@ -140,6 +141,17 @@ html:not([data-rapli-role="editor"]) #rapli-module-cloud-save{display:none!impor
         <div class="gfs-lab-cell"><span>Variables vérifiées</span><strong data-gfs-lab-fields>—</strong></div>
         <div class="gfs-lab-cell"><span>Messages GRIB2</span><strong data-gfs-lab-messages>—</strong></div>
       </div>
+      <section class="gfs-wind-panel" data-gfs-wind-panel aria-label="Lecture réelle des vents au large de Brest">
+        <div class="gfs-wind-heading"><strong>VENT RÉEL · AU LARGE DE BREST</strong><span>48,50°N · 8,00°O</span></div>
+        <p class="gfs-wind-status" data-gfs-wind-status role="status" aria-live="polite">Lecture prête : démarre le test avec le bouton ci-dessus.</p>
+        <div class="gfs-wind-values" data-gfs-wind-values hidden>
+          <div><small>Vitesse du vent</small><strong data-gfs-wind-speed>—</strong></div>
+          <div><small>Direction d'origine</small><strong data-gfs-wind-direction>—</strong></div>
+          <div><small>Composantes U / V</small><strong data-gfs-wind-components>—</strong></div>
+          <div><small>Prévision (Paris)</small><strong data-gfs-wind-valid>—</strong></div>
+        </div>
+        <p class="gfs-wind-note">Lecture NOAA 0,25° au point de grille le plus proche. Pas encore de routage ni de fenêtre de départ.</p>
+      </section>
       <p class="gfs-lab-limit">Source NOAA NOMADS · cycle choisi avec une marge de diffusion · aucun décodage des vitesses ni simulation de navigation à ce stade.</p>
     </div>
   </details>

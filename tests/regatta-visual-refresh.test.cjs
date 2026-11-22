@@ -339,6 +339,8 @@ test('left column displays departure then arrival then finished duration or acti
  const {raceCardSchedule}=raceTileHarness();
  const completed=raceCardSchedule({...testRace,mockStatus:'finished'},'finished');
  assert.ok(completed.includes('race-card-schedule'));
+ assert.ok(completed.includes('race-card-date-item race-card-departure'));
+ assert.ok(completed.includes('race-card-date-item race-card-arrival'));
  assert.ok(completed.includes('DÉPART'));
  assert.ok(completed.includes('ARRIVÉE'));
  assert.ok(completed.includes('10 j 15 h'));
@@ -370,6 +372,23 @@ test('responsive duration never wraps the seconds on narrow race cards',()=>{
  assert.match(clockRule,/white-space:nowrap;overflow-wrap:normal/);
  assert.equal(css.includes(clockSelector+'{font-size:14px}'),false,
   'fixed-size mobile rule must not override the fluid clock size');
+});
+
+test('reward chips share one row and title/date styling stays responsive',()=>{
+ const titleRule=css.split('.cards .card.card--columns .card-title-row{')[1]?.split('}')[0];
+ assert.match(titleRule,/align-items:center/,'title and options button align vertically');
+ const rewardRule=css.split('.cards .card.card--columns .race-card-rewards{')[1]?.split('}')[0];
+ assert.match(rewardRule,/display:grid;grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
+ const smallPhoneRule=css.split('@media(max-width:580px){').pop();
+ assert.match(smallPhoneRule,/race-card-rewards \.stat-chip\{font-size:8px;padding:7px 4px;min-height:40px\}/);
+ assert.doesNotMatch(smallPhoneRule,/race-card-rewards \.stat-chip\{flex-basis:100%/);
+ for(const className of ['race-card-departure','race-card-arrival']){
+  assert.ok(css.includes('.cards .card.card--columns .'+className+'{'),
+   className+' has a distinct soft foil gradient');
+ }
+ const {card}=raceTileHarness();
+ const tile=new JSDOM(card({...testRace,mockStatus:'finished'})).window.document;
+ assert.equal(tile.querySelectorAll('.race-card-rewards .stat-chip').length,2);
 });
 
 test('premium gradients preserve meaning of original ranking and chip colors',()=>{

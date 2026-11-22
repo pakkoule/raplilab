@@ -182,6 +182,20 @@ html:not([data-rapli-role="editor"]) #rapli-module-cloud-save{display:none!impor
           </div>
           <small>Interpolation spatiale des quatre nœuds voisins du GFS 0,25°. Il s'agit d'un calcul sur les vents prévus, pas d'une observation ni d'un routage.</small>
         </section>
+        <section class="gfs-later-departures-panel" aria-label="Quatre fenêtres de départ supplémentaires à partir de GFS +12 et +18 heures">
+          <div class="gfs-motion-heading">
+            <strong>FENÊTRES DE DÉPART · TEST 13</strong>
+            <span>GFS +12 / +18 H · 47°N</span>
+          </div>
+          <p data-gfs-later-status>Lis +12 h puis +18 h d'un même cycle NOAA pour comparer les quatre départs supplémentaires de +12 à +15 heures.</p>
+          <div data-gfs-later-summary hidden>
+            <div><small>Départ le plus rapide</small><strong data-gfs-later-fastest>—</strong></div>
+            <div><small>Temps de passage</small><strong data-gfs-later-duration>—</strong></div>
+            <div><small>Première arrivée absolue</small><strong data-gfs-later-earliest>—</strong></div>
+          </div>
+          <div data-gfs-later-rows hidden></div>
+          <small>Test 13 : départs simulés à +12, +13, +14 et +15 h, latitude témoin 47°N, trajectoire limitée à 3 heures et uniquement aux vents NOAA +12/+18 h du même cycle. Polaires partielles non Full Pack, sans terres ni courants. Aucun calcul de passage à l'équateur ou à Bonne-Espérance.</small>
+        </section>
         <section class="gfs-departures-panel" aria-label="Quatre fenêtres de départ GFS vers une latitude témoin">
           <div class="gfs-motion-heading">
             <strong>FENÊTRES DE DÉPART · TEST 12</strong>

@@ -396,3 +396,22 @@ Les résultats à 3 h (tests 15–17) demeurent visibles **sans modification** d
 Les trois échéances f024, f030 et f036 doivent appartenir **au même cycle** et avoir des grilles compatibles. Aucun temps d'arrivée ou extension artificielle des polaires n'est autorisé. Simulation limitée à une zone 52°N–40°N, 20°O–5°E, sans terres, courants ni règles VR. Toujours aucune ETA à l'équateur ni à Bonne-Espérance.
 
 Tests : `tests/regatta-gfs-motion.test.cjs`, `tests/regatta-gfs-departures.test.cjs` et `tests/regatta-gfs-source.test.cjs`. Un contrôle avec de vrais fichiers NOAA sur Safari est nécessaire. Production inchangée.
+
+
+## PR #4 · consolidation du LAB en widget de fenêtres de départ
+
+Après 18 validations successives sur iPhone (22 novembre 2026), le laboratoire GFS n'est plus le principal affichage de Rapli Regatta. Une carte **FENÊTRES DE DÉPART**, au-dessus des courses, présente le suivi météo et les objectifs d'arrivée ; les panneaux historiques 6–18 sont archivés dans **DIAGNOSTICS GFS → LECTURES & TESTS TECHNIQUES** (deux volets repliables), sans supprimer ni modifier les outils ou les données des courses.
+
+La carte principale signale clairement :
+- **Équateur** : non calculable tant qu'aucun routage océanique réellement vérifié n'existe.
+- **Bonne-Espérance** : non calculable et fiabilité attendue encore plus faible à cet horizon.
+- **Latitude témoin 47°N** : indicateur strictement local et expérimental, classement des départs **sur le même horizon de 3 heures**; ne pas fusionner les durées des tests prolongés à 6 heures.
+- **Météo GFS 0,25°** : indicateur du cycle actuel et 6/6 échéances de +6 à +36 h. Aucune lecture NOAA n'est déclenchée automatiquement au chargement de la page.
+
+Le bouton **CHARGER LES 6 PRÉVISIONS GFS** orchestre les téléchargements manuels déjà disponibles, en série, avec une pause d'au moins dix secondes entre deux accès. Il affiche l'avancement, peut être interrompu et conserve les fichiers déjà validés en mémoire dans la page. La lecture d'une nouvelle prévision d'un cycle différent efface les anciennes grilles ; aucune comparaison entre deux cycles ne doit être affichée. La méthode API d'origine `/.netlify/functions/gfs-wind?forecastHour=...` demeure inchangée et le serveur NOAA n'est pas interrogé pour chaque point de navigation.
+
+Le récapitulatif affiché par le nouveau `regatta/gfs-routing-summary.js` est calculé uniquement depuis les comparaisons de 4×4 départs à 47°N et les échéances effectivement lues. Il exclut les départs non calculables, refuse les données incompatibles et ne produit jamais de fausses ETA équateur/cap. Les polaires actuellement utilisées sont les valeurs ITYC 30°–120°, 4–40 nds, **non Full Pack**, sans terres/courants/règles Virtual Regatta. Les durées obtenues ne sont pas des prédictions de record.
+
+La consolidation constitue une **étape UI et préparation du calcul**, pas un moteur d'optimisation transatlantique livré. Étapes suivantes : obtenir et vérifier les véritables polaires Full Pack, étendre le domaine météo, intégrer un masque terrestre et un moteur de trajectoires réalistes vers l'équateur, puis un modèle de projection plus incertain vers Bonne-Espérance. La prochaine progression ne doit être annoncée qu'après vérification de sorties calculables.
+
+Validation : `tests/regatta-gfs-routing-summary.test.cjs` vérifie le refus de faux ETA, la cohérence des cycles et la structure du widget. PR #4 uniquement ; production inchangée.

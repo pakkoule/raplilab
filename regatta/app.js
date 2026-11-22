@@ -338,6 +338,7 @@ async function replaceRows(next){if(storageRecoveryBlocked)throw Error('Stockage
    });
    updateGfsWidgets(now);
    updateGfsBriefings(now);
+   updatePreStartRouting(now);
  }
  function raceClockMarkup(row){
    const clock=raceClockInfo(row);
@@ -445,6 +446,105 @@ function gfsBriefingForRace(r,timestamp=Date.now()){
  const result=gfsBriefingForDeparture(departure,timestamp);
  return result?{...result,departure}:null;
 }
+/* Historical performance is compared by relative final placement, not raw ranks.
+   The start participant count stays independent of official finish-day figures. */
+function raceClassHistory(r,history){
+ const key=value=>String(value||'').normalize('NFKC').trim().replace(/\s+/g,' ').toLocaleLowerCase('fr');
+ const cls=key(r.boatClass);
+ if(!cls)return {finished:[],ranked:[],rates:[],median:null,best:null};
+ const finished=history.filter(item=>item.id!==r.id&&item.kind==='race'&&
+  key(item.boatClass)===cls&&raceStatus(item)==='finished');
+ const ranked=finished.filter(item=>{
+  const rank=Number(item.rank);
+  return /^[1-9]\d*$/.test(String(item.rank||''))&&Number.isSafeInteger(rank)&&rank>0;
+ });
+ const best=ranked.length?Math.min(...ranked.map(item=>Number(item.rank))):null;
+ const rates=ranked.map(item=>{
+  const rank=Number(item.rank);
+  const denominator=Number(item.rankTotal||item.participantCount);
+  return Number.isSafeInteger(denominator)&&denominator>=rank&&denominator>0?
+   rank/denominator:null;
+ }).filter(value=>value!==null).sort((a,b)=>a-b);
+ const median=rates.length?racePercentile(rates,.5):null;
+ return {finished,ranked,rates,median,best};
+}
+function racePercentile(sorted,q){
+ if(!sorted.length)return null;
+ const position=(sorted.length-1)*q,low=Math.floor(position),high=Math.ceil(position);
+ return sorted[low]+(sorted[high]-sorted[low])*(position-low);
+}
+function raceRankProjection(r,history){
+ const sample=raceClassHistory(r,history);
+ const count=/^[1-9]\d{0,11}$/.test(String(r.startParticipantCount||''))?
+  Number(r.startParticipantCount):null;
+ if(!count||sample.median===null)return {...sample,count,estimated:null,range:null};
+ const toRank=value=>Math.max(1,Math.min(count,Math.round(value*count)));
+ const estimated=toRank(sample.median);
+ const range=sample.rates.length>=3?
+  [toRank(racePercentile(sample.rates,.25)),toRank(racePercentile(sample.rates,.75))]:null;
+ return {...sample,count,estimated,range};
+}
+function preStartInsightsMarkup(r,history){
+ const performance=raceRankProjection(r,history);
+ const briefing=gfsBriefingForRace(r);
+ const present=Number.isFinite(briefing?.consultation);
+ const nowTime=Date.now();
+ const routingState=!present?'missing':nowTime>=briefing.consultation?'ready':'pending';
+ const routingValue=present?
+  (routingState==='ready'?'À CONSULTER':formatRaceClock((briefing.consultation-nowTime)/1000)):'—';
+ const fmt=value=>Number(value).toLocaleString('fr-FR');
+ const percent=value=>(value*100).toLocaleString('fr-FR',{maximumFractionDigits:1})+' %';
+ const heading=clean(r.boatClass||'CLASSE',50);
+ const courses=performance.finished.length;
+ const historyDetail=courses?
+  'Meilleur '+(performance.best!==null?'#'+fmt(performance.best):'—')+
+  (performance.median!==null?' · Top médian '+percent(performance.median):''):
+  'Aucune course terminée dans cette classe';
+ const projection=performance.estimated!==null?'≈ #'+fmt(performance.estimated):'—';
+ const projectionHint=!performance.count?
+  'Renseigne les participants au départ':
+  performance.median===null?'Historique comparable insuffisant':
+  'Top médian '+percent(performance.median)+' · '+fmt(performance.count)+' au départ';
+ const range=performance.range?
+  'Fourchette historique : #'+fmt(performance.range[0])+' à #'+fmt(performance.range[1]):
+  performance.estimated!==null?'Projection indicative · '+performance.rates.length+
+   ' course'+(performance.rates.length>1?'s':'')+' comparable'+(performance.rates.length>1?'s':''):'';
+ return '<div class="race-prestart-insights" aria-label="Préparation de la course">'+
+  '<section class="race-prestart-routing"'+(present?' data-gfs-route-at="'+briefing.consultation+
+   '" data-gfs-route-departure="'+briefing.departure+'"':'')+' data-gfs-route-state="'+routingState+
+   '" aria-label="Fenêtre conseillée pour le routage">'+
+  '<span class="race-prestart-icon" aria-hidden="true">🧭</span>'+
+  '<div class="race-prestart-routing-copy"><strong>DERNIER ROUTAGE CONSEILLÉ</strong>'+
+  '<small>'+(present?'Après le GFS estimé de '+briefing.usableLocal:
+   'Date et heure de départ à renseigner')+'</small></div>'+
+  '<strong class="race-prestart-routing-time" data-gfs-route-countdown>'+routingValue+'</strong></section>'+
+  '<div class="race-prestart-performance">'+
+  '<section class="race-prestart-history"><span>MES COURSES · '+safe(heading)+'</span>'+
+  '<strong>'+fmt(courses)+' terminée'+(courses>1?'s':'')+'</strong>'+
+  '<small>'+safe(historyDetail)+'</small></section>'+
+  '<section class="race-prestart-projection"><span>CLASSEMENT THÉORIQUE</span>'+
+  '<strong>'+projection+'</strong>'+
+  '<small>'+safe(projectionHint)+'</small></section></div>'+
+  (range?'<p class="race-prestart-range">'+safe(range)+'</p>':'')+
+  '<p class="race-prestart-note">Estimation statistique personnelle, non prédiction du classement final.</p>'+
+  '</div>';
+}
+function plannedRightColumnMarkup(r){
+ return gfsBriefingMarkup(r)+(r.kind==='record'?'':preStartInsightsMarkup(r,rows));
+}
+function updatePreStartRouting(timestamp=Date.now()){
+ for(const widget of document.querySelectorAll('#cards [data-gfs-route-at]')){
+  const target=Number(widget.dataset.gfsRouteAt),departure=Number(widget.dataset.gfsRouteDeparture);
+  const state=timestamp>=departure?'expired':timestamp>=target?'ready':'pending';
+  if(widget.dataset.gfsRouteState!==state)widget.dataset.gfsRouteState=state;
+  const value=widget.querySelector('[data-gfs-route-countdown]');
+  if(!value)continue;
+  const label=state==='expired'?'DÉPART À VÉRIFIER':state==='ready'?'À CONSULTER':
+   formatRaceClock((target-timestamp)/1000);
+  if(value.textContent!==label)value.textContent=label;
+ }
+}
+
 function gfsBriefingMarkup(r){
  const plan=gfsBriefingForRace(r);
  if(!plan)return '<aside class="race-gfs-briefing" aria-label="Briefing météo GFS avant départ">'+
@@ -678,7 +778,7 @@ function card(r){
    raceCardMenu(r,status)+'</div>'+
    '<div class="card-boat">'+safe(r.boat)+(r.routeType?' · '+
     safe(ROUTE_TYPES[r.routeType]):'')+'</div></div>'+
-   (isLive?gfsCardMarkup():(status==='planned'||(record&&recordHasFutureStart(r)))?gfsBriefingMarkup(r):rankContent)+
+   (isLive?gfsCardMarkup():(status==='planned'||(record&&recordHasFutureStart(r)))?plannedRightColumnMarkup(r):rankContent)+
    (record?recordCardContent(r):'')+
    (!score.available&&!record&&(status==='dnf'||status==='finished')?
     '<p class="score-pending">'+safe(score.reason||'Note en attente')+'</p>':'')+

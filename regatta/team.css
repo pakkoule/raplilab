@@ -463,3 +463,123 @@
  #team-classification-body{padding:12px 9px max(30px,env(safe-area-inset-bottom))}
  #team-classification-body .team-table{min-width:865px}
 }
+
+
+/* LPDB active / upcoming race widgets reuse the very same live clock and GFS
+   schedule markup as Mes courses, themed in silver rather than blue. */
+.lpdb-shell .team-race-tags .class-tag,.lpdb-shell .team-race-tags .vsr-badge{
+ display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:29px;
+ max-width:100%;min-width:0;overflow-wrap:anywhere;padding:5px 9px;
+ border-radius:9px;font:850 10px/1.3 Poppins,system-ui,sans-serif;
+ letter-spacing:.02em;text-transform:uppercase;
+ box-shadow:inset 0 1px 0 #ffffffaf,0 2px 6px #2b353f15;
+}
+.lpdb-shell .team-race-tags .class-tag{
+ color:var(--class-ink,#32383e);
+ border:2px solid var(--class-border,#bcc4c9);
+ background:linear-gradient(128deg,var(--class-tag,#f0f0f0),var(--class-foil,#fff) 34%,var(--class-accent,#f3f4f4) 66%,var(--class-tag,#e2e4e6));
+}
+.lpdb-shell .team-race-tags .vsr-badge{
+ color:var(--vsr-ink,#33383d);
+ border:2px solid var(--vsr-border,#bfc6c9);
+ background:linear-gradient(128deg,var(--vsr-tag,#ededed),var(--vsr-foil,#fff) 34%,var(--vsr-accent,#f1f3f3) 67%,var(--vsr-tag,#e4e6e8));
+}
+.lpdb-shell .team-race-tags .foil-symbol{display:inline-flex;flex:0 0 14px;align-items:center}
+.lpdb-shell .team-race-tags .foil-symbol svg{display:block;max-width:14px}
+.lpdb-shell .team-race-tags .vsr-badge.hc{box-shadow:inset 0 1px 0 #fff,0 2px 5px #c3a65c30}
+.lpdb-shell .team-race-status.is-live{background:linear-gradient(110deg,#f7eef2,#eee8eb);border:1px solid #d8b8c4;color:#993c61;gap:8px}
+.lpdb-shell .team-race-status.is-live .live-neon{flex:none}
+.lpdb-shell .team-race-status.is-upcoming{background:linear-gradient(125deg,#f8f8f8,#e9ebed);border:1px solid #c9cdcf;color:#444c53}
+.lpdb-shell .team-race-timer{min-width:0}
+.lpdb-shell .team-race-timer .race-live-clock{
+ display:flex;align-items:center;flex-wrap:wrap;gap:7px;margin:0;padding:10px 11px;
+ border:1px solid #c4cacc;border-radius:10px;background:linear-gradient(120deg,#fff,#e3e6e8 54%,#fafafa);
+ box-shadow:inset 0 1px 0 #fff; color:#4b5258;font:800 10px/1.4 Poppins,sans-serif
+}
+.lpdb-shell .team-race-timer .race-live-clock--countdown{background:linear-gradient(118deg,#fdfdfd,#e8eaec 54%,#f8f9fa)}
+.lpdb-shell .team-race-timer .race-live-clock>strong{
+ flex:1 1 100%;color:#32383e;text-align:center;font:900 clamp(14px,2.2vw,22px)/1.25 'Courier Prime','Courier New',monospace;
+ font-variant-numeric:tabular-nums;white-space:nowrap;letter-spacing:-.025em
+}
+.lpdb-shell .team-race-weather{margin:6px 0 10px;min-width:0}
+.lpdb-shell .team-race-weather .race-gfs-briefing,
+.lpdb-shell .team-race-weather .race-gfs-widget{
+ display:flex;flex-direction:column;gap:9px;min-width:0;padding:12px 13px;
+ margin:0;border:1px solid #c6cbce;border-radius:11px;
+ background:linear-gradient(117deg,#fff,#e7e9eb 53%,#f9fafa);
+ box-shadow:0 2px 8px #333b4513,inset 0 1px 0 #fff;
+ color:#444c53;font:600 11px/1.5 Poppins,system-ui,sans-serif
+}
+.lpdb-shell .team-race-weather .race-gfs-briefing-header,
+.lpdb-shell .team-race-weather .race-gfs-topline,
+.lpdb-shell .team-race-weather .race-gfs-progress-row,
+.lpdb-shell .team-race-weather .race-gfs-bottomline{
+ display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;min-width:0
+}
+.lpdb-shell .team-race-weather .race-gfs-briefing-header strong,
+.lpdb-shell .team-race-weather .race-gfs-title{
+ color:#363d44;font:850 10px/1.3 Poppins,sans-serif;letter-spacing:.025em
+}
+.lpdb-shell .team-race-weather .race-gfs-briefing-header strong small,
+.lpdb-shell .team-race-weather .race-gfs-title small{font:600 8px Poppins,sans-serif;color:#7c8186}
+.lpdb-shell .team-race-weather [data-gfs-briefing-status],
+.lpdb-shell .team-race-weather .race-gfs-status{
+ color:#444b51;font:850 9px/1.4 Poppins,sans-serif
+}
+.lpdb-shell .team-race-weather [data-gfs-briefing-status]{
+ border:1px solid #c3c8cb;border-radius:7px;background:#f8f9f9;padding:4px 7px
+}
+.lpdb-shell .team-race-weather .race-gfs-briefing-grid{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;min-width:0
+}
+.lpdb-shell .team-race-weather .race-gfs-briefing-chip{
+ display:flex;flex-direction:column;gap:4px;min-width:0;
+ padding:9px;border:1px solid #d1d5d7;border-radius:8px;background:linear-gradient(125deg,#fff,#f0f2f2)
+}
+.lpdb-shell .team-race-weather .race-gfs-briefing-chip>span,
+.lpdb-shell .team-race-weather [data-gfs-next-label]{
+ color:#747a80;font:850 8px/1.3 Poppins,sans-serif;letter-spacing:.03em
+}
+.lpdb-shell .team-race-weather .race-gfs-briefing-chip>strong{
+ color:#30373d;font:850 17px/1.2 Poppins,sans-serif;font-variant-numeric:tabular-nums
+}
+.lpdb-shell .team-race-weather .race-gfs-briefing-chip>small{color:#70787d;font:600 9px/1.45 Poppins,sans-serif}
+.lpdb-shell .team-race-weather .race-gfs-briefing-tip{
+ display:flex;align-items:flex-start;gap:8px;padding:7px 9px;margin:0;
+ border:1px solid #d6dadd;border-radius:8px;background:#f7f8f8;
+ color:#606971;font:600 10px/1.5 Poppins,sans-serif
+}
+.lpdb-shell .team-race-weather .race-gfs-briefing-empty{margin:0;color:#727a80;font-size:11px}
+.lpdb-shell .team-race-weather .race-gfs-progress{flex:1 1 auto;height:7px;min-width:80px;overflow:hidden;border-radius:99px;background:#d1d6d8}
+.lpdb-shell .team-race-weather .race-gfs-progress-fill{
+ display:block;height:100%;border-radius:inherit;
+ background:linear-gradient(90deg,#b1b9bd,#545e65)
+}
+.lpdb-shell .team-race-weather .race-gfs-percent{color:#3c444a;font:900 11px Poppins,sans-serif;white-space:nowrap}
+.lpdb-shell .team-race-weather .race-gfs-advice{color:#616970;font:650 10px/1.4 Poppins,sans-serif}
+.lpdb-shell .team-race-weather .race-gfs-next{
+ display:flex;flex-direction:column;align-items:flex-end;gap:4px;min-width:0;text-align:right
+}
+.lpdb-shell .team-race-weather .race-gfs-countdown{
+ color:#32393e;font:900 17px/1.25 'Courier Prime',monospace;font-variant-numeric:tabular-nums;
+ white-space:nowrap
+}
+.lpdb-shell .team-race-registered{
+ display:flex;justify-content:space-between;align-items:center;gap:10px;
+ margin:0 0 8px;padding:11px 12px;border:1px solid #d2d6d8;
+ border-radius:10px;background:linear-gradient(115deg,#fff,#e8eaeb 55%,#fafafa)
+}
+.lpdb-shell .team-race-registered span{color:#6f767c;font:850 10px Poppins,sans-serif}
+.lpdb-shell .team-race-registered strong{color:#353c42;font:900 23px Poppins,sans-serif;font-variant-numeric:tabular-nums}
+@media(max-width:680px){
+ .lpdb-shell .team-race-tags .class-tag,.lpdb-shell .team-race-tags .vsr-badge{font-size:9px;padding:5px 7px}
+ .lpdb-shell .team-race-weather .race-gfs-briefing,
+ .lpdb-shell .team-race-weather .race-gfs-widget{padding:9px;gap:7px}
+ .lpdb-shell .team-race-weather .race-gfs-briefing-chip{padding:7px}
+ .lpdb-shell .team-race-weather .race-gfs-briefing-chip>strong{font-size:14px}
+ .lpdb-shell .team-race-weather .race-gfs-bottomline{align-items:flex-start}
+}
+@media(max-width:365px){
+ .lpdb-shell .team-race-weather .race-gfs-briefing-grid{grid-template-columns:1fr}
+ .lpdb-shell .team-race-weather .race-gfs-countdown{font-size:15px}
+}

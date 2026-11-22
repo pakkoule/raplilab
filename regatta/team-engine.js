@@ -94,9 +94,10 @@ function race(input){
   const status=['finished','dnf','pending'].includes(row.status)?row.status:'pending';
   const pos=int(row.position);
   const elapsed=int(row.elapsedSeconds),gap=int(row.gapSeconds);
-  results.push({skipperId,status,position:status==='finished'&&Number.isInteger(pos)&&pos>=1&&pos<=50?pos:null,
-   elapsedSeconds:status==='finished'&&Number.isSafeInteger(elapsed)&&elapsed>=0?elapsed:null,
-   gapSeconds:status==='finished'&&Number.isSafeInteger(gap)&&gap>=0?gap:null});
+  const record={skipperId,status,position:status==='finished'&&Number.isInteger(pos)&&pos>=1&&pos<=50?pos:null};
+  if(status==='finished'&&Number.isSafeInteger(elapsed)&&elapsed>=0)record.elapsedSeconds=elapsed;
+  if(status==='finished'&&Number.isSafeInteger(gap)&&gap>=0)record.gapSeconds=gap;
+  results.push(record);
  }
  return {id,type:'team-race',name,dateEnd:dateOk(input.dateEnd)?input.dateEnd:'',
   vsr:BASE[input.vsr]?input.vsr:'vsr2',
@@ -134,6 +135,20 @@ function verifyRace(r,knownMembers){
    ranks.add(Number(row.position));
   }
  }
+ const leader=rs.find(row=>row.status==='finished'&&Number(row.position)===1);
+ if(leader&&Number.isSafeInteger(leader.elapsedSeconds)){
+  for(const row of rs.filter(r=>r.status==='finished')){
+   if(row.elapsedSeconds!=null&&row.gapSeconds!=null&&
+      row.elapsedSeconds!==leader.elapsedSeconds+row.gapSeconds)
+    return 'Chrono et écart incohérents avec le vainqueur.';
+   if(row.elapsedSeconds!=null&&row.elapsedSeconds<leader.elapsedSeconds)
+    return 'Un skipper possède un temps inférieur au vainqueur.';
+  }
+ }
+ const timed=rs.filter(row=>row.status==='finished'&&Number.isSafeInteger(row.elapsedSeconds))
+  .sort((a,b)=>Number(a.position)-Number(b.position));
+ for(let i=1;i<timed.length;i++)if(timed[i].elapsedSeconds<timed[i-1].elapsedSeconds)
+  return 'L’ordre du classement ne correspond pas aux chronos.';
  return '';
 }
 function scoredRace(r,knownMembers){

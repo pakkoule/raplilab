@@ -182,6 +182,21 @@ html:not([data-rapli-role="editor"]) #rapli-module-cloud-save{display:none!impor
           </div>
           <small>Interpolation spatiale des quatre nœuds voisins du GFS 0,25°. Il s'agit d'un calcul sur les vents prévus, pas d'une observation ni d'un routage.</small>
         </section>
+        <section class="gfs-adaptive-panel" aria-label="Test expérimental de changement de cap selon la météo">
+          <div class="gfs-motion-heading">
+            <strong>PILOTE ADAPTATIF · TEST 10</strong>
+            <span>CAP RÉÉVALUÉ TOUTES LES 30 MIN</span>
+          </div>
+          <p data-gfs-adaptive-status>Lis +6 h puis +12 h du même cycle NOAA pour tester le choix d'un cap selon le vent et la progression instantanée vers le sud.</p>
+          <div data-gfs-adaptive-summary hidden>
+            <div><small>Progression vers le sud</small><strong data-gfs-adaptive-south>—</strong></div>
+            <div><small>Distance parcourue</small><strong data-gfs-adaptive-distance>—</strong></div>
+            <div><small>Changements de cap</small><strong data-gfs-adaptive-changes>—</strong></div>
+            <div><small>Écart au meilleur cap fixe</small><strong data-gfs-adaptive-delta>—</strong></div>
+          </div>
+          <div data-gfs-adaptive-steps hidden></div>
+          <small>STRATÉGIE LOCALE (gloutonne) : parmi les cinq caps 170°, 175°, 180°, 185°, 190°, celui offrant la meilleure VMG sud instantanée est retenu à chaque pas. Un cap peut rester inchangé. Polaires ITYC partielles non Full Pack ; aucune optimisation globale, ni terre, courant ou contrainte Virtual Regatta.</small>
+        </section>
         <section class="gfs-heading-panel" aria-label="Comparaison expérimentale de cinq caps fixes">
           <div class="gfs-motion-heading">
             <strong>COMPARATEUR DE CAPS · TEST 9</strong>

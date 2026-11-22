@@ -21,6 +21,15 @@ const detailInputs={boatClass:'team-race-class',routeType:'team-race-route',star
 const members=()=>all().filter(x=>x.type==='team-member');
 const editorMembers=()=>[...members(),...(draft?.newMembers||[])];
 const races=()=>all().filter(x=>x.type==='team-race');
+/* Display-only live state: planned team races automatically start at the local
+   departure instant. Closing the team classification remains a manual action;
+   this must never change results or silently write to Supabase. */
+function effectiveRaceStatus(r,now=Date.now()){
+ if(r.status!=='planned'||!r.start||!r.startTime)return r.status;
+ const start=root.RapliRegattaTime?.fromWall?.(r.start,r.startTime,r.timezone||'Europe/Paris');
+ return Number.isFinite(start)&&now>=start?'live':'planned';
+}
+
 const unique=(values)=>[...new Set(values)];
 const normalizedSearch=value=>String(value??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('fr');
 const matchesSearch=values=>{
@@ -97,12 +106,14 @@ function renderMain(){
  rankTable(list)+'<p class="team-footnote">Le filtre ne modifie pas les rangs officiels. Les DNF comptent comme participations, avec 0 point. Les anciennes périodes restent recalculables.</p>';
 }
 function teamRaceCard(r,known){
+ const status=effectiveRaceStatus(r);
+ const displayed=status===r.status?r:{...r,status};
  const p=personalById(r.personalRaceId);
  const results=engine.scoredRace(r,known);
- const checked=r.status==='finished'&&results.length>0;
- const err=r.status==='finished'&&!checked?engine.verifyRace(r,known):'';
- const state=checked?'TERMINÉE · VALIDÉE':r.status==='finished'?'RÉSULTATS À COMPLÉTER':
-  r.status==='live'?'EN COURS':'À VENIR';
+ const checked=status==='finished'&&results.length>0;
+ const err=status==='finished'&&!checked?engine.verifyRace(r,known):'';
+ const state=checked?'TERMINÉE · VALIDÉE':status==='finished'?'RÉSULTATS À COMPLÉTER':
+  status==='live'?'EN COURS':'À VENIR';
  const finished=r.results.filter(x=>x.status==='finished').sort((a,b)=>(a.position??999)-(b.position??999));
  const podium=checked?finished.slice(0,3):[];
  const names=new Map([...known].map(([id,m])=>[id,m.name]));
@@ -111,9 +122,9 @@ function teamRaceCard(r,known){
  const notes=rating.calculate(r,races(),known,engine);
  const dnf=r.results.filter(x=>x.status==='dnf').length;
  const shared=root.RapliRegattaSharedCards;
- const isUpcoming=r.status==='planned',isLive=r.status==='live';
- const timer=(isUpcoming||isLive)?shared?.raceClockMarkup?.(r)||'':'';
- const gfs=isUpcoming?shared?.gfsBriefingMarkup?.(r)||'':
+ const isUpcoming=status==='planned',isLive=status==='live';
+ const timer=(isUpcoming||isLive)?shared?.raceClockMarkup?.(displayed)||'':'';
+ const gfs=isUpcoming?shared?.gfsBriefingMarkup?.(displayed)||'':
   isLive?shared?.gfsCardMarkup?.()||'':'';
  const liveIcon=isLive?shared?.liveIconMarkup?.()||'🔴':'';
  const boatTag=shared?.classTagMarkup?.(r.boatClass)||
@@ -138,8 +149,8 @@ function teamRaceCard(r,known){
  const startText=r.start?
   new Date(r.start+'T12:00:00').toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'})+
   (r.startTime?' · '+esc(r.startTime):''):'À renseigner';
- const statusClass=r.status==='finished'?(checked?'is-complete':'is-pending'):r.status==='live'?'is-live':'is-upcoming';
- return '<article class="team-race-card'+(r.status==='live'?' team-race-live':'')+'" data-team-race="'+esc(r.id)+'">'+
+ const statusClass=status==='finished'?(checked?'is-complete':'is-pending'):isLive?'is-live':'is-upcoming';
+ return '<article class="team-race-card'+(isLive?' team-race-live':'')+'" data-team-race="'+esc(r.id)+'" data-team-state="'+status+'">'+
  '<div class="team-race-layout">'+
  '<section class="team-race-left" aria-label="Visuel et départ de course">'+
  '<div class="team-race-photo">'+img+'<span class="team-race-photo-mark">LPDB · RAPLI REGATTA</span></div>'+
@@ -155,15 +166,15 @@ function teamRaceCard(r,known){
  '<span class="team-race-status '+statusClass+'">'+liveIcon+state+'</span>'+
  (gfs?'<div class="team-race-weather">'+gfs+'</div>':'')+
  (err?'<p class="team-race-alert">'+esc(err)+'</p>':'')+
- (r.status==='finished'?'<div class="team-race-figures">'+
+ (status==='finished'?'<div class="team-race-figures">'+
  '<div><span>SKIPPERS INSCRITS</span><strong>'+num(r.results.length)+'</strong></div>'+
  '<div><span>CLASSÉS</span><strong>'+num(finished.length)+'</strong></div>'+
  '<div><span>DNF</span><strong>'+num(dnf)+'</strong></div></div>':
  '<div class="team-race-registered"><span>SKIPPERS INSCRITS</span><strong>'+num(r.results.length)+'</strong></div>')+
- (r.status==='finished'?(winner?'<div class="team-race-first"><div><span>🥇 PREMIER LPDB</span><strong>'+esc(names.get(winner.skipperId)||'Skipper')+'</strong></div>'+
+ (status==='finished'?(winner?'<div class="team-race-first"><div><span>🥇 PREMIER LPDB</span><strong>'+esc(names.get(winner.skipperId)||'Skipper')+'</strong></div>'+
  (winner.elapsedSeconds!=null?'<span class="team-race-clock">'+clockLabel(winner.elapsedSeconds)+'</span>':'')+'</div>':
  '<p class="team-race-pending">Aucun résultat final validé.</p>'):'')+
- (r.status==='finished'?
+ (status==='finished'?
  (podium.length>1?'<div class="team-race-podium">'+podium.slice(1).map(x=>
  '<div><span>'+medal(x.position)+'</span><strong>'+esc(names.get(x.skipperId)||'Skipper')+'</strong></div>').join('')+'</div>':'')+
  '<div class="team-race-average" title="Moyenne des notes disponibles, équipement exclu"><span>NOTE MOYENNE DE LA COURSE</span>'+
@@ -187,6 +198,21 @@ function renderRaces(){
   empty(search?'Aucune course ne correspond à ta recherche.':'Aucune course d’équipe. Ajoute la première épreuve du championnat.'))+
  (groups.length?'<section class="team-groups"><h3>CLASSEMENTS BONUS · ENSEMBLES D’ÉTAPES</h3><p>Somme des étapes, sans redistribuer de points.</p>'+
  groups.map(g=>'<div class="team-group-row"><strong>'+esc(g)+'</strong><div>'+action('stage-'+encodeURIComponent(g),'Voir le classement')+action('png-stage-'+encodeURIComponent(g),'↓ PNG')+'</div></div>').join('')+'</section>':'');
+}
+/* Called by the shared one-second ticker. Rebuild only when a visible
+   course crosses its departure time; no rerender or database write each tick. */
+function refreshLiveStatuses(now=Date.now()){
+ const panel=$('team-races-panel');
+ if(!panel||panel.hidden)return false;
+ const visible=panel.querySelectorAll('[data-team-race][data-team-state]');
+ if(!visible.length)return false;
+ const map=new Map(races().map(r=>[r.id,r]));
+ const changed=[...visible].some(card=>{
+  const race=map.get(card.dataset.teamRace);
+  return race&&effectiveRaceStatus(race,now)!==card.dataset.teamState;
+ });
+ if(changed)renderRaces();
+ return changed;
 }
 function renderMembers(){
  const ms=members().filter(m=>matchesSearch([m.name,m.status])).sort((a,b)=>(b.status==='active')-(a.status==='active')||a.name.localeCompare(b.name,'fr'));
@@ -878,5 +904,5 @@ function init(bridge){
  }
  render();
 }
-root.RapliTeamUI={init,render,getPeriod:period,getViewMode:()=>viewMode,openFromPersonal:fromPersonalId};
+root.RapliTeamUI={init,render,refreshLiveStatuses,getPeriod:period,getViewMode:()=>viewMode,openFromPersonal:fromPersonalId};
 })(window);

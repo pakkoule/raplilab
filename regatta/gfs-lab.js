@@ -117,9 +117,9 @@
       const formatHour=hour=>frenchTime(
         new Date(Date.parse(result.cycleUTC)+hour*3600000).toISOString()
       );
-      put('fastest','+'+result.fastestStartHour+' h · '+formatHour(result.fastestStartHour));
-      put('duration',result.fastestElapsedMinutes.toFixed(1)+' min');
-      put('earliest','+'+result.earliestArrivalStartHour+' h · '+frenchTime(result.earliestArrivalUTC));
+      put('fastest',result.validCount?'+'+result.fastestStartHour+' h · '+formatHour(result.fastestStartHour):'Aucun départ calculable');
+      put('duration',result.validCount?result.fastestElapsedMinutes.toFixed(1)+' min':'—');
+      put('earliest',result.validCount?'+'+result.earliestArrivalStartHour+' h · '+frenchTime(result.earliestArrivalUTC):'—');
       for(const candidate of result.windows){
         const row=document.createElement('div');
         row.className='gfs-departure-row';

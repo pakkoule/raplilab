@@ -92,7 +92,7 @@ test('trois points GFS sont décodés depuis les mêmes champs UGRD/VGRD',async(
   assert.deepEqual(points.map(p=>p.uMs),[5,10,15]);
   assert.deepEqual(points.map(p=>p.vMs),[0,-5,-10]);
   assert.ok(points.every(p=>p.verifiedWind===true));
-  assert.throws(()=>decodeWindPoints(Buffer.alloc(40),[]),/Coordonnées météo invalides/);
+  await assert.rejects(decodeWindPoints(Buffer.alloc(40),[]),/Coordonnées météo invalides/);
 });
 
 test('seules +6, +12 et +18 h sont acceptées dans le laboratoire',()=>{

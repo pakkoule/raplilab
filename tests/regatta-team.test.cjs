@@ -1419,3 +1419,25 @@ test('LPDB course image displays live course status instead of branding, without
  assert.match(html,/team-app\.js\?v=20261122-status-photo-fix/,'team badge markup script is cache-busted');
  dom.window.close();
 });
+
+test('LPDB pirate header uses the requested logo and premium foil without changing tabs',()=>{
+ const html=fs.readFileSync('regatta/index.html','utf8');
+ const css=fs.readFileSync('regatta/team.css','utf8');
+ const d=new JSDOM(html).window.document;
+ const header=d.querySelector('.regatta-topbar');
+ const image=header?.querySelector('.regatta-brand-header .regatta-brand-logo');
+ assert.ok(header&&image);
+ assert.match(image.getAttribute('src'),/^assets\/lpdb-header-foil\.webp\?v=/);
+ assert.match(image.getAttribute('alt'),/LPDB/);
+ assert.equal(header.querySelectorAll('.lpdb-tabs .lpdb-tab').length,4);
+ assert.match(css,/LPDB premium pirate foil header/);
+ assert.match(css,/\.regatta-topbar>\.lpdb-tabs \.lpdb-tab\.active\{/);
+ assert.match(css,/@media\(max-width:620px\)\{/);
+ assert.match(html,/team\.css\?v=20261122-lpdb-foil-header/);
+ const logoPath=require('node:path').join('regatta','assets','lpdb-header-foil.webp');
+ assert.ok(fs.existsSync(logoPath),'new header logo exists in PR');
+ const logo=fs.readFileSync(logoPath);
+ assert.equal(logo.toString('ascii',0,4),'RIFF');
+ assert.equal(logo.toString('ascii',8,12),'WEBP');
+ assert.ok(logo.length>1000,'header logo has image data');
+});

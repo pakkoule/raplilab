@@ -78,7 +78,7 @@ function rankRows(rows,context){
   const name=label(row.name)||'Skipper sans pseudo';
   const size=name.length>42?22:26;
   context.ctx.font=canvasFont(size,750);
-  const lines=wrapText(context.ctx,name,race?394:650);
+  const lines=wrapText(context.ctx,name,race?394:575);
   const rowHeight=Math.max(76,18+lines.length*32);
   return {...row,name,nameLines:lines,nameSize:size,rowHeight,
    rank:row.dnf?'DNF':Number.isInteger(row.rank)?row.rank:index+1};
@@ -89,7 +89,7 @@ function plan(rows,{race=false,style='table',limit=0,ctx}={}){
  const items=rankRows(source,{ctx,race});
  const podium=style==='social'&&limit===3;
  const top10=style==='social'&&!podium;
- const heroHeight=race?485:330;
+ const heroHeight=race?605:330;
  const top10Bonus=top10?122:0;
  const tableHead=64;
  const bodyHeight=podium?Math.max(390,items.reduce((sum,i)=>sum+Math.max(105,i.rowHeight),0)):
@@ -131,21 +131,31 @@ function drawHeader(ctx,plan,opts,logo,illustration){
  ctx.fillText('LPDB  /  CHAMPIONNAT DE L’ÉQUIPE',230,82);
  if(logo){
   fillRound(ctx,66,68,145,123,12,'#fff');
-  ctx.drawImage(logo,76,73,124,113);
+  const aspect=Math.min(135/logo.width,113/logo.height);
+  const logoW=logo.width*aspect,logoH=logo.height*aspect;
+  ctx.drawImage(logo,72+(135-logoW)/2,73+(113-logoH)/2,logoW,logoH);
  }
  ctx.fillStyle=COLORS.ink;ctx.font=canvasFont(59,900);
  ctx.fillText('RAPLI REGATTA',230,145);
  const titleFont=compact?43:37;
  ctx.font=canvasFont(titleFont,850);
  const lines=wrapText(ctx,title.toLocaleUpperCase('fr'),compact?755:1150);
- const shown=lines.slice(0,compact?3:2);
+ let shown=lines;
+ if(compact&&shown.length>3){
+  ctx.font=canvasFont(33,850);
+  shown=wrapText(ctx,title.toLocaleUpperCase('fr'),810);
+ }
+ shown=shown.slice(0,compact?3:2);
  ctx.fillStyle='#343a3f';
  shown.forEach((line,i)=>ctx.fillText(line,230,207+i*50));
  if(compact){
   const metaY=218+shown.length*50;
   drawChips(ctx,[race.boatClass||'BATEAU NON RENSEIGNÉ',
-    race.vsr==='hc'?'HC':race.vsr?.toUpperCase(),
-    race.stageGroup],230,metaY);
+    race.vsr==='hc'?'HC':race.vsr?.toUpperCase()],230,metaY);
+  if(race.stageGroup){
+   ctx.textAlign='left';ctx.fillStyle=COLORS.muted;ctx.font=canvasFont(17,650);
+   ctx.fillText(label(race.stageGroup).slice(0,90),230,metaY+67);
+  }
   if(illustration){
    fitImage(ctx,illustration,1064,76,344,242);
    strokeRound(ctx,1064,76,344,242,17,'#aeb5b7',3);
@@ -158,9 +168,9 @@ function drawHeader(ctx,plan,opts,logo,illustration){
   }
   if(race.dateEnd){
    ctx.fillStyle=COLORS.muted;ctx.font=canvasFont(18,650);
-   ctx.fillText('CLASSEMENT CLÔTURÉ LE '+race.dateEnd.split('-').reverse().join('/'),230,metaY+85);
+   ctx.fillText('CLASSEMENT CLÔTURÉ LE '+race.dateEnd.split('-').reverse().join('/'),230,metaY+(race.stageGroup?97:75));
   }
-  const y=395;
+  const y=505;
   const stats=[
    ['CLASSÉS',num(race.finishers??0)],
    ['DNF',num(race.dnf??0)],
@@ -247,7 +257,11 @@ function drawPodium(ctx,items,y,race){
   ctx.fillStyle=COLORS.ink;ctx.font=canvasFont(22,800);
   const nameLines=wrapText(ctx,row.name,width-42);
   const start=y+(i===1?104:120);
-  nameLines.forEach((line,k)=>ctx.fillText(line,xs[i]+width/2,start+k*27));
+  const display= nameLines.length>3?(()=>{
+   ctx.font=canvasFont(17,800);
+   return wrapText(ctx,row.name,width-36);
+  })():nameLines;
+  display.forEach((line,k)=>ctx.fillText(line,xs[i]+width/2,start+k*23));
   ctx.font=canvasFont(25,900);ctx.fillText(num(row.points)+' PTS',xs[i]+width/2,y+205);
   if(race){
    ctx.font=canvasFont(17,680);

@@ -606,13 +606,13 @@ function card(r){
    raceCardMenu(r,status)+'</div>'+
    '<div class="card-boat">'+safe(r.boat)+(r.routeType?' · '+
     safe(ROUTE_TYPES[r.routeType]):'')+'</div></div>'+
-   rankContent+
+   (isLive?gfsCardMarkup():rankContent)+
    (record?recordCardContent(r):'')+
    (!score.available&&!record&&(status==='dnf'||status==='finished')?
     '<p class="score-pending">'+safe(score.reason||'Note en attente')+'</p>':'')+
    (showRecordRanking&&!rankPairs.some(([key])=>r[key])?
     '<p class="score-pending">Record clôturé · renseigne les classements finaux avec MODIFIER.</p>':'')+
-   gains+'</section>'+(isLive?gfsCardMarkup():'')+'</div></div></article>';
+   gains+'</section></div></div></article>';
 }
 
 /* Ajustement dynamique après mise en page : une ligne même pour > 100 000 joueurs. */

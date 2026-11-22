@@ -48,9 +48,9 @@ test('URL NOAA f006 : vent 10m U/V + coordonnées atlantiques bornées', ()=>{
   assert.equal(url.searchParams.get('bottomlat'),'40');
 });
 
-test('quatre échéances GFS autorisées sur le même cycle',()=>{
+test('cinq échéances GFS autorisées sur le même cycle',()=>{
  const cycle=chooseCycle(Date.parse('2026-11-22T08:00:00Z'));
- for(const hour of [6,12,18,24]){
+ for(const hour of [6,12,18,24,30]){
    const url=new URL(buildUrl(cycle,hour));
    assert.equal(url.searchParams.get('file'),
      'gfs.t00z.pgrb2.0p25.f'+String(hour).padStart(3,'0'));

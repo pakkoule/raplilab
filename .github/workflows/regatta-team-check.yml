@@ -32,4 +32,4 @@ jobs:
           node --check regatta/team-app.js
           node --check regatta/app.js
       - name: Validate Regatta and collection regression tests
-        run: npm test
+        run: node --test tests/regatta-team.test.cjs tests/regatta-only.test.cjs tests/collection-sync.test.cjs tests/admin-access.test.cjs

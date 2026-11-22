@@ -135,8 +135,15 @@
             const angles=Number.isFinite(d.twaMin)&&Number.isFinite(d.twaMax)
               ?' · TWA '+d.twaMin.toFixed(1)+'° à '+d.twaMax.toFixed(1)+'°'
               :'';
-            meta.textContent='Blocage à +'+d.forecastHour.toFixed(1).replace('.0','')+
-              ' h · '+part+angles;
+            const time=Number.isFinite(d.forecastHour)
+              ?'+'+d.forecastHour.toFixed(1).replace('.0','')+' h'
+              :'échéance indisponible';
+            if(d.type==='GATE_NOT_REACHED'){
+              meta.textContent='Après 3 h : reste '+d.distanceRemainingNm.toFixed(1)+
+                ' M jusqu’à 47°N · dernier vent ('+time+') : '+part+angles;
+            }else{
+              meta.textContent='Blocage à '+time+' · '+part+angles;
+            }
           }else{
             meta.textContent=d.reason||'Conditions météo indisponibles à ce point.';
           }

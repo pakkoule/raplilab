@@ -46,5 +46,48 @@
       clearTimeout(timer);
       run.disabled=false;
     }
+ 
+  const windRun=root.querySelector('[data-gfs-wind-run]');
+  const windStatus=root.querySelector('[data-gfs-wind-status]');
+  const windValues=root.querySelector('[data-gfs-wind-values]');
+  const windText=(name,value)=>{
+    const cell=root.querySelector('[data-gfs-wind-'+name+']');
+    if(cell)cell.textContent=value;
+  };
+  windRun.addEventListener('click',async()=>{
+    windRun.disabled=true;
+    windValues.hidden=true;
+    windStatus.dataset.state='loading';
+    windStatus.textContent='Décodage du GRIB2 NOAA et lecture du vent en cours…';
+    const controller=new AbortController();
+    const timer=setTimeout(()=>controller.abort(),25000);
+    try{
+      const response=await fetch('/.netlify/functions/gfs-wind',{
+        signal:controller.signal,cache:'no-store'
+      });
+      let result;
+      try{result=await response.json();}catch(_){throw Error('Réponse météo non lisible.');}
+      if(!response.ok||!result.ok||result.wind?.verifiedWind!==true){
+        throw Error(result.error||('Lecture NOAA non confirmée (HTTP '+response.status+')'));
+      }
+      const wind=result.wind;
+      if(!Number.isFinite(wind.speedKnots)||!Number.isFinite(wind.directionFromDeg)||
+         !Number.isFinite(wind.uMs)||!Number.isFinite(wind.vMs))throw Error('Valeurs décodées invalides.');
+      windText('speed',wind.speedKnots.toFixed(1)+' nds');
+      windText('direction',wind.directionFromDeg.toFixed(0)+'°');
+      windText('components',wind.uMs.toFixed(2)+' / '+wind.vMs.toFixed(2)+' m/s');
+      windText('valid',frenchTime(result.validUTC));
+      windValues.hidden=false;
+      windStatus.dataset.state='success';
+      windStatus.textContent='Vent NOAA décodé et validé · '+(result.cached?'lecture en cache · ':'')+
+        'point de grille à '+wind.nearestGridpoint.distanceKm.toFixed(1)+' km.';
+    }catch(error){
+      windStatus.dataset.state='error';
+      windStatus.textContent='Aucune mesure confirmée : '+String(error.message||error);
+    }finally{
+      clearTimeout(timer);
+      windRun.disabled=false;
+    }
+  });
   });
 })();

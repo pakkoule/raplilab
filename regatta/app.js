@@ -519,15 +519,17 @@ function card(r){
    (validImage(r.icon)?imageTag(r.icon,'Affiche '+r.name):
     '<div class="icon-placeholder">⛵</div>')+'</div>'+
     '<div class="card-status-row">'+statusBadge+'</div></div>'+
-  '<div class="card-intro-info"><div class="card-title-row">'+raceCardMenu(r,status)+
+  '<div class="card-intro-info"><div class="card-title-row">'+
    '<h2 title="'+safe(r.name)+'">'+safe(r.name)+'</h2></div>'+
    (subtype?'<div class="race-card-subtype">'+subtype+'</div>':'')+
    (departsToday?'<span class="start-today-flag" title="Départ aujourd’hui, dans le fuseau de la course">🏁 DÉPART AUJOURD’HUI</span>':'')+
    raceCardSchedule(r,status)+'</div></section>'+
   '<section class="race-card-right" aria-label="Caractéristiques, classements et gains">'+
-  '<div class="race-card-meta"><div class="race-card-meta-tags">'+classBadge+
-   (validEquipment(r.equipment)?'<span class="stat-chip equipment">ÉQUIPEMENT · '+
+  '<div class="race-card-meta"><div class="race-card-meta-tags">'+
+   '<div class="race-card-badges">'+classBadge+
+   (validEquipment(r.equipment)?'<span class="stat-chip equipment">'+
     safe(equipmentModes[r.equipment])+'</span>':'')+vsrBadge+'</div>'+
+   raceCardMenu(r,status)+'</div>'+
    '<div class="card-boat">'+safe(r.boat)+(r.routeType?' · '+
     safe(ROUTE_TYPES[r.routeType]):'')+'</div></div>'+
    rankContent+

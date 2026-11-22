@@ -86,6 +86,61 @@
   };
   const verifiedFrames=new Map();
   const interpolationEngine=window.RapliGfsInterpolation;
+  const routeStatus=root.querySelector('[data-gfs-route-search-status]');
+  const routeSummary=root.querySelector('[data-gfs-route-search-summary]');
+  const routeSteps=root.querySelector('[data-gfs-route-search-steps]');
+  const renderRouteSearch=()=>{
+    routeSummary.hidden=true;
+    routeSteps.hidden=true;
+    routeSteps.replaceChildren();
+    if(!verifiedFrames.has(6)||!verifiedFrames.has(12)){
+      routeStatus.dataset.state='idle';
+      routeStatus.textContent='Lis +6 h puis +12 h du même cycle GFS pour comparer les suites de caps.';
+      return;
+    }
+    const engine=window.RapliGfsRouteSearch;
+    if(!engine?.searchHeadingSequences){
+      routeStatus.dataset.state='error';
+      routeStatus.textContent='Moteur de recherche des trajectoires indisponible.';
+      return;
+    }
+    try{
+      const result=engine.searchHeadingSequences(verifiedFrames.get(6),verifiedFrames.get(12));
+      const set=(name,value)=>{
+        const el=root.querySelector('[data-gfs-route-search-'+name+']');
+        if(el)el.textContent=value;
+      };
+      const signed=value=>(value>0?'+':'')+value.toFixed(1)+' M';
+      set('south',result.southProgressNm.toFixed(1)+' M');
+      set('gain',signed(result.gainVsGreedyNm));
+      set('fixed',signed(result.gainVsFixedNm));
+      set('count',result.completed.toLocaleString('fr-FR'));
+      for(const step of result.steps){
+        const row=document.createElement('div');
+        row.className='gfs-route-search-step';
+        const time=document.createElement('strong');
+        time.textContent='+'+step.hour.toFixed(1).replace('.0','')+' h';
+        const heading=document.createElement('b');
+        heading.textContent='Cap '+step.heading+'°';
+        const speed=document.createElement('span');
+        speed.textContent=step.boatKnots.toFixed(1)+' nds bateau';
+        const wind=document.createElement('small');
+        wind.textContent='Vent '+step.windKnots.toFixed(1)+' nds · '+step.windDirection+
+          '° · TWA '+step.twa.toFixed(0)+'°';
+        row.append(time,heading,speed,wind);
+        routeSteps.appendChild(row);
+      }
+      routeSummary.hidden=false;
+      routeSteps.hidden=false;
+      routeStatus.dataset.state='success';
+      routeStatus.textContent='Recherche terminée : '+result.completed.toLocaleString('fr-FR')+
+        ' séquence(s) de 3 h entièrement valide(s), parmi les caps limités du test.';
+    }catch(error){
+      routeStatus.dataset.state='error';
+      routeStatus.textContent='Recherche indisponible : '+String(error.message||error)+
+        ' Aucune route inventée.';
+    }
+  };
   const adaptiveStatus=root.querySelector('[data-gfs-adaptive-status]');
   const adaptiveSummary=root.querySelector('[data-gfs-adaptive-summary]');
   const adaptiveSteps=root.querySelector('[data-gfs-adaptive-steps]');
@@ -437,6 +492,7 @@
       renderMotion();
       renderHeadings();
       renderAdaptive();
+      renderRouteSearch();
       windStatus.dataset.state='success';
       windStatus.textContent='3 vents réels décodés sur le même cycle NOAA · '+
         (result.cached?'résultat en cache.':'lecture validée.');

@@ -9,6 +9,7 @@ const BOUNDS = Object.freeze({top: 52, bottom: 40, left: -20, right: 5});
 const HOUR_MS = 60 * 60 * 1000;
 const MAX_BYTES = 4 * 1024 * 1024;
 const FORECAST_HOUR = 6;
+const FORECAST_HOURS = Object.freeze([6, 12, 18]);
 
 function chooseCycle(nowMs = Date.now()) {
   if (!Number.isFinite(nowMs)) throw new Error('Horodatage invalide.');
@@ -23,13 +24,14 @@ function chooseCycle(nowMs = Date.now()) {
   };
 }
 
-function buildUrl(cycle) {
+function buildUrl(cycle, forecastHour = FORECAST_HOUR) {
+  if (!FORECAST_HOURS.includes(forecastHour)) throw new Error('Échéance GFS non autorisée.');
   if (!/^\d{8}$/.test(cycle.date) || !/^(00|06|12|18)$/.test(cycle.hour)) {
     throw new Error('Cycle GFS invalide.');
   }
   const params = new URLSearchParams({
     dir: '/gfs.' + cycle.date + '/' + cycle.hour + '/atmos',
-    file: 'gfs.t' + cycle.hour + 'z.pgrb2.0p25.f006',
+    file: 'gfs.t' + cycle.hour + 'z.pgrb2.0p25.f' + String(forecastHour).padStart(3, '0'),
     var_UGRD: 'on',
     var_VGRD: 'on',
     lev_10_m_above_ground: 'on',
@@ -140,4 +142,4 @@ async function probe(fetcher = globalThis.fetch, nowMs = Date.now()) {
   }
 }
 
-module.exports = {SOURCE, BOUNDS, MAX_BYTES, chooseCycle, buildUrl, inspectGrib2, readLimited, probe};
+module.exports = {SOURCE, BOUNDS, MAX_BYTES, FORECAST_HOUR, FORECAST_HOURS, chooseCycle, buildUrl, inspectGrib2, readLimited, probe};

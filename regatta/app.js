@@ -209,7 +209,7 @@ function storeClassSettings(input,{notifyCloud=true}={}){
  classSettings=normalizeClassSettings(input);
  try{localStorage.setItem(COLOR_STORAGE_KEY,JSON.stringify(classSettings));}
  catch(e){console.warn('Rapli Regatta: impossible de mémoriser les couleurs localement',e);toast('Sauvegarde locale des couleurs indisponible',true);}
- render();
+ render();renderTeam();
  if(notifyCloud)window.RapliSharedCollection?.changed?.();
 }
 

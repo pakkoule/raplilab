@@ -145,3 +145,15 @@ test('lecture vectorielle de f012/f018 sans extrapolation temporelle',()=>{
   const differentCycle=m.loadFrame(frame(18,{cycle:'2026-11-22T06:00:00.000Z'}));
   assert.throws(()=>m.windAt(f12,differentCycle,15,48.125,-8.625),/consécutives/);
 });
+
+test('lecture +18/+24 h : interpolation météo sans extrapolation ni mélange de cycles',()=>{
+  const f18=m.loadFrame(frame(18,{windU:12,windV:-5}));
+  const f24=m.loadFrame(frame(24,{windU:8,windV:-1}));
+  const mid=m.windAt(f18,f24,21,48.125,-8.625);
+  assert.ok(Math.abs(mid.u-10)<.0001);
+  assert.ok(Math.abs(mid.v+3)<.0001);
+  assert.throws(()=>m.windAt(f18,f24,24.5,48.125,-8.625),/consécutives/);
+  assert.throws(()=>m.windAt(f18,f24,17.5,48.125,-8.625),/consécutives/);
+  const foreign=m.loadFrame(frame(24,{cycle:'2026-11-22T06:00:00.000Z'}));
+  assert.throws(()=>m.windAt(f18,foreign,21,48.125,-8.625),/consécutives/);
+});

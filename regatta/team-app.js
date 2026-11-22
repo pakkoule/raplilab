@@ -10,7 +10,7 @@ const uuid=type=>'lpdb-'+type+'-'+(root.crypto?.randomUUID?.()||Date.now().toStr
 const stamp=()=>new Date().toISOString();
 const today=()=>new Date().toLocaleDateString('en-CA');
 const types={month:'Mensuel',quarter:'Trimestriel',year:'Annuel',custom:'Libre',all:'Historique complet'};
-let api,viewMode='main',periodType='month',periodValue='',customFrom='',customTo='',search='',filter='all',page=1,statMode='avg',draft=null,editingMember=null,notice='';
+let api,viewMode='main',periodType='month',periodValue='',customFrom='',customTo='',search='',filter='all',page=1,statMode='avg',draft=null,editingMember=null,notice='',bulkSaving=false;
 const personal=()=>api?.personal?.()||[];
 const raw=()=>engine.normalize(api?.get?.()||[]);
 const all=()=>raw().map(x=>x.type==='team-race'?
@@ -115,7 +115,7 @@ function renderMembers(){
  const el=$('team-skippers-panel');if(!el)return;
  el.innerHTML='<div class="team-heading"><div><span>LPDB · EFFECTIF</span><h2>LES SKIPPERS</h2><p>Jusqu’à 50 membres actifs · historique sans limite.</p></div><img class="team-emblem" src="assets/lpdb.webp" alt="LPDB"></div>'+
  statCards([['Effectif actif',num(ms.filter(active).length)+' / 50'],['Anciens membres',num(ms.filter(m=>!active(m)).length)],['Skippers historiques',num(ms.length)]])+
- '<div class="team-toolbar">'+action('new-member','＋ AJOUTER UN SKIPPER','team-primary')+'</div>'+
+ '<div class="team-toolbar">'+action('new-member','＋ AJOUTER UN SKIPPER','team-primary')+action('bulk-members','＋ AJOUT PAR BLOC','team-secondary')+'</div>'+
  (ms.length?'<div class="team-member-list">'+ms.map(m=>'<div class="team-member-card"><div><strong>'+esc(m.name)+'</strong><small>'+esc(active(m)?'Membre actif':'Ancien membre')+(m.from?' · Depuis '+esc(m.from):'')+'</small></div><div class="team-toolbar">'+action('member-'+esc(m.id),'Modifier','team-secondary')+action('profile-'+esc(m.id),'Palmarès')+'</div></div>').join('')+'</div>':empty('L’effectif est vide. Ajoute les skippers pour créer des courses.'))+
  '<p class="team-footnote">Un ancien membre conserve tous ses points. Tu peux le réactiver sans perdre son identité ni son palmarès.</p>';
 }
@@ -264,6 +264,58 @@ async function submitRace(ev){
  }
  draft.updatedAt=stamp();
  if(await saveEntity(engine.race(draft))){$('team-race-dialog').close();draft=null;notify('Course d’équipe enregistrée ✓');}
+}
+function openBulkMembers(){
+ if(!canWrite())return;
+ $('team-bulk-input').value='';
+ bulkSaving=false;
+ renderBulkPreview();
+ $('team-bulk-dialog').showModal();
+ $('team-bulk-input').focus();
+}
+function renderBulkPreview(){
+ const result=engine.prepareMemberBatch($('team-bulk-input').value,members());
+ const preview=$('team-bulk-preview'),submit=$('team-bulk-submit');
+ const blocked=result.invalid.length>0||result.overflow>0;
+ submit.disabled=bulkSaving||blocked||!result.accepted.length;
+ submit.textContent=bulkSaving?'ENREGISTREMENT…':'AJOUTER '+result.accepted.length+' SKIPPER'+(result.accepted.length>1?'S':'');
+ preview.innerHTML='<div class="team-bulk-metrics">'+
+  '<div><strong>'+result.accepted.length+'</strong><span>Nouveaux</span></div>'+
+  '<div><strong>'+result.duplicates.length+'</strong><span>Doublons ignorés</span></div>'+
+  '<div><strong>'+result.available+'</strong><span>Places disponibles</span></div></div>'+
+  (result.accepted.length?'<p class="team-bulk-names"><b>À ajouter :</b> '+result.accepted.slice(0,12).map(esc).join(' · ')+(result.accepted.length>12?' · …':'')+'</p>':'')+
+  (result.duplicates.length?'<p class="team-bulk-note">Déjà présents ou répétés : '+result.duplicates.slice(0,8).map(x=>esc(x.name)).join(', ')+(result.duplicates.length>8?'…':'')+'</p>':'')+
+  (result.invalid.length?'<p class="team-bulk-error">Pseudo(s) invalide(s) aux lignes : '+result.invalid.slice(0,8).map(x=>x.line).join(', ')+'. Corrige la liste avant l’import.</p>':'')+
+  (result.overflow?'<p class="team-bulk-error">Effectif plein : '+result.accepted.length+' nouveaux skippers pour '+result.available+' place(s). Réduis la liste pour importer en une seule fois.</p>':'')+
+  (!result.accepted.length&&!result.invalid.length?'<p class="team-bulk-note">Colle les pseudos dans la zone de texte, un par ligne.</p>':'');
+ return result;
+}
+async function submitBulkMembers(ev){
+ ev.preventDefault();
+ if(bulkSaving||!canWrite())return;
+ const state=renderBulkPreview();
+ if(!state.accepted.length||state.invalid.length||state.overflow)return;
+ if(!api.saveBatch){notify('Importation groupée indisponible.',true);return;}
+ const snapshot=$('team-bulk-input').value;
+ const timestamp=stamp();
+ const rows=state.accepted.map(name=>engine.member({
+  id:uuid('member'),name,status:'active',createdAt:timestamp,updatedAt:timestamp
+ }));
+ bulkSaving=true;
+ renderBulkPreview();
+ try{
+  await api.saveBatch(rows);
+  $('team-bulk-dialog').close();
+  $('team-bulk-input').value='';
+  notify(rows.length+' skipper'+(rows.length>1?'s':'')+' ajouté'+(rows.length>1?'s':'')+' à l’effectif LPDB ✓'+
+   (state.duplicates.length?' · '+state.duplicates.length+' doublon(s) ignoré(s).':''));
+ }catch(error){
+  $('team-bulk-input').value=snapshot;
+  notify('Importation non effectuée : '+(error?.message||error),true);
+ }finally{
+  bulkSaving=false;
+  renderBulkPreview();
+ }
 }
 function openMember(id){
  if(!canWrite())return;
@@ -466,6 +518,7 @@ async function click(ev){
  const cmd=button.dataset.teamAction;
  if(cmd==='new-race')return openRace();
  if(cmd==='new-member')return openMember();
+ if(cmd==='bulk-members')return openBulkMembers();
  if(cmd==='link-existing'&&draft){
   const id=$('team-race-personal').value,p=personalById(id);
   if(!p){notify('Choisis une fiche personnelle existante.',true);return;}
@@ -532,6 +585,7 @@ function change(ev){
 }
 function input(ev){
  const el=ev.target;
+ if(el.id==='team-bulk-input'){renderBulkPreview();return;}
  if(el.id==='team-search'){search=el.value;page=1;renderMain();$('team-search')?.focus();$('team-search')?.setSelectionRange(search.length,search.length);return;}
  if(el.dataset.teamRank&&draft){
   const row=draft.results.find(r=>r.skipperId===el.dataset.teamRank);
@@ -555,8 +609,9 @@ function init(bridge){
  document.addEventListener('input',input);
  $('team-race-form')?.addEventListener('submit',submitRace);
  $('team-member-form')?.addEventListener('submit',submitMember);
+ $('team-bulk-form')?.addEventListener('submit',submitBulkMembers);
  document.querySelectorAll('[data-team-close]').forEach(b=>b.addEventListener('click',()=>b.closest('dialog')?.close()));
- for(const id of ['team-race-dialog','team-member-dialog','team-stage-dialog','team-profile-dialog']){
+ for(const id of ['team-race-dialog','team-member-dialog','team-bulk-dialog','team-stage-dialog','team-profile-dialog']){
   $(id)?.addEventListener('click',ev=>{if(ev.target===ev.currentTarget)ev.currentTarget.close();});
  }
  render();

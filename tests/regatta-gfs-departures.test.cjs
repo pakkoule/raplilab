@@ -3,8 +3,8 @@ const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const motion=require('../regatta/gfs-motion.js');
 const {
-  DEPARTURES,GATE_LATITUDE,HORIZON_HOURS,
-  compatibleFrames,sailToGate,compareDepartureWindows
+  DEPARTURES,LATER_DEPARTURES,GATE_LATITUDE,HORIZON_HOURS,
+  compatibleFrames,sailToGate,compareDepartureWindows,compareLaterDepartureWindows
 }=require('../regatta/gfs-departures.js');
 const CYCLE='2026-11-22T00:00:00.000Z';
 function packed(values){
@@ -84,4 +84,32 @@ test('sans passage à la latitude dans les trois heures, aucun temps de parcours
     ()=>compareDepartureWindows(frame(6,{windSpeed:0}),frame(12,{windSpeed:0})),
     /Aucun départ/
   );
+});
+
+test('quatre départs supplémentaires +12 à +15 h se basent sur GFS +12/+18, sans extrapolation',()=>{
+  const result=compareLaterDepartureWindows(frame(12),frame(18));
+  assert.deepEqual(LATER_DEPARTURES,[12,13,14,15]);
+  assert.equal(result.sourceStartHour,12);
+  assert.equal(result.sourceEndHour,18);
+  assert.equal(result.windows.length,4);
+  assert.equal(result.validCount,4);
+  assert.ok(result.windows.every(w=>w.valid&&w.startHour>=12&&w.startHour<=15));
+  for(const w of result.windows){
+    assert.equal(w.departureUTC,new Date(Date.parse(CYCLE)+w.startHour*3600000).toISOString());
+    assert.ok(w.crossingForecastHour>=w.startHour);
+    assert.ok(w.crossingForecastHour<=w.startHour+3);
+    assert.ok(Math.abs((Date.parse(w.crossingUTC)-Date.parse(w.departureUTC))/60000-w.elapsedMinutes)<.1);
+  }
+  assert.equal(result.fastestElapsedMinutes,Math.min(...result.windows.map(w=>w.elapsedMinutes)));
+});
+test('deuxième plage impossible sur f006/f012 ou cycles NOAA mélangés',()=>{
+  assert.throws(()=>compareLaterDepartureWindows(frame(6),frame(12)),/non compatibles/);
+  assert.throws(()=>compareDepartureWindows(frame(12),frame(18)),/non compatibles/);
+  assert.throws(()=>compareLaterDepartureWindows(frame(12),frame(18,{cycle:'2026-11-22T06:00:00.000Z'})),/incompatibles/);
+});
+test('refuse d extrapoler une période météo ou des polaires absentes en deuxième plage',()=>{
+  const {first,second}=compatibleFrames(frame(12),frame(18));
+  assert.throws(()=>sailToGate(first,second,11,47),/non autorisé/);
+  assert.throws(()=>sailToGate(first,second,15,40.1),/non franchie/);
+  assert.throws(()=>compareLaterDepartureWindows(frame(12,{windSpeed:0}),frame(18,{windSpeed:0})),/Aucun départ/);
 });

@@ -7,6 +7,9 @@ on:
       - 'regatta/gfs-lab.*'
       - 'regatta/index.html'
       - 'tests/regatta-gfs-source.test.cjs'
+      - 'tests/regatta-gfs-wind.test.cjs'
+      - 'package.json'
+      - 'package-lock.json'
       - '.github/workflows/regatta-gfs-check.yml'
   workflow_dispatch:
 
@@ -24,5 +27,10 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci
-      - name: Verify NOAA GFS source URL and GRIB2 parser (offline fixtures)
-        run: node --test tests/regatta-gfs-source.test.cjs
+      - name: Check JS syntax
+        run: |
+          node --check regatta/gfs-lab.js
+          node --check netlify/functions/gfs-wind-core.cjs
+          node --check netlify/functions/gfs-wind.js
+      - name: Verify GRIB source and vector sampling
+        run: node --test tests/regatta-gfs-source.test.cjs tests/regatta-gfs-wind.test.cjs

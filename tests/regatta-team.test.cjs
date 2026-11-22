@@ -113,9 +113,11 @@ test('linked personal race supplies shared details without overwriting team resu
  assert.equal(linked.status,'finished');
  assert.deepEqual(linked.results,team.results);
  assert.equal(linked.boatClass,'IMOCA');
+ assert.equal(linked.dateEnd,'2026-11-25');
+ assert.equal(linked.equipment,'','equipment is not shared by the team');
  const updated=E.resolveLinkedRace(linked,{...personal,name:'Route du Rhum 2027',end:'2026-12-03',vsr:'vsr1'});
  assert.equal(updated.name,'Route du Rhum 2027');
- assert.equal(updated.dateEnd,'2026-12-03');
+ assert.equal(updated.dateEnd,'2026-11-25','individual arrival must not change team period');
  assert.equal(updated.vsr,'vsr1');
  assert.equal(updated.status,'finished');
  assert.deepEqual(updated.results,team.results);
@@ -127,7 +129,7 @@ test('personal/team linking is available in both editors and respects read-only 
  const app=fs.readFileSync('regatta/app.js','utf8');
  const teamApp=fs.readFileSync('regatta/team-app.js','utf8');
  const d=new JSDOM(html).window.document;
- for(const id of ['team-race-personal','team-linked-help','team-race-class','team-race-start','team-race-equipment'])assert.ok(d.getElementById(id));
+ for(const id of ['team-race-personal','team-linked-help','team-race-class','team-race-start','team-race-date'])assert.ok(d.getElementById(id));
  assert.match(html,/data-action="team-link"/);
  assert.match(teamApp,/link-existing/);
  assert.match(teamApp,/new-personal/);
@@ -192,7 +194,9 @@ test('LPDB secondary navigation changes panels without losing main workspace',()
  assert.equal(d.getElementById('lpdb-panel').hidden,true);
  assert.equal(d.getElementById('races-panel').hidden,false);
  methods.selectWorkspace('team');
- assert.equal(d.getElementById('team-races-panel').hidden,false,'last LPDB subsection is retained');
+ assert.equal(d.getElementById('team-races-panel').hidden,true,'returning to LPDB resets to Championnat');
+ assert.equal(d.getElementById('team-panel').hidden,false,'Championnat must be visible');
+ assert.equal(d.getElementById('lpdb-view-team').getAttribute('aria-selected'),'true');
  methods.selectWorkspace('team-stats');
  assert.equal(d.getElementById('team-stats-panel').hidden,false);
  assert.equal(d.getElementById('team-races-panel').hidden,true);
@@ -367,5 +371,60 @@ test('VR pasted classification can be previewed, reconciled and saved as one tea
  assert.equal(saved[0].race.results[0].elapsedSeconds,9*86400+15*3600+32*60+50);
  assert.equal(saved[0].race.results[1].gapSeconds,3*3600+54*60+1);
  assert.equal(saved[0].race.status,'finished');
+ dom.window.close();
+});
+
+
+test('LPDB Championship opens directly after visiting Skippers and a personal workspace',()=>{
+ const d=new JSDOM(fs.readFileSync('regatta/index.html','utf8')).window.document;
+ const src=fs.readFileSync('regatta/app.js','utf8'),start=src.indexOf("const lpdbViews=['team'"),end=src.indexOf('const scoreDialog=',start);
+ const ctx={$:id=>d.getElementById(id),renderTeam:()=>{},renderStatistics:()=>{},renderHonors:()=>{},renderClassColors:()=>{}};
+ const {selectWorkspace}=new Function('ctx','with(ctx){'+src.slice(start,end)+';return {selectWorkspace};}')(ctx);
+ selectWorkspace('team-skippers');
+ assert.equal(d.getElementById('team-skippers-panel').hidden,false);
+ selectWorkspace('races');
+ selectWorkspace('team');
+ assert.equal(d.getElementById('lpdb-panel').hidden,false);
+ assert.equal(d.getElementById('team-panel').hidden,false);
+ assert.equal(d.getElementById('team-skippers-panel').hidden,true);
+ selectWorkspace('team-races');
+ selectWorkspace('team');
+ assert.equal(d.getElementById('team-panel').hidden,false);
+ assert.equal(d.getElementById('team-races-panel').hidden,true);
+});
+test('team race cards use personal-style columns without shared arrival or equipment',()=>{
+ const html=fs.readFileSync('regatta/index.html','utf8'),ui=fs.readFileSync('regatta/team-app.js','utf8');
+ const css=fs.readFileSync('regatta/team.css','utf8');
+ const doc=new JSDOM(html).window.document;
+ assert.match(doc.getElementById('team-race-date').closest('label').textContent,/CLÔTURE DU CLASSEMENT/);
+ assert.equal(doc.querySelector('#team-race-end-time'),null);
+ assert.equal(doc.querySelector('#team-race-equipment'),null);
+ for(const term of ['team-race-photo','team-race-left','team-race-right','team-race-status','team-race-topline','team-race-menu','team-race-points'])assert.ok(ui.includes(term),term);
+ assert.match(css,/\.team-race-card \.team-race-layout/);
+ assert.ok(!ui.includes("r.equipment].filter(Boolean)"));
+});
+test('rendered LPDB cards omit team finish dates even when personal finish exists',()=>{
+ const dom=new JSDOM(fs.readFileSync('regatta/index.html','utf8'),{runScripts:'outside-only',url:'https://example.org/regatta/'});
+ const w=dom.window,d=w.document;
+ w.RapliTeamEngine=E;
+ w.RapliTeamTime=require('../regatta/team-time.js');
+ w.eval(fs.readFileSync('regatta/team-app.js','utf8'));
+ const members=[m('Alpha'),m('Beta')];
+ const linked=E.fromPersonal({id:'personal-42',kind:'race',name:'Atlantic Sprint',boatClass:'IMOCA',
+   vsr:'vsr2',start:'2027-04-03',end:'2027-04-18',endTime:'23:15',equipment:'pdd'},r('trial','2027-04-20','vsr2','finished',[rr('Alpha',1),rr('Beta',2)]));
+ w.RapliTeamUI.init({get:()=>[...members,linked],personal:()=>[{id:'personal-42',kind:'race',name:'Atlantic Sprint',
+  boatClass:'IMOCA',vsr:'vsr2',start:'2027-04-03',end:'2027-04-18',endTime:'23:15',equipment:'pdd'}],
+  canEdit:()=>false,notify:()=>{},save:async()=>{},remove:async()=>{}});
+ const card=d.querySelector('#team-races-panel .team-race-card');
+ assert.ok(card);
+ assert.ok(card.querySelector('.team-race-left'));
+ assert.ok(card.querySelector('.team-race-right'));
+ assert.ok(card.querySelector('.team-race-menu>summary'));
+ assert.match(card.textContent,/Atlantic Sprint/);
+ assert.match(card.textContent,/DÉPART DE LA COURSE/);
+ assert.ok(!card.textContent.includes('2027-04-18'),'personal finish must not show');
+ assert.ok(!card.textContent.includes('2027-04-20'),'team closure must not appear as arrival');
+ assert.ok(!card.textContent.includes('PDD'),'personal equipment must not show');
+ assert.equal(card.querySelectorAll('.team-race-figures>div').length,3);
  dom.window.close();
 });

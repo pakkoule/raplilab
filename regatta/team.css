@@ -1155,11 +1155,11 @@
 .lpdb-shell .team-score-ring::before,
 .team-dialog .team-score-ring::before{
  content:"";position:absolute;inset:var(--thickness);border-radius:50%;
- background:#172c54;z-index:-1;
+ background:#172c54;z-index:0;pointer-events:none;
 }
 .lpdb-shell .team-score-ring>span,
 .team-dialog .team-score-ring>span{
- color:#fff!important;font:800 15px/1 Poppins,system-ui,sans-serif;
+ position:relative;z-index:1;color:#fff!important;font:800 15px/1 Poppins,system-ui,sans-serif;
  letter-spacing:-.03em;font-variant-numeric:tabular-nums;
  text-shadow:none;white-space:nowrap;
 }

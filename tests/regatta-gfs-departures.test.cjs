@@ -6,7 +6,7 @@ const {
   DEPARTURES,LATER_DEPARTURES,EVENING_DEPARTURES,NEXT_DAY_DEPARTURES,GATE_LATITUDE,HORIZON_HOURS,
   compatibleFrames,sailToGate,compareDepartureWindows,compareLaterDepartureWindows,compareAllDepartureWindows,
   compareEveningDepartureWindows,compareTwelveDepartureWindows,
-  compareNextDayDepartureWindows,compareSixteenDepartureWindows
+  compareNextDayDepartureWindows,compareSixteenDepartureWindows,diagnoseDeparture
 }=require('../regatta/gfs-departures.js');
 const CYCLE='2026-11-22T00:00:00.000Z';
 function packed(values){
@@ -219,4 +219,37 @@ test('bilan de seize départs et rejet des cycles NOAA divergents',()=>{
  const {first,second}=compatibleFrames(frame(24),frame(30));
  assert.throws(()=>sailToGate(first,second,28,47),/non autorisé/);
  assert.throws(()=>sailToGate(first,second,27,40.1),/non franchie/);
+});
+
+test('diagnostic test16 : explique les angles hors des polaires sans créer de vitesse',()=>{
+  const {first,second}=compatibleFrames(
+    frame(24,{direction:240,windSpeed:30}),
+    frame(30,{direction:240,windSpeed:30})
+  );
+  const report=diagnoseDeparture(first,second,24);
+  assert.equal(report.type,'ANGLE_OUTSIDE_POLAR');
+  assert.equal(report.startHour,24);
+  assert.ok(report.windKnots>29.9&&report.windKnots<30.1);
+  assert.equal(report.windDirection,240);
+  assert.ok(report.twaMax<90);
+  assert.equal(report.allowedTwaMin,90);
+  assert.equal(report.allowedTwaMax,120);
+  const result=compareNextDayDepartureWindows(
+    frame(24,{direction:240,windSpeed:30}),
+    frame(30,{direction:240,windSpeed:30})
+  );
+  assert.equal(result.validCount,0);
+  assert.ok(result.windows.every(w=>!w.valid&&w.diagnostic?.type==='ANGLE_OUTSIDE_POLAR'));
+});
+test('diagnostic test16 : différencie vent trop faible et vent trop fort',()=>{
+  const low=compatibleFrames(frame(24,{windSpeed:2}),frame(30,{windSpeed:2}));
+  const high=compatibleFrames(frame(24,{windSpeed:44}),frame(30,{windSpeed:44}));
+  assert.equal(diagnoseDeparture(low.first,low.second,24).type,'WIND_TOO_LOW');
+  assert.equal(diagnoseDeparture(high.first,high.second,24).type,'WIND_TOO_HIGH');
+  assert.throws(()=>diagnoseDeparture(low.first,low.second,25-2),/non autorisé/);
+});
+test('diagnostic test16 : les départs valides ne sont pas déclarés hors polaire',()=>{
+ const comparison=compareNextDayDepartureWindows(frame(24),frame(30));
+ assert.equal(comparison.validCount,4);
+ assert.ok(comparison.windows.every(w=>w.valid&&w.diagnostic===undefined));
 });

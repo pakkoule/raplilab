@@ -2247,7 +2247,7 @@ window.RapliRegattaSharedCards={
 window.RapliTeamUI?.init?.({get:()=>teamRecords,personal:()=>rows,
  save:saveTeamEntity,saveBatch:saveTeamMembersBatch,saveRaceBundle:saveTeamRaceBundle,remove:removeTeamEntity,
  openPersonal:openPersonalCourse,newPersonalFromTeam:startPersonalFromTeam,
- showTeam:()=>selectWorkspace('team-races'),
+ showTeam:()=>selectWorkspace('team-races'),openColors:()=>selectWorkspace('colors'),
  canEdit:()=>window.RapliSharedCollection?.canEdit?.(),notify:toast});
 (async()=>{try{await openDB();partitionRecords(await load());render();renderTeam();}catch(err){
  console.warn('Regatta : IndexedDB indisponible',err);db=null;

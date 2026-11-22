@@ -75,7 +75,7 @@ function resolveLinkedRace(team,personal){
  const r=race(team);
  if(!r||!r.personalRaceId||!personal||personal.id!==r.personalRaceId||!shareablePersonal(personal))return r;
  const name=safe(personal.name,160)||r.name;
- const vsr=BASE[personal.vsr]?personal.vsr:r.vsr;
+ const vsr=personal.kind==='record'?r.vsr:BASE[personal.vsr]?personal.vsr:r.vsr;
  const dates=sharedPersonalStart(personal);
  return {...r,name,vsr,
   boatClass:safe(personal.boatClass,100)||r.boatClass,
@@ -88,7 +88,7 @@ function fromPersonal(personal,base={}){
  const dates=sharedPersonalStart(personal);
  return race({...base,personalRaceId:personal.id,
   name:safe(personal.name,160)||safe(base.name,160),
-  vsr:BASE[personal.vsr]?personal.vsr:base.vsr,
+  vsr:personal.kind==='record'?base.vsr:BASE[personal.vsr]?personal.vsr:base.vsr,
   boatClass:personal.boatClass,start:dates.start||base.start,startTime:dates.startTime||base.startTime,
   routeType:personal.routeType,timezone:personal.timezone});
 }

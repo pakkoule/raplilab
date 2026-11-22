@@ -86,6 +86,62 @@
   };
   const verifiedFrames=new Map();
   const interpolationEngine=window.RapliGfsInterpolation;
+  const dashboard=document.getElementById('regatta-routing-dashboard');
+  const routingSummary=window.RapliGfsRoutingSummary;
+  const dashboardLoad=dashboard?.querySelector('[data-gfs-dashboard-load]');
+  const dashboardStop=dashboard?.querySelector('[data-gfs-dashboard-stop]');
+  const dashboardProgress=dashboard?.querySelector('[data-gfs-dashboard-progress]');
+  const dashboardTechnical=dashboard?.querySelector('[data-gfs-dashboard-technical]');
+  const gfsHours=[6,12,18,24,30,36];
+  const putDashboard=(selector,value)=>{
+    const node=dashboard?.querySelector(selector);
+    if(node)node.textContent=value;
+  };
+  const renderDashboard=()=>{
+    if(!dashboard||!routingSummary?.summarize)return;
+    const report=routingSummary.summarize(verifiedFrames,window.RapliGfsDepartures);
+    putDashboard('[data-gfs-dashboard-coverage]',report.loadedHours.length+' / '+gfsHours.length);
+    putDashboard('[data-gfs-dashboard-cycle]',
+      report.cycleUTC?'Cycle GFS : '+frenchTime(report.cycleUTC)+' (Paris)':'Cycle GFS : non chargé');
+    for(const hour of gfsHours){
+      const chip=dashboard.querySelector('[data-gfs-frame="'+hour+'"]');
+      if(chip)chip.dataset.ready=report.loadedHours.includes(hour)?'true':'false';
+    }
+    putDashboard('[data-gfs-dashboard-equator]','Non calculable');
+    putDashboard('[data-gfs-dashboard-cape]','Non calculable');
+    if(report.best){
+      const departureTime=report.cycleUTC
+        ?frenchTime(new Date(Date.parse(report.cycleUTC)+report.best.startHour*3600000).toISOString())
+        :'—';
+      putDashboard('[data-gfs-dashboard-best]',
+        departureTime+' · '+report.best.elapsedMinutes.toFixed(1)+' min');
+      putDashboard('[data-gfs-dashboard-local-note]',
+        'Meilleur départ local : +'+report.best.startHour+' h · '+
+        report.windowsValid+' sur '+report.windowsEvaluated+
+        ' créneaux calculables. Latitude témoin 47°N, horizon 3 h, non Full Pack.');
+    }else{
+      putDashboard('[data-gfs-dashboard-best]',
+        report.windowsEvaluated?'Aucun passage à 47°N calculable':'En attente de deux échéances voisines');
+      putDashboard('[data-gfs-dashboard-local-note]',
+        report.windowsEvaluated
+          ?'0 sur '+report.windowsEvaluated+' créneaux franchissent 47°N dans les conditions du test.'
+          :'La comparaison locale nécessite au moins deux prévisions adjacentes du même cycle.');
+    }
+    let state='idle';
+    let notice='Prévisions '+report.loadedHours.length+'/6 validées. Aucun routage océanique disponible.';
+    if(report.issues.length){
+      notice+=' '+report.issues[0];
+      state='error';
+    }else if(report.loadedHours.length===6){
+      notice='Les six échéances sont vérifiées sur le même cycle. '+
+        'Le comparateur local reste provisoire : équateur et Bonne-Espérance non estimés.';
+      state='success';
+    }
+    const stateNode=dashboard.querySelector('[data-gfs-dashboard-status]');
+    stateNode.textContent=notice;
+    stateNode.dataset.state=state;
+  };
+
   const extendedStatus=root.querySelector('[data-gfs-extended-status]');
   const extendedSummary=root.querySelector('[data-gfs-extended-summary]');
   const extendedRows=root.querySelector('[data-gfs-extended-rows]');
@@ -859,11 +915,23 @@
     windStatus.dataset.state='idle';
     windStatus.textContent='Échéance +'+windHour.value+' h sélectionnée · lance une nouvelle lecture.';
   });
-  windRun.addEventListener('click',async()=>{
-    const hour=windHour.value;
-    if(!['6','12','18','24','30','36'].includes(hour))return;
+  let batchBusy=false;
+  let batchStopRequested=false;
+  let activeRequestController=null;
+  let pauseWake=null;
+  const pauseBetweenRequests=ms=>new Promise(resolve=>{
+    const timer=setTimeout(()=>{pauseWake=null;resolve();},ms);
+    pauseWake=()=>{
+      clearTimeout(timer);
+      pauseWake=null;
+      resolve();
+    };
+  });
+  const fetchForecastHour=async hour=>{
+    if(!gfsHours.includes(hour))return false;
     windRun.disabled=true;
     windHour.disabled=true;
+    windHour.value=String(hour);
     windPoints.hidden=true;
     windMeta.hidden=true;
     spatialValues.hidden=true;
@@ -872,6 +940,7 @@
     windStatus.dataset.state='loading';
     windStatus.textContent='Lecture GFS +'+hour+' h, trois points atlantiques…';
     const controller=new AbortController();
+    activeRequestController=controller;
     const timer=setTimeout(()=>controller.abort(),25000);
     try{
       const response=await fetch('/.netlify/functions/gfs-wind?forecastHour='+hour,{
@@ -879,9 +948,12 @@
       });
       let result;
       try{result=await response.json();}catch(_){throw Error('Réponse météo non lisible.');}
-      if(!response.ok||!result.ok)throw Error(result.error||('Lecture NOAA non confirmée (HTTP '+response.status+')'));
-      if(result.forecastHour!==Number(hour)||!Array.isArray(result.points)||result.points.length!==3)
+      if(!response.ok||!result.ok)
+        throw Error(result.error||('Lecture NOAA non confirmée (HTTP '+response.status+')'));
+      if(result.forecastHour!==hour||!Array.isArray(result.points)||result.points.length!==3)
         throw Error('Réponse météo incomplète ou échéance incorrecte.');
+      if(result.motionGrid?.verifiedGrid!==true)
+        throw Error('Grille GFS U/V nécessaire aux trajectoires indisponible.');
       for(let i=0;i<result.points.length;i++){
         const wind=result.points[i];
         if(wind.verifiedWind!==true||!Number.isFinite(wind.speedKnots)||
@@ -892,7 +964,6 @@
         windText('point-'+i+'-speed',wind.speedKnots.toFixed(1)+' nds');
         windText('point-'+i+'-dir',wind.directionFromDeg.toFixed(0)+'°');
       }
-      // Synchroniser le récapitulatif GRIB2 du haut avec la lecture GFS réellement choisie.
       cell('cycle',frenchTime(result.cycleUTC));
       cell('forecast',frenchTime(result.validUTC));
       cell('grid',String(result.bounds?.top)+'°N à '+String(result.bounds?.bottom)+'°N');
@@ -908,7 +979,7 @@
       windPoints.hidden=false;
       windMeta.hidden=false;
       showSpatial(result);
-      // Une interpolation ne peut jamais utiliser des trames de deux cycles différents.
+      // Comparisons must never combine forecast frames belonging to different GFS cycles.
       for(const prior of verifiedFrames.values()){
         if(prior.cycleUTC!==result.cycleUTC){
           verifiedFrames.clear();
@@ -929,19 +1000,109 @@
       renderNextDepartures();
       renderPolarDiagnostic();
       renderExtendedDepartures();
+      renderDashboard();
       windStatus.dataset.state='success';
       windStatus.textContent='3 vents réels décodés sur le même cycle NOAA · '+
         (result.cached?'résultat en cache.':'lecture validée.');
+      return true;
     }catch(error){
       spatialStatus.dataset.state='error';
       spatialStatus.textContent='Interpolation spatiale indisponible (échéance non vérifiée).';
       windStatus.dataset.state='error';
       windStatus.textContent='Lecture indisponible : '+String(error.message||error)+
         ' Aucune vitesse fictive affichée.';
+      return false;
     }finally{
       clearTimeout(timer);
+      if(activeRequestController===controller)activeRequestController=null;
+      windRun.disabled=batchBusy;
+      windHour.disabled=batchBusy;
+    }
+  };
+  windRun.addEventListener('click',async()=>{
+    if(batchBusy)return;
+    await fetchForecastHour(Number(windHour.value));
+  });
+  dashboardLoad?.addEventListener('click',async()=>{
+    if(batchBusy)return;
+    batchBusy=true;
+    batchStopRequested=false;
+    dashboardLoad.disabled=true;
+    dashboardStop.hidden=false;
+    windRun.disabled=true;
+    windHour.disabled=true;
+    dashboardProgress.dataset.state='loading';
+    let expectedCycle=[...verifiedFrames.values()][0]?.cycleUTC??null;
+    let requests=0;
+    let failed=false;
+    try{
+      for(const hour of gfsHours){
+        if(batchStopRequested)break;
+        if(verifiedFrames.has(hour))continue;
+        if(requests>0){
+          dashboardProgress.textContent='Pause de 10 secondes entre deux lectures NOAA…';
+          await pauseBetweenRequests(10000);
+          if(batchStopRequested)break;
+        }
+        dashboardProgress.textContent='Lecture NOAA +'+hour+' h en cours…';
+        requests++;
+        const success=await fetchForecastHour(hour);
+        if(batchStopRequested)break;
+        if(!success){
+          failed=true;
+          dashboardProgress.dataset.state='error';
+          dashboardProgress.textContent='Lecture +'+hour+' h indisponible. '+
+            'Les données validées sont conservées ; relance le chargement pour réessayer.';
+          break;
+        }
+        const cycle=[...verifiedFrames.values()][0]?.cycleUTC??null;
+        if(expectedCycle&&cycle!==expectedCycle){
+          failed=true;
+          dashboardProgress.dataset.state='error';
+          dashboardProgress.textContent='Le cycle NOAA a changé pendant le chargement. '+
+            'Les anciennes prévisions ont été écartées ; relance pour compléter le nouveau cycle.';
+          break;
+        }
+        expectedCycle=cycle;
+        dashboardProgress.textContent='Prévisions vérifiées : '+
+          verifiedFrames.size+' / 6. Cycle GFS '+frenchTime(cycle)+'.';
+      }
+      if(batchStopRequested){
+        dashboardProgress.dataset.state='idle';
+        dashboardProgress.textContent='Chargement interrompu. Prévisions déjà validées conservées.';
+      }else if(!failed){
+        const complete=gfsHours.every(hour=>verifiedFrames.has(hour));
+        dashboardProgress.dataset.state=complete?'success':'error';
+        dashboardProgress.textContent=complete
+          ?'Six échéances NOAA vérifiées sur le même cycle. Analyse locale actualisée.'
+          :'Chargement partiel : relance pour compléter les échéances manquantes.';
+      }
+    }finally{
+      batchBusy=false;
+      activeRequestController=null;
+      pauseWake=null;
+      dashboardLoad.disabled=false;
+      dashboardStop.hidden=true;
       windRun.disabled=false;
       windHour.disabled=false;
+      renderDashboard();
     }
   });
+  dashboardStop?.addEventListener('click',()=>{
+    batchStopRequested=true;
+    activeRequestController?.abort();
+    pauseWake?.();
+  });
+  dashboardTechnical?.addEventListener('click',()=>{
+    root.open=!root.open;
+    if(root.open){
+      const details=root.querySelector('.gfs-debug-details');
+      if(details)details.open=true;
+      root.scrollIntoView({behavior:'smooth',block:'start'});
+    }
+  });
+  root.addEventListener('toggle',()=>{
+    dashboardTechnical?.setAttribute('aria-expanded',root.open?'true':'false');
+  });
+  renderDashboard();
 })();

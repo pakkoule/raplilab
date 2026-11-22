@@ -2232,6 +2232,10 @@ window.RapliRegatta={getCount:()=>rows.length,teamCount:()=>teamRecords.length};
    foil-tag color settings. These are presentation-only methods: neither team
    results nor the original personal race data are changed. */
 window.RapliRegattaSharedCards={
+ liveIconMarkup:()=>'<span class="live-neon" role="img" aria-label="En direct">'+
+  '<svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2.5" aria-hidden="true">'+
+  '<path d="M8.7 7.4a9.6 9.6 0 0 0 0 13.2M19.3 7.4a9.6 9.6 0 0 1 0 13.2M5.2 3.5a15 15 0 0 0 0 21M22.8 3.5a15 15 0 0 1 0 21"/>'+
+  '<circle cx="14" cy="14" r="2" fill="currentColor" stroke="none"/></svg></span>',
  raceClockMarkup:r=>raceClockMarkup({
   kind:'race',start:r.start,startTime:r.startTime,timezone:r.timezone,
   live:r.status==='live',upcoming:r.status==='planned'

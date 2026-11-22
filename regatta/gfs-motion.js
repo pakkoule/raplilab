@@ -14,6 +14,8 @@ const POLAR={
   120:[7.22,10.83,13.96,17.58,21.95,27.36,32.40,34.39,36.57,39.38,40.47,31.21,21.95]
 };
 const START=Object.freeze({latitude:48.125,longitude:-8.625}), HEADING=180;
+// Fixed comparison: no adaptive autopilot, only five predefined headings.
+const CANDIDATE_HEADINGS=Object.freeze([170,175,180,185,190]);
 const finite=Number.isFinite, norm=n=>((n%360)+360)%360;
 const round=(n,p=2)=>Math.round(n*10**p)/10**p;
 function decodeBase64Float32(base64,count){
@@ -101,7 +103,8 @@ function move(pos,heading,speed,hours){
    longitude:pos.longitude+speed*hours*Math.sin(radians)/(60*Math.cos(meanLat))
  };
 }
-function simulateMotion(first,second){
+function simulateMotion(first,second,heading=HEADING){
+ if(!CANDIDATE_HEADINGS.includes(heading))throw Error('Cap du test hors de la sélection autorisée.');
  const a=loadFrame(first),b=loadFrame(second);
  const keys=['ni','nj','latitudeOfFirstGridPoint','longitudeOfFirstGridPoint',
    'iDirectionIncrement','jDirectionIncrement','iScansNegatively','jScansPositively',
@@ -113,17 +116,45 @@ function simulateMotion(first,second){
  for(let i=0;i<=6;i++){
    const hour=6+i*.5;
    const wind=windAt(a,b,hour,pos.latitude,pos.longitude);
-   const twa=Math.abs(norm(wind.from-HEADING+180)-180);
+   const twa=Math.abs(norm(wind.from-heading+180)-180);
    const speed=polarSpeed(wind.knots,twa);
    steps.push({hour,latitude:round(pos.latitude,5),longitude:round(pos.longitude,5),
      windKnots:round(wind.knots,1),windDirection:round(wind.from,0),
      twa:round(twa,1),boatKnots:round(speed,1),distanceNm:round(distance,1)});
-   if(i<6){pos=move(pos,HEADING,speed,.5);distance+=speed*.5;}
+   if(i<6){pos=move(pos,heading,speed,.5);distance+=speed*.5;}
  }
- return {cycleUTC:first.cycleUTC,heading:HEADING,steps,distanceNm:round(distance,1),
+ return {cycleUTC:first.cycleUTC,heading,steps,distanceNm:round(distance,1),
    provisionalPolar:true,optimized:false,
-   note:'Cap fixe 180°, pas de courant ni de terre, polaires PARTIELLES non Full Pack.'};
+   note:'Cap fixe '+heading+'°, pas de courant ni de terre, polaires PARTIELLES non Full Pack.'};
 }
-return {TWS,ANGLES,POLAR,START,HEADING,decodeBase64Float32,loadFrame,gridIndex,
-  sampleGrid,windAt,polarSpeed,move,simulateMotion};
+function compareFixedHeadings(first,second){
+ const evaluated=CANDIDATE_HEADINGS.map(heading=>{
+   try{
+     const run=simulateMotion(first,second,heading);
+     const finish=run.steps[run.steps.length-1];
+     if(!finish||!finite(finish.latitude)||!finite(finish.longitude))
+       throw Error('Position finale invalide.');
+     return {
+       heading,valid:true,
+       distanceNm:run.distanceNm,
+       southProgressNm:round((START.latitude-finish.latitude)*60,1),
+       finalLatitude:finish.latitude,
+       finalLongitude:finish.longitude
+     };
+   }catch(error){
+     return {heading,valid:false,reason:String(error?.message||error).slice(0,140)};
+   }
+ });
+ const valid=evaluated.filter(item=>item.valid===true)
+   .sort((a,b)=>b.southProgressNm-a.southProgressNm||a.heading-b.heading);
+ if(!valid.length)throw Error('Aucun cap comparable avec les polaires provisoires.');
+ return {
+   evaluated, best:valid[0], validCount:valid.length,
+   comparisonOnly:true, optimized:false, provisionalPolar:true,
+   objective:'Progression vers le sud en 3 h parmi cinq caps fixes',
+   note:'Comparaison limitée, aucune route optimisée, polaires non Full Pack.'
+ };
+}
+return {TWS,ANGLES,POLAR,START,HEADING,CANDIDATE_HEADINGS,decodeBase64Float32,loadFrame,gridIndex,
+  sampleGrid,windAt,polarSpeed,move,simulateMotion,compareFixedHeadings};
 });

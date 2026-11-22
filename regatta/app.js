@@ -288,7 +288,7 @@ function partitionRecords(items){
 function renderTeam(){window.RapliTeamUI?.render?.();}
 let linkTeamAfterPersonalSave='';
 function openPersonalCourse(id){
- const record=rows.find(r=>r.id===id&&r.kind==='race');
+ const record=rows.find(r=>r.id===id&&(r.kind==='race'||r.kind==='record'));
  if(!record){toast('Fiche personnelle introuvable.',true);return;}
  selectWorkspace('races');openEditor(record);
 }
@@ -298,7 +298,7 @@ function startPersonalFromTeam(teamId){
  }
  const team=teamRecords.find(r=>r.id===teamId&&r.type==='team-race');
  if(!team){toast('Course d’équipe introuvable.',true);return;}
- const linked=rows.find(r=>r.kind==='race'&&r.id===team.personalRaceId);
+ const linked=rows.find(r=>(r.kind==='race'||r.kind==='record')&&r.id===team.personalRaceId);
  if(linked){openPersonalCourse(linked.id);return;}
  const data=normal({kind:'race',name:team.name,vsr:team.vsr,boatClass:team.boatClass,
   routeType:team.routeType,start:team.start,startTime:team.startTime,
@@ -804,7 +804,7 @@ function raceCardMenu(r,status){
   (showImages&&validImage(r.result)?action('view-result',r.kind==='record'?'Voir la capture du record':'Voir le classement final','▣'):'')+
   (showImages&&validImage(r.route)?action('view-route','Voir le tracé','⌁'):'')+
   action('edit','Modifier la tuile','✎')+
-  (r.kind==='race'?action('team-link','Utiliser pour le championnat LPDB','🏴‍☠️'):'')+
+  ((r.kind==='race'||r.kind==='record')?action('team-link','Utiliser pour le championnat LPDB','🏴‍☠️'):'')+
   action('png','Exporter en PNG','↓')+
   (canCalendar?action('calendar','Ajouter au calendrier iOS','▦'):'')+
   (r.kind==='record'&&!r.recordClosed?action('record-close','Clôturer le record','✓'):'')+

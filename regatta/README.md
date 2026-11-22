@@ -150,3 +150,13 @@ Les tuiles de course ou de record avec le statut **En cours** affichent automati
 
 
 Tests : `tests/regatta-gfs.test.cjs` (cycles UTC, hiver/été, bascules DST, compte à rebours, progression, statut, préservation du nœud image).
+
+### Préparation avancée : routage et classement théorique (PR #4)
+
+- Sous le briefing GFS des **courses à venir**, un module compact affiche (1) un compte à rebours jusqu'au **dernier routage conseillé** selon le cycle GFS théoriquement exploitable, (2) l'**historique personnel des courses terminées dans la même classe**, et (3) une **projection de classement théorique**.
+- Le champ **Participants au départ** (`startParticipantCount`) est distinct de l'**effectif final** (`participantCount`) et des totaux de classements (`rankTotal`, etc.). La saisie du premier est facultative, manuelle, sauvegardée avec la fiche et conservée après clôture ; aucune copie automatique depuis l'effectif final n'est effectuée. Les anciennes courses restent compatibles (champ vide).
+- Pour chaque course passée **terminée**, dans la **même classe**, dotée d'un rang général et d'un effectif final cohérents, on calcule `rang / effectif final`. La **médiane** de ces Top % historiques est appliquée à l'effectif au départ de la nouvelle course : `rang théorique ≈ arrondi(médiane × participants au départ)` (borné entre 1 et le nombre de partants).
+- Une fourchette basée sur les quartiles historiques (25e et 75e percentile) apparaît uniquement à partir de **trois** courses comparables. Sinon l'estimation reste explicitement indicative. L'historique présente le nombre de courses terminées et le meilleur rang absolu. Les événements et records ne contaminent pas la projection.
+- La projection n'est **pas un classement Virtual Regatta officiel ni une promesse de performance** ; elle utilise les proportions de classements finaux passés et ne préjuge ni de l'effectif final futur ni de la force du plateau. Sans historique comparable ou sans participants au départ, aucun rang n'est inventé.
+- Les chronos de routage évoluent à l'écran chaque seconde sans recharger la tuile ou ses images. Les courses en cours continuent d'afficher le bloc météo GFS actif ; les courses terminées continuent d'afficher les classements.
+- Tests de calcul, de saisie distincte, de rendu et du compteur : `tests/regatta-prestart-insights.test.cjs`.

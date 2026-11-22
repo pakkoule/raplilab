@@ -332,3 +332,52 @@
  .regatta-gfs-lab .gfs-adaptive-step span{grid-column:2}
  .regatta-gfs-lab .gfs-adaptive-step small{grid-column:2}
 }
+
+
+/* Test 11 · exhaustive but bounded 5^6 short-heading sequences, no ocean routing. */
+.regatta-gfs-lab .gfs-route-search-panel{
+  margin-top:12px;padding:11px;border:1px solid #d1dce7;border-radius:11px;
+  background:linear-gradient(125deg,#eff9f8,#f5f7fc)
+}
+.regatta-gfs-lab .gfs-route-search-panel>p{
+  margin:8px 0;font-size:10px;line-height:1.6;color:#527684
+}
+.regatta-gfs-lab .gfs-route-search-panel>p[data-state="success"]{color:#156b62}
+.regatta-gfs-lab .gfs-route-search-panel>p[data-state="error"]{color:#aa4958}
+.regatta-gfs-lab [data-gfs-route-search-summary][hidden],
+.regatta-gfs-lab [data-gfs-route-search-steps][hidden]{display:none}
+.regatta-gfs-lab [data-gfs-route-search-summary]{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:7px;margin:9px 0
+}
+.regatta-gfs-lab [data-gfs-route-search-summary]>div{
+  padding:9px;background:white;border:1px solid #d7e6ea;border-radius:9px;min-width:0
+}
+.regatta-gfs-lab [data-gfs-route-search-summary] small{
+  display:block;font-size:9px;color:#658594
+}
+.regatta-gfs-lab [data-gfs-route-search-summary] strong{
+  font-size:13px;color:#156779;overflow-wrap:anywhere
+}
+.regatta-gfs-lab [data-gfs-route-search-steps]{display:grid;gap:5px;margin:9px 0}
+.regatta-gfs-lab .gfs-route-search-step{
+  display:grid;grid-template-columns:52px 65px minmax(0,1fr);
+  gap:3px 7px;align-items:baseline;padding:9px;background:#fff;
+  border:1px solid #dbe8e9;border-radius:9px
+}
+.regatta-gfs-lab .gfs-route-search-step strong{font-size:10px;color:#587d89}
+.regatta-gfs-lab .gfs-route-search-step b{font-size:11px;color:#225d72}
+.regatta-gfs-lab .gfs-route-search-step span{font-size:10px;color:#335e6f}
+.regatta-gfs-lab .gfs-route-search-step small{
+  grid-column:2/4;font-size:9px;color:#75919a
+}
+.regatta-gfs-lab .gfs-route-search-panel>small{
+  display:block;margin-top:9px;font-size:9px;line-height:1.55;color:#7a6b77
+}
+@media(max-width:440px){
+  .regatta-gfs-lab .gfs-route-search-step{
+    grid-template-columns:50px 1fr
+  }
+  .regatta-gfs-lab .gfs-route-search-step span,
+  .regatta-gfs-lab .gfs-route-search-step small{grid-column:2}
+}

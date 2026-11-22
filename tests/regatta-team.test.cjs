@@ -91,7 +91,7 @@ test('current roster limit is separate from historic ranking length',()=>{
 test('editor, selectors, and PNG elements are present without removing personal archive',()=>{
  const doc=new JSDOM(fs.readFileSync('regatta/index.html','utf8')).window.document;
  for(const id of ['team-panel','team-races-panel','team-skippers-panel','team-stats-panel','team-race-form','team-member-form','team-profile-dialog','view-races','races-panel'])assert.ok(doc.getElementById(id),id);
- for(const script of ['team-engine.js','team-app.js'])assert.ok([...doc.querySelectorAll('script')].some(el=>el.src.endsWith('/regatta/'+script)),script);
+ for(const script of ['team-engine.js','team-app.js'])assert.ok([...doc.querySelectorAll('script')].some(el=>el.getAttribute('src')===script),script);
  const code=fs.readFileSync('regatta/team-app.js','utf8');
  assert.ok(code.includes("exportStandings"));
  assert.ok(code.includes("toBlob"));

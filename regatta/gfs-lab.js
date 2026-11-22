@@ -57,6 +57,58 @@
     const node=root.querySelector('[data-gfs-'+name+']');
     if(node)node.textContent=value;
   };
+  const verifiedFrames=new Map();
+  const interpolationEngine=window.RapliGfsInterpolation;
+  const interpolationStatus=root.querySelector('[data-gfs-interpolation-status]');
+  const interpolationResults=root.querySelector('[data-gfs-interpolation-results]');
+  const renderInterpolations=()=>{
+    interpolationResults.replaceChildren();
+    const interpolated=[];
+    if(interpolationEngine){
+      for(const [from,to,middle] of [[6,12,9],[12,18,15]]){
+        if(!verifiedFrames.has(from)||!verifiedFrames.has(to))continue;
+        try{
+          interpolated.push(interpolationEngine.interpolateFrames(
+            verifiedFrames.get(from),verifiedFrames.get(to),middle
+          ));
+        }catch(error){
+          interpolationStatus.textContent='Interpolation non disponible : '+String(error.message||error);
+          interpolationResults.hidden=true;
+          return;
+        }
+      }
+    }
+    if(!interpolated.length){
+      interpolationResults.hidden=true;
+      const loaded=[...verifiedFrames.keys()].sort((a,b)=>a-b);
+      interpolationStatus.textContent=loaded.length
+        ? 'Échéances réellement lues : '+loaded.map(n=>'+'+n+' h').join(', ')+
+          '. Lis deux échéances voisines du même cycle (+6 et +12, ou +12 et +18).'
+        : 'Lis +6 h puis +12 h sur le même cycle GFS pour calculer les vents intermédiaires à +9 h.';
+      return;
+    }
+    for(const frame of interpolated){
+      const container=document.createElement('div');
+      container.className='gfs-temporal-frame';
+      const header=document.createElement('strong');
+      header.textContent='+'+frame.forecastHour+' h · '+frenchTime(frame.validUTC)+' · INTERPOLÉ';
+      container.appendChild(header);
+      for(const point of frame.points){
+        const row=document.createElement('div');
+        row.className='gfs-temporal-point';
+        const name=document.createElement('span');
+        name.textContent=point.site.label;
+        const value=document.createElement('strong');
+        value.textContent=point.speedKnots.toFixed(1)+' nds · '+point.directionFromDeg.toFixed(0)+'°';
+        row.append(name,value);
+        container.appendChild(row);
+      }
+      interpolationResults.appendChild(container);
+    }
+    interpolationResults.hidden=false;
+    interpolationStatus.textContent='Calcul à partir de deux échéances NOAA réellement décodées · '+interpolated.length+
+      ' horaire(s) intermédiaire(s) disponible(s).';
+  };
   windHour.addEventListener('change',()=>{
     windPoints.hidden=true;
     windMeta.hidden=true;
@@ -97,6 +149,15 @@
       windText('wind-valid',frenchTime(result.validUTC));
       windPoints.hidden=false;
       windMeta.hidden=false;
+      // Une interpolation ne peut jamais utiliser des trames de deux cycles différents.
+      for(const prior of verifiedFrames.values()){
+        if(prior.cycleUTC!==result.cycleUTC){
+          verifiedFrames.clear();
+          break;
+        }
+      }
+      verifiedFrames.set(result.forecastHour,result);
+      renderInterpolations();
       windStatus.dataset.state='success';
       windStatus.textContent='3 vents réels décodés sur le même cycle NOAA · '+
         (result.cached?'résultat en cache.':'lecture validée.');

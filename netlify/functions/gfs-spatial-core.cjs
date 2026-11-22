@@ -8,6 +8,12 @@ const SPATIAL_SITE=Object.freeze({
   latitude:47.125,longitude:-9.125,
   label:'Golfe de Gascogne · point intermédiaire'
 });
+// Positions et horaires TOTALEMENT PRÉDÉFINIS (ni route optimisée, ni vitesse calculée).
+const TRACK_SITES=Object.freeze([
+  Object.freeze({forecastHour:7,latitude:48.125,longitude:-8.625,label:'Étape témoin A'}),
+  Object.freeze({forecastHour:9,latitude:47.625,longitude:-9.125,label:'Étape témoin B'}),
+  Object.freeze({forecastHour:11,latitude:47.125,longitude:-9.625,label:'Étape témoin C'})
+]);
 const EPS=1e-8;
 const CORNER_TOLERANCE_KM=0.2;
 
@@ -73,8 +79,9 @@ function sampleBilinear(grib,grid,values,site){
   return sum;
 }
 
-async function decodeWindSpatial(bytes,site=SPATIAL_SITE,decoder){
+async function decodeWindSpatialPoints(bytes,sites,decoder){
   if(!bytes||bytes.length<40)throw Error('GRIB2 manquant ou trop court.');
+  if(!Array.isArray(sites)||!sites.length||sites.length>8)throw Error('Liste de points météo invalide.');
   const grib=decoder||await import('@azohra/meteo.grib');
   const found={};
   for(const message of grib.splitMessages(bytes)){
@@ -86,7 +93,10 @@ async function decodeWindSpatial(bytes,site=SPATIAL_SITE,decoder){
       const grid=grib.parseGrid(field.section3);
       validateGrid(grid);
       const decoded=grib.decodeFieldValues(field);
-      found[key]={grid,value:sampleBilinear(grib,grid,decoded.values,site)};
+      found[key]={
+        grid,
+        values:sites.map(site=>sampleBilinear(grib,grid,decoded.values,site))
+      };
     }
   }
   if(!found.U||!found.V)throw Error('Champs U/V à 10 m incomplets.');
@@ -96,12 +106,19 @@ async function decodeWindSpatial(bytes,site=SPATIAL_SITE,decoder){
     a.latitudeOfFirstGridPoint!==b.latitudeOfFirstGridPoint||
     a.longitudeOfFirstGridPoint!==b.longitudeOfFirstGridPoint)
     throw Error('Maillages U/V incompatibles.');
-  return {
+  return sites.map((site,i)=>({
     site:{label:site.label,latitude:site.latitude,longitude:site.longitude},
-    ...windFromComponents(found.U.value,found.V.value),
+    ...windFromComponents(found.U.values[i],found.V.values[i]),
     spatiallyInterpolated:true,verifiedWind:true,
     gridResolutionDegrees:0.25,method:'Interpolation bilinéaire spatiale U/V GFS'
-  };
+  }));
 }
 
-module.exports={SPATIAL_SITE,validateGrid,cornersForSite,sampleBilinear,decodeWindSpatial};
+async function decodeWindSpatial(bytes,site=SPATIAL_SITE,decoder){
+  return (await decodeWindSpatialPoints(bytes,[site],decoder))[0];
+}
+
+module.exports={
+  SPATIAL_SITE,TRACK_SITES,validateGrid,cornersForSite,sampleBilinear,
+  decodeWindSpatial,decodeWindSpatialPoints
+};

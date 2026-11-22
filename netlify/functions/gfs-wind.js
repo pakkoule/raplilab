@@ -5,6 +5,7 @@ const {
 }=require('./gfs-source-core.cjs');
 const {decodeWindPoints,SITES}=require('./gfs-wind-core.cjs');
 const {decodeWindSpatialPoints,SPATIAL_SITE,TRACK_SITES}=require('./gfs-spatial-core.cjs');
+const {decodePackedGfsGrid}=require('./gfs-grid-core.cjs');
 
 // Chaque clic = une seule échéance météo, trois points échantillonnés.
 // Limiter l'accès NOMADS (cache et espacement >= 10 s par instance).
@@ -53,12 +54,22 @@ async function retrieveWind(cycle,forecastHour){
       // Protect previously validated 3 nearest-neighbor NOAA readings.
       spatialError=String(error?.message||error).slice(0,130);
     }
+    // On fournit également la grille compacte aux tests de déplacement.
+    // Le coût ne change pas le nombre d'appels NOAA : mêmes f006 et f012.
+    let motionGrid=null,motionGridError=null;
+    if(forecastHour===6||forecastHour===12){
+      try{
+        motionGrid=await decodePackedGfsGrid(file);
+      }catch(error){
+        motionGridError=String(error?.message||error).slice(0,160);
+      }
+    }
     return {
       source:'NOAA NOMADS',model:'GFS 0,25°',
       cycleUTC:cycle.iso,forecastHour,
       validUTC:new Date(Date.parse(cycle.iso)+forecastHour*3600000).toISOString(),
       bounds:{top:52,bottom:40,left:-20,right:5},
-      fileBytes:file.length,fields:metadata.variables,points,spatial,trackSamples,spatialError,
+      fileBytes:file.length,fields:metadata.variables,points,spatial,trackSamples,spatialError,motionGrid,motionGridError,
       // Compatibilité des clients utilisant l'ancienne lecture au large de Brest.
       wind:points[0]
     };

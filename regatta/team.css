@@ -583,3 +583,102 @@
  .lpdb-shell .team-race-weather .race-gfs-briefing-grid{grid-template-columns:1fr}
  .lpdb-shell .team-race-weather .race-gfs-countdown{font-size:15px}
 }
+
+
+/* LPDB-only chrome: restored header tabs plus the original wide search/action row. */
+#vsr-header-ranking[hidden]{display:none!important}
+.regatta-topbar>.lpdb-tabs{
+ flex:1 1 auto;min-width:0;max-width:100%;
+ margin:0 0 0 auto;padding:4px 0 8px;justify-content:flex-end;
+ align-self:stretch;gap:5px;border:0;border-radius:0;
+ background:none!important;box-shadow:none;overflow-x:auto
+}
+.regatta-topbar>.lpdb-tabs .lpdb-tab{
+ flex:0 1 auto;min-height:49px;padding:11px 13px;border-radius:9px;
+ font:800 11px/1.2 Poppins,system-ui,sans-serif;letter-spacing:.02em;
+ border:1px solid transparent;background:transparent;color:#515960
+}
+.regatta-topbar>.lpdb-tabs .lpdb-tab.active{
+ color:#30363b;border:1px solid #c7ccce;
+ background:linear-gradient(120deg,#fff,#dfe2e4 50%,#f8f9f9 88%);
+ box-shadow:inset 0 1px 0 #fff,0 2px 7px #30353a19
+}
+.regatta-topbar>.lpdb-tabs .lpdb-tab.active::after{content:none}
+.lpdb-global-controls{max-width:calc(100% - 26px);margin:0 auto 7px!important;
+ padding:0;box-sizing:border-box;position:relative;z-index:70;
+ grid-template-columns:minmax(0,1fr) auto auto}
+.lpdb-global-controls[hidden],
+.lpdb-global-controls [data-lpdb-action-for][hidden]{display:none!important}
+.lpdb-global-controls>.regatta-search{
+ display:flex;align-items:center;min-width:0;max-width:none!important;
+ grid-column:1!important;grid-row:1!important;width:100%
+}
+.lpdb-global-controls .regatta-search-field{
+ width:100%;min-width:0;display:flex;align-items:center;gap:10px;
+ border:1px solid #bfc5c8;border-radius:12px;
+ background:linear-gradient(122deg,#fff,#f7f8f8 47%,#e8eaeb 80%,#fff);
+ box-shadow:inset 0 1px 0 #fff,0 2px 10px #343a4014;
+ color:#31383f
+}
+.lpdb-global-controls .regatta-search-field svg{stroke:#717a80;color:#717a80}
+.lpdb-global-controls .regatta-search-field input[type=search]{
+ color:#30373d;background:transparent;font:550 14px Poppins,system-ui,sans-serif;
+ min-width:0;flex:1 1 auto;width:100%
+}
+.lpdb-global-controls .regatta-search-field input[type=search]::placeholder{color:#868b90}
+.lpdb-global-controls .regatta-search-field:focus-within{border-color:#858e93;box-shadow:0 0 0 2px #8d969b2b,inset 0 1px 0 #fff}
+.lpdb-global-controls .regatta-search-clear{color:#444b50}
+.lpdb-global-controls>.regatta-inline-actions{
+ display:flex;align-items:center;justify-content:flex-end;flex-wrap:nowrap;
+ grid-column:2!important;grid-row:1!important;gap:6px;min-width:0
+}
+.lpdb-global-controls>.regatta-navigation{
+ display:flex;align-items:center;justify-content:flex-end;min-width:0;
+ grid-column:3!important;grid-row:1!important;margin:0
+}
+.lpdb-global-controls .regatta-icon-action,
+.lpdb-global-controls #rapliProfileToggle.rapli-profile-toggle{
+ background:linear-gradient(125deg,#fff,#e5e8e9 51%,#f7f8f8) padding-box,
+  linear-gradient(120deg,#b4babd,#e0e3e5,#aab2b6) border-box!important;
+ color:#383f44!important;
+ box-shadow:inset 0 1px 0 #fff,0 2px 7px #42484c1a!important;
+ border-radius:10px!important
+}
+.lpdb-global-controls .regatta-icon-action:hover{filter:brightness(.97)}
+.lpdb-global-controls .regatta-icon-action:focus-visible,
+.lpdb-global-controls .lpdb-tab:focus-visible{outline:2px solid #71797e;outline-offset:2px}
+.lpdb-shell .team-filters--compact{display:flex;justify-content:flex-end}
+.lpdb-shell .team-filters--compact select{min-width:170px;max-width:240px}
+@media(max-width:880px){
+ .regatta-topbar>.lpdb-tabs{gap:2px}
+ .regatta-topbar>.lpdb-tabs .lpdb-tab{font-size:10px;padding:9px 8px;min-height:45px}
+}
+@media(max-width:620px){
+ .regatta-topbar{display:flex;flex-wrap:wrap;gap:5px;margin:0 12px 9px}
+ .regatta-topbar .regatta-brand-header{padding-bottom:0}
+ .regatta-topbar>.lpdb-tabs{
+  flex:1 1 100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+  overflow:visible;margin:2px 0 0;padding:0 0 7px;gap:6px
+ }
+ .regatta-topbar>.lpdb-tabs .lpdb-tab{
+  width:100%;min-width:0;white-space:normal;text-align:center;
+  padding:10px 5px;font-size:10px;min-height:40px
+ }
+ .lpdb-global-controls{
+  max-width:calc(100% - 18px);display:grid;
+  grid-template-columns:minmax(0,1fr) auto;gap:7px;margin-bottom:6px!important
+ }
+ .lpdb-global-controls>.regatta-search{grid-column:1/-1!important;grid-row:1!important}
+ .lpdb-global-controls>.regatta-inline-actions{
+  grid-column:1!important;grid-row:2!important;justify-content:flex-start
+ }
+ .lpdb-global-controls>.regatta-navigation{
+  grid-column:2!important;grid-row:2!important;justify-self:end
+ }
+ .lpdb-global-controls .regatta-search-field input[type=search]{font-size:16px}
+}
+@media(max-width:365px){
+ .regatta-topbar>.lpdb-tabs .lpdb-tab{font-size:9px}
+ .lpdb-global-controls>.regatta-inline-actions{gap:4px}
+ .lpdb-global-controls .regatta-icon-action{flex-basis:35px!important;min-width:35px;width:35px!important}
+}

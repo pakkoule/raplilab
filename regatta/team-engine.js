@@ -100,6 +100,7 @@ function race(input){
  }
  return {id,type:'team-race',name,dateEnd:dateOk(input.dateEnd)?input.dateEnd:'',
   vsr:BASE[input.vsr]?input.vsr:'vsr2',
+  fleetTotal:Number.isSafeInteger(int(input.fleetTotal))&&int(input.fleetTotal)>=2&&int(input.fleetTotal)<=100000000?int(input.fleetTotal):null,
   status:['planned','live','finished'].includes(input.status)?input.status:'planned',
   personalRaceId:safe(input.personalRaceId,130),
   boatClass:safe(input.boatClass,100),routeType:safe(input.routeType,40),

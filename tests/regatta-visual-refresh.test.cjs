@@ -456,9 +456,9 @@ test('two-column race, record and stage cards preserve details, menu and media z
   assert.equal(layout.querySelector('.race-card-left .race-actions-menu'),null);
   assert.ok(layout.querySelector('.race-card-right .race-card-meta-tags>.race-card-badges'));
   assert.ok(tile.querySelector('.race-card-right .rank-plate.rank-main')||status==='dnf'||
-    status==='live'||(kind==='record'&&!closed));
+    status==='live'||status==='planned'||(kind==='record'&&!closed));
   assert.equal(Boolean(tile.querySelector('.race-card-right .score-orb')),
-   kind!=='record'&&status!=='dnf'&&status!=='live',status);
+   kind!=='record'&&status!=='dnf'&&status!=='live'&&status!=='planned',status);
   assert.equal(Boolean(tile.querySelector('.race-card-right .race-card-rewards')),
    kind!=='record'&&status!=='live'&&status!=='planned',status);
   assert.ok(tile.querySelector('.race-actions-popover [data-action="edit"]'));
@@ -529,4 +529,25 @@ test('upcoming and in-progress races do not show unearned rewards',()=>{
  }
  const finished=new JSDOM(card({...testRace,mockStatus:'finished',kind:'race'})).window.document;
  assert.equal(finished.querySelectorAll('.race-card-rewards .stat-chip').length,2);
+});
+
+test('upcoming courses display the GFS pre-start briefing instead of empty rankings',()=>{
+ const {card}=raceTileHarness();
+ for(const kind of ['race','event']){
+  const html=card({...testRace,mockStatus:'planned',kind,
+   start:'2027-02-17',startTime:'17:00'});
+  const doc=new JSDOM(html).window.document;
+  assert.ok(doc.querySelector('.race-card-right .race-gfs-briefing'),kind);
+  assert.equal(doc.querySelector('.race-card-right .race-card-rank-empty'),null,kind);
+  assert.equal(doc.querySelector('.race-card-right .race-card-rewards'),null,kind);
+  assert.equal(doc.querySelector('.race-card-right .race-gfs-widget'),null,kind);
+  assert.match(doc.querySelector('.race-gfs-briefing').textContent,/DERNIER GFS EXPLOITABLE/);
+  assert.match(doc.querySelector('.race-gfs-briefing').textContent,/GFS SUIVANT/);
+ }
+ const live=new JSDOM(card({...testRace,mockStatus:'live',kind:'race'})).window.document;
+ assert.equal(live.querySelector('.race-gfs-briefing'),null);
+ assert.ok(live.querySelector('.race-card-right .race-gfs-widget'));
+ const finished=new JSDOM(card({...testRace,mockStatus:'finished',kind:'race'})).window.document;
+ assert.equal(finished.querySelector('.race-gfs-briefing'),null);
+ assert.ok(finished.querySelector('.race-card-rewards'));
 });

@@ -86,6 +86,77 @@
   };
   const verifiedFrames=new Map();
   const interpolationEngine=window.RapliGfsInterpolation;
+  const eveningStatus=root.querySelector('[data-gfs-evening-status]');
+  const eveningSummary=root.querySelector('[data-gfs-evening-summary]');
+  const eveningRows=root.querySelector('[data-gfs-evening-rows]');
+  const twelvePanel=root.querySelector('[data-gfs-all-twelve]');
+  const renderEveningDepartures=()=>{
+    eveningSummary.hidden=true;
+    eveningRows.hidden=true;
+    twelvePanel.hidden=true;
+    eveningRows.replaceChildren();
+    if(!verifiedFrames.has(18)||!verifiedFrames.has(24)){
+      eveningStatus.dataset.state='idle';
+      eveningStatus.textContent='Lis +18 h et +24 h du même cycle NOAA pour tester quatre départs supplémentaires.';
+      return;
+    }
+    const engine=window.RapliGfsDepartures;
+    if(!engine?.compareEveningDepartureWindows){
+      eveningStatus.dataset.state='error';
+      eveningStatus.textContent='Moteur de départs +18/+24 h indisponible.';
+      return;
+    }
+    try{
+      const result=engine.compareEveningDepartureWindows(
+        verifiedFrames.get(18),verifiedFrames.get(24)
+      );
+      const put=(key,value)=>{
+        const el=root.querySelector('[data-gfs-evening-'+key+']');
+        if(el)el.textContent=value;
+      };
+      const time=hour=>frenchTime(new Date(Date.parse(result.cycleUTC)+hour*3600000).toISOString());
+      put('fastest','+'+result.fastestStartHour+' h · '+time(result.fastestStartHour));
+      put('duration',result.fastestElapsedMinutes.toFixed(1)+' min');
+      put('earliest','+'+result.earliestArrivalStartHour+' h · '+frenchTime(result.earliestArrivalUTC));
+      for(const window of result.windows){
+        const row=document.createElement('div');
+        row.className='gfs-departure-row';
+        if(window.valid&&window.startHour===result.fastestStartHour)row.dataset.fastest='true';
+        const label=document.createElement('strong');
+        label.textContent='Départ +'+window.startHour+' h';
+        const duration=document.createElement('span');
+        duration.textContent=window.valid?window.elapsedMinutes.toFixed(1)+' min jusqu’à 47°N':'Non calculable';
+        const arrival=document.createElement('small');
+        arrival.textContent=window.valid?'Passage : '+frenchTime(window.crossingUTC)+' (Paris)':window.reason;
+        row.append(label,duration,arrival);
+        eveningRows.appendChild(row);
+      }
+      eveningSummary.hidden=false;
+      eveningRows.hidden=false;
+      eveningStatus.dataset.state='success';
+      eveningStatus.textContent=result.validCount+' départ(s) calculable(s) sur 4 dans la plage +18/+24 h.';
+      if([6,12].every(h=>verifiedFrames.has(h))&&engine.compareTwelveDepartureWindows){
+        try{
+          const overall=engine.compareTwelveDepartureWindows(
+            verifiedFrames.get(6),verifiedFrames.get(12),
+            verifiedFrames.get(18),verifiedFrames.get(24)
+          );
+          twelvePanel.querySelector('[data-gfs-all-twelve-best]').textContent=
+            'Meilleur départ : +'+overall.fastestStartHour+' h · '+
+            overall.fastestElapsedMinutes.toFixed(1)+' min jusqu’à 47°N ('+
+            overall.validCount+' départs calculables sur 12).';
+          twelvePanel.hidden=false;
+        }catch(_){
+          // Ne jamais afficher un bilan global si une fenêtre est incohérente.
+          twelvePanel.hidden=true;
+        }
+      }
+    }catch(error){
+      eveningStatus.dataset.state='error';
+      eveningStatus.textContent='Plage +18/+24 h non calculable : '+String(error.message||error)+
+        ' Aucune durée fictive affichée.';
+    }
+  };
   const laterStatus=root.querySelector('[data-gfs-later-status]');
   const laterSummary=root.querySelector('[data-gfs-later-summary]');
   const laterRows=root.querySelector('[data-gfs-later-rows]');
@@ -569,7 +640,7 @@
   });
   windRun.addEventListener('click',async()=>{
     const hour=windHour.value;
-    if(!['6','12','18'].includes(hour))return;
+    if(!['6','12','18','24'].includes(hour))return;
     windRun.disabled=true;
     windHour.disabled=true;
     windPoints.hidden=true;
@@ -633,6 +704,7 @@
       renderRouteSearch();
       renderDepartures();
       renderLaterDepartures();
+      renderEveningDepartures();
       windStatus.dataset.state='success';
       windStatus.textContent='3 vents réels décodés sur le même cycle NOAA · '+
         (result.cached?'résultat en cache.':'lecture validée.');

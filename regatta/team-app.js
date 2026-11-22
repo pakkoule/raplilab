@@ -556,6 +556,8 @@ function showProfile(id){
 }
 function showRaceRanking(id){
  const r=races().find(x=>x.id===id);if(!r)return;
+ const membersById=new Map(members().map(m=>[m.id,m]));
+ const notes=rating.calculate(r,races(),membersById,engine);
  const names=new Map(members().map(m=>[m.id,m.name]));
  const scored=engine.scoredRace(r,new Map(members().map(m=>[m.id,m])));
  const byId=new Map(scored.map(row=>[row.skipperId,row]));
@@ -563,15 +565,17 @@ function showRaceRanking(id){
  $('team-classification-title').textContent='CLASSEMENT · '+r.name;
  $('team-classification-body').innerHTML='<p class="team-footnote">'+esc(r.dateEnd||'Date inconnue')+' · '+esc(r.vsr.toUpperCase())+' · '+
   (r.status==='finished'&&scored.length?'Résultats validés':'Résultats non encore validés au championnat')+'</p>'+
- '<div class="team-table-wrap"><table class="team-table"><thead><tr><th>RANG LPDB</th><th>SKIPPER</th><th>GÉNÉRAL VR</th><th>CHRONO TOTAL</th><th>ÉCART AU 1ER</th><th>PRINCIPAL</th><th>HISTORIQUE</th></tr></thead><tbody>'+
+ '<div class="team-table-wrap"><table class="team-table"><thead><tr><th>RANG LPDB</th><th>SKIPPER</th><th>GÉNÉRAL VR</th><th>CHRONO TOTAL</th><th>ÉCART AU 1ER</th><th>NOTE /100</th><th>PRINCIPAL</th><th>HISTORIQUE</th></tr></thead><tbody>'+
  rows.map(row=>{
-  const points=byId.get(row.skipperId);
+  const points=byId.get(row.skipperId),mark=notes.scores.get(row.skipperId);
+  const note=mark?.available?'<strong class="team-individual-note" title="'+esc(mark.mention+(mark.provisional?' · provisoire':''))+'">'+num(mark.value)+'/100'+(mark.provisional?' *':'')+'</strong>':'<span title="'+esc(mark?.reason||'Note en attente du rang général VR et de l’effectif global')+'">—</span>';
   return '<tr><td>'+(row.status==='dnf'?'DNF':row.position??'—')+'</td><td>'+esc(names.get(row.skipperId)||'Skipper inconnu')+'</td>'+ 
    '<td>'+(row.generalRank!=null?'#'+num(row.generalRank):'—')+'</td>'+
-   '<td>'+clockLabel(row.elapsedSeconds)+'</td><td>'+(row.gapSeconds!=null?'+ '+clockLabel(row.gapSeconds):'—')+'</td>'+
+   '<td>'+clockLabel(row.elapsedSeconds)+'</td><td>'+(row.gapSeconds!=null?'+ '+clockLabel(row.gapSeconds):'—')+'</td>'+ 
+   '<td>'+note+'</td>'+
    '<td>'+num(points?.main??0)+'</td><td>'+num(points?.historic??0)+'</td></tr>';
  }).join('')+'</tbody></table></div>'+
- '<p class="team-footnote">Les chronos sont des durées de course. Les écarts restent calculés par rapport au premier skipper.</p>';
+ '<p class="team-footnote">Note de course : classement relatif, progression, VSR et affluence, sans équipement. * Provisoire en l’absence de références historiques suffisantes. Les notes ne modifient pas les points LPDB.</p>';
  $('team-race-classification-dialog').showModal();
 }
 let currentStage='';

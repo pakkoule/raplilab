@@ -160,3 +160,18 @@ Tests : `tests/regatta-gfs.test.cjs` (cycles UTC, hiver/été, bascules DST, com
 - La projection n'est **pas un classement Virtual Regatta officiel ni une promesse de performance** ; elle utilise les proportions de classements finaux passés et ne préjuge ni de l'effectif final futur ni de la force du plateau. Sans historique comparable ou sans participants au départ, aucun rang n'est inventé.
 - Les chronos de routage évoluent à l'écran chaque seconde sans recharger la tuile ou ses images. Les courses en cours continuent d'afficher le bloc météo GFS actif ; les courses terminées continuent d'afficher les classements.
 - Tests de calcul, de saisie distincte, de rendu et du compteur : `tests/regatta-prestart-insights.test.cjs`.
+
+
+## Laboratoire GFS NOAA 0,25° (PR #4 · prototype 1)
+
+Un bloc `LAB GFS 0,25°`, repliable et séparé des tuiles de course, permet de tester **manuellement** la source NOAA depuis l'aperçu Netlify. Aucun téléchargement n'a lieu lors du chargement de la page.
+
+- Endpoint Netlify : `/.netlify/functions/gfs-probe`. Il accède uniquement à `nomads.ncep.noaa.gov`, sans URL arbitraire fournie par le navigateur.
+- Fichier NOAA : GFS 0,25° `f006`, cycle UTC 00/06/12/18Z choisi avec **8 h de marge** pour éviter une échéance encore non publiée. Cette méthode reste une estimation de disponibilité : elle n'atteste pas la complétude du cycle.
+- Paramètres : `UGRD`, `VGRD`, niveau `10 m above ground`, sous-région 40–52°N / -20°–5°E. Une seule échéance, volontairement limitée pour éviter une surcharge NOAA.
+- Contrôles : réponse HTTP correcte, signature `GRIB`, édition GRIB2, sections cohérentes et identification des deux composantes U/V. La réponse retourne taille du fichier, cycle et variables effectivement détectées.
+- Protections : timeout de 12 s, plafond de 4 Mio, cache 15 min par instance Netlify et requête uniquement sur clic. Message d'erreur explicite si le serveur NOAA refuse ou change de format.
+- **Ne décode pas encore les valeurs U/V de la grille** (encodages GRIB2 potentiellement complexes), ne calcule ni vent local ni route ni passage à l'Équateur/Bonne-Espérance. Aucun chiffre fictif n'est affiché.
+- Aucun changement de collection, Supabase ou des widgets météo existants. Les polaires Ultim BP XI fournies précédemment restent une source provisoire, non Full Pack.
+
+Tests structurels : `tests/regatta-gfs-source.test.cjs` (sélection du cycle, URL, paires de champs U/V, rejet HTML/GRIB tronqué, erreurs NOAA et limite de taille). **Un test en production sur la preview Netlify reste nécessaire** pour confirmer que NOMADS répond dans son environnement.

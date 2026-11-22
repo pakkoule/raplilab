@@ -248,3 +248,82 @@ test('bulk skipper editor and atomic sync are wired into the LPDB team UI',()=>{
  assert.match(app,/saveBatch:saveTeamMembersBatch/);
  assert.match(app,/db\.transaction\('races','readwrite'\)/);
 });
+
+
+test('Virtual Regatta pasted classification yields 8 chronos from winner reference',()=>{
+ const time=require('../regatta/team-time.js');
+ const source=[
+  'Rapli LPDB','09j 15h 32m 50s','indien de provence - LP...','+ 03h 54m 01s',
+  '|*] Memphré - LPDB','+ 10h 03m 09s','• Jozarys','+ 14h 34m 43s','5',
+  'Danymaill _LPDB','+ 14h 50m 33s','• RX8- LPDB','+ 16h 12m 32s',
+  'Ruben LPDB','+ 16h 27m 51s','8','tintinultra76-LPDB','+ 16h 53m 14s'
+ ].join('\n');
+ const parsed=time.parseClassification(source);
+ assert.deepEqual(parsed.errors,[]);
+ assert.equal(parsed.entries.length,8);
+ assert.equal(parsed.entries[0].name,'Rapli LPDB');
+ assert.equal(parsed.entries[2].name,'Memphré - LPDB');
+ assert.equal(parsed.entries[4].name,'Danymaill _LPDB');
+ assert.equal(parsed.entries[7].position,8);
+ assert.equal(parsed.entries[0].gapSeconds,0);
+ assert.equal(time.formatTime(parsed.entries[0].elapsedSeconds),'09j 15h 32m 50s');
+ assert.equal(time.formatTime(parsed.entries[1].gapSeconds),'03h 54m 01s');
+ assert.equal(time.formatTime(parsed.entries[7].elapsedSeconds),'10j 08h 26m 04s');
+});
+test('Virtual Regatta name reconciliation strips team suffix and preserves unknown names for review',()=>{
+ const time=require('../regatta/team-time.js');
+ const parsed=time.parseClassification('Rapli LPDB\n09j 15h 32m 50s\nRX8- LPDB\n+ 03h 54m 01s\ninconnu - LP...\n+ 04h');
+ const matched=time.matchSkippers(parsed.entries,[m('Rapli'),m('RX8')]);
+ assert.equal(matched[0].skipperId,id('member','Rapli'));
+ assert.equal(matched[1].skipperId,id('member','RX8'));
+ assert.equal(matched[2].skipperId,'');
+ assert.equal(time.normalizePseudo('Danymaill _LPDB'),time.normalizePseudo('Danymaill'));
+});
+test('race time parsing rejects invalid durations and chronos in reversed order',()=>{
+ const time=require('../regatta/team-time.js');
+ assert.equal(time.parseTime('09j 15h 32m 50s'),9*86400+15*3600+32*60+50);
+ assert.equal(time.parseTime('03h 54m 01s'),3*3600+54*60+1);
+ assert.equal(time.parseTime('08m 60s'),null);
+ assert.equal(time.parseTime('1j 25h'),null);
+ assert.equal(time.parseTime('+ 01h 12m'),null);
+ assert.equal(time.parseClassification('Rapli LPDB\n09j 15h 32m 50s\nRX8\n+ 30m\nJozarys\n+ 20m').errors.length,1);
+ assert.ok(time.parseClassification('Rapli\n+ 01h').errors.length);
+});
+test('timed race results survive normalization, score both systems and aggregate clocks',()=>{
+ const roster=[m('Alpha'),m('Beta'),m('Gamma')];
+ const leader=9*86400+15*3600+32*60+50,gap=3*3600+54*60+1;
+ const finished=r('timed','2026-12-04','hc','finished',[
+  {...rr('Alpha',1),elapsedSeconds:leader,gapSeconds:0},
+  {...rr('Beta',2),elapsedSeconds:leader+gap,gapSeconds:gap},
+  rr('Gamma',null,'dnf')
+ ]);
+ const known=new Map(roster.map(x=>[x.id,x]));
+ assert.equal(E.verifyRace(finished,known),'');
+ const normalized=E.race(finished);
+ assert.equal(normalized.results[0].elapsedSeconds,leader);
+ assert.equal(normalized.results[1].gapSeconds,gap);
+ assert.equal(normalized.results[2].elapsedSeconds,undefined);
+ const scores=E.scoredRace(normalized,known);
+ assert.equal(scores[0].gapSeconds,0);
+ assert.equal(scores[1].elapsedSeconds,leader+gap);
+ assert.equal(scores[2].historic,0);
+ const ranking=E.standings([...roster,normalized],{type:'year',value:'2026'});
+ const alpha=ranking.skippers.find(s=>s.name==='Alpha'),beta=ranking.skippers.find(s=>s.name==='Beta');
+ assert.equal(alpha.timedRaces,1);
+ assert.equal(alpha.avgGapSeconds,0);
+ assert.equal(beta.avgTimeSeconds,leader+gap);
+ assert.equal(beta.avgGapSeconds,gap);
+ const broken={...normalized,results:normalized.results.map((x,i)=>i===1?{...x,gapSeconds:45}:x)};
+ assert.match(E.verifyRace(broken,known),/incohérents/);
+});
+test('VR quick import UI includes mapping, time editing, classification view and synced bundle saving',()=>{
+ const time=require('../regatta/team-time.js');
+ assert.ok(time.parseClassification);
+ const html=fs.readFileSync('regatta/index.html','utf8'),ui=fs.readFileSync('regatta/team-app.js','utf8'),app=fs.readFileSync('regatta/app.js','utf8');
+ const doc=new JSDOM(html).window.document;
+ for(const id of ['team-ranking-paste','team-ranking-import-body','team-ranking-apply','team-ranking-analysis','team-race-classification-dialog'])assert.ok(doc.getElementById(id));
+ assert.ok([...doc.querySelectorAll('script')].some(s=>s.getAttribute('src')==='team-time.js'));
+ for(const key of ['analyzeRanking','applyRanking','showRaceRanking','data-team-elapsed','data-team-gap','clockLabel','saveRaceBundle'])assert.ok(ui.includes(key),key);
+ assert.match(app,/saveTeamRaceBundle/);
+ assert.match(app,/saveRaceBundle:saveTeamRaceBundle/);
+});

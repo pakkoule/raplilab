@@ -14,6 +14,8 @@ function raceTileHarness(){
  const end=js.indexOf('/* Ajustement dynamique',start);
  assert.ok(start>0&&end>start,'race tile helpers not found');
  const ctx={
+  rows:[],
+  clean:(value,limit)=>String(value??'').trim().slice(0,limit),
   raceStatus:r=>r.mockStatus,
   recordEngine:{
    latestStart:attempts=>attempts?.[0]||{date:'',time:''},
@@ -538,6 +540,9 @@ test('upcoming courses display the GFS pre-start briefing instead of empty ranki
    start:'2027-02-17',startTime:'17:00'});
   const doc=new JSDOM(html).window.document;
   assert.ok(doc.querySelector('.race-card-right .race-gfs-briefing'),kind);
+  assert.ok(doc.querySelector('.race-card-right .race-prestart-insights'),kind);
+  assert.ok(doc.querySelector('.race-card-right .race-prestart-routing'),kind);
+  assert.ok(doc.querySelector('.race-card-right .race-prestart-projection'),kind);
   assert.equal(doc.querySelector('.race-card-right .race-card-rank-empty'),null,kind);
   assert.equal(doc.querySelector('.race-card-right .race-card-rewards'),null,kind);
   assert.equal(doc.querySelector('.race-card-right .race-gfs-widget'),null,kind);

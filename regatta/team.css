@@ -140,3 +140,23 @@
  .team-linked-race{padding:10px}
  .team-linked-race .team-toolbar .team-action{flex:1 1 130px}
 }
+
+/* One LPDB workspace with a premium, compact internal navigation. */
+.lpdb-shell{max-width:1120px;margin:0 auto 26px;min-width:0}
+.lpdb-shell[hidden]{display:none!important}
+.lpdb-tabs{display:flex;align-items:center;gap:6px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;margin:0 0 9px;padding:7px 8px;border:1px solid #92c5cb80;border-radius:14px;background:linear-gradient(125deg,#edf8f9,#d8e7ed 60%,#f4fcfd);box-shadow:0 3px 15px #092a3d12}
+.lpdb-tabs::-webkit-scrollbar{display:none}
+.lpdb-tab{flex:1 0 auto;min-height:42px;padding:10px 13px;border:1px solid transparent;border-radius:10px;background:transparent;color:#365d70;font:800 11px/1.25 Poppins,system-ui,sans-serif;letter-spacing:.035em;white-space:nowrap;cursor:pointer;transition:background .16s ease,color .16s ease,box-shadow .16s ease}
+.lpdb-tab:hover{background:#d0e9ec;color:#086f7b}
+.lpdb-tab.active{background:linear-gradient(118deg,#123b50,#087f88);border-color:#32b6c0;color:#fff;box-shadow:inset 0 1px 0 #ffffff43,0 3px 10px #0d536136}
+.lpdb-tab:focus-visible{outline:2px solid #007cbd;outline-offset:2px}
+.lpdb-shell .team-panel{margin:0 auto}
+@media(max-width:700px){
+ .lpdb-shell{margin:0 12px 20px}
+ .lpdb-tabs{gap:4px;padding:5px;margin-bottom:8px}
+ .lpdb-tab{flex:1 0 auto;min-height:40px;padding:9px 10px;font-size:10px;letter-spacing:0}
+}
+@media(max-width:430px){
+ .lpdb-shell{margin:0 5px 18px}
+ .lpdb-tab{padding:9px 8px;font-size:9px}
+}

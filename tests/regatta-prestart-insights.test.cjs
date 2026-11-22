@@ -38,7 +38,8 @@ test('separate participants at the start are offered without modifying final par
  assert.match(js,/startParticipantCount:'start-participant-count'/);
  assert.match(js,/Les participants au départ doivent être un entier positif/);
  assert.match(js,/r\.startParticipantCount/);
- assert.match(js,/r\.participantCount/);
+ assert.match(js,/participantCount:12/);
+ assert.match(js,/participantCount:'participant-count'/);
 });
 test('historical reference includes only completed races of the same class',()=>{
  const sample=raceClassHistory(race,history);

@@ -123,7 +123,6 @@ function teamRaceCard(r,known){
   '<div class="team-race-menu-popover" role="group" aria-label="Actions de '+esc(r.name)+'">'+
   menuItem('race-'+esc(r.id),'✎ Modifier la course')+
   menuItem('show-ranking-'+esc(r.id),'▤ Classement et chronos')+
-  (p?menuItem('open-personal-'+esc(p.id),'↗ Ouvrir ma course'):menuItem('new-personal-'+esc(r.id),'＋ Créer ma course'))+
   '<div class="team-race-menu-divider"></div>'+
   menuItem('export-race-'+esc(r.id),'↓ Export PNG tableau')+
   menuItem('export-race-top10-'+esc(r.id),'↓ Export PNG Top 10')+
@@ -173,8 +172,8 @@ function renderRaces(){
  const el=$('team-races-panel');if(!el)return;
  const known=new Map(members().map(m=>[m.id,m]));
  const groups=unique(rs.map(r=>r.stageGroup).filter(Boolean));
- el.innerHTML='<div class="team-heading"><div><span>LPDB · RÉSULTATS</span><h2>COURSES DE L’ÉQUIPE</h2><p>Des fiches inspirées de « Mes courses », avec un classement distinct pour chaque skipper.</p></div><img src="assets/lpdb.webp" class="team-emblem" alt="LPDB"></div>'+
- '<div class="team-toolbar">'+action('new-race','＋ NOUVELLE COURSE','team-primary')+action('recalculate-notes','↻ RECALCULER LES NOTES','team-secondary')+'</div>'+
+ el.innerHTML='<div class="team-heading"><div><span>LPDB · RÉSULTATS</span><h2>COURSES DE L’ÉQUIPE</h2><p>Courses, départs, classements et chronos de l’équipe LPDB.</p></div><img src="assets/lpdb.webp" class="team-emblem" alt="LPDB"></div>'+
+ '<div class="team-toolbar">'+action('new-race','＋ NOUVELLE COURSE','team-primary')+action('recalculate-notes','↻ RECALCULER LES NOTES','team-secondary')+action('team-colors','⚙ PUCES BATEAUX','team-secondary')+'</div>'+
  (rs.length?'<div class="team-race-list">'+rs.map(r=>teamRaceCard(r,known)).join('')+'</div>':
   empty('Aucune course d’équipe. Ajoute la première épreuve du nouveau championnat.'))+
  (groups.length?'<section class="team-groups"><h3>CLASSEMENTS BONUS · ENSEMBLES D’ÉTAPES</h3><p>Somme des étapes, sans redistribuer de points.</p>'+
@@ -407,16 +406,13 @@ function renderPersonalLink(){
   $(id).disabled=!!linked;
  $('team-race-vsr').disabled=!!linked&&linked.kind!=='record';
  const help=$('team-linked-help'),photo=$('team-linked-image');
- help.textContent=linked?(linked.kind==='record'?'↔ Record personnel lié : visuel, nom, bateau et dernier départ repris. Les tentatives, arrivées, chronos et classements LPDB restent indépendants.':'↔ Détails communs synchronisés depuis « Mes courses ». Les positions, DNF et points de l’équipe restent indépendants.'):
+ help.textContent=linked?(linked.kind==='record'?'↔ Ancien record réutilisé : visuel, nom, bateau et dernier départ repris. Les tentatives et résultats de l’équipe restent indépendants.':'↔ Ancienne fiche réutilisée pour le visuel et les détails de départ. Les classements et points LPDB restent indépendants.'):
   draft.personalRaceId?'La fiche personnelle associée est introuvable. Dissocie-la pour rendre les champs modifiables.':
-  'Choisis une course personnelle et clique sur « Utiliser ses détails ». Les résultats de l’équipe restent indépendants.';
+  'Choisis une fiche historique puis « Utiliser ses détails ». Les classements et notes de l’équipe restent indépendants.';
  if(linked&&/^data:image\/(png|webp|jpeg|gif);base64,/i.test(linked.icon||'')){
   photo.innerHTML='<img src="'+esc(linked.icon)+'" alt="Visuel de '+esc(linked.name)+'">';
   photo.hidden=false;
  }else{photo.innerHTML='';photo.hidden=true;}
- const isSaved=raw().some(x=>x.type==='team-race'&&x.id===draft.id);
- document.querySelector('[data-team-action="new-personal"]').disabled=!!linked||!isSaved;
- document.querySelector('[data-team-action="open-personal"]').disabled=!linked;
  document.querySelector('[data-team-action="unlink-personal"]').disabled=!draft.personalRaceId;
 }
 function fromPersonalId(id){
@@ -716,6 +712,7 @@ async function click(ev){
  const cmd=button.dataset.teamAction;
  if(button.closest('.team-race-menu'))button.closest('.team-race-menu').open=false;
  if(cmd==='new-race')return openRace();
+ if(cmd==='team-colors'){api.openColors?.();return;}
  if(cmd.startsWith('show-ranking-'))return showRaceRanking(cmd.slice('show-ranking-'.length));
  if(cmd==='toggle-ranking-import'){
   const body=$('team-ranking-import-body'),open=body.hidden;
@@ -737,18 +734,7 @@ async function click(ev){
  if(cmd==='unlink-personal'&&draft){
   draft.personalRaceId='';renderPersonalLink();notify('Liaison retirée dans le formulaire. Enregistre la course pour confirmer.');return;
  }
- if(cmd==='open-personal'){
-  const linked=personalById(draft?.personalRaceId);
-  if(linked){$('team-race-dialog').close();api.openPersonal?.(linked.id);}
-  else notify('Aucune fiche personnelle associée.',true);
-  return;
- }
- if(cmd==='new-personal'){
-  if(!draft||!raw().some(r=>r.id===draft.id)){notify('Enregistre d’abord la course d’équipe.',true);return;}
-  $('team-race-dialog').close();api.newPersonalFromTeam?.(draft.id);return;
- }
- if(cmd.startsWith('open-personal-')){api.openPersonal?.(cmd.slice(14));return;}
- if(cmd.startsWith('new-personal-')){api.newPersonalFromTeam?.(cmd.slice(13));return;}
+
  if(cmd==='recalculate-notes'){recalculateNotes();return;}
  if(cmd==='recalculate'){render();notify('Tous les classements ont été recalculés ✓');return;}
  if(cmd==='select-all'&&draft){

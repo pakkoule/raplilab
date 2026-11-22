@@ -119,7 +119,7 @@ function normalize(entities){
 }
 function verifyRace(r,knownMembers){
  const rs=r.results||[],count=rs.length;
- if(!dateOk(r.dateEnd)||!BASE[r.vsr]||count<1||count>50)return 'Renseigne une arrivée, une catégorie VSR et de 1 à 50 participants.';
+ if(!dateOk(r.dateEnd)||!BASE[r.vsr]||count<1||count>50)return 'Renseigne la date de clôture du classement, la catégorie VSR et de 1 à 50 participants.';
  const ids=new Set(),ranks=new Set();
  for(const row of rs){
   if(!knownMembers.has(row.skipperId)||ids.has(row.skipperId))return 'Skipper inconnu ou ajouté deux fois.';

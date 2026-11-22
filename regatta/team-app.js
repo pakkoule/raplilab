@@ -65,6 +65,7 @@ const action=(cmd,label,cls='')=>'<button type="button" class="team-action '+cls
 const empty=message=>'<div class="team-empty">'+esc(message)+'</div>';
 const medal=r=>r===1?'🥇':r===2?'🥈':r===3?'🥉':num(r);
 const clockLabel=value=>Number.isSafeInteger(value)&&value>=0?clock.formatTime(value):'—';
+const pngClock=value=>clockLabel(value).replace(/(\d{2})j (\d{2})h (\d{2})m (\d{2})s/u,'$1j $2:$3:$4').replace(/(\d{2})h (\d{2})m (\d{2})s/u,'$1:$2:$3');
 function sortedItems(items){
  const rows=items.filter(s=>filter==='all'||s.status===filter).filter(s=>!search||s.name.toLocaleLowerCase('fr').includes(search.toLocaleLowerCase('fr')));
  return rows;
@@ -582,20 +583,37 @@ async function exportStandings(rows,title,{style='table',limit=0,prefix='lpdb-cl
    }
    ctx.fillStyle='#bdedf1';ctx.textAlign='left';ctx.font='700 22px Poppins,sans-serif';
    ctx.fillText('RANG',70,headY);ctx.fillText('SKIPPER',200,headY);
-   ctx.textAlign='right';ctx.fillText(raceTimed?'CHRONO':'COURSES',w-520,headY);ctx.fillText(raceTimed?'ÉCART':'ÉCART MOY.',w-315,headY);ctx.fillText('POINTS',w-85,headY);
+   ctx.textAlign='right';ctx.font='700 18px Poppins,sans-serif';
+   if(raceTimed){
+    ctx.fillText('CHRONO',w-445,headY);
+    ctx.fillText('ÉCART',w-235,headY);
+   }else{
+    ctx.fillText('COURSES',w-535,headY);
+    ctx.fillText('CHRONO MOY.',w-345,headY);
+    ctx.fillText('ÉCART MOY.',w-170,headY);
+   }
+   ctx.fillText('POINTS',w-75,headY);
    segment.forEach((s,i)=>{
     const y=topY+i*unit;
     drawRounded(ctx,58,y,w-116,unit-5,10,topList&&i===0?'#244d50':i%2?'#0a2432':'#183846');
     if(topList&&i===0){ctx.strokeStyle='#e7bd46';ctx.lineWidth=3;ctx.strokeRect(60,y+1,w-120,unit-8);}
     const rank=Number.isInteger(s.rank)?s.rank:p*batch+i+1;
-    const labels=[s.dnf?'DNF':String(rank),s.name,raceTimed?clockLabel(s.elapsedSeconds):String(s.participations??0),raceTimed?(s.gapSeconds!=null?'+'+clockLabel(s.gapSeconds):'—'):clockLabel(s.avgGapSeconds),s.exportValue||num(s.points??0)];
+    const labels=[s.dnf?'DNF':String(rank),s.name,raceTimed?pngClock(s.elapsedSeconds):String(s.participations??0),raceTimed?(s.gapSeconds!=null?'+'+pngClock(s.gapSeconds):'—'):pngClock(s.avgGapSeconds),s.exportValue||num(s.points??0)];
     ctx.textBaseline='middle';
     ctx.fillStyle=rank===1&&!s.dnf?'#f5ca63':rank===2&&!s.dnf?'#d6dce6':rank===3&&!s.dnf?'#d5a277':'#f5f8fa';
     ctx.textAlign='left';ctx.font='800 29px Poppins,sans-serif';ctx.fillText(labels[0],88,y+unit/2);
-    ctx.fillStyle='#f8ffff';ctx.font='750 24px Poppins,sans-serif';ctx.fillText(labels[1].slice(0,20),200,y+unit/2);
+    ctx.fillStyle='#f8ffff';ctx.font='750 24px Poppins,sans-serif';ctx.fillText(labels[1].slice(0,16),200,y+unit/2);
     ctx.textAlign='right';ctx.font='650 23px Poppins,sans-serif';
-    ctx.font='600 19px Poppins,sans-serif';ctx.fillText(labels[2],w-520,y+unit/2);ctx.fillText(labels[3],w-315,y+unit/2);
-    ctx.font='850 29px Poppins,sans-serif';ctx.fillStyle='#69f3ed';ctx.fillText(labels[4],w-85,y+unit/2);
+    ctx.font='600 17px Poppins,sans-serif';
+    if(raceTimed){
+     ctx.fillText(labels[2],w-445,y+unit/2);
+     ctx.fillText(labels[3],w-235,y+unit/2);
+    }else{
+     ctx.fillText(labels[2],w-535,y+unit/2);
+     ctx.fillText(pngClock(s.avgTimeSeconds),w-345,y+unit/2);
+     ctx.fillText(labels[3],w-170,y+unit/2);
+    }
+    ctx.font='850 29px Poppins,sans-serif';ctx.fillStyle='#69f3ed';ctx.fillText(labels[4],w-75,y+unit/2);
    });
   }
   ctx.font='600 20px Poppins,sans-serif';ctx.textAlign='center';ctx.fillStyle='#8db8c2';
@@ -624,7 +642,7 @@ function doExport(kind,arg){
  if(kind==='png-top10'){style='social';limit=10;}
  if(kind==='png-stats'||kind==='png-stats-social'){
   list=[...model.skippers].sort((a,b)=>statMode==='avg'?b.avg-a.avg:statMode==='finish'?b.finishRate-a.finishRate:statMode==='wins'?b.wins-a.wins:statMode==='time'?(a.avgTimeSeconds??Infinity)-(b.avgTimeSeconds??Infinity):statMode==='gap'?(a.avgGapSeconds??Infinity)-(b.avgGapSeconds??Infinity):b.points-a.points);
-  list=list.map((s,i)=>({...s,rank:i+1,points:statMode==='avg'?s.avg:statMode==='finish'?s.finishRate:statMode==='wins'?s.wins:statMode==='time'?s.avgTimeSeconds??0:statMode==='gap'?s.avgGapSeconds??0:s.points,exportValue:statMode==='time'?clockLabel(s.avgTimeSeconds):statMode==='gap'?clockLabel(s.avgGapSeconds):null}));
+  list=list.map((s,i)=>({...s,rank:i+1,points:statMode==='avg'?s.avg:statMode==='finish'?s.finishRate:statMode==='wins'?s.wins:statMode==='time'||statMode==='gap'?s.points:s.points,exportValue:null}));
   if(kind==='png-stats-social'){style='social';limit=10;}
   filename+='-stat-'+statMode;
   title=({avg:'Points par course',finish:'Taux de finition',wins:'Victoires',points:'Points cumulés',time:'Chrono moyen',gap:'Écart moyen'})[statMode]+' · '+labelPeriod();

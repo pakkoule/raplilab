@@ -98,7 +98,7 @@ function scoreRing(value,{size='small',label='Note',provisional=false,mention=''
  const score=Math.max(0,Math.min(100,raw));
  const formatted=num(score);
  const aria=label+' : '+formatted+' sur 100'+(provisional?' · provisoire':'')+(mention?' · '+mention:'');
- return '<span class="team-score-ring team-score-ring--'+esc(size)+'" role="img" aria-label="'+esc(aria)+'" title="'+esc(aria)+'" style="--score:'+score+'"><span aria-hidden="true">'+esc(formatted)+'</span></span>'+
+ return '<span class="team-score-ring team-score-ring--'+esc(size)+'" role="img" aria-label="'+esc(aria)+'" title="'+esc(aria)+'" style="--score:'+score+';--score-mid:'+(score*1.8)+'deg;--score-end:'+(score*3.6)+'deg"><span aria-hidden="true">'+esc(formatted)+'</span></span>'+
   (provisional?'<span class="team-note-provisional" aria-label="Note provisoire" title="Note provisoire">*</span>':'');
 }
 const clockLabel=value=>Number.isSafeInteger(value)&&value>=0?clock.formatTime(value):'—';

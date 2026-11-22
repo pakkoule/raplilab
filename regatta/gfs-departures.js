@@ -85,7 +85,7 @@
     throw Error('Latitude témoin non franchie dans la fenêtre de 3 heures.');
   }
 
-  function compareForPair(a,b,firstHour){
+  function compareForPair(a,b,firstHour,allowEmpty=false){
     const {first,second}=compatibleFrames(a,b);
     if(first.hour!==firstHour)throw Error('Échéances météo non compatibles avec cette plage de départs.');
     const departures=firstHour===6?DEPARTURES:firstHour===12?LATER_DEPARTURES:
@@ -97,7 +97,7 @@
       }
     });
     const valid=windows.filter(w=>w.valid);
-    if(!valid.length)throw Error('Aucun départ n’atteint la latitude témoin avec les polaires provisoires.');
+    if(!valid.length&&!allowEmpty)throw Error('Aucun départ n’atteint la latitude témoin avec les polaires provisoires.');
     const fastest=[...valid].sort((a,b)=>
       a.elapsedMinutes-b.elapsedMinutes||a.startHour-b.startHour
     )[0];
@@ -110,10 +110,10 @@
       gateLatitude:GATE_LATITUDE,
       horizonHours:HORIZON_HOURS,
       windows,validCount:valid.length,
-      fastestStartHour:fastest.startHour,
-      fastestElapsedMinutes:fastest.elapsedMinutes,
-      earliestArrivalStartHour:earliest.startHour,
-      earliestArrivalUTC:earliest.crossingUTC,
+      fastestStartHour:fastest?.startHour??null,
+      fastestElapsedMinutes:fastest?.elapsedMinutes??null,
+      earliestArrivalStartHour:earliest?.startHour??null,
+      earliestArrivalUTC:earliest?.crossingUTC??null,
       objective:'Durée minimale de passage de 47°N sur quatre départs simulés',
       experimental:true,fullPack:false,isEquatorForecast:false,
       method:'Pilote VMG sud + GFS 0,25°, bilinéaire et interpolation temporelle; pas 30 min'
@@ -129,7 +129,8 @@
     return compareForPair(a,b,18);
   }
   function compareNextDayDepartureWindows(a,b){
-    return compareForPair(a,b,24);
+    // All four can be out of temporary polars; still report zero and preserve previous comparisons.
+    return compareForPair(a,b,24,true);
   }
   function compareAllDepartureWindows(a,b,c){
     const early=compareDepartureWindows(a,b);

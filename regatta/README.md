@@ -271,3 +271,14 @@ Les captures du test 7 montrent la lecture de trois positions météo préétabl
 - Tests isolés : `tests/regatta-gfs-grid.test.cjs` pour le transport météo compact, et `tests/regatta-gfs-motion.test.cjs` pour la cinématique, les polaires partielles et le refus d'extrapolation. La vérification en situation réelle sur Safari iPhone reste requise.
 
 Toujours uniquement dans la PR #4 ; aucun changement Supabase, production ou données de courses.
+
+
+## GFS 0,25° · comparaison limitée de caps (PR #4 · prototype 9)
+
+Après validation sur iPhone du test 8 (**123,1 milles en trois heures à cap fixe 180°**, vents GFS réels, polaires partielles non Full Pack), le test 9 compare exactement **5 caps fixes** : 170°, 175°, 180°, 185°, 190°.
+
+Chaque cap part du même point (48,125°N/8,625°O), de la même échéance GFS +6 h, et utilise les mêmes grilles NOAA +6/+12 h. Le moteur intègre le mouvement toutes les 30 min pendant 3 h, comme au test 8. Aucun nouveau téléchargement NOAA n'est nécessaire. L'indicateur de comparaison est la **progression vers le sud** (différence de latitude convertie en milles), et non une vitesse pure ni une route optimale.
+
+Les caps dont les TWA/TWS sortent des 4 lignes de polaires provisoires (90°, 100°, 110°, 120°) sont indiqués comme **non calculables** et exclus du classement. Le résultat est uniquement « meilleur des caps fixes calculables dans ce test », pas la meilleure route, ni une prédiction de fenêtre de départ. Les polaires Full Pack seront substituées ultérieurement.
+
+Le prototype ne vérifie pas les terres, les zones interdites, les courants, ni les règles de course et n'extrapole pas au-delà de sa couverture météo. Tests ajoutés dans `tests/regatta-gfs-motion.test.cjs`. Validation Safari iPhone à effectuer.

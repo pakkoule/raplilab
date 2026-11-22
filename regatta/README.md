@@ -372,3 +372,14 @@ Plutôt que de poursuivre immédiatement l'extension des échéances GFS, le tes
 Le moteur distingue, sans inventer de vitesse : **vent inférieur ou supérieur au tableau**, **aucun angle au vent couvert**, **polaire partielle indisponible**, **météo GFS manquante ou hors grille**, et **absence de franchissement de 47°N dans les trois heures**. Le diagnostic suit les mêmes étapes de 30 min jusqu'au premier blocage, lorsqu'il dispose de vents et de vitesses vérifiés. Il ne remplace pas les polaires Full Pack ni le calcul de routage océanique.
 
 Le code modifié se trouve dans `regatta/gfs-departures.js`, `regatta/gfs-lab.js`, `regatta/index.html` et `regatta/gfs-lab.css`; les vérifications supplémentaires sont dans `tests/regatta-gfs-departures.test.cjs`. Production inchangée ; validation en situation réelle Safari du diagnostic encore requise.
+
+
+## GFS 0,25° · extension ITYC aux angles serrés (PR #4 · prototype 17)
+
+Sur Safari iPhone, le test 16 a été confirmé le 22 novembre 2026 : les départs +24/+25/+26/+27 h échouaient avec les **polaires provisoires limitées à 90°–120°**, alors que les vents du début de parcours imposaient des angles compris approximativement entre **23,6° et 64,1°**. Les forces de vent étaient dans la plage disponible, entre **12,2 et 15,2 nœuds**.
+
+Le test 17 ajoute dans `regatta/gfs-motion.js` les **lignes TWA 30°, 35°, 40°, 45°, 50°, 55°, 60°, 65°, 70°, 75°, 80°, 85°, 95°, 105°, 115°**, relevées des captures du tableau ITYC *Ultim BP XI* fournies précédemment dans le fil. Les quatre lignes déjà exploitées à 90°, 100°, 110°, 120° sont conservées. Tous les 19 angles de 30° à 120° ont les 13 vitesses TWS 4–40 nds. Il n'y a **aucune extrapolation hors [30°,120°] ni hors [4,40] nds**, et ces données restent **NON Full Pack**.
+
+Le navigateur recalcule les comparaisons existantes après relecture des données NOAA : les anciens résultats (11/16, 98,7 min sur le modèle à 90°–120°) peuvent changer. Si la meilleure VMG sud ne permet pas de rejoindre la latitude témoin 47°N dans les trois heures, le départ reste **non calculable**, avec un diagnostic **porte non atteinte en trois heures** accompagné de la latitude finale et de la distance restante, plutôt que « aucun angle couvert ». Ne pas confondre une couverture d'angle désormais suffisante avec la capacité de parcourir 67,5 M jusqu'à la porte témoin en 3 h.
+
+Le panneau de diagnostic du test 16 indique la nouvelle plage 30°–120° et la provenance météo GFS ; le test 17 réutilise les mêmes panneaux sans nouveau téléchargement NOAA ni changement de production. Le modèle ne comporte pas les équipements Full Pack, masques terrestres, courants, contraintes Virtual Regatta, ni le routage océanique nécessaire au passage à l'équateur ou à Bonne-Espérance. Tests adaptés et étendus dans `tests/regatta-gfs-motion.test.cjs` et `tests/regatta-gfs-departures.test.cjs`. **Validation Safari avec les vraies données NOAA à refaire**.

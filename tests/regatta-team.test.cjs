@@ -162,7 +162,7 @@ test('Rapli Regatta becomes an LPDB-only workspace with four team subsections',(
  assert.ok(shell);
  assert.equal(shell.hidden,false,'LPDB is the landing workspace');
  const ids=['team','team-races','team-skippers','team-stats'];
- const tablist=shell.querySelector('.lpdb-tabs');
+ const tablist=d.querySelector('.regatta-topbar>.lpdb-tabs');
  assert.equal(tablist.querySelectorAll('.lpdb-tab').length,4);
  assert.deepEqual([...tablist.querySelectorAll('button')].map(b=>b.id),ids.map(x=>'lpdb-view-'+x));
  for(const id of ids){
@@ -852,8 +852,8 @@ test('LPDB Recalculer les notes button refreshes ratings without modifying store
  const records=[...members,race];
  w.RapliTeamUI.init({get:()=>records,personal:()=>[],canEdit:()=>false,
   notify:text=>messages.push(text),save:async data=>mutations.push(data),remove:async data=>mutations.push(data)});
- const button=doc.querySelector('#team-races-panel [data-team-action="recalculate-notes"]');
- assert.ok(button,'visible recalculate button in course workspace');
+ const button=doc.querySelector('#lpdb-global-controls [data-team-action="recalculate-notes"]');
+ assert.ok(button,'recalculate button restored in header toolbar');
  const oldPoints=E.scoredRace(race,new Map(members.map(x=>[x.id,x]))).map(s=>s.main);
  const oldAverage=doc.querySelector('.team-race-average strong')?.textContent;
  assert.ok(oldAverage&&oldAverage.includes('/100'));
@@ -864,7 +864,7 @@ test('LPDB Recalculer les notes button refreshes ratings without modifying store
  const newRace=E.race({...race,results:race.results.map((row,i)=>({...row,generalRank:i===0?100:400}))});
  records.splice(2,1,newRace);
  const previous=doc.querySelector('.team-race-average strong')?.textContent;
- doc.querySelector('#team-races-panel [data-team-action="recalculate-notes"]').click();
+ doc.querySelector('#lpdb-global-controls [data-team-action="recalculate-notes"]').click();
  const after=doc.querySelector('.team-race-average strong')?.textContent;
  assert.ok(after&&after.includes('/100'));
  assert.notEqual(after,previous,'recalculation reflects latest race data, not a cached score');
@@ -885,11 +885,11 @@ test('LPDB Recalculer les notes reports missing notes and has an empty-state mes
  ]),name:'Course incomplète en VR',boatClass:'IMOCA',fleetTotal:1000,start:'2027-04-01'});
  const data=[...members,race];
  w.RapliTeamUI.init({get:()=>data,personal:()=>[],canEdit:()=>false,notify:text=>messages.push(text),save:async()=>{},remove:async()=>{}});
- doc.querySelector('#team-races-panel [data-team-action="recalculate-notes"]').click();
+ doc.querySelector('#lpdb-global-controls [data-team-action="recalculate-notes"]').click();
  assert.match(messages.at(-1),/Notes recalculées : 1 skipper noté sur 1 course/);
  assert.match(messages.at(-1),/1 note indisponible/);
  data.splice(2);
- doc.querySelector('#team-races-panel [data-team-action="recalculate-notes"]').click();
+ doc.querySelector('#lpdb-global-controls [data-team-action="recalculate-notes"]').click();
  assert.equal(messages.at(-1),'Aucune course terminée à noter pour le moment.');
  dom.window.close();
 });

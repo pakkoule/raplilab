@@ -95,7 +95,7 @@ function race(input){
   const record={skipperId,status,position:status==='finished'&&Number.isInteger(pos)&&pos>=1&&pos<=50?pos:null};
   if(status==='finished'&&Number.isSafeInteger(elapsed)&&elapsed>=0)record.elapsedSeconds=elapsed;
   if(status==='finished'&&Number.isSafeInteger(gap)&&gap>=0)record.gapSeconds=gap;
-  if(status==='finished'&&Number.isSafeInteger(generalRank)&&generalRank>=1&&generalRank<=100000000)record.generalRank=generalRank;
+  if(status!=='dnf'&&Number.isSafeInteger(generalRank)&&generalRank>=1&&generalRank<=100000000)record.generalRank=generalRank;
   results.push(record);
  }
  return {id,type:'team-race',name,dateEnd:dateOk(input.dateEnd)?input.dateEnd:'',

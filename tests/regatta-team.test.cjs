@@ -103,6 +103,40 @@ test('skipper can leave and rejoin while attendance ignores gap races',()=>{
  assert.equal(E.normalize([skipper])[0].memberships.length,2);
 });
 
+test('linked personal race supplies shared details without overwriting team results',()=>{
+ const team=r('Linked','2026-11-25','vsr2','finished',[rr('Alpha',1),rr('Beta',2)]);
+ const personal={id:'personal-56',kind:'race',name:'Route du Rhum',boatClass:'IMOCA',vsr:'hc',
+  start:'2026-11-10',startTime:'11:30',end:'2026-11-29',endTime:'10:05',
+  routeType:'transatlantique',equipment:'pdd',timezone:'Europe/Paris'};
+ const linked=E.fromPersonal(personal,team);
+ assert.equal(linked.personalRaceId,'personal-56');
+ assert.equal(linked.status,'finished');
+ assert.deepEqual(linked.results,team.results);
+ assert.equal(linked.boatClass,'IMOCA');
+ const updated=E.resolveLinkedRace(linked,{...personal,name:'Route du Rhum 2027',end:'2026-12-03',vsr:'vsr1'});
+ assert.equal(updated.name,'Route du Rhum 2027');
+ assert.equal(updated.dateEnd,'2026-12-03');
+ assert.equal(updated.vsr,'vsr1');
+ assert.equal(updated.status,'finished');
+ assert.deepEqual(updated.results,team.results);
+ assert.equal(E.resolveLinkedRace(linked,null).name,'Route du Rhum');
+ assert.deepEqual(E.normalize([linked])[0],linked);
+});
+test('personal/team linking is available in both editors and respects read-only access',()=>{
+ const html=fs.readFileSync('regatta/index.html','utf8');
+ const app=fs.readFileSync('regatta/app.js','utf8');
+ const teamApp=fs.readFileSync('regatta/team-app.js','utf8');
+ const d=new JSDOM(html).window.document;
+ for(const id of ['team-race-personal','team-linked-help','team-race-class','team-race-start','team-race-equipment'])assert.ok(d.getElementById(id));
+ assert.match(html,/data-action="team-link"/);
+ assert.match(teamApp,/link-existing/);
+ assert.match(teamApp,/new-personal/);
+ assert.match(teamApp,/open-personal/);
+ assert.match(app,/linkTeamAfterPersonalSave/);
+ assert.match(app,/startPersonalFromTeam/);
+ assert.match(app,/renderTeam\(\)/);
+});
+
 test('editor, selectors, and PNG elements are present without removing personal archive',()=>{
  const doc=new JSDOM(fs.readFileSync('regatta/index.html','utf8')).window.document;
  for(const id of ['team-panel','team-races-panel','team-skippers-panel','team-stats-panel','team-race-form','team-member-form','team-profile-dialog','view-races','races-panel'])assert.ok(doc.getElementById(id),id);

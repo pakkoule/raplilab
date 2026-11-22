@@ -143,7 +143,7 @@ test('team courses may reuse existing historical records without exposing person
 test('editor, selectors, and PNG elements are present without removing personal archive',()=>{
  const doc=new JSDOM(fs.readFileSync('regatta/index.html','utf8')).window.document;
  for(const id of ['team-panel','team-races-panel','team-skippers-panel','team-stats-panel','team-race-form','team-member-form','team-profile-dialog','races-panel'])assert.ok(doc.getElementById(id),id);
- for(const script of ['team-engine.js','team-app.js'])assert.ok([...doc.querySelectorAll('script')].some(el=>el.getAttribute('src')===script),script);
+ for(const script of ['team-engine.js','team-app.js'])assert.ok([...doc.querySelectorAll('script')].some(el=>el.getAttribute('src')?.split('?')[0]===script),script);
  const code=fs.readFileSync('regatta/team-app.js','utf8');
  const png=fs.readFileSync('regatta/team-export.js','utf8');
  assert.ok(code.includes("exportStandings"));
@@ -1407,11 +1407,15 @@ test('LPDB course image displays live course status instead of branding, without
   assert.ok(badge,slug+' should display status on the illustration');
   assert.equal(badge.textContent.trim(),label);
   assert.ok(badge.classList.contains(cssClass));
+  assert.match(badge.getAttribute('style')||'',/position:absolute/,'status still overlays the picture when Safari caches CSS');
   assert.equal(card.querySelectorAll('.team-race-status').length,1,'no duplicate status label below the image');
   assert.ok(!card.querySelector('.team-race-photo-mark'),'branding label no longer overlays race artwork');
  }
  assert.equal(d.querySelector('[data-team-race="lpdb-race-live-image"] .live-neon')?.getAttribute('aria-label'),'En direct');
  const css=fs.readFileSync('regatta/team.css','utf8');
  assert.match(css,/\.lpdb-shell \.team-race-photo \.team-race-photo-status\{/);
+ const html=fs.readFileSync('regatta/index.html','utf8');
+ assert.match(html,/team\.css\?v=20261122-status-photo-fix/,'team badge CSS is cache-busted');
+ assert.match(html,/team-app\.js\?v=20261122-status-photo-fix/,'team badge markup script is cache-busted');
  dom.window.close();
 });

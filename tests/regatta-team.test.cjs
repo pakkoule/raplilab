@@ -680,3 +680,74 @@ test('race export passes all 26 skippers, individual notes, original artwork and
  assert.match(call.filename,/lpdb-course-.*route-du-rhum-main/);
  dom.window.close();
 });
+
+
+test('LPDB upcoming and live cards reuse the personal timer, GFS and foil boat components',()=>{
+ const dom=new JSDOM(fs.readFileSync('regatta/index.html','utf8'),{runScripts:'outside-only',url:'https://example.org/regatta/'});
+ const w=dom.window,doc=w.document,calls=[];
+ w.RapliTeamEngine=E;w.RapliTeamTime=require('../regatta/team-time.js');
+ w.eval(fs.readFileSync('regatta/score.js','utf8'));
+ w.eval(fs.readFileSync('regatta/team-rating.js','utf8'));
+ w.RapliRegattaSharedCards={
+  raceClockMarkup:r=>{calls.push('clock:'+r.status);return '<div class="race-live-clock"><strong data-race-clock="'+(r.status==='live'?'elapsed':'countdown')+'" data-start="1800000000000">01:02:03</strong></div>';},
+  gfsBriefingMarkup:r=>{calls.push('briefing:'+r.name);return '<aside class="race-gfs-briefing" data-gfs-briefing><strong>BRIEFING MÉTÉO</strong></aside>';},
+  gfsCardMarkup:()=>{calls.push('gfs-widget');return '<aside class="race-gfs-widget" data-gfs-widget><strong>MÉTÉO GFS</strong></aside>';},
+  liveIconMarkup:()=>'<span class="live-neon" aria-label="En direct"><svg viewBox="0 0 28 28"></svg></span>',
+  classTagMarkup:boat=>'<span class="class-tag" style="--class-tag:#d5dade"><svg viewBox="0 0 24 24"></svg>'+boat+'</span>',
+  vsrTagMarkup:vsr=>'<span class="vsr-badge" style="--vsr-tag:#dadfe1">'+vsr+'</span>'
+ };
+ const upcoming=E.race({...r('future-card','2027-08-31','vsr2','planned',[]),
+  name:'Départ demain',boatClass:'IMOCA',start:'2027-08-01',startTime:'09:30',timezone:'Europe/Paris'});
+ const live=E.race({...r('live-card','2027-08-31','hc','live',[]),
+  name:'Océan en cours',boatClass:'ULTIM',start:'2027-07-28',startTime:'16:00',timezone:'Europe/Paris'});
+ const finished=E.race({...r('done-card','2027-08-31','vsr1','finished',[rr('Alpha',1),rr('Beta',2)]),
+  boatClass:'Class40',start:'2027-07-01',startTime:'09:00'});
+ w.eval(fs.readFileSync('regatta/team-app.js','utf8'));
+ w.RapliTeamUI.init({get:()=>[m('Alpha'),m('Beta'),upcoming,live,finished],personal:()=>[],
+  canEdit:()=>false,notify:()=>{},save:async()=>{},remove:async()=>{}});
+ const card=id=>doc.querySelector('[data-team-race="'+id+'"]');
+ const plannedCard=card(upcoming.id),liveCard=card(live.id),finishedCard=card(finished.id);
+ assert.ok(plannedCard&&liveCard&&finishedCard);
+ assert.ok(plannedCard.querySelector('[data-race-clock="countdown"]'));
+ assert.ok(plannedCard.querySelector('[data-gfs-briefing]'));
+ assert.equal(plannedCard.querySelector('[data-gfs-widget]'),null);
+ assert.ok(plannedCard.querySelector('.class-tag[style*="--class-tag"]'));
+ assert.ok(plannedCard.querySelector('.vsr-badge[style*="--vsr-tag"]'));
+ assert.equal(plannedCard.querySelector('.team-race-points'),null,'no empty points before the race');
+ assert.equal(plannedCard.querySelector('.team-race-average'),null);
+ assert.equal(plannedCard.querySelector('.team-race-figures'),null);
+ assert.ok(plannedCard.querySelector('.team-race-registered'));
+ assert.ok(liveCard.querySelector('[data-race-clock="elapsed"]'));
+ assert.ok(liveCard.querySelector('.live-neon svg'));
+ assert.ok(liveCard.querySelector('[data-gfs-widget]'));
+ assert.equal(liveCard.querySelector('[data-gfs-briefing]'),null);
+ assert.equal(liveCard.querySelector('.team-race-points'),null,'no zero-point cards on live course');
+ assert.ok(finishedCard.querySelector('.team-race-points'));
+ assert.ok(finishedCard.querySelector('.team-race-average'));
+ assert.equal(finishedCard.querySelector('[data-race-clock]'),null);
+ assert.equal(finishedCard.querySelector('[data-gfs-widget]'),null);
+ assert.equal(finishedCard.querySelector('[data-gfs-briefing]'),null);
+ assert.deepEqual(calls.filter(c=>c.startsWith('clock:')).sort(),['clock:live','clock:planned']);
+ assert.deepEqual(calls.filter(c=>c.startsWith('briefing:')),['briefing:Départ demain']);
+ assert.equal(calls.filter(c=>c==='gfs-widget').length,1);
+ dom.window.close();
+});
+test('personal GFS clock ticker and configured foil boat settings also serve LPDB cards',()=>{
+ const source=fs.readFileSync('regatta/app.js','utf8');
+ const style=fs.readFileSync('regatta/team.css','utf8');
+ assert.match(source,/window\.RapliRegattaSharedCards=\{/);
+ assert.match(source,/gfsBriefingMarkup:r=>gfsBriefingMarkup/);
+ assert.match(source,/gfsCardMarkup:\(\)=>gfsCardMarkup\(\)/);
+ assert.match(source,/raceClockMarkup:r=>raceClockMarkup/);
+ assert.match(source,/classTagMarkup:boatClass=>/);
+ assert.match(source,/tagAppearance\('class',boatClass/);
+ assert.match(source,/vsrTagMarkup:vsr=>/);
+ assert.match(source,/liveIconMarkup:\(\)=>/);
+ assert.match(source,/document\.querySelectorAll\('#cards \[data-gfs-widget\], #team-races-panel \[data-gfs-widget\]'\)/);
+ assert.match(source,/document\.querySelectorAll\('#cards \[data-gfs-briefing\], #team-races-panel \[data-gfs-briefing\]'\)/);
+ assert.match(source,/document\.querySelectorAll\('\[data-race-clock\]'\)/);
+ assert.match(source,/setInterval\(updateRaceClocks,1000\)/);
+ assert.match(style,/\.lpdb-shell \.team-race-tags \.class-tag/);
+ assert.match(style,/\.lpdb-shell \.team-race-weather \.race-gfs-briefing/);
+ assert.match(style,/\.lpdb-shell \.team-race-timer \.race-live-clock/);
+});

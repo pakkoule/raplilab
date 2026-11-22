@@ -360,6 +360,18 @@ test('left column displays departure then arrival then finished duration or acti
  assert.ok(!js.includes('class="journey-arrow"'));
 });
 
+
+test('responsive duration never wraps the seconds on narrow race cards',()=>{
+ const clockSelector='.cards .card.card--columns .race-card-clock .race-card-time-value';
+ const clockRule=css.split(clockSelector+'{')[1]?.split('}')[0];
+ assert.ok(clockRule,'race clock rule exists');
+ assert.match(css,/\.cards \.card\.card--columns \.race-card-clock\{\s*container-type:inline-size;/);
+ assert.match(clockRule,/font-size:clamp\(8px,6\.8cqi,18px\)/);
+ assert.match(clockRule,/white-space:nowrap;overflow-wrap:normal/);
+ assert.equal(css.includes(clockSelector+'{font-size:14px}'),false,
+  'fixed-size mobile rule must not override the fluid clock size');
+});
+
 test('premium gradients preserve meaning of original ranking and chip colors',()=>{
  const tokens=[
   '.card .rank-grid .rank-plate.rank-main',

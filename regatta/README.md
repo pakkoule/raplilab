@@ -296,3 +296,16 @@ Après validation du test 9 sur iPhone (170° et 190° exclus par les polaires p
 - **Ce n'est pas une optimisation globale ni un routage record** : pas de terres, courants, zones de course, ni polaires Full Pack. La progression vers l'équateur et les fenêtres de départ exigent un moteur beaucoup plus complet.
 
 Tests d'intégration simulée : `tests/regatta-gfs-motion.test.cjs`, incluant un scénario où le cap reste fixe et un scénario de vent tournant qui déclenche un changement. Test réel Safari iPhone à confirmer.
+
+
+## GFS 0,25° · recherche sur des suites de caps (PR #4 · prototype 11)
+
+Le test 10 a été validé sur Safari iPhone : 6 décisions en 3 h, changement 185° → 180° après 30 min, puis maintien du cap. Progression sud 123,1 M et distance parcourue 123,2 M ; écart au meilleur cap fixe affiché à 0,0 M (arrondi).
+
+Le test 11 explore désormais **toutes les séquences calculables** de **six décisions prises toutes les 30 minutes parmi les cinq caps 170°/175°/180°/185°/190°**, soit 5^6 = **15 625 séquences potentielles**, sans élargir la fenêtre météo (+6 à +9 h) ni multiplier les téléchargements NOAA. Chaque branche conserve sa propre position, recalcule son vent U/V par interpolation 2D et temporelle à sa position, récupère sa vitesse bateau depuis la même polaire provisoire et avance au cap choisi. Les branches hors grille, hors TWA 90–120°, hors TWS 4–40 nds ou incohérentes sont éliminées. **Pas d'extrapolation**.
+
+Le score final est uniquement la latitude la plus au sud atteinte en 3 h. Le moteur départage les égalités en préférant moins de changements de cap, puis des directions proches du sud. Il affiche les six caps retenus, la progression et la distance totales, le nombre de séquences complètes valides et la différence par rapport au pilote adaptatif local et au meilleur cap fixe.
+
+Ce test est une **optimisation exhaustive dans un espace extrêmement restreint**, mais **PAS** un routage océanique : pas de terre, courants, restrictions de course, pénalités de manœuvre, changement d'options de voile, ni polaires Full Pack. Les valeurs ne permettent toujours pas de produire un temps de passage fiable à l'équateur ou au cap de Bonne-Espérance.
+
+Code : `regatta/gfs-route-search.js` ; tests : `tests/regatta-gfs-route-search.test.cjs`. Une vérification en situation réelle sur Safari reste nécessaire. Production et données des courses inchangées.

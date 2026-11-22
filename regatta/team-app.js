@@ -76,7 +76,7 @@ function renderMain(){
  const el=$('team-panel');if(!el)return;
  el.innerHTML='<div class="team-heading"><div><span>LPDB · RAPLI REGATTA</span><h2>CHAMPIONNAT DE L’ÉQUIPE</h2><p>Classement officiel et barème historique, automatiquement recalculés.</p></div><img src="assets/lpdb.webp" alt="LPDB" class="team-emblem"></div>'+
  selectionControls('team')+statCards([['Épreuves validées',num(model.races.length)],['Skippers classés',num(model.skippersCount)],['Points distribués',num(model.pointsTotal)]])+
- '<div class="team-subhead"><div><h3>CLASSEMENT · '+esc(p.toLocaleUpperCase('fr'))+'</h3><p>'+esc(viewMode==='main'?'Barème principal VSR et primes':'Barème historique bonus')+' · '+esc(String(list.length))+' skippers affichés</p></div><div class="team-toolbar">'+action('png-table','↓ PNG TABLEAU')+action('png-podium','↓ PODIUM')+action('png-top10','↓ TOP 10')+'</div></div>'+
+ '<div class="team-subhead"><div><h3>CLASSEMENT · '+esc(p.toLocaleUpperCase('fr'))+'</h3><p>'+esc(viewMode==='main'?'Barème principal VSR et primes':'Barème historique bonus')+' · '+esc(String(list.length))+' skippers affichés</p></div><div class="team-toolbar">'+action('recalculate','↻ RECALCULER')+action('png-table','↓ PNG TABLEAU')+action('png-podium','↓ PODIUM')+action('png-top10','↓ TOP 10')+'</div></div>'+
  '<div class="team-filters"><input id="team-search" type="search" aria-label="Rechercher un skipper" placeholder="Rechercher un skipper…" value="'+esc(search)+'">'+
  '<select id="team-filter" aria-label="Filtrer les skippers">'+opts([{value:'all',label:'Tous les skippers'},{value:'active',label:'Membres actifs'},{value:'former',label:'Anciens membres'}],filter)+'</select></div>'+
  rankTable(list)+'<p class="team-footnote">Le filtre ne modifie pas les rangs officiels. Les DNF comptent comme participations, avec 0 point. Les anciennes périodes restent recalculables.</p>';
@@ -267,7 +267,8 @@ async function exportStandings(rows,title,{style='table',limit=0,prefix='lpdb-cl
  const pages=Math.ceil(source.length/batch);
  for(let p=0;p<pages;p++){
   const segment=source.slice(p*batch,(p+1)*batch);
-  const w=1080,unit=style==='table'?63:91,h=Math.max(style==='table'?930:1000,520+unit*segment.length);
+  const w=1080,isPodium=style==='social'&&limit===3,topList=style==='social'&&!isPodium;
+  const unit=style==='table'?63:67,h=isPodium?1150:topList?Math.max(1390,680+unit*segment.length):Math.max(930,520+unit*segment.length);
   const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
   const ctx=canvas.getContext('2d');
   const gradient=ctx.createLinearGradient(0,0,w,h);gradient.addColorStop(0,'#05151f');gradient.addColorStop(.6,'#113746');gradient.addColorStop(1,'#071722');
@@ -278,25 +279,57 @@ async function exportStandings(rows,title,{style='table',limit=0,prefix='lpdb-cl
   ctx.fillStyle='#f8fcff';ctx.textAlign='center';ctx.font='900 53px Poppins, sans-serif';ctx.fillText('RAPLI REGATTA',w/2,286);
   ctx.fillStyle='#66e9e9';ctx.font='800 26px Poppins, sans-serif';ctx.fillText(title.toLocaleUpperCase('fr').slice(0,56),w/2,331);
   if(pages>1){ctx.font='600 19px Poppins,sans-serif';ctx.fillText('PAGE '+(p+1)+' / '+pages,w/2,365);}
-  ctx.fillStyle='#bdedf1';ctx.textAlign='left';ctx.font='700 22px Poppins,sans-serif';
-  ctx.fillText('RANG',70,427);ctx.fillText('SKIPPER',200,427);
-  ctx.textAlign='right';ctx.fillText('COURSES',w-520,427);ctx.fillText('VICT.',w-315,427);ctx.fillText('POINTS',w-85,427);
-  segment.forEach((s,i)=>{
-   const y=445+i*unit;
-   if(style==='social'&&i===0){
-    drawRounded(ctx,58,y,w-116,unit-5,10,'#244d50');
-    ctx.strokeStyle='#e7bd46';ctx.lineWidth=3;ctx.strokeRect(60,y+1,w-120,unit-8);
-   }else drawRounded(ctx,58,y,w-116,unit-5,10,i%2?'#0a2432':'#183846');
-   const rank=Number.isInteger(s.rank)?s.rank:p*batch+i+1;
-   const labels=[String(rank),s.name,String(s.participations??0),String(s.wins??0),num(s.points??0)];
-   ctx.textBaseline='middle';
-   ctx.fillStyle=rank===1?'#f5ca63':rank===2?'#d6dce6':rank===3?'#d5a277':'#f5f8fa';
-   ctx.textAlign='left';ctx.font='800 29px Poppins,sans-serif';ctx.fillText(labels[0],88,y+unit/2);
-   ctx.fillStyle='#f8ffff';ctx.font='750 24px Poppins,sans-serif';ctx.fillText(labels[1].slice(0,20),200,y+unit/2);
-   ctx.textAlign='right';ctx.font='650 23px Poppins,sans-serif';
-   ctx.fillText(labels[2],w-520,y+unit/2);ctx.fillText(labels[3],w-315,y+unit/2);
-   ctx.font='850 29px Poppins,sans-serif';ctx.fillStyle='#69f3ed';ctx.fillText(labels[4],w-85,y+unit/2);
-  });
+  if(isPodium){
+   ctx.fillStyle='#f9e2a0';ctx.textAlign='center';ctx.font='900 33px Poppins,sans-serif';
+   ctx.fillText('LE PODIUM LPDB',w/2,420);
+   const order=[segment[1],segment[0],segment[2]];
+   const colors=['#cbd8e7','#f7d36a','#cf976c'],heights=[385,485,340],tops=[590,490,635];
+   order.forEach((s,i)=>{
+    if(!s)return;
+    const x=65+i*340,y=tops[i],h=heights[i],wid=305;
+    const grad=ctx.createLinearGradient(x,y,x+wid,y+h);
+    grad.addColorStop(0,'#19435a');grad.addColorStop(1,'#071f2b');
+    drawRounded(ctx,x,y,wid,h,15,grad);
+    ctx.lineWidth=4;ctx.strokeStyle=colors[i];ctx.strokeRect(x+3,y+3,wid-6,h-6);
+    ctx.textAlign='center';ctx.fillStyle=colors[i];ctx.font='900 80px Poppins,sans-serif';
+    ctx.fillText(String(s.rank??i+1),x+wid/2,y+100);
+    ctx.fillStyle='#faffff';ctx.font='850 30px Poppins,sans-serif';
+    ctx.fillText(s.name.slice(0,15).toUpperCase(),x+wid/2,y+166);
+    ctx.fillStyle='#72fffa';ctx.font='900 38px Poppins,sans-serif';
+    ctx.fillText(num(s.points)+' PTS',x+wid/2,y+231);
+    ctx.fillStyle='#afdae3';ctx.font='600 18px Poppins,sans-serif';
+    ctx.fillText(num(s.participations)+' courses · '+num(s.wins)+' victoire(s)',x+wid/2,y+283);
+   });
+  }else{
+   const topY=topList?640:445,headY=topList?619:427;
+   if(topList&&segment[0]){
+    drawRounded(ctx,65,389,w-130,180,18,'#164d59');
+    ctx.strokeStyle='#e7bb45';ctx.lineWidth=4;ctx.strokeRect(68,392,w-136,174);
+    ctx.textAlign='left';ctx.fillStyle='#ffdd84';ctx.font='850 22px Poppins,sans-serif';
+    ctx.fillText('CHAMPION DU CLASSEMENT',105,433);
+    ctx.fillStyle='#fff';ctx.font='900 41px Poppins,sans-serif';
+    ctx.fillText(segment[0].name.slice(0,22).toUpperCase(),105,490);
+    ctx.fillStyle='#ffde7c';ctx.textAlign='right';ctx.font='900 51px Poppins,sans-serif';
+    ctx.fillText(num(segment[0].points)+' PTS',w-105,490);
+   }
+   ctx.fillStyle='#bdedf1';ctx.textAlign='left';ctx.font='700 22px Poppins,sans-serif';
+   ctx.fillText('RANG',70,headY);ctx.fillText('SKIPPER',200,headY);
+   ctx.textAlign='right';ctx.fillText('COURSES',w-520,headY);ctx.fillText('VICT.',w-315,headY);ctx.fillText('POINTS',w-85,headY);
+   segment.forEach((s,i)=>{
+    const y=topY+i*unit;
+    drawRounded(ctx,58,y,w-116,unit-5,10,topList&&i===0?'#244d50':i%2?'#0a2432':'#183846');
+    if(topList&&i===0){ctx.strokeStyle='#e7bd46';ctx.lineWidth=3;ctx.strokeRect(60,y+1,w-120,unit-8);}
+    const rank=Number.isInteger(s.rank)?s.rank:p*batch+i+1;
+    const labels=[s.dnf?'DNF':String(rank),s.name,String(s.participations??0),String(s.wins??0),num(s.points??0)];
+    ctx.textBaseline='middle';
+    ctx.fillStyle=rank===1&&!s.dnf?'#f5ca63':rank===2&&!s.dnf?'#d6dce6':rank===3&&!s.dnf?'#d5a277':'#f5f8fa';
+    ctx.textAlign='left';ctx.font='800 29px Poppins,sans-serif';ctx.fillText(labels[0],88,y+unit/2);
+    ctx.fillStyle='#f8ffff';ctx.font='750 24px Poppins,sans-serif';ctx.fillText(labels[1].slice(0,20),200,y+unit/2);
+    ctx.textAlign='right';ctx.font='650 23px Poppins,sans-serif';
+    ctx.fillText(labels[2],w-520,y+unit/2);ctx.fillText(labels[3],w-315,y+unit/2);
+    ctx.font='850 29px Poppins,sans-serif';ctx.fillStyle='#69f3ed';ctx.fillText(labels[4],w-85,y+unit/2);
+   });
+  }
   ctx.font='600 20px Poppins,sans-serif';ctx.textAlign='center';ctx.fillStyle='#8db8c2';
   ctx.fillText('LPDB · CHAMPIONNAT DE L’ÉQUIPE',w/2,h-70);
   const file=prefix+'-'+String(p+1).padStart(2,'0')+'.png';
@@ -314,7 +347,7 @@ async function exportStandings(rows,title,{style='table',limit=0,prefix='lpdb-cl
 function doExport(kind,arg){
  const p=period(),data=all();
  const model=engine.standings(data,p,viewMode);
- const title=(viewMode==='main'?'Principal':'Historique')+' · '+labelPeriod();
+ let title=(viewMode==='main'?'Principal':'Historique')+' · '+labelPeriod();
  let list=sortedItems(model.skippers),style='table',limit=0,filename='lpdb-'+viewMode+'-'+periodType;
  if(kind==='png-podium'){style='social';limit=3;}
  if(kind==='png-top10'){style='social';limit=10;}
@@ -323,13 +356,14 @@ function doExport(kind,arg){
   list=list.map((s,i)=>({...s,rank:i+1,points:statMode==='avg'?s.avg:statMode==='finish'?s.finishRate:statMode==='wins'?s.wins:s.points}));
   if(kind==='png-stats-social'){style='social';limit=10;}
   filename+='-stat-'+statMode;
+  title=({avg:'Points par course',finish:'Taux de finition',wins:'Victoires',points:'Points cumulés'})[statMode]+' · '+labelPeriod();
  }
  if(kind==='race'){
   const race=races().find(x=>x.id===arg);
   if(!race)return;
   const scores=engine.scoredRace(race,new Map(members().map(m=>[m.id,m])));
   list=scores.sort((a,b)=>(a.rank??999)-(b.rank??999)).map((s,i)=>({
-   name:members().find(m=>m.id===s.skipperId)?.name||'Inconnu',rank:s.rank??i+1,
+   name:members().find(m=>m.id===s.skipperId)?.name||'Inconnu',rank:s.rank??null,dnf:s.dnf,
    points:viewMode==='historic'?s.historic:s.main,participations:1,wins:Number(s.rank===1)
   }));
   if(!list.length){notify('Valide tous les résultats avant d’exporter la course.',true);return;}
@@ -356,6 +390,7 @@ async function click(ev){
  const cmd=button.dataset.teamAction;
  if(cmd==='new-race')return openRace();
  if(cmd==='new-member')return openMember();
+ if(cmd==='recalculate'){render();notify('Tous les classements ont été recalculés ✓');return;}
  if(cmd==='select-all'&&draft){
   for(const m of members().filter(active))if(draft.results.length<50&&!draft.results.some(x=>x.skipperId===m.id))
    draft.results.push({skipperId:m.id,status:'pending',position:null});

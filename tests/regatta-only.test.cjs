@@ -23,9 +23,12 @@ test('Regatta uses its own logo and class colour editor without Sports navigatio
   assert.equal(d.title,'Rapli Regatta');
   assert.equal(d.querySelector('.regatta-brand-logo').getAttribute('src'),'assets/logo.webp');
   assert.equal(d.querySelectorAll('.regatta-collection-tabs, .regatta-sports-back, #rapliProfileRegatta').length,0);
-  assert.ok(d.querySelector('#view-races'));
-  assert.ok(d.querySelector('#view-stats'));
-  assert.ok(d.querySelector('#view-honors'));
+  assert.equal(d.querySelector('.workspace-tabs'),null,'team-only workspace has no personal tabs');
+  assert.equal(d.querySelector('#view-races'),null);
+  assert.equal(d.querySelector('#view-stats'),null);
+  assert.equal(d.querySelector('#view-honors'),null);
+  assert.ok(d.querySelector('#lpdb-panel:not([hidden])'));
+  assert.equal(d.querySelectorAll('.lpdb-tabs .lpdb-tab').length,4);
   assert.ok(d.querySelector('#colors-panel'));
   assert.ok(d.querySelector('#rapliProfileLogin'));
   assert.ok(d.querySelector('#rapli-shared-status-regatta'));

@@ -86,6 +86,51 @@
   };
   const verifiedFrames=new Map();
   const interpolationEngine=window.RapliGfsInterpolation;
+  const headingStatus=root.querySelector('[data-gfs-heading-status]');
+  const headingSummary=root.querySelector('[data-gfs-heading-summary]');
+  const headingResults=root.querySelector('[data-gfs-heading-results]');
+  const renderHeadings=()=>{
+    headingResults.replaceChildren();
+    headingSummary.hidden=true;
+    headingResults.hidden=true;
+    if(!verifiedFrames.has(6)||!verifiedFrames.has(12)){
+      headingStatus.dataset.state='idle';
+      headingStatus.textContent='Lis +6 h et +12 h du même cycle pour comparer les cinq caps fixes.';
+      return;
+    }
+    const engine=window.RapliGfsMotion;
+    if(!engine?.compareFixedHeadings){
+      headingStatus.dataset.state='error';
+      headingStatus.textContent='Comparateur de caps indisponible.';
+      return;
+    }
+    try{
+      const comparison=engine.compareFixedHeadings(verifiedFrames.get(6),verifiedFrames.get(12));
+      headingSummary.querySelector('[data-gfs-heading-best]').textContent=
+        'Meilleur cap calculable : '+comparison.best.heading+'° · '+
+        comparison.best.southProgressNm.toFixed(1)+' milles vers le sud';
+      for(const candidate of comparison.evaluated){
+        const item=document.createElement('div');
+        item.className='gfs-heading-option';
+        if(candidate.valid&&candidate.heading===comparison.best.heading)item.dataset.best='true';
+        const cap=document.createElement('strong');
+        cap.textContent='Cap '+candidate.heading+'°';
+        const detail=document.createElement('span');
+        detail.textContent=candidate.valid
+          ? candidate.southProgressNm.toFixed(1)+' M sud · '+candidate.distanceNm.toFixed(1)+' M parcourus'
+          : 'Non calculable : '+candidate.reason;
+        item.append(cap,detail);
+        headingResults.appendChild(item);
+      }
+      headingSummary.hidden=false;
+      headingResults.hidden=false;
+      headingStatus.dataset.state='success';
+      headingStatus.textContent=comparison.validCount+' cap(s) sur 5 calculable(s) sur 3 h · polaires non Full Pack.';
+    }catch(error){
+      headingStatus.dataset.state='error';
+      headingStatus.textContent='Comparaison indisponible : '+String(error.message||error)+'. Aucun classement inventé.';
+    }
+  };
   const motionStatus=root.querySelector('[data-gfs-motion-status]');
   const motionSummary=root.querySelector('[data-gfs-motion-summary]');
   const motionSteps=root.querySelector('[data-gfs-motion-steps]');
@@ -334,6 +379,7 @@
       renderSpaceTime();
       renderDemoTrack();
       renderMotion();
+      renderHeadings();
       windStatus.dataset.state='success';
       windStatus.textContent='3 vents réels décodés sur le même cycle NOAA · '+
         (result.cached?'résultat en cache.':'lecture validée.');

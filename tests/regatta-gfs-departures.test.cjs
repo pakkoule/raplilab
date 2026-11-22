@@ -3,8 +3,9 @@ const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const motion=require('../regatta/gfs-motion.js');
 const {
-  DEPARTURES,LATER_DEPARTURES,GATE_LATITUDE,HORIZON_HOURS,
-  compatibleFrames,sailToGate,compareDepartureWindows,compareLaterDepartureWindows,compareAllDepartureWindows
+  DEPARTURES,LATER_DEPARTURES,EVENING_DEPARTURES,GATE_LATITUDE,HORIZON_HOURS,
+  compatibleFrames,sailToGate,compareDepartureWindows,compareLaterDepartureWindows,compareAllDepartureWindows,
+  compareEveningDepartureWindows,compareTwelveDepartureWindows
 }=require('../regatta/gfs-departures.js');
 const CYCLE='2026-11-22T00:00:00.000Z';
 function packed(values){
@@ -127,5 +128,46 @@ test('bilan global sur huit départs, même cycle et ETA de porte témoin',()=>{
 test('bilan de huit départs refusé quand la troisième prévision mélange deux cycles',()=>{
   assert.throws(()=>compareAllDepartureWindows(
     frame(6),frame(12),frame(18,{cycle:'2026-11-22T06:00:00.000Z'})
+  ),/incompatibles/);
+});
+
+test('troisième plage +18 à +21 h fondée exclusivement sur NOAA f018 et f024',()=>{
+  const result=compareEveningDepartureWindows(frame(18),frame(24));
+  assert.deepEqual(EVENING_DEPARTURES,[18,19,20,21]);
+  assert.equal(result.sourceStartHour,18);
+  assert.equal(result.sourceEndHour,24);
+  assert.equal(result.windows.length,4);
+  assert.equal(result.validCount,4);
+  for(const w of result.windows){
+    assert.equal(w.valid,true);
+    assert.ok(w.elapsedMinutes>0&&w.elapsedMinutes<=180);
+    assert.ok(w.startHour>=18&&w.startHour<=21);
+    assert.ok(w.crossingForecastHour<=w.startHour+3);
+    assert.ok(w.crossingForecastHour<=24);
+    assert.ok(Math.abs((Date.parse(w.crossingUTC)-Date.parse(w.departureUTC))/60000-w.elapsedMinutes)<.1);
+  }
+});
+test('bilan global de douze départs avec dates et cycles NOAA identiques',()=>{
+  const result=compareTwelveDepartureWindows(frame(6),frame(12),frame(18),frame(24));
+  assert.equal(result.windows.length,12);
+  assert.equal(result.validCount,12);
+  assert.deepEqual(result.windows.map(w=>w.startHour),
+    [6,7,8,9,12,13,14,15,18,19,20,21]);
+  assert.equal(result.fastestElapsedMinutes,Math.min(...result.windows.map(w=>w.elapsedMinutes)));
+  assert.equal(result.fullPack,false);
+  assert.equal(result.isEquatorForecast,false);
+});
+test('troisième plage refuse mauvais cycle, échéance et polaires non couvertes',()=>{
+  assert.throws(()=>compareEveningDepartureWindows(frame(12),frame(18)),/non compatibles/);
+  assert.throws(()=>compareEveningDepartureWindows(
+    frame(18),frame(24,{cycle:'2026-11-22T06:00:00.000Z'})),/incompatibles/);
+  assert.throws(()=>compareEveningDepartureWindows(
+    frame(18,{windSpeed:0}),frame(24,{windSpeed:0})),/Aucun départ/);
+  const {first,second}=compatibleFrames(frame(18),frame(24));
+  assert.throws(()=>sailToGate(first,second,22,47),/non autorisé/);
+  assert.throws(()=>sailToGate(first,second,21,40.1),/non franchie/);
+  assert.throws(()=>compareTwelveDepartureWindows(
+    frame(6),frame(12),frame(18),
+    frame(24,{cycle:'2026-11-22T06:00:00.000Z'})
   ),/incompatibles/);
 });

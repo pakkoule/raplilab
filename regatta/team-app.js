@@ -207,7 +207,9 @@ function analyzeRanking(){
  previewImport();
 }
 function applyRanking(){
- if(!draft||!rankingImport||$('team-ranking-apply').disabled)return;
+ if(!draft||!rankingImport)return;
+ previewImport();
+ if($('team-ranking-apply').disabled)return;
  const {rows}=rankingImport;
  const known=editorMembers(),newMembers=[],now=stamp();
  const next=rows.map(item=>{
@@ -277,7 +279,8 @@ function editorSummary(){
  const error=draft.status==='finished'?engine.verifyRace({...draft,dateEnd:$('team-race-date').value},known):'';
  $('team-race-validation').textContent=error|| (pending?pending+' résultat(s) en attente':'Classement prêt à enregistrer');
  $('team-race-validation').dataset.error=error?'true':'false';
- $('team-race-preview').textContent=num(scores)+' points principaux · '+n+' participants · palier '+(engine.tier(n)*5+10);
+ const winner=draft.results.find(x=>x.status==='finished'&&x.position===1);
+ $('team-race-preview').textContent=num(scores)+' points principaux · '+n+' participants · palier '+(engine.tier(n)*5+10)+(winner?.elapsedSeconds!=null?' · Temps du 1er : '+clock.formatTime(winner.elapsedSeconds):'');
 }
 function fillSharedFields(){
  if(!draft)return;
@@ -657,7 +660,7 @@ async function deleteRace(id){
 }
 async function click(ev){
  const profile=ev.target.closest('[data-team-profile]');if(profile){showProfile(profile.dataset.teamProfile);return;}
- const remove=ev.target.closest('[data-team-remove]');if(remove&&draft){draft.results=draft.results.filter(x=>x.skipperId!==remove.dataset.teamRemove);choices();editorRows();return;}
+ const remove=ev.target.closest('[data-team-remove]');if(remove&&draft){draft.results=draft.results.filter(x=>x.skipperId!==remove.dataset.teamRemove);draft.newMembers=(draft.newMembers||[]).filter(m=>draft.results.some(r=>r.skipperId===m.id));choices();editorRows();return;}
  const button=ev.target.closest('[data-team-action]');if(!button)return;
  const cmd=button.dataset.teamAction;
  if(cmd==='new-race')return openRace();
@@ -770,6 +773,7 @@ function input(ev){
     row.status='finished';
     const select=el.closest('.team-result-row')?.querySelector('[data-team-status]');
     if(select)select.value='finished';
+    el.closest('.team-result-row')?.querySelectorAll('[data-team-elapsed],[data-team-gap]').forEach(field=>{field.disabled=false;});
    }
    const n=draft.results.length,p=el.closest('.team-result-row')?.querySelector('.team-result-points');
    if(p)p.textContent=row.status==='finished'&&row.position?num(engine.primary(draft.vsr,n,row.position))+' / '+num(engine.historical(row.position)):'—';

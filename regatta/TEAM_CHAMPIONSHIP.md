@@ -45,8 +45,8 @@ Le championnat LPDB démarre avec la prochaine course enregistrée. **Aucun impo
 
 ## Exports PNG / LPDB
 - Le logo LPDB fourni est intégré dans `regatta/assets/lpdb.webp`.
-- PNG **tableau premium** pour championnat, courses, étapes et classement statistique, avec pagination à 25 lignes par image.
-- PNG **social premium** avec podium et Top 10, couleur bleu pétrole/cyan/rouge et identité LPDB.
+- PNG **tableau premium sur une seule image** pour championnat, courses, étapes et statistiques : hauteur dynamique, jusqu'à 50 skippers par course, sans pagination ni fichier « page 2 ».
+- PNG **social premium** (podium et Top 10) dans le thème gris perle/foil argenté, avec accents or/argent/bronze pour le podium.
 - Le barème et la période sélectionnés sont repris. Les filtres du championnat (actifs/anciens, recherche) s'appliquent aux exports.
 - Aucun export PNG ne constitue une archive définitive : tous les classements restent dynamiques après correction.
 
@@ -108,3 +108,11 @@ Le championnat LPDB démarre avec la prochaine course enregistrée. **Aucun impo
 - La **moyenne des notes disponibles** est présentée sur chaque tuile de course. Le compteur `skippers notés / arrivés` accompagne la moyenne ; si aucune note n'est calculable, on affiche « — » et non une note artificielle.
 - Les notes ne sont calculées que sur les épreuves terminées et dont les résultats sont validés. Un DNF n'a pas de note ; une donnée manquante (rang général ou effectif global) n'est pas imputée ; l'historique limité est marqué comme provisoire et les primes de podium personnelles demeurent sous leurs conditions habituelles.
 - Les calculs de points LPDB (barèmes principal et historique) sont **strictement inchangés**. La note est un indicateur indépendant, calculé dynamiquement à partir de l'historique accessible.
+
+## Exports PNG premium à image unique (22 novembre 2026)
+- **Une seule image PNG par export**, tableau de classement complet (y compris plus de 25 skippers), avec hauteur automatiquement calculée selon le nombre de skippers et la longueur de leurs pseudos. L'enregistrement produit un seul fichier, pas de pagination 1/2.
+- Les **pseudos restent complets** : ajustement typographique et retours à la ligne mesurés, y compris pour les noms longs sans espaces. Même principe pour les cartes podium.
+- La course peut reprendre l'**illustration de la fiche personnelle liée**, sinon le logo LPDB sert de visuel. Le bandeau comprend logo LPDB, nom de la course, **type de bateau, catégorie VSR**, date de clôture et indicateurs (classés, DNF, note moyenne).
+- Tableau de course : **rang LPDB, pseudo intégral, classement général VR, chrono, écart au vainqueur, note /100 de chaque skipper et points du barème choisi**. Une note absente reste « — » ; les DNF conservent 0 point.
+- Les exports **tableau, Top 10 et podium** partagent une identité argentée premium et des titres visuels, sans faux remplissage des données. Les classements mensuels, trimestriels, annuels et statistiques réutilisent également le nouveau rendu à image unique.
+- Code dans `regatta/team-export.js` ; tests dans `tests/regatta-team.test.cjs` pour le cas réel de 26 skippers, jusqu'à 50 skippers, pseudonymes longs, récupération du visuel, metadata du bateau et VSR, notes et absence de pagination.

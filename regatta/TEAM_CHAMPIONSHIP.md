@@ -70,3 +70,13 @@ Le championnat LPDB démarre avec la prochaine course enregistrée. **Aucun impo
 - Les espaces inutiles autour des pseudos sont supprimés ; doublons insensibles à la casse et aux espacements répétés. Les doublons ou lignes vides sont ignorés, sans effacer les pseudos existants.
 - Les noms supérieurs à 56 caractères, les caractères de contrôle et les lots qui dépassent les places disponibles bloquent l'importation entière jusqu'à correction.
 - **Un seul enregistrement atomique** de tous les nouveaux membres dans IndexedDB (ou une seule écriture de secours locale), puis une notification de synchronisation Supabase ; pas d'ajout partiel, ni d'import d'Excel historique.
+
+
+## Import rapide des classements et chronos (Virtual Regatta)
+- Dans **LPDB → Courses d'équipe → Modifier/Nouvelle course**, « Coller un classement + chronos » accepte une copie textuelle avec un nom de skipper suivi de son **temps de course absolu** pour le premier, puis des **écarts au premier** précédés de `+` pour les suivants.
+- Le parseur ignore les lignes vides, rangs isolés et puces/symboles courants ; détecte les durées en jours, heures, minutes et secondes. Il reconstitue le **temps total** de chaque participant comme `temps du premier + écart`.
+- L'aperçu donne le rang, le nom détecté, le temps total et l'écart. Il rapproche les noms de l'effectif en tolérant les suffixes `- LPDB` / `_LPDB`. Les noms inconnus ou tronqués doivent être explicitement associés ou créés avec un pseudo complet. Aucun nom n'est déduit d'un texte tronqué.
+- L'importation remplace les positions renseignées dans la fiche en cours après confirmation, mais **conserve les DNF** déjà saisis. Les nouveaux membres éventuels et la course sont sauvegardés ensemble en **une transaction atomique**, sans effet avant le clic d'enregistrement de la course.
+- Les chronos et écarts sont modifiables individuellement dans la grille, vérifiés avant validation, affichés dans le classement de course, dans la fiche du skipper et dans les PNG de course (tableau, Top 10, podium).
+- Le championnat par période affiche également le **chrono moyen** et l'**écart moyen au vainqueur** calculés à partir des courses où un temps est disponible. Les statistiques secondaires permettent de trier sur ces moyennes ; elles restent descriptives car les parcours et distances peuvent varier. Le temps de course ne modifie **pas** le barème de points.
+- Les anciennes courses sans temps enregistré continuent de fonctionner, avec un tiret pour les chronos inconnus. Une course non encore validée ne produit toujours aucun point au championnat.

@@ -162,7 +162,7 @@ function teamRaceCard(r,known,now=Date.now()){
  return '<article class="team-race-card'+(isLive?' team-race-live':'')+'" data-team-race="'+esc(r.id)+'" data-team-state="'+status+'">'+
  '<div class="team-race-layout">'+
  '<section class="team-race-left" aria-label="Visuel et départ de course">'+
- '<div class="team-race-photo">'+img+'<span class="team-race-status team-race-photo-status '+statusClass+'">'+liveIcon+state+'</span></div>'+
+ '<div class="team-race-photo">'+img+'<span class="team-race-status team-race-photo-status '+statusClass+'" style="position:absolute;left:9px;bottom:9px;z-index:3;margin:0;max-width:calc(100% - 18px);white-space:nowrap">'+liveIcon+state+'</span></div>'+
  '<div class="team-race-intro"><h3 title="'+esc(r.name)+'">'+esc(r.name)+'</h3>'+
  (r.stageGroup?'<span class="team-race-stage">'+esc(r.stageGroup)+'</span>':'')+
  '<div class="team-race-departure"><span>DÉPART DE LA COURSE</span><strong>'+startText+'</strong></div>'+

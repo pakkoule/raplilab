@@ -611,6 +611,22 @@ html:not([data-rapli-role="editor"]) #rapli-module-cloud-save{display:none!impor
         <div id="team-linked-help" class="team-footnote">Tu peux réutiliser le visuel et les données d’une ancienne course enregistrée, notamment le Trophée Jules Verne. Les classements et notes LPDB restent indépendants.</div>
         <div id="team-linked-image" class="team-linked-image" hidden></div>
       </div>
+      <section class="team-illustration-field" aria-label="Illustration de la course d’équipe">
+        <div class="team-illustration-heading">
+          <strong>ILLUSTRATION DE LA COURSE</strong>
+          <small>Personnalisable même si la course reprend une ancienne fiche · JPG, PNG, WebP ou HEIC (si pris en charge)</small>
+        </div>
+        <div class="team-illustration-preview">
+          <img id="team-illustration-preview" alt="Aperçu de l’illustration de la course" hidden>
+          <span id="team-illustration-placeholder">⛵ VISUEL DE LA COURSE · 16:9</span>
+        </div>
+        <div class="team-illustration-actions">
+          <label for="team-race-illustration-file" class="team-action team-secondary team-illustration-picker">＋ CHOISIR UNE IMAGE</label>
+          <input id="team-race-illustration-file" type="file" accept="image/*,.heic,.heif" hidden aria-label="Importer l’illustration de la course">
+          <button type="button" class="team-action team-secondary" data-team-action="remove-illustration">RETIRER L’IMAGE</button>
+        </div>
+        <p class="team-footnote" id="team-illustration-info" role="status">Illustration utilisée sur les tuiles et les exports PNG de la course.</p>
+      </section>
       <div class="team-form-grid">
         <label class="team-wide">NOM DE LA COURSE<input id="team-race-name" maxlength="160" required placeholder="Ex. Pornichet Select"></label>
         <label>DATE DE CLÔTURE DU CLASSEMENT<input id="team-race-date" type="date"></label>
@@ -713,6 +729,7 @@ html:not([data-rapli-role="editor"]) #rapli-module-cloud-save{display:none!impor
 <script defer src="search.js"></script>
 <script defer src="team-engine.js"></script>
 <script defer src="team-rating.js"></script>
+<script defer src="team-prediction.js"></script>
 <script defer src="team-time.js"></script>
 <script defer src="team-export.js"></script>
 <script defer src="team-app.js"></script>

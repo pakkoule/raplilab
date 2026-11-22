@@ -135,7 +135,7 @@ function normalize(entities){
    Each issue may point to the exact skipper(s) and input field in the editor. */
 function diagnoseRace(r,knownMembers){
  const rs=Array.isArray(r?.results)?r.results:[],count=rs.length;
- const known=knownMembers instanceof Map?knownMembers:new Map();
+ const known=knownMembers&&typeof knownMembers.has==='function'&&typeof knownMembers.get==='function'?knownMembers:new Map();
  const issues=[],ids=new Map(),ranks=new Map();
  const add=(code,message,skipperIds=[],field='')=>issues.push({
   code,message,skipperIds:[...new Set(skipperIds.filter(Boolean))],field
@@ -150,7 +150,7 @@ function diagnoseRace(r,knownMembers){
  for(let i=0;i<rs.length;i++){
   const row=rs[i]||{},id=row.skipperId||'',who=quoted(row,i),line='ligne '+(i+1);
   if(!known.has(id)){
-   add('unknown-skipper','Skipper introuvable ('+line+') : '+who+'. Aucune fiche de l’effectif LPDB ne correspond à cet identifiant. Vérifie l’onglet Skippers et la synchronisation, puis réassocie ou retire cette participation.',[id],'skipperId');
+   add('unknown-skipper','Skipper introuvable ('+line+') : '+who+'. Aucune fiche de l’effectif LPDB ne correspond à cet identifiant. Vérifie l’onglet Skippers et la synchronisation, puis retire cette ligne et ajoute le skipper correct depuis l’effectif.',[id],'skipperId');
   }
   if(ids.has(id)){
    add('duplicate-skipper','Skipper présent deux fois : '+who+' apparaît aux lignes '+(ids.get(id)+1)+' et '+(i+1)+'. Conserve une seule participation pour ce skipper.',[id],'skipperId');

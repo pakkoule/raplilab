@@ -199,3 +199,15 @@ test('test17 : données ITYC saisies sur chaque angle de 30° à 120°, sans Ful
   assert.throws(()=>m.polarSpeed(3.9,90),/hors des polaires/);
   assert.throws(()=>m.polarSpeed(40.1,90),/hors des polaires/);
 });
+
+test('test18 : météo f030/f036 interpolée sans extrapolation ni confusion de cycle',()=>{
+ const a=m.loadFrame(frame(30,{windU:10,windV:-4}));
+ const b=m.loadFrame(frame(36,{windU:6,windV:-2}));
+ const wind=m.windAt(a,b,33,48.125,-8.625);
+ assert.ok(Math.abs(wind.u-8)<1e-4);
+ assert.ok(Math.abs(wind.v+3)<1e-4);
+ assert.throws(()=>m.windAt(a,b,36.5,48.125,-8.625),/consécutives/);
+ assert.throws(()=>m.windAt(a,b,29.5,48.125,-8.625),/consécutives/);
+ const foreign=m.loadFrame(frame(36,{cycle:'2026-11-22T06:00:00.000Z'}));
+ assert.throws(()=>m.windAt(a,foreign,33,48.125,-8.625),/consécutives/);
+});

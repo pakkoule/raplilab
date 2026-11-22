@@ -824,7 +824,7 @@ test('Jules Verne record is selectable from LPDB creation on iPhone-sized DOM',(
  assert.equal(doc.getElementById('team-race-date').disabled,false,'LPDB closure must remain editable');
  assert.equal(doc.getElementById('team-race-name').disabled,true,'record owns its name');
  assert.equal(doc.getElementById('team-race-date').value,'');
- assert.match(doc.getElementById('team-linked-help').textContent,/Record personnel lié/);
+ assert.match(doc.getElementById('team-linked-help').textContent,/Ancien record réutilisé/);
  doc.getElementById('team-race-vsr').value='hc';
  doc.getElementById('team-race-date').value='2026-12-05';
  assert.equal(doc.getElementById('team-race-date').value,'2026-12-05');

@@ -1155,6 +1155,7 @@ test('the team editor accepts a standalone image upload and preserves it for the
  for(let i=0;i<15&&!d.querySelector('#team-races-panel .team-race-card');i++)await new Promise(done=>setTimeout(done,0));
  const tile=d.querySelector('#team-races-panel .team-race-card');
  assert.ok(tile,'the card is rerendered after the asynchronous save');
+ assert.ok(tile.querySelector('[data-team-action^="change-photo-"]'),'the tile menu offers direct artwork replacement');
  assert.equal(tile.querySelector('.team-race-photo img').getAttribute('src'),image);
  dom.window.close();
 });

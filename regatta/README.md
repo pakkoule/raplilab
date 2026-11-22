@@ -309,3 +309,16 @@ Le score final est uniquement la latitude la plus au sud atteinte en 3 h. Le mot
 Ce test est une **optimisation exhaustive dans un espace extrêmement restreint**, mais **PAS** un routage océanique : pas de terre, courants, restrictions de course, pénalités de manœuvre, changement d'options de voile, ni polaires Full Pack. Les valeurs ne permettent toujours pas de produire un temps de passage fiable à l'équateur ou au cap de Bonne-Espérance.
 
 Code : `regatta/gfs-route-search.js` ; tests : `tests/regatta-gfs-route-search.test.cjs`. Une vérification en situation réelle sur Safari reste nécessaire. Production et données des courses inchangées.
+
+
+## GFS 0,25° · comparaison de départs vers une latitude témoin (PR #4 · prototype 12)
+
+Le prototype 11 a été confirmé sur Safari iPhone, avec **11 250 séquences de six caps entièrement calculables**, une progression vers le sud de **123,1 M**, et aucun gain affiché (au dixième de mille) sur le pilote adaptatif du prototype 10 ni sur le meilleur cap fixe du prototype 9.
+
+Le test 12 franchit une première étape vers l'étude des heures de départ, sans essayer de calculer une traversée à l'équateur. On compare **quatre départs simulés à +6, +7, +8 et +9 h** depuis 48,125°N / 8,625°O, sur le même cycle GFS et avec le même moteur de pilotage VMG sud local. On suit chaque départ par pas de 30 minutes (3 h maximum) jusqu'à la **latitude témoin fictive de 47°N**.
+
+Le calcul différencie deux indicateurs : la **durée de navigation jusqu'à 47°N** (classement des fenêtres de départ) et la **première heure absolue de franchissement**, qui peut être obtenue par un départ plus tôt même si sa durée de navigation est plus longue. Le passage de 47°N est interpolé linéairement sur la latitude à l'intérieur du pas de 30 min où la porte est franchie ; la valeur n'est pas une mesure de position VR. Les départs dont le vent, l'allure ou la zone NOAA ne permettent pas le franchissement en trois heures sont classés **non calculables**. Aucun résultat de franchissement n'est inventé.
+
+Le test reste volontairement borné aux prévisions GFS +6/+12 h et à la zone Atlantique nord-est, avec les polaires provisoires ITYC non Full Pack. Il n'inclut ni terres, ni courants, ni contraintes de course et **ne prédit pas encore les ETA à l'équateur ou au cap de Bonne-Espérance**. La comparaison doit encore être confirmée sur Safari avec les vrais champs météo.
+
+Code : `regatta/gfs-departures.js`. Tests automatisés : `tests/regatta-gfs-departures.test.cjs`. Toujours dans la PR #4 uniquement.

@@ -428,3 +428,70 @@ test('rendered LPDB cards omit team finish dates even when personal finish exist
  assert.equal(card.querySelectorAll('.team-race-figures>div').length,3);
  dom.window.close();
 });
+
+
+test('overall VR rank is an optional independent integer and survives team race normalization',()=>{
+ const roster=[m('Alpha'),m('Beta')],known=new Map(roster.map(x=>[x.id,x]));
+ const base=r('overall','2027-02-15','vsr1','finished',[
+  {...rr('Alpha',1),generalRank:42},{...rr('Beta',2),generalRank:1203}
+ ]);
+ const withOverall=E.race(base);
+ assert.deepEqual(withOverall.results.map(x=>x.generalRank),[42,1203]);
+ assert.equal(E.verifyRace(withOverall,known),'');
+ const scored=E.scoredRace(withOverall,known);
+ assert.deepEqual(scored.map(x=>x.generalRank),[42,1203]);
+ const noOverall=E.race({...base,results:[rr('Alpha',1),rr('Beta',2)]});
+ assert.deepEqual(E.scoredRace(noOverall,known).map(x=>x.main),scored.map(x=>x.main));
+ assert.deepEqual(E.scoredRace(noOverall,known).map(x=>x.historic),scored.map(x=>x.historic));
+ assert.deepEqual(noOverall.results.map(x=>x.generalRank),[undefined,undefined]);
+ const board=E.standings([...roster,withOverall],{type:'year',value:'2027'});
+ assert.equal(board.skippers.find(x=>x.name==='Alpha').bestGeneralRank,42);
+ assert.equal(board.skippers.find(x=>x.name==='Beta').generalRankedRaces,1);
+ const invalid={...withOverall,results:withOverall.results.map((x,i)=>i?x:{...x,generalRank:-1})};
+ assert.match(E.verifyRace(invalid,known),/général VR invalide/);
+});
+test('LPDB foil is silver and overall VR ranking appears in editor, profile and exports',()=>{
+ const html=fs.readFileSync('regatta/index.html','utf8');
+ const ui=fs.readFileSync('regatta/team-app.js','utf8');
+ const styles=fs.readFileSync('regatta/team.css','utf8');
+ const doc=new JSDOM(html).window.document;
+ assert.match(doc.querySelector('.team-result-head').textContent,/CLASSEMENT GÉNÉRAL VR/);
+ assert.match(ui,/data-team-general-rank/);
+ assert.match(ui,/GÉNÉRAL VR/);
+ assert.match(ui,/GÉN\. VR/);
+ assert.match(ui,/generalRank:s\.generalRank/);
+ assert.match(styles,/--lpdb-foil:/);
+ assert.match(styles,/team-result-row input\[data-team-general-rank\]/);
+ assert.match(styles,/\.lpdb-shell \.team-panel\{color:#30353a/);
+});
+test('user can edit overall VR rankings in a pasted classification without changing LPDB points',async()=>{
+ const dom=new JSDOM(fs.readFileSync('regatta/index.html','utf8'),{runScripts:'outside-only',url:'https://example.org/regatta/'});
+ const {window:w}=dom,doc=w.document;
+ w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};
+ w.HTMLDialogElement.prototype.close=function(){this.open=false;};
+ w.RapliTeamEngine=E;
+ w.RapliTeamTime=require('../regatta/team-time.js');
+ w.eval(fs.readFileSync('regatta/team-app.js','utf8'));
+ const roster=[m('Rapli'),m('RX8')],saved=[];
+ w.RapliTeamUI.init({get:()=>roster,personal:()=>[],canEdit:()=>true,notify:()=>{},
+  saveRaceBundle:async(race,incoming)=>{saved.push({race,incoming});},save:async()=>{},remove:async()=>{}});
+ doc.querySelector('[data-team-action="new-race"]').click();
+ doc.getElementById('team-race-name').value='Course VR';
+ doc.getElementById('team-race-date').value='2027-03-20';
+ doc.getElementById('team-race-status').value='finished';
+ doc.getElementById('team-race-status').dispatchEvent(new w.Event('change',{bubbles:true}));
+ doc.querySelector('[data-team-action="toggle-ranking-import"]').click();
+ doc.getElementById('team-ranking-paste').value='Rapli LPDB\n09j 15h 32m 50s\nRX8\n+ 01h 00m 00s';
+ doc.querySelector('[data-team-action="analyze-ranking"]').click();
+ doc.querySelector('[data-team-action="apply-ranking"]').click();
+ const ranks=[...doc.querySelectorAll('#team-result-rows input[data-team-general-rank]')];
+ assert.equal(ranks.length,2);
+ ranks[0].value='22';ranks[0].dispatchEvent(new w.Event('input',{bubbles:true}));
+ ranks[1].value='1342';ranks[1].dispatchEvent(new w.Event('input',{bubbles:true}));
+ doc.getElementById('team-race-form').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));
+ for(let i=0;i<12&&!saved.length;i++)await new Promise(resolve=>setTimeout(resolve,0));
+ assert.equal(saved.length,1);
+ assert.deepEqual(saved[0].race.results.map(x=>x.generalRank),[22,1342]);
+ assert.deepEqual(saved[0].race.results.map(x=>x.position),[1,2]);
+ dom.window.close();
+});

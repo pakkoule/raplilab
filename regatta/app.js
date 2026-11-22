@@ -320,6 +320,35 @@ async function removeTeamEntity(id){
  teamRecords=teamRecords.filter(r=>r.id!==id);
  renderTeam();window.RapliSharedCollection?.changed?.();
 }
+/* Commit the entire pasted roster in one IndexedDB transaction, then signal one cloud sync.
+   On error nothing is appended to in-memory team data. */
+let bulkMemberWriteBusy=false;
+async function saveTeamMembersBatch(input){
+ if(!window.RapliSharedCollection?.canEdit?.())throw Error('Connecte-toi en administrateur pour ajouter des skippers.');
+ if(storageRecoveryBlocked)throw Error('Stockage inaccessible : importation bloquée.');
+ if(bulkMemberWriteBusy)throw Error('Une importation est déjà en cours.');
+ if(!Array.isArray(input)||!input.length)throw Error('Aucun skipper à ajouter.');
+ const incoming=input.map(teamEngine.member);
+ if(incoming.some(x=>!x||x.status!=='active'||!x.name))throw Error('Liste de skippers invalide.');
+ const check=teamEngine.prepareMemberBatch(incoming.map(x=>x.name).join('\n'),teamRecords.filter(x=>x.type==='team-member'));
+ if(check.invalid.length||check.duplicates.length||check.overflow||check.accepted.length!==incoming.length||
+    new Set(incoming.map(x=>x.id)).size!==incoming.length||
+    incoming.some(x=>teamRecords.some(row=>row.id===x.id)))
+  throw Error('La liste a changé ou contient des doublons. Vérifie les pseudos et réessaie.');
+ bulkMemberWriteBusy=true;
+ try{
+  if(db){
+   const tx=db.transaction('races','readwrite'),store=tx.objectStore('races');
+   incoming.forEach(row=>store.put(row));
+   await done(tx);
+  }else{
+   localStorage.setItem('rapli-regatta-v1',JSON.stringify([...rows,...teamRecords,...incoming]));
+  }
+  teamRecords=teamEngine.normalize([...teamRecords,...incoming]);
+  renderTeam();
+  window.RapliSharedCollection?.changed?.();
+ }finally{bulkMemberWriteBusy=false;}
+}
 
  let regattaPage=1,regattaResultsCount=0;
  const REGATTA_PAGE_SIZE=30;
@@ -2166,7 +2195,7 @@ const bridge=window.RapliModuleBridge={module:'regatta',ready:false,
  }};
 window.RapliRegatta={getCount:()=>rows.length,teamCount:()=>teamRecords.length};
 window.RapliTeamUI?.init?.({get:()=>teamRecords,personal:()=>rows,
- save:saveTeamEntity,remove:removeTeamEntity,
+ save:saveTeamEntity,saveBatch:saveTeamMembersBatch,remove:removeTeamEntity,
  openPersonal:openPersonalCourse,newPersonalFromTeam:startPersonalFromTeam,
  showTeam:()=>selectWorkspace('team-races'),
  canEdit:()=>window.RapliSharedCollection?.canEdit?.(),notify:toast});

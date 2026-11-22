@@ -15,7 +15,7 @@ const personal=()=>api?.personal?.()||[];
 const raw=()=>engine.normalize(api?.get?.()||[]);
 const all=()=>raw().map(x=>x.type==='team-race'?
  engine.resolveLinkedRace(x,personal().find(p=>p.id===x.personalRaceId)):x);
-const personalById=id=>personal().find(x=>x.id===id&&x.kind==='race');
+const personalById=id=>personal().find(x=>x.id===id&&(x.kind==='race'||x.kind==='record'));
 const detailInputs={boatClass:'team-race-class',routeType:'team-race-route',start:'team-race-start',
  startTime:'team-race-start-time',timezone:'team-race-timezone'};
 const members=()=>all().filter(x=>x.type==='team-member');
@@ -372,15 +372,15 @@ function renderPersonalLink(){
  if(!draft)return;
  const linked=personalById(draft.personalRaceId);
  const otherLinks=new Set(raw().filter(x=>x.type==='team-race'&&x.id!==draft.id).map(x=>x.personalRaceId).filter(Boolean));
- const choices=personal().filter(x=>x.kind==='race'&&(!otherLinks.has(x.id)||x.id===draft.personalRaceId));
+ const choices=personal().filter(x=>(x.kind==='race'||x.kind==='record')&&(!otherLinks.has(x.id)||x.id===draft.personalRaceId));
  const selector=$('team-race-personal');
  selector.innerHTML='<option value="">Aucune · course indépendante</option>'+
-  opts(choices.map(p=>({value:p.id,label:p.name+(p.end?' · '+p.end:'')})),draft.personalRaceId||'');
+  opts(choices.map(p=>({value:p.id,label:(p.kind==='record'?'🏁 RECORD · ':'')+p.name+(p.kind==='race'&&p.end?' · '+p.end:'')})),draft.personalRaceId||'');
  selector.value=choices.some(p=>p.id===draft.personalRaceId)?draft.personalRaceId:'';
- for(const id of ['team-race-name','team-race-date','team-race-vsr',...Object.values(detailInputs)])
+ for(const id of ['team-race-name','team-race-vsr',...Object.values(detailInputs)])
   $(id).disabled=!!linked;
  const help=$('team-linked-help'),photo=$('team-linked-image');
- help.textContent=linked?'↔ Détails communs synchronisés depuis « Mes courses ». Les positions, DNF et points de l’équipe restent indépendants.':
+ help.textContent=linked?(linked.kind==='record'?'↔ Record personnel lié : visuel, nom, bateau et dernier départ repris. Les tentatives, arrivées, chronos et classements LPDB restent indépendants.':'↔ Détails communs synchronisés depuis « Mes courses ». Les positions, DNF et points de l’équipe restent indépendants.'):
   draft.personalRaceId?'La fiche personnelle associée est introuvable. Dissocie-la pour rendre les champs modifiables.':
   'Choisis une course personnelle et clique sur « Utiliser ses détails ». Les résultats de l’équipe restent indépendants.';
  if(linked&&/^data:image\/(png|webp|jpeg|gif);base64,/i.test(linked.icon||'')){
@@ -447,9 +447,11 @@ async function submitRace(ev){
  if(linked)draft=engine.fromPersonal(linked,draft);
  else{
   draft.name=$('team-race-name').value.trim().slice(0,160);
-  draft.dateEnd=$('team-race-date').value;draft.vsr=$('team-race-vsr').value;
+  draft.vsr=$('team-race-vsr').value;
   for(const [field,id] of Object.entries(detailInputs))draft[field]=$(id).value;
  }
+ // LPDB validation/clôture has no relationship to a personal record's finish.
+ draft.dateEnd=$('team-race-date').value;
  const fleetRaw=$('team-race-fleet').value.trim();
  const fleet=fleetRaw?Number(fleetRaw):null;
  if(fleetRaw&&(!Number.isSafeInteger(fleet)||fleet<2||fleet>100000000)){

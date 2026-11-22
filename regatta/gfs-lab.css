@@ -201,3 +201,50 @@
  .regatta-gfs-lab .gfs-demo-track-step{grid-template-columns:1fr;gap:2px}
  .regatta-gfs-lab .gfs-demo-track-step b{grid-column:1;grid-row:auto}
 }
+
+
+/* Experiment 8: fixed-heading Ultim trial; provisional polars, never a routing estimate. */
+.regatta-gfs-lab .gfs-motion-panel{
+  margin-top:12px;padding:11px;border:1px solid #d3d9eb;border-radius:11px;
+  background:linear-gradient(125deg,#f7f9fd,#f0faf9)
+}
+.regatta-gfs-lab .gfs-motion-heading{
+  display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:7px
+}
+.regatta-gfs-lab .gfs-motion-heading strong{font-size:10px;font-weight:900;color:#294f65}
+.regatta-gfs-lab .gfs-motion-heading span{font-size:9px;font-weight:800;color:#547887}
+.regatta-gfs-lab .gfs-motion-panel>p{
+  font-size:10px;line-height:1.6;color:#587584;margin:8px 0
+}
+.regatta-gfs-lab .gfs-motion-panel>p[data-state="success"]{color:#176d65}
+.regatta-gfs-lab .gfs-motion-panel>p[data-state="error"]{color:#ae4854}
+.regatta-gfs-lab .gfs-motion-summary{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:8px 0
+}
+.regatta-gfs-lab .gfs-motion-summary[hidden],
+.regatta-gfs-lab [data-gfs-motion-steps][hidden]{display:none}
+.regatta-gfs-lab .gfs-motion-summary>span{
+  min-width:0;background:#fff;border:1px solid #dde8eb;border-radius:9px;padding:8px
+}
+.regatta-gfs-lab .gfs-motion-summary small{display:block;font-size:9px;color:#718795}
+.regatta-gfs-lab .gfs-motion-summary strong{display:block;font-size:11px;color:#175d73;overflow-wrap:anywhere}
+.regatta-gfs-lab [data-gfs-motion-steps]{display:grid;gap:6px}
+.regatta-gfs-lab .gfs-motion-step{
+  background:white;border:1px solid #dce9e9;border-radius:9px;padding:8px;
+  display:grid;grid-template-columns:auto 1fr auto;gap:3px 9px;align-items:center
+}
+.regatta-gfs-lab .gfs-motion-step strong{font-size:10px;color:#2b6675}
+.regatta-gfs-lab .gfs-motion-step span{font-size:9px;color:#557d89}
+.regatta-gfs-lab .gfs-motion-step b{font-size:11px;color:#1a6171;white-space:nowrap}
+.regatta-gfs-lab .gfs-motion-step small{
+  grid-column:2/4;font-size:9px;color:#788e98
+}
+.regatta-gfs-lab .gfs-motion-panel>small{
+  display:block;margin-top:8px;font-size:9px;line-height:1.55;color:#7d6670
+}
+@media(max-width:440px){
+  .regatta-gfs-lab .gfs-motion-summary{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .regatta-gfs-lab .gfs-motion-step{grid-template-columns:55px 1fr}
+  .regatta-gfs-lab .gfs-motion-step b{grid-column:2}
+  .regatta-gfs-lab .gfs-motion-step small{grid-column:2}
+}

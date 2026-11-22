@@ -457,7 +457,7 @@ function gfsBriefingMarkup(r){
   '<div class="race-gfs-briefing-header"><strong><span aria-hidden="true">☁</span> BRIEFING MÉTÉO <small>· estimation</small></strong>'+
   '<span data-gfs-briefing-status>'+(plan.phase==='pending'?'À PRÉPARER':'À CONSULTER')+'</span></div>'+
   '<div class="race-gfs-briefing-grid">'+
-  '<div class="race-gfs-briefing-chip"><span>DERNIER GFS EXPLOITABLE*</span>'+
+  '<div class="race-gfs-briefing-chip"><span>DERNIER GFS EXPLOITABLE</span>'+
   '<strong>'+plan.usableLocal+'</strong>'+
   '<small>'+plan.usableDay+' · à consulter vers '+plan.consultLocal+'</small></div>'+
   '<div class="race-gfs-briefing-chip"><span>GFS SUIVANT</span>'+
@@ -466,7 +466,6 @@ function gfsBriefingMarkup(r){
   '</div>'+
   '<div class="race-gfs-briefing-tip"><span aria-hidden="true">ⓘ</span>'+
   '<span>'+plan.warning+'</span></div>'+
-  '<p class="race-gfs-briefing-disclaimer">* Cycle théoriquement intégré avant le départ ; vérifie les vents dans VR.</p>'+
   '</aside>';
 }
 /* A small text-only refresh: photos and the rest of each card stay mounted. */

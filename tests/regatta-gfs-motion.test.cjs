@@ -133,3 +133,15 @@ test('le pilote refuse les polaires absentes, les cycles différents et les donn
   missing.motionGrid=null;
   assert.throws(()=>m.simulateAdaptiveHeading(frame(6),missing),/Grille NOAA/);
 });
+
+test('lecture vectorielle de f012/f018 sans extrapolation temporelle',()=>{
+  const f12=m.loadFrame(frame(12,{windU:12,windV:-5}));
+  const f18=m.loadFrame(frame(18,{windU:8,windV:-1}));
+  const mid=m.windAt(f12,f18,15,48.125,-8.625);
+  assert.ok(Math.abs(mid.u-10)<.0001);
+  assert.ok(Math.abs(mid.v+3)<.0001);
+  assert.throws(()=>m.windAt(f12,f18,18.5,48.125,-8.625),/consécutives/);
+  assert.throws(()=>m.windAt(f12,f18,11.5,48.125,-8.625),/consécutives/);
+  const differentCycle=m.loadFrame(frame(18,{cycle:'2026-11-22T06:00:00.000Z'}));
+  assert.throws(()=>m.windAt(f12,differentCycle,15,48.125,-8.625),/consécutives/);
+});

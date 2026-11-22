@@ -248,3 +248,39 @@
   .regatta-gfs-lab .gfs-motion-step b{grid-column:2}
   .regatta-gfs-lab .gfs-motion-step small{grid-column:2}
 }
+
+
+/* Test 9: five fixed headings, no adaptive route or real Full Pack polar yet. */
+.regatta-gfs-lab .gfs-heading-panel{
+  margin-top:12px;padding:11px;border:1px solid #c7e1df;
+  border-radius:11px;background:linear-gradient(120deg,#f1f9fa,#f6f8ff)
+}
+.regatta-gfs-lab .gfs-heading-panel>p{
+  font-size:10px;line-height:1.6;color:#5a7484;margin:8px 0
+}
+.regatta-gfs-lab .gfs-heading-panel>p[data-state="success"]{color:#187365}
+.regatta-gfs-lab .gfs-heading-panel>p[data-state="error"]{color:#a34b56}
+.regatta-gfs-lab [data-gfs-heading-results][hidden],
+.regatta-gfs-lab [data-gfs-heading-summary][hidden]{display:none}
+.regatta-gfs-lab [data-gfs-heading-summary]{
+  display:grid;gap:3px;border:1px solid #b9d9d7;border-radius:9px;
+  background:#ecf8f4;padding:10px;margin:8px 0
+}
+.regatta-gfs-lab [data-gfs-heading-summary] strong{
+  color:#166e65;font-size:13px
+}
+.regatta-gfs-lab [data-gfs-heading-summary] small{font-size:9px;color:#638087}
+.regatta-gfs-lab [data-gfs-heading-results]{display:grid;gap:5px;margin:8px 0}
+.regatta-gfs-lab .gfs-heading-option{
+  display:flex;justify-content:space-between;flex-wrap:wrap;align-items:baseline;
+  gap:4px 9px;border:1px solid #dce9ec;background:white;
+  padding:9px;border-radius:9px
+}
+.regatta-gfs-lab .gfs-heading-option[data-best="true"]{
+  border-color:#7cc2b5;background:#f1fcf7
+}
+.regatta-gfs-lab .gfs-heading-option strong{font-size:11px;color:#2b5d6e}
+.regatta-gfs-lab .gfs-heading-option span{font-size:10px;color:#637c8a}
+.regatta-gfs-lab .gfs-heading-panel>small{
+  display:block;margin-top:9px;font-size:9px;line-height:1.55;color:#816e78
+}

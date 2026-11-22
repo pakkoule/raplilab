@@ -58,7 +58,7 @@ test('déplacement de bateau calculé sur vrais vecteurs météo et polaire part
 });
 test('rejet données NOAA manquantes, cycles mélangés et météo hors limites',()=>{
   assert.throws(()=>m.simulateMotion(frame(6),frame(12,{cycle:'2026-11-22T06:00:00.000Z'})),/non compatibles/);
-  assert.throws(()=>m.simulateMotion(frame(6),frame(12,{windU:0,windV:0})),/polaires provisoires/);
+  assert.throws(()=>m.simulateMotion(frame(6,{windU:0,windV:0}),frame(12,{windU:0,windV:0})),/polaires provisoires/);
   assert.throws(()=>m.simulateMotion(frame(6),{...frame(12),motionGrid:null}),/Grille NOAA/);
   const invalid=frame(6);
   invalid.motionGrid.latitudeOfFirstGridPoint=42;

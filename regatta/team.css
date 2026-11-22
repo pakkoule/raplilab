@@ -792,3 +792,10 @@
  border-left:3px solid #b8596c;color:#9d4050
 }
 .team-dialog .team-import-warning{color:#983e4f!important;font-weight:750;line-height:1.5}
+
+/* Newly discovered skippers are provisional until the course is saved. */
+.team-dialog .team-new-skipper-badge{
+ display:inline-block;vertical-align:middle;margin-left:5px;padding:2px 5px;
+ color:#24625b;background:#e4f4ef;border:1px solid #a9d8c9;border-radius:6px;
+ font:850 8px/1.4 Poppins,system-ui,sans-serif;letter-spacing:.02em
+}

@@ -438,11 +438,23 @@ async function replaceRows(next){if(storageRecoveryBlocked)throw Error('Stockage
  }
  function updateRaceClocks(){
    const now=Date.now();
+   // A planned LPDB race becomes live as soon as its timezone-aware departure
+   // is reached. Rebuild only if the visible status changes, with no save.
+   window.RapliTeamUI?.refreshLiveStatuses?.(now);
    document.querySelectorAll('[data-race-clock]').forEach(el=>{
      const start=Number(el.dataset.start);
      if(!Number.isFinite(start))return;
+     const expired=el.dataset.raceClock==='countdown'&&now>=start;
+     // When a scheduled departure passes, switch the visual clock as well.
+     // Team cards also receive the live icon and GFS panel from the refresh above.
+     if(expired){
+       el.dataset.raceClock='elapsed';
+       el.closest('.race-live-clock')?.classList.remove('race-live-clock--countdown');
+       const caption=el.previousElementSibling;
+       if(caption&&caption.textContent==='DÉPART DANS')caption.textContent='EN COURSE DEPUIS';
+     }
      const delta=(el.dataset.raceClock==='countdown'?start-now:now-start)/1000;
-     el.textContent=delta<0&&el.dataset.raceClock==='countdown'?'DÉPART IMMINENT':formatRaceClock(delta);
+     el.textContent=formatRaceClock(delta);
    });
    updateGfsWidgets(now);
    updateGfsBriefings(now);

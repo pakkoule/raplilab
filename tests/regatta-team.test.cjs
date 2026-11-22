@@ -992,3 +992,110 @@ test('global header search filters LPDB courses and skippers without replacing i
  assert.equal(d.querySelectorAll('#team-skippers-panel .team-member-card').length,3);
  dom.window.close();
 });
+
+
+test('The Imoca Race automatically becomes live at 17:00 Paris time without saving the course',()=>{
+ const dom=new JSDOM(fs.readFileSync('regatta/index.html','utf8'),{runScripts:'outside-only',url:'https://example.org/regatta/'});
+ const w=dom.window,d=w.document;
+ w.eval(fs.readFileSync('regatta/timezone.js','utf8'));
+ w.RapliTeamEngine=E;
+ w.RapliTeamTime=require('../regatta/team-time.js');
+ w.eval(fs.readFileSync('regatta/score.js','utf8'));
+ w.eval(fs.readFileSync('regatta/team-rating.js','utf8'));
+ const start=w.RapliRegattaTime.fromWall('2026-11-22','17:00','Europe/Paris');
+ assert.equal(new Date(start).toISOString(),'2026-11-22T16:00:00.000Z');
+ let now=start-1000,saves=0;
+ w.Date.now=()=>now;
+ w.RapliRegattaSharedCards={
+  raceClockMarkup:r=>{
+   const mode=r.status==='live'?'elapsed':'countdown';
+   return '<div class="race-live-clock"><span>'+(mode==='elapsed'?'EN COURSE DEPUIS':'DÉPART DANS')+'</span>'+
+    '<strong data-race-clock="'+mode+'" data-start="'+start+'">00:00:01</strong></div>';
+  },
+  gfsBriefingMarkup:()=>'<div data-gfs-briefing>BRIEFING GFS</div>',
+  gfsCardMarkup:()=>'<div data-gfs-widget>MÉTÉO GFS</div>',
+  liveIconMarkup:()=>'<span class="live-neon" aria-label="En direct"></span>',
+  classTagMarkup:()=>'<span class="class-tag">IMOCA</span>',
+  vsrTagMarkup:()=>'<span class="vsr-badge">HC</span>'
+ };
+ w.eval(fs.readFileSync('regatta/team-app.js','utf8'));
+ const course=E.race({...r('the-imoca-race','2026-12-01','hc','planned',[]),
+  name:'The Imoca Race',start:'2026-11-22',startTime:'17:00',
+  boatClass:'IMOCA',timezone:'Europe/Paris'});
+ w.RapliTeamUI.init({get:()=>[course],personal:()=>[],canEdit:()=>false,
+  notify:()=>{},save:async()=>saves++,remove:async()=>saves++});
+ d.getElementById('team-races-panel').hidden=false;
+ const card=()=>d.querySelector('[data-team-race="'+course.id+'"]');
+ assert.equal(card().dataset.teamState,'planned');
+ assert.ok(card().querySelector('[data-race-clock="countdown"]'));
+ assert.ok(card().querySelector('[data-gfs-briefing]'));
+ assert.equal(card().querySelector('[data-gfs-widget]'),null);
+ now=start;
+ assert.equal(w.RapliTeamUI.refreshLiveStatuses(now),true);
+ assert.equal(card().dataset.teamState,'live');
+ assert.match(card().textContent,/EN COURS/);
+ assert.ok(card().querySelector('[data-race-clock="elapsed"]'));
+ assert.ok(card().querySelector('[data-gfs-widget]'));
+ assert.ok(card().querySelector('.live-neon'));
+ assert.equal(card().querySelector('[data-gfs-briefing]'),null);
+ assert.equal(w.RapliTeamUI.refreshLiveStatuses(now+1000),false,'no full rerender every second');
+ assert.equal(course.status,'planned','live state is derived without overwriting stored classification status');
+ assert.equal(saves,0,'no automatic database writes');
+ dom.window.close();
+});
+test('timezone aware team departure transitions only after a valid start and never reopens finished races',()=>{
+ const dom=new JSDOM(fs.readFileSync('regatta/index.html','utf8'),{runScripts:'outside-only',url:'https://example.org/regatta/'});
+ const w=dom.window,d=w.document;
+ w.eval(fs.readFileSync('regatta/timezone.js','utf8'));
+ w.RapliTeamEngine=E;w.RapliTeamTime=require('../regatta/team-time.js');
+ w.eval(fs.readFileSync('regatta/score.js','utf8'));
+ w.eval(fs.readFileSync('regatta/team-rating.js','utf8'));
+ w.eval(fs.readFileSync('regatta/team-app.js','utf8'));
+ const winterStart=w.RapliRegattaTime.fromWall('2026-11-22','17:00','Europe/Paris');
+ const summerStart=w.RapliRegattaTime.fromWall('2027-07-01','17:00','Europe/Paris');
+ assert.equal(new Date(winterStart).toISOString(),'2026-11-22T16:00:00.000Z');
+ assert.equal(new Date(summerStart).toISOString(),'2027-07-01T15:00:00.000Z');
+ const noClock=E.race({...r('no-clock','2027-01-01','vsr2','planned',[]),start:'2026-11-22',startTime:''});
+ const finished=E.race({...r('done','2027-01-01','vsr2','finished',[rr('Alpha',1)]),start:'2026-11-22',startTime:'17:00'});
+ const live=E.race({...r('already-live','2027-01-01','vsr2','live',[]),start:'2026-11-22',startTime:'17:00'});
+ const past=E.race({...r('future','2027-01-01','vsr2','planned',[]),start:'2026-11-22',startTime:'17:00'});
+ w.RapliTeamUI.init({get:()=>[m('Alpha'),noClock,finished,live,past],personal:()=>[],
+  canEdit:()=>false,notify:()=>{},save:async()=>{},remove:async()=>{}});
+ d.getElementById('team-races-panel').hidden=false;
+ const card=id=>d.querySelector('[data-team-race="'+id+'"]');
+ assert.equal(card(noClock.id).dataset.teamState,'planned');
+ assert.equal(card(finished.id).dataset.teamState,'finished');
+ assert.equal(card(live.id).dataset.teamState,'live');
+ assert.equal(w.RapliTeamUI.refreshLiveStatuses(winterStart-1000),true);
+ assert.equal(card(past.id).dataset.teamState,'planned');
+ assert.equal(w.RapliTeamUI.refreshLiveStatuses(winterStart),true);
+ assert.equal(card(past.id).dataset.teamState,'live');
+ assert.equal(card(noClock.id).dataset.teamState,'planned');
+ assert.equal(card(finished.id).dataset.teamState,'finished');
+ assert.equal(card(live.id).dataset.teamState,'live');
+ dom.window.close();
+});
+test('the shared clock ticker replaces expired DEPART IMMINENT with a running timer',()=>{
+ const source=fs.readFileSync('regatta/app.js','utf8');
+ const start=source.indexOf(' function updateRaceClocks(){');
+ const end=source.indexOf(' function raceClockMarkup(row){',start);
+ assert.ok(start>0&&end>start);
+ const doc=new JSDOM('<div class="race-live-clock race-live-clock--countdown">'+
+  '<span>⏱</span><span>DÉPART DANS</span><strong data-race-clock="countdown" data-start="1795363200000">DÉPART IMMINENT</strong></div>').window.document;
+ const now=1795363200000+2100;
+ const calls=[];
+ const context={
+  Date:{now:()=>now},document:doc,
+  window:{RapliTeamUI:{refreshLiveStatuses:value=>calls.push(value)}},
+  formatRaceClock:seconds=>Math.floor(seconds)+' s',
+  updateGfsWidgets:()=>{},updateGfsBriefings:()=>{},updatePreStartRouting:()=>{}
+ };
+ const update=new Function('ctx','with(ctx){'+source.slice(start,end)+';return updateRaceClocks;}')(context);
+ update();
+ const clock=doc.querySelector('[data-race-clock]');
+ assert.equal(clock.dataset.raceClock,'elapsed');
+ assert.equal(clock.textContent,'2 s');
+ assert.equal(clock.previousElementSibling.textContent,'EN COURSE DEPUIS');
+ assert.equal(doc.querySelector('.race-live-clock').classList.contains('race-live-clock--countdown'),false);
+ assert.deepEqual(calls,[now]);
+});

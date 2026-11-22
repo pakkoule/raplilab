@@ -1,8 +1,8 @@
 /* LPDB — team championship UI. The personal race archive remains independent. */
 (function(root){
 'use strict';
-const engine=root.RapliTeamEngine;
-if(!engine)throw Error('LPDB scoring engine missing');
+const engine=root.RapliTeamEngine,clock=root.RapliTeamTime;
+if(!engine||!clock)throw Error('LPDB scoring/time engines missing');
 const $=id=>document.getElementById(id);
 const esc=v=>String(v??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const num=v=>Number(v||0).toLocaleString('fr-FR',{maximumFractionDigits:1});
@@ -10,7 +10,7 @@ const uuid=type=>'lpdb-'+type+'-'+(root.crypto?.randomUUID?.()||Date.now().toStr
 const stamp=()=>new Date().toISOString();
 const today=()=>new Date().toLocaleDateString('en-CA');
 const types={month:'Mensuel',quarter:'Trimestriel',year:'Annuel',custom:'Libre',all:'Historique complet'};
-let api,viewMode='main',periodType='month',periodValue='',customFrom='',customTo='',search='',filter='all',page=1,statMode='avg',draft=null,editingMember=null,notice='',bulkSaving=false;
+let api,viewMode='main',periodType='month',periodValue='',customFrom='',customTo='',search='',filter='all',page=1,statMode='avg',draft=null,editingMember=null,notice='',bulkSaving=false,rankingImport=null;
 const personal=()=>api?.personal?.()||[];
 const raw=()=>engine.normalize(api?.get?.()||[]);
 const all=()=>raw().map(x=>x.type==='team-race'?
@@ -19,6 +19,7 @@ const personalById=id=>personal().find(x=>x.id===id&&x.kind==='race');
 const detailInputs={boatClass:'team-race-class',routeType:'team-race-route',start:'team-race-start',
  startTime:'team-race-start-time',endTime:'team-race-end-time',equipment:'team-race-equipment',timezone:'team-race-timezone'};
 const members=()=>all().filter(x=>x.type==='team-member');
+const editorMembers=()=>[...members(),...(draft?.newMembers||[])];
 const races=()=>all().filter(x=>x.type==='team-race');
 const unique=(values)=>[...new Set(values)];
 const active=m=>m.status==='active';
@@ -144,6 +145,109 @@ async function saveEntity(entity){
 async function removeEntity(id){
  if(!canWrite())return false;
  try{await api.remove(id);render();return true;}catch(e){notify('Suppression impossible : '+e.message,true);return false;}
+}
+function importNewName(raw){
+ return String(raw||'').replace(/\s*[-_ ]+\s*LPDB\s*$/iu,'').trim();
+}
+function previewImport(){
+ const preview=$('team-ranking-analysis'),apply=$('team-ranking-apply');
+ if(!rankingImport){preview.innerHTML='<p class="team-footnote">Clique sur « Analyser le classement » après avoir collé les résultats.</p>';apply.disabled=true;return;}
+ const {parsed,rows}=rankingImport,existing=editorMembers(),seen=new Set(),future=new Set(),newNames=[];
+ let missing=0,duplicate=0,blocked=0;
+ const selected=rows.map((item,i)=>{
+  const id=item.skipperId;
+  const name=item.newName?.trim()||'';
+  if(!id){missing++;blocked++;return {item,error:'Sélectionne un skipper ou crée un nouveau pseudo.'};}
+  if(id==='__new__'){
+   if(!name||name.length>56||/\.{2,}|…/u.test(name)){blocked++;return {item,error:'Saisis le pseudo complet (56 caractères max, sans « … »).'};}
+   const key=name.normalize('NFKC').toLowerCase().replace(/\s+/gu,' ');
+   if(future.has(key)||existing.some(m=>m.name.normalize('NFKC').toLowerCase().replace(/\s+/gu,' ')===key)){
+    duplicate++;blocked++;return {item,error:'Pseudo déjà utilisé ou ajouté deux fois.'};
+   }
+   future.add(key);
+   newNames.push(name);
+  }else if(!existing.some(m=>m.id===id)||seen.has(id)){duplicate++;blocked++;return {item,error:'Skipper introuvable ou choisi plusieurs fois.'};}
+  else seen.add(id);
+  return {item,error:''};
+ });
+ const slots=Math.max(0,50-members().filter(m=>m.status==='active').length);
+ const retained=(draft?.results||[]).filter(r=>r.status==='dnf').filter(r=>!seen.has(r.skipperId)).length;
+ if(newNames.length>slots||rows.length+retained>50)blocked++;
+ const options=existing.slice().sort((a,b)=>a.name.localeCompare(b.name,'fr')).map(m=>({value:m.id,label:m.name+(m.status==='former'?' · ancien':'')}));
+ preview.innerHTML='<div class="team-bulk-metrics">'+
+ '<div><strong>'+parsed.entries.length+'</strong><span>Résultats lus</span></div>'+
+ '<div><strong>'+newNames.length+'</strong><span>Nouveaux skippers</span></div>'+
+ '<div><strong>'+slots+'</strong><span>Places actives</span></div></div>'+
+ (parsed.errors.length?'<p class="team-bulk-error">'+parsed.errors.map(esc).join(' · ')+'</p>':'')+
+ (parsed.warnings.length?'<p class="team-bulk-note">'+parsed.warnings.slice(0,6).map(esc).join(' · ')+'</p>':'')+
+ '<div class="team-table-wrap"><table class="team-import-table"><thead><tr><th>#</th><th>Nom détecté / Association</th><th>Chrono calculé</th><th>Écart</th></tr></thead><tbody>'+
+ selected.map(({item,error},i)=>{
+  const allowed=[{value:'',label:'Associer un skipper…'},{value:'__new__',label:'＋ Créer un skipper'},...options];
+  return '<tr><td>'+item.position+'</td><td><strong>'+esc(item.name)+'</strong>'+
+   '<select data-team-import-select="'+i+'" aria-label="Skipper pour le rang '+item.position+'">'+opts(allowed,item.skipperId)+'</select>'+
+   (item.skipperId==='__new__'?'<input data-team-import-name="'+i+'" maxlength="56" value="'+esc(item.newName||'')+'" placeholder="Pseudo complet" aria-label="Nouveau pseudo pour le rang '+item.position+'">':'')+
+   (error?'<small class="team-import-warning">'+esc(error)+'</small>':'')+'</td>'+
+   '<td>'+clock.formatTime(item.elapsedSeconds)+'</td><td>+'+clock.formatTime(item.gapSeconds)+'</td></tr>';
+ }).join('')+'</tbody></table></div>'+
+ ((newNames.length>slots||rows.length+retained>50)?'<p class="team-bulk-error">Import impossible : maximum 50 membres actifs et 50 participants par course, DNF compris.</p>':'')+
+ '<p class="team-footnote">Les DNF déjà saisis restent participants. Les autres positions seront remplacées après validation. Aucun résultat n’est enregistré avant la sauvegarde de la course.</p>';
+ apply.disabled=!!parsed.errors.length||blocked>0||!rows.length;
+}
+function analyzeRanking(){
+ if(!draft)return;
+ const parsed=clock.parseClassification($('team-ranking-paste').value);
+ const rows=clock.matchSkippers(parsed.entries,editorMembers()).map(item=>({
+  ...item,newName:importNewName(item.name),
+  skipperId:item.skipperId||(item.ambiguous||/\.{2,}|…/u.test(item.name)?'':'__new__')
+ }));
+ rankingImport={parsed,rows};
+ previewImport();
+}
+function applyRanking(){
+ if(!draft||!rankingImport||$('team-ranking-apply').disabled)return;
+ const {rows}=rankingImport;
+ const known=editorMembers(),newMembers=[],now=stamp();
+ const next=rows.map(item=>{
+  let id=item.skipperId;
+  if(id==='__new__'){
+   const newMember=engine.member({id:uuid('member'),name:item.newName.trim(),status:'active',createdAt:now,updatedAt:now});
+   if(!newMember)throw Error('Pseudo invalide.');
+   newMembers.push(newMember);id=newMember.id;
+  }
+  return {skipperId:id,status:'finished',position:item.position,
+   elapsedSeconds:item.elapsedSeconds,gapSeconds:item.gapSeconds};
+ });
+ const kept=(draft.results||[]).filter(r=>r.status==='dnf'&&!next.some(row=>row.skipperId===r.skipperId));
+ if(next.length+kept.length>50){notify('La course dépasserait 50 participants.',true);return;}
+ if(draft.results?.some(r=>r.status==='finished'||r.status==='pending')&&!confirm('Remplacer les positions déjà saisies par le classement collé ? Les abandons DNF resteront comptabilisés.'))return;
+ draft.results=[...next,...kept];
+ // A previously pasted draft was not saved: replace its provisional members, too.
+ draft.newMembers=newMembers;
+ rankingImport=null;
+ $('team-ranking-import-body').hidden=true;
+ document.querySelector('[data-team-action="toggle-ranking-import"]').setAttribute('aria-expanded','false');
+ $('team-ranking-paste').value='';
+ choices();editorRows();
+ notify(next.length+' résultat(s) importé(s), avec chronos et écarts. Enregistre puis valide la course pour le championnat.');
+}
+function syncEditorTimes(row,field,value){
+ if(!draft||!row||row.status==='dnf')return;
+ const seconds=clock.parseTime(value);
+ if(value.trim()&&seconds===null){notify('Format de durée invalide. Utilise par exemple 09j 15h 32m 50s.',true);editorRows();return;}
+ const leader=draft.results.find(r=>r.status==='finished'&&r.position===1);
+ if(field==='elapsedSeconds'){
+  row.elapsedSeconds=seconds;
+  row.gapSeconds=seconds!==null&&leader?.elapsedSeconds!=null?seconds-leader.elapsedSeconds:null;
+  if(seconds!==null&&row.gapSeconds!==null&&row.gapSeconds<0){notify('Chrono antérieur à celui du vainqueur.',true);row.gapSeconds=null;}
+  if(row===leader)for(const other of draft.results){
+   if(other.status!=='finished'||other.elapsedSeconds==null)continue;
+   other.gapSeconds=other.elapsedSeconds-seconds;
+  }
+ }else{
+  row.gapSeconds=seconds;
+  row.elapsedSeconds=seconds!==null&&leader?.elapsedSeconds!=null?leader.elapsedSeconds+seconds:null;
+ }
+ editorRows();
 }
 function editorRows(){
  if(!draft)return;

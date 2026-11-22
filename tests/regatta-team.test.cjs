@@ -1101,3 +1101,113 @@ test('the shared clock ticker replaces expired DEPART IMMINENT with a running ti
  assert.equal(doc.querySelector('.race-live-clock').classList.contains('race-live-clock--countdown'),false);
  assert.deepEqual(calls,[now]);
 });
+
+
+test('a team race stores its own artwork and does not overwrite a linked Jules Verne visual',()=>{
+ const img='data:image/png;base64,AAAA';
+ const team=E.race({...r('artwork','2028-04-20','hc','planned',[]),icon:img});
+ assert.equal(team.icon,img);
+ const record={id:'personal-jules',kind:'record',name:'Trophée Jules Verne',boatClass:'ULTIM',
+  start:'2028-04-01',startTime:'17:00',icon:'data:image/png;base64,BBBB'};
+ const linked=E.fromPersonal(record,{...team,personalRaceId:record.id});
+ assert.equal(linked.icon,img);
+ const updated=E.resolveLinkedRace(linked,record);
+ assert.equal(updated.icon,img,'an explicitly chosen team illustration takes priority');
+ assert.equal(record.icon,'data:image/png;base64,BBBB','personal visual is unchanged');
+ assert.equal(E.race({...team,icon:'https://invalid.example/evil.svg'}).icon,'','unsafe external URLs are excluded');
+});
+test('the team editor accepts a standalone image upload and preserves it for the course card',async()=>{
+ const dom=new JSDOM(fs.readFileSync('regatta/index.html','utf8'),{runScripts:'outside-only',url:'https://example.org/regatta/'});
+ const w=dom.window,d=w.document,stored=[];
+ w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};
+ w.HTMLDialogElement.prototype.close=function(){this.open=false;};
+ w.URL.createObjectURL=()=> 'blob:illustration';
+ w.URL.revokeObjectURL=()=>{};
+ w.Image=class{
+  constructor(){this.naturalWidth=1600;this.naturalHeight=900;}
+  set src(x){queueMicrotask(()=>this.onload?.());}
+ };
+ w.HTMLCanvasElement.prototype.getContext=function(){return {drawImage:()=>{}};};
+ const image='data:image/webp;base64,AABBCCDDEE==';
+ w.HTMLCanvasElement.prototype.toDataURL=function(){return image;};
+ w.RapliTeamEngine=E;w.RapliTeamTime=require('../regatta/team-time.js');
+ w.eval(fs.readFileSync('regatta/score.js','utf8'));
+ w.eval(fs.readFileSync('regatta/team-rating.js','utf8'));
+ w.eval(fs.readFileSync('regatta/team-app.js','utf8'));
+ w.RapliTeamUI.init({get:()=>stored,personal:()=>[],canEdit:()=>true,notify:()=>{},
+  saveRaceBundle:async race=>stored.push(race),save:async()=>{},remove:async()=>{}});
+ d.querySelector('[data-team-action="new-race"]').click();
+ d.getElementById('team-race-name').value='The Imoca Race';
+ d.getElementById('team-race-date').value='2028-04-22';
+ d.getElementById('team-race-start').value='2028-04-01';
+ d.getElementById('team-race-start-time').value='17:00';
+ const picker=d.getElementById('team-race-illustration-file');
+ const file=new w.File(['fake-image'],'race.png',{type:'image/png'});
+ Object.defineProperty(picker,'files',{configurable:true,value:[file]});
+ picker.dispatchEvent(new w.Event('change',{bubbles:true}));
+ for(let i=0;i<15&&d.getElementById('team-illustration-preview').hidden;i++)await new Promise(done=>setTimeout(done,0));
+ assert.equal(d.getElementById('team-illustration-preview').hidden,false);
+ assert.equal(d.getElementById('team-illustration-preview').getAttribute('src'),image);
+ d.getElementById('team-race-form').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));
+ for(let i=0;i<15&&!stored.length;i++)await new Promise(done=>setTimeout(done,0));
+ assert.equal(stored.length,1);
+ assert.equal(stored[0].icon,image);
+ const tile=d.querySelector('#team-races-panel .team-race-card');
+ assert.ok(tile);
+ assert.equal(tile.querySelector('.team-race-photo img').getAttribute('src'),image);
+ dom.window.close();
+});
+test('LPDB theoretical podium uses historical finished race placements, VSR and recency without publishing points',()=>{
+ const projection=require('../regatta/team-prediction.js');
+ const roster=[m('Alpha'),m('Beta'),m('Charlie'),m('Delta')];
+ const previous=[
+  r('year-old','2028-01-02','hc','finished',[rr('Alpha',1),rr('Beta',2),rr('Charlie',3),rr('Delta',4)]),
+  r('recent','2029-07-02','hc','finished',[rr('Alpha',1),rr('Charlie',2),rr('Beta',3),rr('Delta',4)]),
+  r('invalid','2029-07-22','hc','finished',[rr('Delta',1),rr('Alpha',1)]),
+  r('future','2030-05-22','hc','finished',[rr('Delta',1),rr('Alpha',2),rr('Beta',3),rr('Charlie',4)])
+ ];
+ const upcoming=E.race({...r('future-course','2030-02-22','hc','planned',
+  roster.map(x=>({skipperId:x.id,status:'pending',position:null}))),name:'The Imoca Race',start:'2030-02-01'});
+ const records=[...roster,...previous,upcoming];
+ const result=projection.project(upcoming,records,E);
+ assert.equal(result.entrants,4);
+ assert.equal(result.represented,4);
+ assert.equal(result.podium.length,3);
+ assert.equal(result.podium[0].name,'Alpha');
+ assert.ok(result.podium.every(x=>x.samples===2),'later course and invalid results must be excluded');
+ assert.ok(result.podium[0].index>result.podium[1].index);
+ assert.ok(result.podium.every(x=>x.confidence),'confidence labels must be exposed');
+ assert.equal(E.scoredRace(upcoming,new Map(roster.map(x=>[x.id,x]))).length,0,'no provisional championship points');
+ const one=projection.project({...upcoming,results:[{skipperId:roster[0].id,status:'pending'}]},records,E);
+ assert.equal(one.sufficient,false);
+ assert.equal(one.podium.length,1);
+ const empty=projection.project({...upcoming,results:[{skipperId:'lpdb-member-unknown',status:'pending'}]},records,E);
+ assert.equal(empty.sufficient,false);
+ assert.equal(empty.podium.length,0);
+});
+test('upcoming LPDB cards show theoretical podium only for enrolled skippers with valid history',()=>{
+ const dom=new JSDOM(fs.readFileSync('regatta/index.html','utf8'),{runScripts:'outside-only',url:'https://example.org/regatta/'});
+ const w=dom.window,d=w.document;
+ w.RapliTeamEngine=E;w.RapliTeamTime=require('../regatta/team-time.js');
+ w.RapliTeamPrediction=require('../regatta/team-prediction.js');
+ w.eval(fs.readFileSync('regatta/score.js','utf8'));
+ w.eval(fs.readFileSync('regatta/team-rating.js','utf8'));
+ w.eval(fs.readFileSync('regatta/team-app.js','utf8'));
+ const roster=[m('Alpha'),m('Beta'),m('Charlie')];
+ const old=E.race(r('last','2029-01-01','hc','finished',
+  [rr('Alpha',1),rr('Beta',2),rr('Charlie',3)]));
+ const upcoming=E.race({...r('forecast','2030-01-20','hc','planned',
+  roster.map(x=>({skipperId:x.id,status:'pending',position:null}))),name:'The Imoca Race',start:'2030-01-05'});
+ const live=E.race({...r('live-race','2030-01-20','hc','live',[]),name:'Now Sailing',start:'2030-01-05'});
+ w.RapliTeamUI.init({get:()=>[...roster,old,upcoming,live],personal:()=>[],canEdit:()=>false,notify:()=>{},
+  save:async()=>{},remove:async()=>{}});
+ const upcomingTile=d.querySelector('[data-team-race="'+upcoming.id+'"]');
+ assert.ok(upcomingTile.querySelector('.team-forecast'));
+ assert.equal(upcomingTile.querySelectorAll('.team-forecast-row').length,3);
+ assert.match(upcomingTile.querySelector('.team-forecast').textContent,/PODIUM TEAM THÉORIQUE/);
+ assert.match(upcomingTile.querySelector('.team-forecast-footnote').textContent,/Aucune prédiction du classement VR réel/);
+ assert.equal(upcomingTile.querySelector('.team-race-points'),null);
+ assert.equal(d.querySelector('[data-team-race="'+live.id+'"] .team-forecast'),null);
+ assert.equal(d.querySelector('[data-team-race="'+old.id+'"] .team-forecast'),null);
+ dom.window.close();
+});

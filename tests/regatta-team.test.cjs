@@ -88,6 +88,21 @@ test('current roster limit is separate from historic ranking length',()=>{
  assert.equal(roster.filter(x=>x.status==='active').length,50);
  assert.equal(E.normalize(roster).length,58);
 });
+test('skipper can leave and rejoin while attendance ignores gap races',()=>{
+ const skipper=m('Alpha','active','2027-01-01','');
+ skipper.memberships=[{from:'2027-01-01',until:'2027-01-31'},{from:'2027-03-01',until:''}];
+ const opponent=m('Beta');
+ const jan=r('jan','2027-01-08','vsr2','finished',[rr('Alpha',1),rr('Beta',2)]);
+ const feb=r('feb','2027-02-08','vsr2','finished',[rr('Beta',1)]);
+ const mar=r('mar','2027-03-08','vsr2','finished',[rr('Alpha',2),rr('Beta',1)]);
+ const board=E.standings([skipper,opponent,jan,feb,mar],{type:'year',value:'2027'});
+ const alpha=board.skippers.find(x=>x.name==='Alpha');
+ assert.equal(alpha.participations,2);
+ assert.equal(alpha.attendance,100);
+ assert.equal(alpha.finished,2);
+ assert.equal(E.normalize([skipper])[0].memberships.length,2);
+});
+
 test('editor, selectors, and PNG elements are present without removing personal archive',()=>{
  const doc=new JSDOM(fs.readFileSync('regatta/index.html','utf8')).window.document;
  for(const id of ['team-panel','team-races-panel','team-skippers-panel','team-stats-panel','team-race-form','team-member-form','team-profile-dialog','view-races','races-panel'])assert.ok(doc.getElementById(id),id);

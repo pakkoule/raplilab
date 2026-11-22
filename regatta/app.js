@@ -675,7 +675,7 @@ function gfsBriefingMarkup(r){
 }
 /* A small text-only refresh: photos and the rest of each card stay mounted. */
 function updateGfsBriefings(timestamp=Date.now()){
- for(const el of document.querySelectorAll('#cards [data-gfs-briefing]')){
+ for(const el of document.querySelectorAll('#cards [data-gfs-briefing], #team-races-panel [data-gfs-briefing]')){
   const ready=Number(el.dataset.gfsReady),departure=Number(el.dataset.gfsDeparture);
   const phase=timestamp>=departure?'expired':timestamp>=ready?'review':'pending';
   if(el.dataset.gfsBriefingPhase===phase)continue;
@@ -727,7 +727,7 @@ function gfsCardMarkup(){
 }
 /* Update only text and progress in place: never re-render course cards or images. */
 function updateGfsWidgets(timestamp=Date.now()){
- const widgets=document.querySelectorAll('#cards [data-gfs-widget]');
+ const widgets=document.querySelectorAll('#cards [data-gfs-widget], #team-races-panel [data-gfs-widget]');
  if(!widgets.length)return;
  const state=gfsWeatherState(timestamp);
  for(const widget of widgets){
@@ -2228,6 +2228,33 @@ const bridge=window.RapliModuleBridge={module:'regatta',ready:false,
   storeClassSettings(data.logos[0]||defaultClassSettings(),{notifyCloud:false});
  }};
 window.RapliRegatta={getCount:()=>rows.length,teamCount:()=>teamRecords.length};
+/* Team and personal cards share a single GFS timetable, timer ticker and
+   foil-tag color settings. These are presentation-only methods: neither team
+   results nor the original personal race data are changed. */
+window.RapliRegattaSharedCards={
+ raceClockMarkup:r=>raceClockMarkup({
+  kind:'race',start:r.start,startTime:r.startTime,timezone:r.timezone,
+  live:r.status==='live',upcoming:r.status==='planned'
+ }),
+ gfsBriefingMarkup:r=>gfsBriefingMarkup({...r,kind:'race'}),
+ gfsCardMarkup:()=>gfsCardMarkup(),
+ classTagMarkup:boatClass=>{
+  const appearance=tagAppearance('class',boatClass,boatClass||'VIRTUAL REGATTA');
+  return '<span class="class-tag" style="'+foilVariables(appearance,'class')+
+   '" title="'+safe(boatClass||'VIRTUAL REGATTA')+'"><span class="foil-symbol" aria-hidden="true">'+
+   '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+
+   '<path d="M12 2v15M12 4 5 16h7M12 7l6 9h-6M3 19c3 2 6 2 9 0 3 2 6 2 9 0"/></svg></span>'+safe(appearance.label)+'</span>';
+ },
+ vsrTagMarkup:vsr=>{
+  const appearance=tagAppearance('vsr',vsr,VSR[vsr]||String(vsr||'').toUpperCase());
+  return '<span class="vsr-badge vsr-'+safe(vsr)+(vsr==='hc'?' hc':'')+
+   '" style="'+foilVariables(appearance,'vsr')+'">'+
+   '<span class="foil-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round">'+
+   '<path d="m12 2 9 10-9 10-9-10zM3 12h18M12 2l3 10-3 10-3-10z"/></svg></span>'+
+   safe(appearance.label)+'</span>';
+ },
+ updateLiveWidgets:()=>updateRaceClocks()
+};
 window.RapliTeamUI?.init?.({get:()=>teamRecords,personal:()=>rows,
  save:saveTeamEntity,saveBatch:saveTeamMembersBatch,saveRaceBundle:saveTeamRaceBundle,remove:removeTeamEntity,
  openPersonal:openPersonalCourse,newPersonalFromTeam:startPersonalFromTeam,

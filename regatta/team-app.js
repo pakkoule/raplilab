@@ -212,6 +212,9 @@ function previewImport(){
  let missing=0,duplicate=0,blocked=0;
  const selected=rows.map((item,i)=>{
   const id=item.skipperId;
+  if(item.generalRank!=null&&(!Number.isSafeInteger(item.generalRank)||item.generalRank<1||item.generalRank>100000000)){
+   blocked++;return {item,error:'Classement général VR invalide : entier positif ou champ vide.'};
+  }
   const name=item.newName?.trim()||'';
   if(!id){missing++;blocked++;return {item,error:'Sélectionne un skipper ou crée un nouveau pseudo.'};}
   if(id==='__new__'){
@@ -236,14 +239,15 @@ function previewImport(){
  '<div><strong>'+slots+'</strong><span>Places actives</span></div></div>'+
  (parsed.errors.length?'<p class="team-bulk-error">'+parsed.errors.map(esc).join(' · ')+'</p>':'')+
  (parsed.warnings.length?'<p class="team-bulk-note">'+parsed.warnings.slice(0,6).map(esc).join(' · ')+'</p>':'')+
- '<div class="team-table-wrap"><table class="team-import-table"><thead><tr><th>#</th><th>Nom détecté / Association</th><th>Chrono calculé</th><th>Écart</th></tr></thead><tbody>'+
+ '<div class="team-table-wrap"><table class="team-import-table"><thead><tr><th>#</th><th>Nom détecté / Association</th><th>Général VR</th><th>Chrono calculé</th><th>Écart</th></tr></thead><tbody>'+
  selected.map(({item,error},i)=>{
   const allowed=[{value:'',label:'Associer un skipper…'},{value:'__new__',label:'＋ Créer un skipper'},...options];
   return '<tr><td>'+item.position+'</td><td><strong>'+esc(item.name)+'</strong>'+
    '<select data-team-import-select="'+i+'" aria-label="Skipper pour le rang '+item.position+'">'+opts(allowed,item.skipperId)+'</select>'+
    (item.skipperId==='__new__'?'<input data-team-import-name="'+i+'" maxlength="56" value="'+esc(item.newName||'')+'" placeholder="Pseudo complet" aria-label="Nouveau pseudo pour le rang '+item.position+'">':'')+
    (error?'<small class="team-import-warning">'+esc(error)+'</small>':'')+'</td>'+
-   '<td>'+clock.formatTime(item.elapsedSeconds)+'</td><td>+'+clock.formatTime(item.gapSeconds)+'</td></tr>';
+   '<td><input type="number" min="1" max="100000000" step="1" inputmode="numeric" data-team-import-general="'+i+'" value="'+(item.generalRank??'')+'" placeholder="Général VR" aria-label="Classement général VR de '+esc(item.name)+'"></td>'+ 
+   '<td>'+clock.formatTime(item.elapsedSeconds)+'</td><td>+'+clock.formatTime(item.gapSeconds)+'</td></tr>'; 
  }).join('')+'</tbody></table></div>'+
  ((newNames.length>slots||rows.length+retained>50)?'<p class="team-bulk-error">Import impossible : maximum 50 membres actifs et 50 participants par course, DNF compris.</p>':'')+
  '<p class="team-footnote">Les DNF déjà saisis restent participants. Les autres positions seront remplacées après validation. Aucun résultat n’est enregistré avant la sauvegarde de la course.</p>';
@@ -254,6 +258,7 @@ function analyzeRanking(){
  const parsed=clock.parseClassification($('team-ranking-paste').value);
  const rows=clock.matchSkippers(parsed.entries,editorMembers()).map(item=>({
   ...item,newName:importNewName(item.name),
+  generalRank:(draft.results||[]).find(r=>r.skipperId===item.skipperId)?.generalRank??null,
   skipperId:item.skipperId||(item.ambiguous||/\.{2,}|…/u.test(item.name)?'':'__new__')
  }));
  rankingImport={parsed,rows};
@@ -275,7 +280,7 @@ function applyRanking(){
   const previous=(draft.results||[]).find(row=>row.skipperId===id);
   return {skipperId:id,status:'finished',position:item.position,
    elapsedSeconds:item.elapsedSeconds,gapSeconds:item.gapSeconds,
-   generalRank:previous?.generalRank??null};
+   generalRank:item.generalRank??previous?.generalRank??null};
  });
  const kept=(draft.results||[]).filter(r=>r.status==='dnf'&&!next.some(row=>row.skipperId===r.skipperId));
  if(next.length+kept.length>50){notify('La course dépasserait 50 participants.',true);return;}
@@ -844,6 +849,13 @@ function change(ev){
 function input(ev){
  const el=ev.target;
  if(el.id==='team-bulk-input'){renderBulkPreview();return;}
+ if(el.dataset.teamImportGeneral!==undefined&&rankingImport){
+  const item=rankingImport.rows[Number(el.dataset.teamImportGeneral)];
+  if(item){item.generalRank=el.value.trim()?Number(el.value):null;
+   // Keep editing focus; final validation is performed before applying the classification.
+  }
+  return;
+ }
  if(el.dataset.teamImportName!==undefined&&rankingImport){
   const item=rankingImport.rows[Number(el.dataset.teamImportName)];
   if(item){item.newName=el.value;

@@ -483,6 +483,13 @@
  color:var(--vsr-ink,#33383d);
  border:2px solid var(--vsr-border,#bfc6c9);
  background:linear-gradient(128deg,var(--vsr-tag,#ededed),var(--vsr-foil,#fff) 34%,var(--vsr-accent,#f1f3f3) 67%,var(--vsr-tag,#e4e6e8));
+ /* VSR 1/2/3 is one compact foil badge: wrap the badge, never its text. */
+ flex:0 0 auto;min-width:max-content;max-width:none;
+ width:max-content;white-space:nowrap;overflow-wrap:normal;
+}
+/* Also protect the no-shared-components fallback badge. */
+.lpdb-shell .team-race-tags .team-race-vsr{
+ flex:0 0 auto;min-width:max-content;max-width:none;white-space:nowrap;
 }
 .lpdb-shell .team-race-tags .foil-symbol{display:inline-flex;flex:0 0 14px;align-items:center}
 .lpdb-shell .team-race-tags .foil-symbol svg{display:block;max-width:14px}

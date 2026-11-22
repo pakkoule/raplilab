@@ -162,7 +162,7 @@ function teamRaceCard(r,known,now=Date.now()){
  return '<article class="team-race-card'+(isLive?' team-race-live':'')+'" data-team-race="'+esc(r.id)+'" data-team-state="'+status+'">'+
  '<div class="team-race-layout">'+
  '<section class="team-race-left" aria-label="Visuel et départ de course">'+
- '<div class="team-race-photo">'+img+'<span class="team-race-photo-mark">LPDB · RAPLI REGATTA</span></div>'+
+ '<div class="team-race-photo">'+img+'<span class="team-race-status team-race-photo-status '+statusClass+'">'+liveIcon+state+'</span></div>'+
  '<div class="team-race-intro"><h3 title="'+esc(r.name)+'">'+esc(r.name)+'</h3>'+
  (r.stageGroup?'<span class="team-race-stage">'+esc(r.stageGroup)+'</span>':'')+
  '<div class="team-race-departure"><span>DÉPART DE LA COURSE</span><strong>'+startText+'</strong></div>'+
@@ -172,7 +172,7 @@ function teamRaceCard(r,known,now=Date.now()){
  '<header class="team-race-topline"><div class="team-race-tags">'+
  boatTag+vsrTag+
  '</div>'+menu+'</header>'+
- '<span class="team-race-status '+statusClass+'">'+liveIcon+state+'</span>'+
+
  (gfs?'<div class="team-race-weather">'+gfs+'</div>':'')+
  (err?'<p class="team-race-alert">'+esc(err)+'</p>':'')+
  (status==='finished'?'<div class="team-race-figures">'+

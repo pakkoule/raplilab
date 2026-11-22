@@ -182,6 +182,15 @@ html:not([data-rapli-role="editor"]) #rapli-module-cloud-save{display:none!impor
           </div>
           <small>Interpolation spatiale des quatre nœuds voisins du GFS 0,25°. Il s'agit d'un calcul sur les vents prévus, pas d'une observation ni d'un routage.</small>
         </section>
+        <section class="gfs-spatiotemporal-panel" aria-label="Vent géographique et temporel interpolé sur une position">
+          <div class="gfs-spatiotemporal-title">
+            <strong>VENT SPATIO-TEMPOREL · TEST 6</strong>
+            <span>47,125°N · 9,125°O</span>
+          </div>
+          <p data-gfs-spatiotemporal-status>Lis +6 h et +12 h (ou +12 h et +18 h) sur le même cycle pour calculer le vent entre les mailles et les échéances.</p>
+          <div data-gfs-spatiotemporal-results hidden></div>
+          <small>Vent calculé, non observé : interpolation bilinéaire des 4 nœuds météo de chaque échéance, puis interpolation temporelle U/V. Ce n'est pas encore une trajectoire de bateau.</small>
+        </section>
         <section class="gfs-temporal-panel" aria-label="Interpolations temporelles GFS">
           <strong>ÉVOLUTION DU VENT · ENTRE DEUX PRÉVISIONS</strong>
           <p data-gfs-interpolation-status>Lis +6 h puis +12 h sur le même cycle GFS pour calculer les vents intermédiaires à +9 h.</p>

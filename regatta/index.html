@@ -86,17 +86,52 @@ html:not([data-rapli-role="editor"]) #rapli-module-cloud-save{display:none!impor
     </span>
   </button>
 
-  </div>
-  <div class="regatta-cloud-status" id="regatta-cloud-overlay" role="status" aria-live="polite" aria-atomic="true" aria-hidden="true">
-    <span id="rapli-shared-status-regatta">Chargement de la collection…</span>
-  </div>
-  <section id="lpdb-panel" class="lpdb-shell" role="region" aria-label="LPDB — Championnat de l’équipe">
     <nav class="lpdb-tabs" role="tablist" aria-label="Rubriques de l’équipe LPDB">
       <button type="button" id="lpdb-view-team" class="lpdb-tab active" role="tab" aria-selected="true" aria-controls="team-panel">CHAMPIONNAT</button>
       <button type="button" id="lpdb-view-team-races" class="lpdb-tab" role="tab" aria-selected="false" aria-controls="team-races-panel" tabindex="-1">COURSES D'ÉQUIPE</button>
       <button type="button" id="lpdb-view-team-skippers" class="lpdb-tab" role="tab" aria-selected="false" aria-controls="team-skippers-panel" tabindex="-1">SKIPPERS</button>
       <button type="button" id="lpdb-view-team-stats" class="lpdb-tab" role="tab" aria-selected="false" aria-controls="team-stats-panel" tabindex="-1">STATS D'ÉQUIPE</button>
     </nav>
+  </div>
+
+  <div class="regatta-catalogue-controls lpdb-global-controls" id="lpdb-global-controls" data-view="team" role="group" aria-label="Recherche et actions LPDB">
+    <div class="regatta-search" role="search" aria-label="Rechercher dans l’équipe LPDB">
+      <label class="regatta-search-field" for="lpdb-global-search">
+        <svg aria-hidden="true" viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><circle cx="10.8" cy="10.8" r="7.2"/><path d="m16.3 16.3 5 5"/></svg>
+        <span class="sr-only">Rechercher une course, un skipper, un bateau ou une catégorie VSR LPDB</span>
+        <input id="lpdb-global-search" type="search" enterkeyhint="search" autocomplete="off" spellcheck="false"
+          placeholder="Rechercher un skipper…" aria-controls="team-panel team-races-panel team-skippers-panel team-stats-panel">
+      </label>
+      <button type="button" id="lpdb-search-clear" class="regatta-search-clear" aria-label="Effacer la recherche" title="Effacer la recherche" hidden>×</button>
+    </div>
+    <div class="cloud-actions regatta-inline-actions" role="group" aria-label="Actions LPDB">
+      <button type="button" id="regatta-team-sync" class="btn subtle tiny regatta-icon-action" aria-label="Synchroniser LPDB" title="Synchroniser avec Supabase"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M5.7 9a7.5 7.5 0 0 1 13-2l1.3 5M4 12l1.3 5a7.5 7.5 0 0 0 13-2"/></svg></button>
+      <button type="button" class="btn subtle tiny regatta-icon-action" data-team-action="recalculate" data-lpdb-action-for="team" aria-label="Recalculer le championnat" title="Recalculer les classements"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M5.7 9a7.5 7.5 0 0 1 13-2l1.3 5M4 12l1.3 5a7.5 7.5 0 0 0 13-2"/></svg></button>
+      <button type="button" class="btn subtle tiny regatta-icon-action" data-team-action="recalculate-notes" data-lpdb-action-for="team-races" aria-label="Recalculer les notes" title="Recalculer les notes des skippers"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="5" y="2.5" width="14" height="19" rx="2"/><path d="M8 6.5h8M8 11h2m4 0h2M8 15h2m4 0h2M8 19h2"/></svg></button>
+      <button type="button" class="btn primary tiny regatta-icon-action" data-team-action="new-race" data-lpdb-action-for="team-races" aria-label="Ajouter une course d’équipe" title="Ajouter une course d’équipe">＋</button>
+      <button type="button" class="btn primary tiny regatta-icon-action" data-team-action="new-member" data-lpdb-action-for="team-skippers" aria-label="Ajouter un skipper" title="Ajouter un skipper">＋</button>
+      <button type="button" class="btn subtle tiny regatta-icon-action" data-team-action="bulk-members" data-lpdb-action-for="team-skippers" aria-label="Ajouter des skippers par bloc" title="Ajouter des skippers par bloc">＋＋</button>
+      <button type="button" class="btn subtle tiny regatta-icon-action" data-team-action="team-colors" data-lpdb-action-for="team-races" aria-label="Personnaliser les puces bateaux" title="Personnaliser les puces bateaux"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M10.3 2.4h3.4l.5 1.9 1.7.7 1.7-1 2.4 2.4-1 1.7.7 1.7 1.9.5v3.4l-1.9.5-.7 1.7 1 1.7-2.4 2.4-1.7-1-1.7.7-.5 1.9h-3.4l-.5-1.9-1.7-.7-1.7 1-2.4-2.4 1-1.7-.7-1.7-1.9-.5v-3.4l1.9-.5.7-1.7-1-1.7 2.4-2.4 1.7 1 1.7-.7z"/></svg></button>
+    </div>
+    <div class="regatta-navigation">
+      <div class="rapli-profile" id="rapliProfile">
+        <button id="rapliProfileToggle" type="button" class="rapli-profile-toggle" aria-label="Ouvrir le menu Profil" title="Profil et applications" aria-haspopup="true" aria-expanded="false" aria-controls="rapliProfileMenu">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5.2 20c.2-4 2.8-6.2 6.8-6.2s6.6 2.2 6.8 6.2"/></svg>
+        </button>
+        <div id="rapliProfileMenu" class="rapli-profile-menu" hidden>
+          <div class="rapli-profile-menu-title">MON PROFIL · RAPLI REGATTA</div>
+          <button id="rapliProfileLogin" type="button">🔒 Connexion administrateur</button>
+          <button id="rapliProfileLogout" type="button" hidden>Se déconnecter</button>
+          <div id="rapliProfileMessage" class="rapli-profile-message" role="status" aria-live="polite">Consultation libre</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="regatta-cloud-status" id="regatta-cloud-overlay" role="status" aria-live="polite" aria-atomic="true" aria-hidden="true">
+    <span id="rapli-shared-status-regatta">Chargement de la collection…</span>
+  </div>
+  <section id="lpdb-panel" class="lpdb-shell" role="region" aria-label="LPDB — Championnat de l’équipe">
+
     <section id="team-panel" role="tabpanel" aria-labelledby="lpdb-view-team" class="team-panel"></section>
     <section id="team-races-panel" role="tabpanel" aria-labelledby="lpdb-view-team-races" class="team-panel" hidden></section>
     <section id="team-skippers-panel" role="tabpanel" aria-labelledby="lpdb-view-team-skippers" class="team-panel" hidden></section>
@@ -125,19 +160,7 @@ html:not([data-rapli-role="editor"]) #rapli-module-cloud-save{display:none!impor
       <button type="button" class="btn primary tiny regatta-icon-action" id="new-race" aria-label="Ajouter une course" title="Ajouter une course">＋</button>
       <button type="button" class="btn subtle tiny regatta-icon-action rapli-personalize-action" id="manage-class-colors" aria-label="Gérer les couleurs des classes" title="Gérer les couleurs des classes"><svg class="rapli-personalize-gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M10.3 2.4h3.4l.5 1.9 1.7.7 1.7-1 2.4 2.4-1 1.7.7 1.7 1.9.5v3.4l-1.9.5-.7 1.7 1 1.7-2.4 2.4-1.7-1-1.7.7-.5 1.9h-3.4l-.5-1.9-1.7-.7-1.7 1-2.4-2.4 1-1.7-.7-1.7-1.9-.5v-3.4l1.9-.5.7-1.7-1-1.7 2.4-2.4 1.7 1 1.7-.7z"/></svg></button>
     </div>
-    <div class="regatta-navigation">
-      <div class="rapli-profile" id="rapliProfile">
-        <button id="rapliProfileToggle" type="button" class="rapli-profile-toggle" aria-label="Ouvrir le menu Profil" title="Profil et applications" aria-haspopup="true" aria-expanded="false" aria-controls="rapliProfileMenu">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5.2 20c.2-4 2.8-6.2 6.8-6.2s6.6 2.2 6.8 6.2"/></svg>
-        </button>
-        <div id="rapliProfileMenu" class="rapli-profile-menu" hidden>
-          <div class="rapli-profile-menu-title">MON PROFIL · RAPLI REGATTA</div>
-          <button id="rapliProfileLogin" type="button">🔒 Connexion administrateur</button>
-          <button id="rapliProfileLogout" type="button" hidden>Se déconnecter</button>
-          <div id="rapliProfileMessage" class="rapli-profile-message" role="status" aria-live="polite">Consultation libre</div>
-        </div>
-      </div>
-    </div>
+
   </div>
   <section class="regatta-routing-dashboard" aria-label="Fenêtres de départ Ultim BP XI" id="regatta-routing-dashboard">
     <div class="regatta-routing-dashboard-header">

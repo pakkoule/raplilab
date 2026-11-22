@@ -11,7 +11,7 @@ const searchEngine=window.RapliRegattaSearch;
 if(!searchEngine)throw Error('Moteur de recherche Regatta non chargé.');
 const zoneName=r=>timeEngine.ZONES[timeEngine.normalize(r?.timezone)]||timeEngine.ZONES[timeEngine.DEFAULT];
 const BOAT_NAME='Rapli LPDB';
-const props={name:180,boatClass:100,start:20,startTime:8,end:20,endTime:8,rank:40,rankTotal:12,rankDepartment:40,rankDepartmentTotal:12,rankNational:40,rankNationalTotal:12,rankCity:40,rankCityTotal:12,rankTeam:40,rankTeamTotal:12,duration:100,durationDays:4,durationHours:2,durationMinutes:2,durationSeconds:2,vsr:5,participantCount:12,gainPoints:9,gainCredits:9};
+const props={name:180,boatClass:100,start:20,startTime:8,end:20,endTime:8,rank:40,rankTotal:12,rankDepartment:40,rankDepartmentTotal:12,rankNational:40,rankNationalTotal:12,rankCity:40,rankCityTotal:12,rankTeam:40,rankTeamTotal:12,duration:100,durationDays:4,durationHours:2,durationMinutes:2,durationSeconds:2,vsr:5,participantCount:12,startParticipantCount:12,gainPoints:9,gainCredits:9};
 const imageKeys=['icon','result','route'];
 const ROUTE_TYPES=Object.freeze({'tour-du-monde':'Tour du monde','transatlantique':'Transatlantique','cotier':'Côtier','etapes':'Course à étapes','record-distance':'Record de distance','autre':'Autre parcours'});
 const routeType=v=>Object.prototype.hasOwnProperty.call(ROUTE_TYPES,v)?v:'';
@@ -300,7 +300,7 @@ let storageRecoveryBlocked=false;
      '<button type="button" data-regatta-page="'+(regattaPage+1)+'" aria-label="Page suivante"'+(regattaPage===pages?' disabled':'')+'>›</button>'+
      '</nav>';
  }
-const dialog=$('race-dialog'),getField=k=>$('race-'+({boatClass:'class',startTime:'start-time',endTime:'end-time',rankDepartment:'rank-department',rankNational:'rank-national',rankTotal:'rank-total',rankNationalTotal:'rank-national-total',rankDepartmentTotal:'rank-department-total',rankCity:'rank-city',rankCityTotal:'rank-city-total',rankTeam:'rank-team',rankTeamTotal:'rank-team-total',durationDays:'days',durationHours:'hours',durationMinutes:'minutes',durationSeconds:'seconds',gainPoints:'gain-points',gainCredits:'gain-credits',participantCount:'participant-count'}[k]||k));
+const dialog=$('race-dialog'),getField=k=>$('race-'+({boatClass:'class',startTime:'start-time',endTime:'end-time',rankDepartment:'rank-department',rankNational:'rank-national',rankTotal:'rank-total',rankNationalTotal:'rank-national-total',rankDepartmentTotal:'rank-department-total',rankCity:'rank-city',rankCityTotal:'rank-city-total',rankTeam:'rank-team',rankTeamTotal:'rank-team-total',durationDays:'days',durationHours:'hours',durationMinutes:'minutes',durationSeconds:'seconds',gainPoints:'gain-points',gainCredits:'gain-credits',participantCount:'participant-count',startParticipantCount:'start-participant-count'}[k]||k));
 function toast(t,error=false){$('notice').textContent=t;$('notice').dataset.error=String(error);clearTimeout(timer);timer=setTimeout(()=>{$('notice').textContent='';},7000);}
 const req=r=>new Promise((yes,no)=>{r.onsuccess=()=>yes(r.result);r.onerror=()=>no(r.error||Error('IndexedDB inaccessible'));});
 const done=tx=>new Promise((yes,no)=>{tx.oncomplete=yes;tx.onerror=()=>no(tx.error||Error('Sauvegarde locale impossible'));tx.onabort=()=>no(tx.error||Error('Stockage local annulé'));});
@@ -1276,7 +1276,9 @@ function updateKindFields(){
  for(const field of ['end','endTime'])getField(field).closest('label').hidden=isRecord;
  $('arrival-feedback').hidden=isRecord;
  $('race-participant-count').closest('label').hidden=isRecord;
+ $('race-start-participant-count').closest('label').hidden=isRecord;
  $('race-participant-help').hidden=isRecord;
+ $('race-start-participant-help').hidden=isRecord;
  $('race-vsr').closest('label').hidden=false; // VSR level applies to regular races and records.
  $('race-equipment-group').hidden=isRecord;
  $('race-gain-points').closest('fieldset').hidden=isRecord;
@@ -1331,6 +1333,11 @@ async function saveEditor(e){
  const arrival=r.kind==='record'?{status:'waiting'}:updateArrival();if(arrival.status==='invalid-duration'||arrival.status==='invalid-date'){toast('Corrige la durée ou les horaires avant d’enregistrer.',true);getField(arrival.status==='invalid-duration'?'durationDays':'start').focus();return;}
  if(r.kind!=='record'&&syncDurationInput()==='invalid'){toast('Durée incorrecte : vérifie les jours, heures, minutes et secondes.',true);getField('durationDays').focus();return;}
  for(const k of Object.keys(props))if(k!=='boat')r[k]=clean(getField(k).value,props[k]);
+ const atStart=r.startParticipantCount;
+ if(atStart&&!/^[1-9]\d{0,11}$/.test(atStart)){
+  toast('Les participants au départ doivent être un entier positif (12 chiffres maximum).',true);
+  getField('startParticipantCount').focus();return;
+ }
  r.boat=BOAT_NAME;
  for(const key of r.kind==='record'?[]:['gainPoints','gainCredits']){
    const value=String(getField(key).value||'').trim();
@@ -1359,7 +1366,7 @@ async function saveEditor(e){
   r.start=earliest.date;r.startTime=earliest.time;
   r.scoreSnapshot=null;
   if(!r.recordClosed)for(const [place,total] of rankPairs){r[place]='';r[total]='';}
-  for(const key of ['duration','durationDays','durationHours','durationMinutes','durationSeconds','end','endTime','gainPoints','gainCredits','participantCount'])r[key]='';
+  for(const key of ['duration','durationDays','durationHours','durationMinutes','durationSeconds','end','endTime','gainPoints','gainCredits','participantCount','startParticipantCount'])r[key]='';
   r.equipment='';
  }else{r.attempts=[];r.recordClosed=false;}
  if(r.kind!=='record'&&!old?.scoreSnapshot){const initial=scoreEngine.scoreFor(r,[...rows.filter(x=>x.id!==r.id),r],raceStatus);if(initial.available)r.scoreSnapshot={...initial,signature:scoreEngine.signature(r),calculatedAt:now()};}

@@ -222,7 +222,7 @@ function applyRanking(){
  if(draft.results?.some(r=>r.status==='finished'||r.status==='pending')&&!confirm('Remplacer les positions déjà saisies par le classement collé ? Les abandons DNF resteront comptabilisés.'))return;
  draft.results=[...next,...kept];
  // A previously pasted draft was not saved: replace its provisional members, too.
- draft.newMembers=newMembers;
+ draft.newMembers=[...(draft.newMembers||[]).filter(m=>next.some(r=>r.skipperId===m.id)),...newMembers];
  rankingImport=null;
  $('team-ranking-import-body').hidden=true;
  document.querySelector('[data-team-action="toggle-ranking-import"]').setAttribute('aria-expanded','false');
@@ -232,7 +232,7 @@ function applyRanking(){
 }
 function syncEditorTimes(row,field,value){
  if(!draft||!row||row.status==='dnf')return;
- const seconds=clock.parseTime(value);
+ const seconds=clock.parseTime(field==='gapSeconds'?value.replace(/^\s*\+\s*/u,''):value);
  if(value.trim()&&seconds===null){notify('Format de durée invalide. Utilise par exemple 09j 15h 32m 50s.',true);editorRows();return;}
  const leader=draft.results.find(r=>r.status==='finished'&&r.position===1);
  if(field==='elapsedSeconds'){
@@ -251,7 +251,7 @@ function syncEditorTimes(row,field,value){
 }
 function editorRows(){
  if(!draft)return;
- const known=new Map(members().map(m=>[m.id,m]));
+ const known=new Map(editorMembers().map(m=>[m.id,m]));
  $('team-participants-count').textContent=draft.results.length+' / 50 participants';
  $('team-result-rows').innerHTML=draft.results.map(row=>{
   const name=known.get(row.skipperId)?.name||'Skipper inconnu';
@@ -260,13 +260,15 @@ function editorRows(){
   return '<div class="team-result-row" data-team-row="'+esc(row.skipperId)+'"><span class="team-result-name" title="'+esc(name)+'">'+esc(name)+'</span>'+
    '<input type="number" min="1" max="50" step="1" inputmode="numeric" data-team-rank="'+esc(row.skipperId)+'" aria-label="Rang de '+esc(name)+'" value="'+(row.position??'')+'"'+(row.status==='dnf'?' disabled':'')+' placeholder="Rang">'+
    '<select data-team-status="'+esc(row.skipperId)+'" aria-label="Résultat de '+esc(name)+'">'+opts([{value:'pending',label:'À saisir'},{value:'finished',label:'Classé'},{value:'dnf',label:'DNF'}],row.status)+'</select>'+
+   '<input type="text" data-team-elapsed="'+esc(row.skipperId)+'" aria-label="Temps total de '+esc(name)+'" placeholder="09j 15h…" value="'+(row.elapsedSeconds!=null?esc(clock.formatTime(row.elapsedSeconds)):'')+'"'+(row.status!=='finished'?' disabled':'')+'>'+
+   '<input type="text" data-team-gap="'+esc(row.skipperId)+'" aria-label="Écart au vainqueur de '+esc(name)+'" placeholder="+ 03h…" value="'+(row.gapSeconds!=null?'+ '+esc(clock.formatTime(row.gapSeconds)):'')+'"'+(row.status!=='finished'?' disabled':'')+'>'+
    '<strong class="team-result-points">'+(row.status==='dnf'?'0 / 0':row.status==='finished'?num(sc)+' / '+num(hc):'—')+'</strong><button type="button" class="team-remove-row" data-team-remove="'+esc(row.skipperId)+'" title="Retirer '+esc(name)+'">×</button></div>';
  }).join('')||empty('Ajoute les participants depuis l’effectif.');
  editorSummary();
 }
 function editorSummary(){
  if(!draft)return;
- const known=new Map(members().map(m=>[m.id,m])),n=draft.results.length;
+ const known=new Map(editorMembers().map(m=>[m.id,m])),n=draft.results.length;
  const scores=draft.results.filter(x=>x.status==='finished').reduce((sum,x)=>sum+engine.primary(draft.vsr,n,x.position),0);
  const pending=draft.results.filter(x=>x.status==='pending').length;
  const error=draft.status==='finished'?engine.verifyRace({...draft,dateEnd:$('team-race-date').value},known):'';
@@ -322,6 +324,11 @@ function openRace(id,personalId=''){
  const base=existing?structuredClone(existing):{id:uuid('race'),type:'team-race',name:'',dateEnd:'',
   vsr:'vsr2',status:'planned',stageGroup:'',results:[],createdAt:stamp()};
  draft=p?engine.fromPersonal(p,base):base;
+ draft.newMembers=[];rankingImport=null;
+ $('team-ranking-import-body').hidden=true;
+ $('team-ranking-paste').value='';
+ document.querySelector('[data-team-action="toggle-ranking-import"]').setAttribute('aria-expanded','false');
+ previewImport();
  $('team-race-dialog-title').textContent=id?'MODIFIER LA COURSE':'NOUVELLE COURSE D’ÉQUIPE';
  fillSharedFields();renderPersonalLink();
  $('team-create-member').value='';
@@ -331,7 +338,7 @@ function openRace(id,personalId=''){
 function choices(){
  const chosen=new Set(draft?.results.map(x=>x.skipperId)||[]);
  $('team-select-member').innerHTML='<option value="">Choisir un skipper…</option>'+
- opts(members().filter(m=>!chosen.has(m.id)).sort((a,b)=>a.name.localeCompare(b.name,'fr'))
+ opts(editorMembers().filter(m=>!chosen.has(m.id)).sort((a,b)=>a.name.localeCompare(b.name,'fr'))
    .map(m=>({value:m.id,label:m.name+(m.status==='former'?' · ancien':'')})),'');
 }
 function addMemberToDraft(id){
@@ -363,11 +370,16 @@ async function submitRace(ev){
  draft.status=$('team-race-status').value;draft.stageGroup=$('team-race-group').value.trim().slice(0,100);
  if(!draft.name){notify('Renseigne le nom de la course.',true);return;}
  if(draft.status==='finished'){
-  const issue=engine.verifyRace(draft,new Map(members().map(m=>[m.id,m])));
+  const issue=engine.verifyRace(draft,new Map(editorMembers().map(m=>[m.id,m])));
   if(issue){notify(issue,true);editorSummary();return;}
  }
- draft.updatedAt=stamp();
- if(await saveEntity(engine.race(draft))){$('team-race-dialog').close();draft=null;notify('Course d’équipe enregistrée ✓');}
+ const race=engine.race({...draft,updatedAt:stamp()});
+ if(!race){notify('Fiche de course invalide.',true);return;}
+ try{
+  await api.saveRaceBundle(race,draft.newMembers||[]);
+  $('team-race-dialog').close();draft=null;rankingImport=null;
+  render();notify('Course et chronos enregistrés ✓');
+ }catch(error){notify('Enregistrement impossible : '+(error?.message||error),true);}
 }
 function openBulkMembers(){
  if(!canWrite())return;
@@ -621,6 +633,14 @@ async function click(ev){
  const button=ev.target.closest('[data-team-action]');if(!button)return;
  const cmd=button.dataset.teamAction;
  if(cmd==='new-race')return openRace();
+ if(cmd==='toggle-ranking-import'){
+  const body=$('team-ranking-import-body'),open=body.hidden;
+  body.hidden=!open;button.setAttribute('aria-expanded',String(open));
+  if(open)$('team-ranking-paste').focus();
+  return;
+ }
+ if(cmd==='analyze-ranking'){analyzeRanking();return;}
+ if(cmd==='apply-ranking'){applyRanking();return;}
  if(cmd==='new-member')return openMember();
  if(cmd==='bulk-members')return openBulkMembers();
  if(cmd==='link-existing'&&draft){
@@ -655,6 +675,7 @@ async function click(ev){
  if(cmd==='create-member'&&draft)return void quickMember();
  if(cmd==='previous'){page=Math.max(1,page-1);if($('team-stage-dialog')?.open)stageDialog(currentStage);else renderMain();return;}
  if(cmd==='next'){page++;if($('team-stage-dialog')?.open)stageDialog(currentStage);else renderMain();return;}
+ if(cmd.startsWith('show-ranking-'))return showRaceRanking(cmd.slice(13));
  if(cmd.startsWith('race-'))return openRace(cmd.slice(5));
  if(cmd.startsWith('member-'))return openMember(cmd.slice(7));
  if(cmd.startsWith('profile-'))return showProfile(cmd.slice(8));
@@ -682,6 +703,17 @@ function change(ev){
  if(el.id==='team-race-status'||el.id==='team-race-vsr'||el.id==='team-race-date'){
   if(draft){draft.vsr=$('team-race-vsr').value;draft.status=$('team-race-status').value;editorRows();}
  }
+ if(el.dataset.teamImportSelect!==undefined&&rankingImport){
+  const item=rankingImport.rows[Number(el.dataset.teamImportSelect)];
+  if(item){item.skipperId=el.value;previewImport();}
+  return;
+ }
+ if(el.dataset.teamElapsed&&draft){
+  syncEditorTimes(draft.results.find(r=>r.skipperId===el.dataset.teamElapsed),'elapsedSeconds',el.value);return;
+ }
+ if(el.dataset.teamGap&&draft){
+  syncEditorTimes(draft.results.find(r=>r.skipperId===el.dataset.teamGap),'gapSeconds',el.value);return;
+ }
  if(el.dataset.teamStatus&&draft){
   const row=draft.results.find(r=>r.skipperId===el.dataset.teamStatus);
   if(row){row.status=el.value;row.position=row.status==='finished'?row.position:null;editorRows();}
@@ -690,6 +722,14 @@ function change(ev){
 function input(ev){
  const el=ev.target;
  if(el.id==='team-bulk-input'){renderBulkPreview();return;}
+ if(el.dataset.teamImportName!==undefined&&rankingImport){
+  const item=rankingImport.rows[Number(el.dataset.teamImportName)];
+  if(item){item.newName=el.value;
+   const submit=$('team-ranking-apply');
+   submit.disabled=!item.newName.trim()||/\.{2,}|…/u.test(item.newName);
+  }
+  return;
+ }
  if(el.id==='team-search'){search=el.value;page=1;renderMain();$('team-search')?.focus();$('team-search')?.setSelectionRange(search.length,search.length);return;}
  if(el.dataset.teamRank&&draft){
   const row=draft.results.find(r=>r.skipperId===el.dataset.teamRank);
@@ -715,7 +755,7 @@ function init(bridge){
  $('team-member-form')?.addEventListener('submit',submitMember);
  $('team-bulk-form')?.addEventListener('submit',submitBulkMembers);
  document.querySelectorAll('[data-team-close]').forEach(b=>b.addEventListener('click',()=>b.closest('dialog')?.close()));
- for(const id of ['team-race-dialog','team-member-dialog','team-bulk-dialog','team-stage-dialog','team-profile-dialog']){
+ for(const id of ['team-race-dialog','team-race-classification-dialog','team-member-dialog','team-bulk-dialog','team-stage-dialog','team-profile-dialog']){
   $(id)?.addEventListener('click',ev=>{if(ev.target===ev.currentTarget)ev.currentTarget.close();});
  }
  render();

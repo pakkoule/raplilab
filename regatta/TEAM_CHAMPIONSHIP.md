@@ -88,3 +88,12 @@ Le championnat LPDB démarre avec la prochaine course enregistrée. **Aucun impo
 - Toutes les actions (modification, classement et chronos, aller à « Mes courses », exports PNG et suppression) sont dans un bouton **« … » en haut à droite**.
 - Aucun **champ d'arrivée unique** n'est visible sur la tuile d'équipe. L'heure d'arrivée et l'équipement personnels n'apparaissent ni dans la tuile ni dans le formulaire d'équipe ; les **chronos de chaque skipper** restent consultables dans les classements.
 - Le champ interne `dateEnd` est conservé sous le libellé **Date de clôture du classement** pour rattacher la course aux périodes du championnat, sans confondre cette date avec une arrivée individuelle. Les dates de clôture déjà enregistrées sont conservées.
+
+
+## Interface argentée et classement général VR (PR #4)
+- L'espace **LPDB** abandonne les fonds bleu pétrole : navigation, fiches de courses, tableaux, statistiques, gestion des membres et dialogues sont présentés en **gris perle très clair / foil argenté**, avec texte graphite, reflets métallisés subtils, et quelques accents réservés aux statuts et podiums. Les pages personnelles de Regatta ne changent pas de thème.
+- Une nouvelle colonne facultative **Classement général VR** est disponible dans la grille de résultats de chaque course, **par skipper**, distincte du **rang LPDB**. Le rang général est enregistré en nombre entier positif et n'est pas requis pour enregistrer ou valider une course.
+- Le classement général est aussi saisissable dans l'aperçu de l'import texte VR, consultable dans le classement de course et la fiche du skipper, et affiché dans les **PNG de classement et de podium** de chaque course. Les rangs déjà saisis restent conservés lors d'une actualisation par import rapide.
+- Les anciennes courses sans classement général restent pleinement compatibles ; le champ est omis, ou affiché par « — ».
+- La rubrique **Statistiques** des skippers conserve le meilleur rang général VR sur les courses où il est connu.
+- Le **classement général VR n'affecte ni le barème principal ni le barème historique**. Il est stocké pour permettre la réutilisation ultérieure du système de notation personnelle, sans anticiper ses règles ni supposer le nombre total de concurrents.

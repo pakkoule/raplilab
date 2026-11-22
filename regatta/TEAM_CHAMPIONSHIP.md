@@ -15,7 +15,7 @@ Le championnat LPDB démarre avec la prochaine course enregistrée. **Aucun impo
 - Un ancien membre conserve ses points et peut être réactivé.
 
 ## Résultats d'une course
-- Nom, catégorie VSR (HC/VSR 1/2/3), date d'arrivée, statut « À venir / En cours / Terminée » et éventuellement groupe d'étapes.
+- Nom, catégorie VSR (HC/VSR 1/2/3), date de clôture du classement (distincte des arrivées des skippers), statut « À venir / En cours / Terminée » et éventuellement groupe d'étapes.
 - Position de chaque skipper saisie manuellement ; statuts « À saisir / Classé / DNF ».
 - 50 participants maximum par course ; les DNF comptent dans l'effectif mais ne gagnent **aucun point**.
 - Un rang invalide ou double empêche de valider la course terminée. Une course en cours ou incomplète ne produit **aucun point** au championnat.
@@ -58,7 +58,7 @@ Le championnat LPDB démarre avec la prochaine course enregistrée. **Aucun impo
 - Une fiche de course LPDB peut rester indépendante **ou** être associée à une fiche personnelle existante (lien par identifiant, pas par pseudo/nom).
 - Depuis **Courses d’équipe** : choix « Fiche Mes courses associée », bouton « Utiliser ses détails », « Ouvrir Mes courses », « Dissocier » ou « Créer ma fiche personnelle ». Une nouvelle fiche personnelle est préremplie à partir de la course d’équipe enregistrée ; le lien est créé quand cette nouvelle fiche est sauvegardée.
 - Depuis **Mes courses** : le menu « … » des courses ordinaires affiche « Utiliser pour le championnat LPDB », qui ouvre la fiche d’équipe existante ou prépare une nouvelle course liée.
-- La fiche personnelle devient la référence pour les **détails communs** : nom, classe de bateau, type de parcours, départ (date/heure), arrivée (date/heure), catégorie VSR, fuseau horaire et équipement. Les données se reflètent automatiquement dans la vue et les calculs LPDB à partir de la fiche personnelle, sans copier les modifications dans la base à chaque affichage.
+- La fiche personnelle devient la référence pour les **détails communs** : nom, classe de bateau, type de parcours, départ (date/heure), catégorie VSR et fuseau horaire. La date de clôture des résultats de l'équipe est indépendante de l'arrivée personnelle. L'heure d'arrivée et l'équipement sont individuels et ne sont plus repris dans le formulaire d'équipe. Les données se reflètent automatiquement dans la vue et les calculs LPDB à partir de la fiche personnelle, sans copier les modifications dans la base à chaque affichage.
 - **Les classements personnels et les captures (gains VSR/VR, rang général Virtual Regatta, notes, photos) restent exclusivement personnels. Les résultats de chaque skipper, le statut de validation d’équipe, les points principaux/historiques et le rattachement aux périodes restent exclusivement côté équipe.**
 - Une fiche personnelle supprimée laisse les derniers détails disponibles dans la fiche d’équipe, avec une mention « fiche introuvable » et une possibilité de dissocier ou réassocier. Aucune suppression en cascade.
 - Seul l’éditeur authentifié peut créer ou modifier les liaisons ; les visiteurs peuvent consulter les deux vues. Aucun import rétroactif de l’ancien Excel.
@@ -80,3 +80,11 @@ Le championnat LPDB démarre avec la prochaine course enregistrée. **Aucun impo
 - Les chronos et écarts sont modifiables individuellement dans la grille, vérifiés avant validation, affichés dans le classement de course, dans la fiche du skipper et dans les PNG de course (tableau, Top 10, podium).
 - Le championnat par période affiche également le **chrono moyen** et l'**écart moyen au vainqueur** calculés à partir des courses où un temps est disponible. Les statistiques secondaires permettent de trier sur ces moyennes ; elles restent descriptives car les parcours et distances peuvent varier. Le temps de course ne modifie **pas** le barème de points.
 - Les anciennes courses sans temps enregistré continuent de fonctionner, avec un tiret pour les chronos inconnus. Une course non encore validée ne produit toujours aucun point au championnat.
+
+
+## Navigation Championnat et tuiles d'équipe (correctif 22 novembre 2026)
+- Cliquer sur **LPDB → Championnat** ouvre désormais explicitement cette rubrique, même après avoir consulté une autre rubrique LPDB ou l'onglet « Mes courses ».
+- Les **tuiles de courses d'équipe** reprennent la structure **deux colonnes** des courses personnelles : à gauche l'illustration (si une fiche personnelle est liée), le titre et le **départ commun** ; à droite les tags bateau/VSR, l'état de l'épreuve, le nombre de skippers, les DNF, le premier et le podium LPDB, et les totaux des deux barèmes.
+- Toutes les actions (modification, classement et chronos, aller à « Mes courses », exports PNG et suppression) sont dans un bouton **« … » en haut à droite**.
+- Aucun **champ d'arrivée unique** n'est visible sur la tuile d'équipe. L'heure d'arrivée et l'équipement personnels n'apparaissent ni dans la tuile ni dans le formulaire d'équipe ; les **chronos de chaque skipper** restent consultables dans les classements.
+- Le champ interne `dateEnd` est conservé sous le libellé **Date de clôture du classement** pour rattacher la course aux périodes du championnat, sans confondre cette date avec une arrivée individuelle. Les dates de clôture déjà enregistrées sont conservées.

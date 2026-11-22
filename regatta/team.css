@@ -234,8 +234,7 @@
  background:linear-gradient(145deg,#cfe9ed,#dce8f2);box-shadow:0 3px 12px #1c42652b}
 .team-race-photo>img{display:block;width:100%;height:100%;object-fit:contain;object-position:center}
 .team-race-photo>img.team-race-fallback-image{width:50%;height:75%;margin:5% auto;filter:drop-shadow(0 3px 12px #0bb4c263)}
-.team-race-photo-mark{position:absolute;left:9px;bottom:8px;font:850 9px Poppins,sans-serif;letter-spacing:.08em;color:#f4fffe;
- padding:5px 7px;background:#143e4dcc;border:1px solid #ffffff45;border-radius:6px}
+
 .team-race-intro{padding:10px 1px 0;display:flex;flex-direction:column;gap:7px}
 .team-race-stage{align-self:flex-start;font:800 9px Poppins,sans-serif;color:#12828d;padding:3px 8px;background:#d6f5f2;border-radius:7px}
 .team-race-departure{display:flex;flex-direction:column;gap:4px;padding:10px;border-radius:10px;border:1px solid #b5d4df;
@@ -349,7 +348,7 @@
 .lpdb-shell .team-race-card h3{color:#292e34}
 .lpdb-shell .team-race-card p{color:#6f747b}
 .lpdb-shell .team-race-photo{background:linear-gradient(145deg,#eceeef,#fff 45%,#e1e4e6);border-color:#c9cfd1}
-.lpdb-shell .team-race-photo-mark{background:#3d4249d9;border-color:#e2e3e485}
+
 .lpdb-shell .team-race-departure{background:var(--lpdb-foil-soft);border-color:#d0d4d6}
 .lpdb-shell .team-race-departure span{color:#72787c}
 .lpdb-shell .team-race-departure strong{color:#30353a}
@@ -805,4 +804,37 @@
  display:inline-block;vertical-align:middle;margin-left:5px;padding:2px 5px;
  color:#24625b;background:#e4f4ef;border:1px solid #a9d8c9;border-radius:6px;
  font:850 8px/1.4 Poppins,system-ui,sans-serif;letter-spacing:.02em
+}
+
+/* The artwork carries the current race status rather than a permanent LPDB label.
+   Keep the full badge visible on small screens, against bright or dark artwork. */
+.lpdb-shell .team-race-photo .team-race-photo-status{
+ position:absolute;z-index:2;left:9px;bottom:9px;max-width:calc(100% - 18px);
+ display:inline-flex;align-items:center;justify-content:flex-start;flex:0 0 auto;
+ min-height:30px;margin:0;padding:7px 10px;gap:6px;
+ box-sizing:border-box;border:1px solid #ffffff99;border-radius:8px;
+ color:#fff;background:linear-gradient(115deg,#202a34ed,#444b55db);
+ box-shadow:0 3px 12px #080f1c75,inset 0 1px 0 #ffffff40;
+ backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);
+ font:850 10px/1.3 Poppins,system-ui,sans-serif;letter-spacing:.035em;
+ white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 3px #080f1d99;
+}
+.lpdb-shell .team-race-photo .team-race-photo-status.is-complete{
+ background:linear-gradient(110deg,#125744ea,#267866dd);border-color:#abe5c7c9;color:#fff;
+}
+.lpdb-shell .team-race-photo .team-race-photo-status.is-pending{
+ background:linear-gradient(110deg,#684423ee,#916235df);border-color:#f1d2a8c9;color:#fff;
+}
+.lpdb-shell .team-race-photo .team-race-photo-status.is-live{
+ background:linear-gradient(110deg,#6d2649ed,#9c4067db);border-color:#f2bed2db;color:#fff;
+}
+.lpdb-shell .team-race-photo .team-race-photo-status.is-upcoming{
+ background:linear-gradient(110deg,#243e5cea,#4c6983dc);border-color:#c4d8ebdb;color:#fff;
+}
+.lpdb-shell .team-race-photo .team-race-photo-status .live-neon{flex:0 0 auto;}
+.lpdb-shell .team-race-photo .team-race-photo-status .live-neon svg{display:block;}
+@media(max-width:430px){
+ .lpdb-shell .team-race-photo .team-race-photo-status{
+  font-size:9px;left:7px;bottom:7px;max-width:calc(100% - 14px);padding:6px 8px;
+ }
 }

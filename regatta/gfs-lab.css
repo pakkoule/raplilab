@@ -381,3 +381,51 @@
   .regatta-gfs-lab .gfs-route-search-step span,
   .regatta-gfs-lab .gfs-route-search-step small{grid-column:2}
 }
+
+
+/* Test 12 : comparison of four local departure windows, not an equator ETA. */
+.regatta-gfs-lab .gfs-departures-panel{
+  margin-top:12px;padding:11px;border:1px solid #c2deda;border-radius:11px;
+  background:linear-gradient(125deg,#f0faf8,#f5f8fc)
+}
+.regatta-gfs-lab .gfs-departures-panel>p{
+  font-size:10px;line-height:1.6;color:#587987;margin:8px 0
+}
+.regatta-gfs-lab .gfs-departures-panel>p[data-state="success"]{color:#186e63}
+.regatta-gfs-lab .gfs-departures-panel>p[data-state="error"]{color:#ab4e56}
+.regatta-gfs-lab [data-gfs-departures-summary][hidden],
+.regatta-gfs-lab [data-gfs-departures-rows][hidden]{display:none}
+.regatta-gfs-lab [data-gfs-departures-summary]{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:7px;margin:9px 0
+}
+.regatta-gfs-lab [data-gfs-departures-summary]>div{
+  padding:9px;min-width:0;background:white;border:1px solid #d7e8e9;border-radius:9px
+}
+.regatta-gfs-lab [data-gfs-departures-summary] small{
+  display:block;font-size:9px;color:#678492
+}
+.regatta-gfs-lab [data-gfs-departures-summary] strong{
+  display:block;color:#126676;font-size:12px;overflow-wrap:anywhere
+}
+.regatta-gfs-lab [data-gfs-departures-rows]{display:grid;gap:6px;margin:9px 0}
+.regatta-gfs-lab .gfs-departure-row{
+  display:grid;grid-template-columns:88px minmax(0,1fr);
+  gap:3px 8px;align-items:baseline;padding:9px;border:1px solid #d8e7e8;
+  border-radius:9px;background:white
+}
+.regatta-gfs-lab .gfs-departure-row[data-fastest="true"]{
+  border-color:#72c0af;background:#effaf5
+}
+.regatta-gfs-lab .gfs-departure-row strong{font-size:10px;color:#295f6f}
+.regatta-gfs-lab .gfs-departure-row span{font-size:10px;color:#185b6a;font-weight:800}
+.regatta-gfs-lab .gfs-departure-row small{
+  grid-column:2;font-size:9px;color:#648390;line-height:1.4
+}
+.regatta-gfs-lab .gfs-departures-panel>small{
+  display:block;margin-top:9px;font-size:9px;line-height:1.6;color:#806b77
+}
+@media(max-width:370px){
+  .regatta-gfs-lab .gfs-departure-row{grid-template-columns:1fr;gap:2px}
+  .regatta-gfs-lab .gfs-departure-row small{grid-column:1}
+}

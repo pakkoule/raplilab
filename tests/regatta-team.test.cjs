@@ -591,7 +591,7 @@ test('LPDB classification dialog renders an independent note for each skipper',(
  const tile=d.querySelector('.team-race-card');
  assert.ok(tile);
  assert.match(tile.textContent,/NOTE MOYENNE DE LA COURSE/);
- assert.match(tile.textContent,/78,5\/100/);
+ assert.match(tile.querySelector('.team-race-average .team-score-ring')?.getAttribute('aria-label')||'',/Note moyenne de la course : 78,5 sur 100/);
  d.querySelector('[data-team-action="show-ranking-'+race.id+'"]').click();
  const dialog=d.getElementById('team-race-classification-dialog');
  assert.equal(dialog.open,true);
@@ -599,8 +599,8 @@ test('LPDB classification dialog renders an independent note for each skipper',(
  assert.ok(noteHeader);
  const cells=dialog.querySelectorAll('tbody tr');
  assert.equal(cells.length,2);
- assert.match(cells[0].textContent,/79\/100/);
- assert.match(cells[1].textContent,/78\/100/);
+ assert.equal(cells[0].querySelector('.team-score-ring')?.getAttribute('aria-label')?.includes('79 sur 100'),true);
+ assert.equal(cells[1].querySelector('.team-score-ring')?.getAttribute('aria-label')?.includes('78 sur 100'),true);
  dom.window.close();
 });
 
@@ -1417,8 +1417,8 @@ test('LPDB course image displays live course status instead of branding, without
  const css=fs.readFileSync('regatta/team.css','utf8');
  assert.match(css,/\.lpdb-shell \.team-race-photo \.team-race-photo-status\{/);
  const html=fs.readFileSync('regatta/index.html','utf8');
- assert.match(html,/team\.css\?v=20261122-profile-sync-inline-v4/,'team badge CSS stays cache-busted');
-assert.match(html,/team-app\.js\?v=20261122-profile-sync-inline-v4/,'team badge markup script stays cache-busted');
+ assert.match(html,/team\.css\?v=20261122-score-rings-v5/,'team badge CSS stays cache-busted');
+assert.match(html,/team-app\.js\?v=20261122-score-rings-v5/,'team badge markup script stays cache-busted');
  dom.window.close();
 });
 
@@ -1435,7 +1435,7 @@ test('LPDB pirate header uses the requested logo and premium foil without changi
  assert.match(css,/LPDB premium pirate foil header/);
  assert.match(css,/\.regatta-topbar>\.lpdb-tabs \.lpdb-tab\.active\{/);
  assert.match(css,/@media\(max-width:620px\)\{/);
- assert.match(html,/team\.css\?v=20261122-profile-sync-inline-v4/);
+ assert.match(html,/team\.css\?v=20261122-score-rings-v5/);
  const logoPath=require('node:path').join('regatta','assets','lpdb-header-transparent.png');
  assert.ok(fs.existsSync(logoPath),'new header logo exists in PR');
  const logo=fs.readFileSync(logoPath);
@@ -1456,8 +1456,8 @@ test('LPDB mobile selectors use a full-width barème and readable compact type',
  assert.match(css,/\.lpdb-shell \.team-selector select\{[^}]*text-overflow:ellipsis/s);
  assert.match(css,/\.lpdb-shell \.team-stats-grid\{grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
  assert.match(css,/\.lpdb-shell \.team-emblem\{[^}]*background:transparent!important/s);
- assert.match(html,/team\.css\?v=20261122-profile-sync-inline-v4/);
- assert.match(html,/team-app\.js\?v=20261122-profile-sync-inline-v4/);
+ assert.match(html,/team\.css\?v=20261122-score-rings-v5/);
+ assert.match(html,/team-app\.js\?v=20261122-score-rings-v5/);
  assert.match(html,/app\.js\?v=20261122-profile-sync-inline-v4/);
  assert.equal(ui.includes('assets/lpdb.webp'),false,'all section headings and race fallback use the new transparent emblem');
  assert.equal(ui.split('assets/lpdb-header-transparent.png').length-1,5,'all five emblem instances are replaced');
@@ -1475,7 +1475,7 @@ test('LPDB navigation labels do not use heavy text shadows',()=>{
  assert.match(navRule,/text-shadow:none!important/);
  assert.match(navRule,/-webkit-text-stroke:0/);
  assert.doesNotMatch(css,/color:#f0fdfc;text-shadow:0 1px 2px #092630e0/);
- assert.match(html,/team\.css\?v=20261122-profile-sync-inline-v4/);
+ assert.match(html,/team\.css\?v=20261122-score-rings-v5/);
 });
 
 test('LPDB profile holds manual sync and live status, remaining icons stay next to search on iPhone',()=>{
@@ -1517,4 +1517,60 @@ test('LPDB classement tables use plain skipper names and podium gold silver bron
  }
  assert.match(css,/team-skipper-name\{[^}]*background:none/s);
  assert.ok(ui.includes("action('profile-'+esc(m.id),'Palmarès')"),'profile access remains in skipper section');
+});
+
+test('LPDB rating progress rings use correct partial arc and full 100/100 in Canvas',()=>{
+ const out=require('../regatta/team-export.js'),commands=[],gradients=[];
+ const ctx={
+  save(){commands.push('save')},restore(){commands.push('restore')},
+  beginPath(){commands.push('beginPath')},stroke(){commands.push('stroke')},fill(){commands.push('fill')},
+  arc(x,y,r,start,end){commands.push({arc:[x,y,r,start,end]})},
+  fillText(t){commands.push({text:String(t)})},
+  createLinearGradient(){const steps=[];gradients.push(steps);return {addColorStop(at,color){steps.push([at,color]);}};}
+ };
+ assert.equal(out.drawScoreRing(ctx,35,35,0,60),true);
+ let arcs=commands.filter(x=>x.arc);
+ assert.equal(arcs.length,2,'zero has track and navy center, without progress arc');
+ assert.equal(commands.find(x=>x.text)?.text,'0');
+ commands.length=0;
+ assert.equal(out.drawScoreRing(ctx,35,35,75,60),true);
+ arcs=commands.filter(x=>x.arc);
+ assert.equal(arcs.length,3,'75 has track, progress and center');
+ assert.ok(Math.abs(arcs[1].arc[4]-(-Math.PI/2+Math.PI*1.5))<1e-9,'75 fills three quarters of ring');
+ assert.ok(gradients.at(-1).some(x=>x[1]==='#db48ae'),'pink gradient tail remains');
+ assert.equal(commands.find(x=>x.text)?.text,'75');
+ commands.length=0;
+ assert.equal(out.drawScoreRing(ctx,35,35,100,60),true);
+ arcs=commands.filter(x=>x.arc);
+ assert.ok(Math.abs(arcs[1].arc[4]-(-Math.PI/2+Math.PI*2))<1e-9,'100 has fully colored circumference');
+ assert.equal(commands.find(x=>x.text)?.text,'100');
+ commands.length=0;
+ assert.equal(out.drawScoreRing(ctx,35,35,150,60),true);
+ assert.equal(commands.find(x=>x.text)?.text,'100','score is clamped');
+ assert.equal(out.drawScoreRing(ctx,35,35,NaN),false);
+});
+test('LPDB PNG branding and numeric summary counters are removed while score progress is preserved',()=>{
+ const out=require('../regatta/team-export.js');
+ const png=fs.readFileSync('regatta/team-export.js','utf8');
+ const ui=fs.readFileSync('regatta/team-app.js','utf8');
+ const css=fs.readFileSync('regatta/team.css','utf8');
+ const html=fs.readFileSync('regatta/index.html','utf8');
+ assert.ok(!png.includes('RAPLI REGATTA'),'no obsolete logo text in PNG header or footer');
+ assert.ok(!png.includes('CHAMPIONNAT DE L’ÉQUIPE'),'no duplicated branding in PNG footer');
+ assert.ok(png.includes("labels=['CLASSÉS','DNF','NOTE MOYENNE']"),'export leaves the three labels');
+ assert.ok(!png.includes("num(race.finishers??0)"));
+ assert.ok(!png.includes("num(race.dnf??0)"));
+ assert.ok(!png.includes("num(race.average)+'/100'"));
+ assert.match(png,/drawScoreRing\(ctx,1265,mid,row\.note\.value,53\)/,'race standings show score as circle');
+ assert.match(png,/drawScoreRing\(ctx,xs\[i\]\+width\/2-73,y\+241,row\.note\.value,45\)/,'podium also shows circle');
+ const ctx={measureText:v=>({width:String(v).length*15})};
+ const layout=out.plan([{name:'Alpha',rank:1,points:700,note:{available:true,value:75}}],{ctx,race:true});
+ assert.equal(layout.heroHeight,435,'race header is smaller');
+ assert.equal(out.plan([{name:'Alpha',rank:1}],{ctx,race:false}).heroHeight,240);
+ assert.match(ui,/role="img" aria-label=/,'website score ring is accessible');
+ assert.match(ui,/--score-mid:/,'Safari receives precalculated arc angles');
+ assert.match(css,/team-score-ring.*conic-gradient/s);
+ assert.match(html,/team-export\.js\?v=20261122-score-rings-v5/);
+ assert.match(html,/team\.css\?v=20261122-score-rings-v5/);
+ assert.match(html,/team-app\.js\?v=20261122-score-rings-v5/);
 });

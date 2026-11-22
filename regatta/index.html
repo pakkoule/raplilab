@@ -86,10 +86,7 @@ html:not([data-rapli-role="editor"]) #rapli-module-cloud-save{display:none!impor
     </span>
   </button>
   <nav class="workspace-tabs" role="tablist" aria-label="Vues Rapli Regatta">
-    <button type="button" id="view-team" class="workspace-tab active" role="tab" aria-selected="true" aria-controls="team-panel">CHAMPIONNAT</button>
-    <button type="button" id="view-team-races" class="workspace-tab" role="tab" aria-selected="false" aria-controls="team-races-panel" tabindex="-1">COURSES D'ÉQUIPE</button>
-    <button type="button" id="view-team-skippers" class="workspace-tab" role="tab" aria-selected="false" aria-controls="team-skippers-panel" tabindex="-1">SKIPPERS</button>
-    <button type="button" id="view-team-stats" class="workspace-tab" role="tab" aria-selected="false" aria-controls="team-stats-panel" tabindex="-1">STATS D'ÉQUIPE</button>
+    <button type="button" id="view-team" class="workspace-tab active" role="tab" aria-selected="true" aria-controls="lpdb-panel">LPDB</button>
     <button type="button" id="view-races" class="workspace-tab" role="tab" aria-selected="false" aria-controls="races-panel" tabindex="-1">MES COURSES · ARCHIVES</button>
     <button type="button" id="view-stats" class="workspace-tab" role="tab" aria-selected="false" aria-controls="stats-panel" tabindex="-1">MES STATISTIQUES</button>
     <button type="button" id="view-honors" class="workspace-tab" role="tab" aria-selected="false" aria-controls="honors-panel" tabindex="-1">MON PALMARÈS</button>
@@ -99,10 +96,18 @@ html:not([data-rapli-role="editor"]) #rapli-module-cloud-save{display:none!impor
   <div class="regatta-cloud-status" id="regatta-cloud-overlay" role="status" aria-live="polite" aria-atomic="true" aria-hidden="true">
     <span id="rapli-shared-status-regatta">Chargement de la collection…</span>
   </div>
-  <section id="team-panel" role="tabpanel" aria-labelledby="view-team" class="team-panel"></section>
-  <section id="team-races-panel" role="tabpanel" aria-labelledby="view-team-races" class="team-panel" hidden></section>
-  <section id="team-skippers-panel" role="tabpanel" aria-labelledby="view-team-skippers" class="team-panel" hidden></section>
-  <section id="team-stats-panel" role="tabpanel" aria-labelledby="view-team-stats" class="team-panel" hidden></section>
+  <section id="lpdb-panel" class="lpdb-shell" role="tabpanel" aria-labelledby="view-team">
+    <nav class="lpdb-tabs" role="tablist" aria-label="Rubriques de l’équipe LPDB">
+      <button type="button" id="lpdb-view-team" class="lpdb-tab active" role="tab" aria-selected="true" aria-controls="team-panel">CHAMPIONNAT</button>
+      <button type="button" id="lpdb-view-team-races" class="lpdb-tab" role="tab" aria-selected="false" aria-controls="team-races-panel" tabindex="-1">COURSES D'ÉQUIPE</button>
+      <button type="button" id="lpdb-view-team-skippers" class="lpdb-tab" role="tab" aria-selected="false" aria-controls="team-skippers-panel" tabindex="-1">SKIPPERS</button>
+      <button type="button" id="lpdb-view-team-stats" class="lpdb-tab" role="tab" aria-selected="false" aria-controls="team-stats-panel" tabindex="-1">STATS D'ÉQUIPE</button>
+    </nav>
+    <section id="team-panel" role="tabpanel" aria-labelledby="lpdb-view-team" class="team-panel"></section>
+    <section id="team-races-panel" role="tabpanel" aria-labelledby="lpdb-view-team-races" class="team-panel" hidden></section>
+    <section id="team-skippers-panel" role="tabpanel" aria-labelledby="lpdb-view-team-skippers" class="team-panel" hidden></section>
+    <section id="team-stats-panel" role="tabpanel" aria-labelledby="lpdb-view-team-stats" class="team-panel" hidden></section>
+  </section>
   <div id="races-panel" role="tabpanel" aria-labelledby="view-races" hidden>
   <div class="regatta-catalogue-controls">
     <div class="regatta-search" role="search" aria-label="Recherche dans toutes les informations des courses">

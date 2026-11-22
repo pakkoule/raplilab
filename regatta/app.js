@@ -1377,22 +1377,14 @@ function selectLpdbView(view){
  renderTeam();
 }
 function selectWorkspace(view){
- const mainViews=['team','races','stats','honors','colors'];
- const teamView=lpdbViews.includes(view);
- const target=teamView?'team':view;
- if(!mainViews.includes(target))return;
- for(const name of mainViews){
-  const active=name===target;
-  (name==='team'?$('lpdb-panel'):$(name+'-panel')).hidden=!active;
-  const tab=$('view-'+name);
-  tab.classList.toggle('active',active);
-  tab.setAttribute('aria-selected',String(active));
-  tab.tabIndex=active?0:-1;
- }
- if(teamView)selectLpdbView(view);
- if(target==='stats')renderStatistics();
- if(target==='honors')renderHonors();
- if(target==='colors')renderClassColors();
+ // LPDB is the only user-facing workspace. Historical personal records stay
+ // loaded as read-only sources for linked course images, times and GFS metadata.
+ const isTeam=lpdbViews.includes(view),isColors=view==='colors';
+ if(!isTeam&&!isColors)return;
+ $('lpdb-panel').hidden=isColors;
+ $('colors-panel').hidden=!isColors;
+ if(isTeam)selectLpdbView(view);
+ if(isColors)renderClassColors();
 }
 
 const scoreDialog=$('score-dialog'),recalcDialog=$('score-recalc-dialog');
@@ -2007,13 +1999,7 @@ function resetVsrRankingForm(){
  $('vsr-ranking-save').textContent='＋ AJOUTER LE RELEVÉ';
  $('vsr-ranking-cancel').hidden=true;
 }
-$('vsr-header-ranking').addEventListener('click',()=>{
- selectWorkspace('stats');
- const heading=$('vsr-ranking-title');
- const reduceMotion=window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
- heading?.scrollIntoView?.({behavior:reduceMotion?'auto':'smooth',block:'start'});
- heading?.focus?.({preventScroll:true});
-});
+// L’ancien widget personnel VSR est conservé dans les données historiques, mais n'ouvre plus d'espace personnel.
 $('vsr-ranking-form').addEventListener('submit',event=>{
  event.preventDefault();
  if(!window.RapliSharedCollection?.canEdit?.()){toast('Connecte-toi en administrateur pour modifier le classement VSR.',true);return;}
@@ -2078,11 +2064,10 @@ $('record-attempts-list').addEventListener('change',event=>{
 $('race-timezone').addEventListener('change',updateArrival);
 $('race-kind').addEventListener('change',updateKindFields);
 $('race-event-id').addEventListener('change',updateKindFields);
-for(const view of ['team','races','stats','honors','colors'])$('view-'+view).addEventListener('click',()=>selectWorkspace(view));
 for(const view of lpdbViews)$('lpdb-view-'+view).addEventListener('click',()=>selectWorkspace(view));
-// Palette des classes: disponible dans la barre d'actions de Courses, sans troisième onglet encombrant.
-$('manage-class-colors').addEventListener('click',()=>selectWorkspace('colors'));
-$('colors-back-races').addEventListener('click',()=>selectWorkspace('races'));
+// Les réglages foil restent accessibles depuis LPDB → Courses d’équipe.
+$('manage-class-colors')?.addEventListener('click',()=>selectWorkspace('colors'));
+$('colors-back-races').addEventListener('click',()=>selectWorkspace('team-races'));
 $('default-class-color').addEventListener('change',event=>changeDefaultClassColor(event.target.value));
 for(const [elementId,kind] of [['class-colors-list','class'],['vsr-colors-list','vsr']]){
  const container=$(elementId);

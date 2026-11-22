@@ -115,6 +115,7 @@ function race(input){
   status:['planned','live','finished'].includes(input.status)?input.status:'planned',
   personalRaceId:safe(input.personalRaceId,130),
   boatClass:safe(input.boatClass,100),routeType:safe(input.routeType,40),
+  icon:typeof input.icon==='string'&&/^data:image\/(?:png|webp|jpeg|gif);base64,[a-z0-9+/=]+$/iu.test(input.icon)&&input.icon.length<=9*1024*1024?input.icon:'',
   start:dateOk(input.start)?input.start:'',startTime:safe(input.startTime,8),endTime:safe(input.endTime,8),
   timezone:safe(input.timezone,80),equipment:safe(input.equipment,30),
   stageGroup:safe(input.stageGroup,100),results,

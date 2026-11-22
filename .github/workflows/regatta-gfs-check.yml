@@ -34,3 +34,24 @@ jobs:
           node --check netlify/functions/gfs-wind.js
       - name: Verify GRIB source and vector sampling
         run: node --test tests/regatta-gfs-source.test.cjs tests/regatta-gfs-wind.test.cjs
+      - name: Live NOAA GFS 0.25 wind sample (diagnostic only)
+        continue-on-error: true
+        timeout-minutes: 2
+        run: |
+          node - <<'JS'
+          const {handler} = require('./netlify/functions/gfs-wind.js');
+          handler({httpMethod:'GET'}).then(response=>{
+            const result=JSON.parse(response.body);
+            if(response.statusCode!==200 || result.wind?.verifiedWind!==true){
+              throw Error(result.error||'Aucune mesure NOAA');
+            }
+            console.log('VENT GFS RÉEL',JSON.stringify({
+              cycle:result.cycleUTC,valid:result.validUTC,
+              lat:result.wind.nearestGridpoint.latitude,
+              lon:result.wind.nearestGridpoint.longitude,
+              uMs:result.wind.uMs,vMs:result.wind.vMs,
+              speedKnots:result.wind.speedKnots,
+              directionFromDeg:result.wind.directionFromDeg
+            }));
+          }).catch(error=>{console.error('ESSAI NOAA INCONCLUSIF',error.message);process.exitCode=1;});
+          JS

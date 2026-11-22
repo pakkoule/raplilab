@@ -62,3 +62,11 @@ Le championnat LPDB démarre avec la prochaine course enregistrée. **Aucun impo
 - **Les classements personnels et les captures (gains VSR/VR, rang général Virtual Regatta, notes, photos) restent exclusivement personnels. Les résultats de chaque skipper, le statut de validation d’équipe, les points principaux/historiques et le rattachement aux périodes restent exclusivement côté équipe.**
 - Une fiche personnelle supprimée laisse les derniers détails disponibles dans la fiche d’équipe, avec une mention « fiche introuvable » et une possibilité de dissocier ou réassocier. Aucune suppression en cascade.
 - Seul l’éditeur authentifié peut créer ou modifier les liaisons ; les visiteurs peuvent consulter les deux vues. Aucun import rétroactif de l’ancien Excel.
+
+
+## Ajout de skippers par bloc
+- Dans **LPDB → Skippers**, le bouton « Ajout par bloc » ouvre une grande zone de texte : **une ligne non vide = un skipper actif**. Collage direct d'une colonne Excel pris en charge.
+- Prévisualisation avant enregistrement : nouveaux pseudos, doublons ignorés (y compris anciens membres), places restantes, lignes invalides et dépassement de la limite de 50 actifs.
+- Les espaces inutiles autour des pseudos sont supprimés ; doublons insensibles à la casse et aux espacements répétés. Les doublons ou lignes vides sont ignorés, sans effacer les pseudos existants.
+- Les noms supérieurs à 56 caractères, les caractères de contrôle et les lots qui dépassent les places disponibles bloquent l'importation entière jusqu'à correction.
+- **Un seul enregistrement atomique** de tous les nouveaux membres dans IndexedDB (ou une seule écriture de secours locale), puis une notification de synchronisation Supabase ; pas d'ajout partiel, ni d'import d'Excel historique.

@@ -2148,6 +2148,7 @@ window.RapliRegatta={getCount:()=>rows.length,teamCount:()=>teamRecords.length};
 window.RapliTeamUI?.init?.({get:()=>teamRecords,personal:()=>rows,
  save:saveTeamEntity,remove:removeTeamEntity,
  openPersonal:openPersonalCourse,newPersonalFromTeam:startPersonalFromTeam,
+ showTeam:()=>selectWorkspace('team-races'),
  canEdit:()=>window.RapliSharedCollection?.canEdit?.(),notify:toast});
 (async()=>{try{await openDB();partitionRecords(await load());render();renderTeam();}catch(err){
  console.warn('Regatta : IndexedDB indisponible',err);db=null;

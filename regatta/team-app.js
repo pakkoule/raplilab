@@ -1,8 +1,8 @@
 /* LPDB — team championship UI. The personal race archive remains independent. */
 (function(root){
 'use strict';
-const engine=root.RapliTeamEngine,clock=root.RapliTeamTime;
-if(!engine||!clock)throw Error('LPDB scoring/time engines missing');
+const engine=root.RapliTeamEngine,clock=root.RapliTeamTime,rating=root.RapliTeamRating;
+if(!engine||!clock||!rating)throw Error('LPDB scoring, time or rating engine missing');
 const $=id=>document.getElementById(id);
 const esc=v=>String(v??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const num=v=>Number(v||0).toLocaleString('fr-FR',{maximumFractionDigits:1});
@@ -102,6 +102,7 @@ function teamRaceCard(r,known){
  const names=new Map([...known].map(([id,m])=>[id,m.name]));
  const winner=checked?finished.find(x=>x.position===1):null;
  const main=results.reduce((n,s)=>n+s.main,0),historical=results.reduce((n,s)=>n+s.historic,0);
+ const notes=rating.calculate(r,races(),known,engine);
  const dnf=r.results.filter(x=>x.status==='dnf').length;
  const img=p&&/^data:image\/(?:png|webp|jpeg|gif);base64,/iu.test(p.icon||'')?
   '<img src="'+esc(p.icon)+'" alt="Illustration de la course '+esc(r.name)+'">':
@@ -130,7 +131,6 @@ function teamRaceCard(r,known){
  '<div class="team-race-intro"><h3 title="'+esc(r.name)+'">'+esc(r.name)+'</h3>'+
  (r.stageGroup?'<span class="team-race-stage">'+esc(r.stageGroup)+'</span>':'')+
  '<div class="team-race-departure"><span>DÉPART DE LA COURSE</span><strong>'+startText+'</strong></div>'+
- (r.personalRaceId?'<p class="team-race-link">'+(p?'↔ Fiche « Mes courses » associée':'⚠ Fiche personnelle introuvable')+'</p>':'')+
  '</div></section>'+
  '<section class="team-race-right" aria-label="Résultats des skippers LPDB">'+
  '<header class="team-race-topline"><div class="team-race-tags">'+
@@ -149,6 +149,9 @@ function teamRaceCard(r,known){
  r.status==='planned'?'Résultats disponibles après le départ.':'Aucun résultat final validé.')+'</p>')+
  (podium.length>1?'<div class="team-race-podium">'+podium.slice(1).map(x=>
  '<div><span>'+medal(x.position)+'</span><strong>'+esc(names.get(x.skipperId)||'Skipper')+'</strong></div>').join('')+'</div>':'')+
+ '<div class="team-race-average" title="Moyenne des notes disponibles, équipement exclu"><span>NOTE MOYENNE DE LA COURSE</span>'+
+ '<strong>'+(notes.average!==null?num(notes.average)+'/100':'—')+'</strong>'+
+ '<small>'+(notes.rated?num(notes.rated)+' / '+num(notes.eligible)+' skippers notés':'En attente du classement général et de la flotte VR')+'</small></div>'+
  '<div class="team-race-points"><div><span>POINTS PRINCIPAUX</span><strong>'+num(main)+'</strong></div>'+
  '<div><span>POINTS HISTORIQUES</span><strong>'+num(historical)+'</strong></div></div>'+
  '</section></div></article>';
@@ -349,6 +352,7 @@ function fillSharedFields(){
  $('team-race-date').value=draft.dateEnd||'';
  $('team-race-vsr').value=draft.vsr||'vsr2';
  $('team-race-status').value=draft.status||'planned';
+ $('team-race-fleet').value=draft.fleetTotal??'';
  $('team-race-group').value=draft.stageGroup||'';
  for(const [field,id] of Object.entries(detailInputs))$(id).value=draft[field]||'';
 }
@@ -434,6 +438,12 @@ async function submitRace(ev){
   draft.dateEnd=$('team-race-date').value;draft.vsr=$('team-race-vsr').value;
   for(const [field,id] of Object.entries(detailInputs))draft[field]=$(id).value;
  }
+ const fleetRaw=$('team-race-fleet').value.trim();
+ const fleet=fleetRaw?Number(fleetRaw):null;
+ if(fleetRaw&&(!Number.isSafeInteger(fleet)||fleet<2||fleet>100000000)){
+  notify('L’effectif global Virtual Regatta doit être un entier entre 2 et 100 millions.',true);return;
+ }
+ draft.fleetTotal=fleet;
  draft.status=$('team-race-status').value;draft.stageGroup=$('team-race-group').value.trim().slice(0,100);
  if(!draft.name){notify('Renseigne le nom de la course.',true);return;}
  const invalidGeneral=draft.results.some(row=>row.generalRank!=null&&

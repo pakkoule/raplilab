@@ -425,14 +425,73 @@ function editorRows(){
  }).join('')||empty('Ajoute les participants depuis l’effectif.');
  editorSummary();
 }
+const editorFieldSelectors={
+ rank:'[data-team-rank]',generalRank:'[data-team-general-rank]',
+ status:'[data-team-status]',elapsedSeconds:'[data-team-elapsed]',gapSeconds:'[data-team-gap]'
+};
+function raceEditorIssues(){
+ if(!draft)return [];
+ const membersById=new Map(editorMembers().map(m=>[m.id,m]));
+ const validationRace={...draft,dateEnd:$('team-race-date').value,vsr:$('team-race-vsr').value};
+ if(draft.status==='finished')return engine.diagnoseRace(validationRace,membersById);
+ // Only completed races require fully classified participants. Other statuses
+ // still need valid optional VR ranking fields before they may be saved.
+ return draft.results.flatMap((row,index)=>{
+  if(row.generalRank==null||Number.isSafeInteger(row.generalRank)&&row.generalRank>=1&&row.generalRank<=100000000)return [];
+  const name=membersById.get(row.skipperId)?.name||'identifiant '+row.skipperId;
+  return [{code:'generalRank',field:'generalRank',skipperIds:[row.skipperId],
+   message:'Classement général VR invalide pour « '+name+' » (ligne '+(index+1)+') : valeur « '+row.generalRank+' ». Utilise un entier entre 1 et 100 000 000, ou laisse le champ vide.'}];
+ });
+}
+function displayRaceIssues(issues,{focus=false}={}){
+ const container=$('team-race-validation');
+ container.dataset.error=issues.length?'true':'false';
+ if(issues.length){
+  container.innerHTML='<strong class="team-validation-title">'+issues.length+' anomalie'+(issues.length>1?'s':'')+' à corriger avant la validation</strong>'+
+   '<ol class="team-validation-list">'+issues.map((issue,i)=>
+    '<li id="team-race-issue-'+i+'">'+esc(issue.message)+'</li>').join('')+'</ol>'+
+   '<small>Aucune modification n’a été enregistrée. Corrige les champs signalés puis réessaie.</small>';
+ }else{
+  const pending=draft.results.filter(x=>x.status==='pending').length;
+  container.textContent=pending?pending+' résultat(s) en attente de classement · aucun point attribué avant validation.':'Classement prêt à enregistrer.';
+ }
+ const rowElements=[...$('team-result-rows').querySelectorAll('.team-result-row')];
+ for(const row of rowElements){
+  row.removeAttribute('data-error');
+  for(const input of row.querySelectorAll('input,select')){
+   input.removeAttribute('aria-invalid');
+   input.removeAttribute('aria-describedby');
+  }
+ }
+ for(const [index,issue] of issues.entries()){
+  for(const row of rowElements){
+   if(!issue.skipperIds?.includes(row.dataset.teamRow))continue;
+   row.dataset.error='true';
+   const selector=editorFieldSelectors[issue.field];
+   const input=selector&&row.querySelector(selector);
+   if(input){
+    input.setAttribute('aria-invalid','true');
+    const prior=input.getAttribute('aria-describedby');
+    input.setAttribute('aria-describedby',(prior?prior+' ':'')+'team-race-issue-'+index);
+   }
+  }
+  if(issue.field==='dateEnd'||issue.field==='vsr'){
+   const input=$(issue.field==='dateEnd'?'team-race-date':'team-race-vsr');
+   input?.setAttribute('aria-invalid','true');
+  }
+ }
+ if(!issues.some(x=>x.field==='dateEnd'))$('team-race-date')?.removeAttribute('aria-invalid');
+ if(!issues.some(x=>x.field==='vsr'))$('team-race-vsr')?.removeAttribute('aria-invalid');
+ if(focus&&issues.length){
+  container.focus({preventScroll:true});
+  if(typeof container.scrollIntoView==='function')container.scrollIntoView({block:'nearest'});
+ }
+}
 function editorSummary(){
  if(!draft)return;
- const known=new Map(editorMembers().map(m=>[m.id,m])),n=draft.results.length;
+ const n=draft.results.length;
  const scores=draft.results.filter(x=>x.status==='finished').reduce((sum,x)=>sum+engine.primary(draft.vsr,n,x.position),0);
- const pending=draft.results.filter(x=>x.status==='pending').length;
- const error=draft.status==='finished'?engine.verifyRace({...draft,dateEnd:$('team-race-date').value},known):'';
- $('team-race-validation').textContent=error|| (pending?pending+' résultat(s) en attente':'Classement prêt à enregistrer');
- $('team-race-validation').dataset.error=error?'true':'false';
+ displayRaceIssues(raceEditorIssues());
  const winner=draft.results.find(x=>x.status==='finished'&&x.position===1);
  $('team-race-preview').textContent=num(scores)+' points principaux · '+n+' participants · palier '+(engine.tier(n)*5+10)+(winner?.elapsedSeconds!=null?' · Temps du 1er : '+clock.formatTime(winner.elapsedSeconds):'');
 }
@@ -593,12 +652,11 @@ async function submitRace(ev){
  draft.fleetTotal=fleet;
  draft.status=$('team-race-status').value;draft.stageGroup=$('team-race-group').value.trim().slice(0,100);
  if(!draft.name){notify('Renseigne le nom de la course.',true);return;}
- const invalidGeneral=draft.results.some(row=>row.generalRank!=null&&
-  (!Number.isSafeInteger(row.generalRank)||row.generalRank<1||row.generalRank>100000000));
- if(invalidGeneral){notify('Classement général VR invalide : indique un rang entier positif ou laisse vide.',true);return;}
- if(draft.status==='finished'){
-  const issue=engine.verifyRace(draft,new Map(editorMembers().map(m=>[m.id,m])));
-  if(issue){notify(issue,true);editorSummary();return;}
+ const issues=raceEditorIssues();
+ if(issues.length){
+  displayRaceIssues(issues,{focus:true});
+  notify('Enregistrement bloqué : '+issues.length+' anomalie(s) détectée(s) dans « '+draft.name+' ». Consulte le détail de chaque erreur sous les participants.',true);
+  return;
  }
  const race=engine.race({...draft,updatedAt:stamp()});
  if(!race){notify('Fiche de course invalide.',true);return;}

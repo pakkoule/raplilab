@@ -86,6 +86,61 @@
   };
   const verifiedFrames=new Map();
   const interpolationEngine=window.RapliGfsInterpolation;
+  const laterStatus=root.querySelector('[data-gfs-later-status]');
+  const laterSummary=root.querySelector('[data-gfs-later-summary]');
+  const laterRows=root.querySelector('[data-gfs-later-rows]');
+  const renderLaterDepartures=()=>{
+    laterSummary.hidden=true;
+    laterRows.hidden=true;
+    laterRows.replaceChildren();
+    if(!verifiedFrames.has(12)||!verifiedFrames.has(18)){
+      laterStatus.dataset.state='idle';
+      laterStatus.textContent='Lis +12 h puis +18 h du même cycle NOAA pour les départs tardifs.';
+      return;
+    }
+    const engine=window.RapliGfsDepartures;
+    if(!engine?.compareLaterDepartureWindows){
+      laterStatus.dataset.state='error';
+      laterStatus.textContent='Comparateur de départs tardifs indisponible.';
+      return;
+    }
+    try{
+      const comparison=engine.compareLaterDepartureWindows(
+        verifiedFrames.get(12),verifiedFrames.get(18)
+      );
+      const put=(name,value)=>{
+        const node=root.querySelector('[data-gfs-later-'+name+']');
+        if(node)node.textContent=value;
+      };
+      const forecastTime=hour=>frenchTime(
+        new Date(Date.parse(comparison.cycleUTC)+hour*3600000).toISOString()
+      );
+      put('fastest','+'+comparison.fastestStartHour+' h · '+forecastTime(comparison.fastestStartHour));
+      put('duration',comparison.fastestElapsedMinutes.toFixed(1)+' min');
+      put('earliest','+'+comparison.earliestArrivalStartHour+' h · '+frenchTime(comparison.earliestArrivalUTC));
+      for(const window of comparison.windows){
+        const row=document.createElement('div');
+        row.className='gfs-departure-row';
+        if(window.valid&&window.startHour===comparison.fastestStartHour)row.dataset.fastest='true';
+        const label=document.createElement('strong');
+        label.textContent='Départ +'+window.startHour+' h';
+        const value=document.createElement('span');
+        value.textContent=window.valid?window.elapsedMinutes.toFixed(1)+' min jusqu’à 47°N':'Non calculable';
+        const note=document.createElement('small');
+        note.textContent=window.valid?'Passage : '+frenchTime(window.crossingUTC)+' (Paris)':window.reason;
+        row.append(label,value,note);
+        laterRows.appendChild(row);
+      }
+      laterSummary.hidden=false;
+      laterRows.hidden=false;
+      laterStatus.dataset.state='success';
+      laterStatus.textContent=comparison.validCount+' départ(s) tardif(s) calculable(s) sur 4 · temps de passage à 47°N.';
+    }catch(error){
+      laterStatus.dataset.state='error';
+      laterStatus.textContent='Départs tardifs non calculables : '+String(error.message||error)+
+        ' Aucune estimation fictive.';
+    }
+  };
   const departuresStatus=root.querySelector('[data-gfs-departures-status]');
   const departuresSummary=root.querySelector('[data-gfs-departures-summary]');
   const departuresRows=root.querySelector('[data-gfs-departures-rows]');
@@ -528,6 +583,17 @@
         windText('point-'+i+'-speed',wind.speedKnots.toFixed(1)+' nds');
         windText('point-'+i+'-dir',wind.directionFromDeg.toFixed(0)+'°');
       }
+      // Synchroniser le récapitulatif GRIB2 du haut avec la lecture GFS réellement choisie.
+      cell('cycle',frenchTime(result.cycleUTC));
+      cell('forecast',frenchTime(result.validUTC));
+      cell('grid',String(result.bounds?.top)+'°N à '+String(result.bounds?.bottom)+'°N');
+      cell('size',(result.fileBytes/1024).toFixed(1)+' Ko');
+      cell('fields',result.fields.join(' + '));
+      cell('messages',String(result.messages)+' message(s)');
+      results.hidden=false;
+      status.dataset.state='success';
+      status.textContent='Fichier GRIB2 GFS 0,25° vérifié · échéance +'+result.forecastHour+
+        ' h · '+(result.cached?'résultat en cache.':'lecture validée.');
       windText('wind-cycle',frenchTime(result.cycleUTC));
       windText('wind-valid',frenchTime(result.validUTC));
       windPoints.hidden=false;
@@ -549,6 +615,7 @@
       renderAdaptive();
       renderRouteSearch();
       renderDepartures();
+      renderLaterDepartures();
       windStatus.dataset.state='success';
       windStatus.textContent='3 vents réels décodés sur le même cycle NOAA · '+
         (result.cached?'résultat en cache.':'lecture validée.');

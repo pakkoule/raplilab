@@ -233,3 +233,14 @@ Un quatrième échantillon sur **47,125°N / 9,125°O** (golfe de Gascogne) est 
 - Aucun nouveau téléchargement NOAA par lecture : on réutilise le même fichier GRIB2 que les trois points. La lecture reste volontairement manuelle, avec cache et espacement, sur la PR #4 uniquement.
 
 Tests de grille synthétique : `tests/regatta-gfs-spatial.test.cjs` (poids bilinéaires, balayage GRIB, franchissement 360°/0°, refus d'extrapolation et cellules absentes). La validation réelle du nouvel échantillon dans Safari iPhone reste à faire.
+
+
+## GFS 0,25° · interpolation spatio-temporelle (PR #4 · prototype 6)
+
+Le LAB GFS combine désormais les deux interpolations vérifiées précédemment à **une position géographique fixe hors des nœuds** (47,125°N / 9,125°O) : chaque échéance est d'abord interpolée bilinéairement depuis ses quatre voisins GFS 0,25°, puis les composantes U/V obtenues sont interpolées dans le temps. Le résultat est affiché à +9 h lorsque +6/+12 h du même cycle sont disponibles, et à +15 h pour +12/+18 h.
+
+- Les deux trames sont obligatoirement du même cycle GFS et leurs dates de validité doivent correspondre aux échéances réelles. Les deux résultats spatiaux doivent être marqués comme vérifiés, avoir la même position et le même maillage.
+- La direction météo est recalculée depuis le vecteur U/V, sans interpolation directe des degrés. Aucune extrapolation hors des deux échéances n'est admise.
+- Aucun téléchargement additionnel n'est requis : le calcul réutilise les échantillons bilinéaires du LAB, uniquement en mémoire dans la page ouverte.
+- Il s'agit encore d'un **point fixe**, et non d'un vent évalué le long d'une trajectoire mobile ou d'un routage de l'Ultim BP XI. Aucune fenêtre de départ ou temps de passage n'est encore calculé.
+- Les essais d'intégration réels sur Safari iPhone doivent confirmer l'affichage. Les tests automatisés sont dans `tests/regatta-gfs-spatiotemporal.test.cjs`.

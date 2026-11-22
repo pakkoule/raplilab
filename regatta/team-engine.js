@@ -93,7 +93,10 @@ function race(input){
   seen.add(skipperId);
   const status=['finished','dnf','pending'].includes(row.status)?row.status:'pending';
   const pos=int(row.position);
-  results.push({skipperId,status,position:status==='finished'&&Number.isInteger(pos)&&pos>=1&&pos<=50?pos:null});
+  const elapsed=int(row.elapsedSeconds),gap=int(row.gapSeconds);
+  results.push({skipperId,status,position:status==='finished'&&Number.isInteger(pos)&&pos>=1&&pos<=50?pos:null,
+   elapsedSeconds:status==='finished'&&Number.isSafeInteger(elapsed)&&elapsed>=0?elapsed:null,
+   gapSeconds:status==='finished'&&Number.isSafeInteger(gap)&&gap>=0?gap:null});
  }
  return {id,type:'team-race',name,dateEnd:dateOk(input.dateEnd)?input.dateEnd:'',
   vsr:BASE[input.vsr]?input.vsr:'vsr2',
@@ -126,6 +129,8 @@ function verifyRace(r,knownMembers){
   if(row.status==='finished'){
    if(!validPos(row.position,count))return 'Position de classement invalide.';
    if(ranks.has(Number(row.position)))return 'Deux skippers ont la même position.';
+   if(row.elapsedSeconds!=null&&(!Number.isSafeInteger(row.elapsedSeconds)||row.elapsedSeconds<0))return 'Chrono de course invalide.';
+   if(row.gapSeconds!=null&&(!Number.isSafeInteger(row.gapSeconds)||row.gapSeconds<0))return 'Écart au vainqueur invalide.';
    ranks.add(Number(row.position));
   }
  }
@@ -138,7 +143,9 @@ function scoredRace(r,knownMembers){
   skipperId:row.skipperId,rank:row.status==='finished'?Number(row.position):null,
   dnf:row.status==='dnf',vsr:r.vsr,dateEnd:r.dateEnd,raceId:r.id,raceName:r.name,
   main:row.status==='finished'?primary(r.vsr,n,row.position):0,
-  historic:row.status==='finished'?historical(row.position):0,n
+  historic:row.status==='finished'?historical(row.position):0,
+  elapsedSeconds:row.status==='finished'?row.elapsedSeconds??null:null,
+  gapSeconds:row.status==='finished'?row.gapSeconds??null:null,n
  }));
 }
 function inPeriod(date,period){
@@ -172,11 +179,17 @@ function standings(entities,period,mode='main'){
   const attendance=eligible.length?Math.min(100,100*attempts/eligible.length):100;
   const hybrid=.6*prestige+.4*attendance;
   const points=mode==='historic'?totalHistoric:totalMain;
+  const timed=finished.filter(r=>Number.isSafeInteger(r.elapsedSeconds)&&r.elapsedSeconds>=0);
+  const gaps=timed.filter(r=>Number.isSafeInteger(r.gapSeconds)&&r.gapSeconds>=0);
   return {id,name:skipper.name,status:skipper.status,
    points,main:totalMain,historic:totalHistoric,participations:attempts,finished:finish,dnf:attempts-finish,
    wins:finished.filter(r=>r.rank===1).length,podiums:finished.filter(r=>r.rank<=3).length,
    avg:attempts?points/attempts:0,avgFinished:finish?points/finish:0,max:Math.max(0,...results.map(x=>mode==='historic'?x.historic:x.main)),
-   finishRate:100*finish/attempts,prestige,attendance,hybrid,records:results};
+   finishRate:100*finish/attempts,prestige,attendance,hybrid,records:results,
+   timedRaces:timed.length,
+   avgTimeSeconds:timed.length?Math.round(timed.reduce((sum,r)=>sum+r.elapsedSeconds,0)/timed.length):null,
+   avgGapSeconds:gaps.length?Math.round(gaps.reduce((sum,r)=>sum+r.gapSeconds,0)/gaps.length):null,
+   bestGapSeconds:gaps.length?Math.min(...gaps.map(r=>r.gapSeconds)):null};
  });
  scored.sort((a,b)=>b.points-a.points||b.hybrid-a.hybrid||
   b.records.filter(x=>!x.dnf&&x.vsr==='hc').length-a.records.filter(x=>!x.dnf&&x.vsr==='hc').length||

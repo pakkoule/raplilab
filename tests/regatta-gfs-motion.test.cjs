@@ -69,3 +69,25 @@ test('refus d’extrapoler une grille hors de son domaine',()=>{
   assert.throws(()=>m.sampleGrid(a,51,-8.625),/zone météo/);
   assert.throws(()=>m.sampleGrid(a,48.125,-11),/zone météo/);
 });
+
+test('comparaison limitée à cinq caps fixes, classement sur progression vers le sud',()=>{
+  const first=frame(6,{windU:14,windV:-6}),second=frame(12,{windU:14,windV:-6});
+  const comparison=m.compareFixedHeadings(first,second);
+  assert.deepEqual(comparison.evaluated.map(x=>x.heading),[170,175,180,185,190]);
+  assert.equal(comparison.comparisonOnly,true);
+  assert.equal(comparison.optimized,false);
+  assert.equal(comparison.provisionalPolar,true);
+  assert.ok(comparison.validCount>=3);
+  assert.equal(comparison.evaluated.find(x=>x.heading===170).valid,false);
+  assert.ok(comparison.evaluated.some(x=>x.valid));
+  const eligible=comparison.evaluated.filter(x=>x.valid);
+  assert.equal(comparison.best.southProgressNm,Math.max(...eligible.map(x=>x.southProgressNm)));
+  assert.ok(eligible.every(x=>x.distanceNm>0&&x.finalLatitude<m.START.latitude));
+});
+test('un cap interdit, une absence météo, et des polaires insuffisantes ne produisent aucun faux résultat',()=>{
+  assert.throws(()=>m.simulateMotion(frame(6),frame(12),160),/non autorisée/);
+  assert.throws(()=>m.compareFixedHeadings(frame(6,{windU:0,windV:0}),
+    frame(12,{windU:0,windV:0})),/Aucun cap comparable/);
+  assert.throws(()=>m.compareFixedHeadings(frame(6),frame(12,{cycle:'2026-11-22T06:00:00.000Z'})),
+    /Aucun cap comparable/);
+});

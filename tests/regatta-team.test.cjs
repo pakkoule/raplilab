@@ -465,7 +465,8 @@ test('LPDB foil is silver and overall VR ranking appears in editor, profile and 
  assert.match(ui,/data-team-general-rank/);
  assert.match(ui,/GÉNÉRAL VR/);
  assert.match(fs.readFileSync('regatta/team-export.js','utf8'),/GÉN\. VR/);
- assert.match(ui,/generalRank:s\.generalRank/);
+ assert.match(ui,/generalRank:score\.generalRank/);
+ assert.match(fs.readFileSync('regatta/team-export.js','utf8'),/generalRank/);
  assert.match(styles,/--lpdb-foil:/);
  assert.match(styles,/team-result-row input\[data-team-general-rank\]/);
  assert.match(styles,/\.lpdb-shell \.team-panel\{color:#30353a/);

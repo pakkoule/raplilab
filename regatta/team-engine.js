@@ -91,10 +91,11 @@ function race(input){
   seen.add(skipperId);
   const status=['finished','dnf','pending'].includes(row.status)?row.status:'pending';
   const pos=int(row.position);
-  const elapsed=int(row.elapsedSeconds),gap=int(row.gapSeconds);
+  const elapsed=int(row.elapsedSeconds),gap=int(row.gapSeconds),generalRank=int(row.generalRank);
   const record={skipperId,status,position:status==='finished'&&Number.isInteger(pos)&&pos>=1&&pos<=50?pos:null};
   if(status==='finished'&&Number.isSafeInteger(elapsed)&&elapsed>=0)record.elapsedSeconds=elapsed;
   if(status==='finished'&&Number.isSafeInteger(gap)&&gap>=0)record.gapSeconds=gap;
+  if(status==='finished'&&Number.isSafeInteger(generalRank)&&generalRank>=1&&generalRank<=100000000)record.generalRank=generalRank;
   results.push(record);
  }
  return {id,type:'team-race',name,dateEnd:dateOk(input.dateEnd)?input.dateEnd:'',
@@ -128,6 +129,7 @@ function verifyRace(r,knownMembers){
   if(row.status==='finished'){
    if(!validPos(row.position,count))return 'Position de classement invalide.';
    if(ranks.has(Number(row.position)))return 'Deux skippers ont la même position.';
+   if(row.generalRank!=null&&(!Number.isSafeInteger(int(row.generalRank))||int(row.generalRank)<1||int(row.generalRank)>100000000))return 'Classement général VR invalide.';
    if(row.elapsedSeconds!=null&&(!Number.isSafeInteger(row.elapsedSeconds)||row.elapsedSeconds<0))return 'Chrono de course invalide.';
    if(row.gapSeconds!=null&&(!Number.isSafeInteger(row.gapSeconds)||row.gapSeconds<0))return 'Écart au vainqueur invalide.';
    ranks.add(Number(row.position));
@@ -154,6 +156,7 @@ function scoredRace(r,knownMembers){
  const n=r.results.length;
  return r.results.map(row=>({
   skipperId:row.skipperId,rank:row.status==='finished'?Number(row.position):null,
+  generalRank:row.status==='finished'?row.generalRank??null:null,
   dnf:row.status==='dnf',vsr:r.vsr,dateEnd:r.dateEnd,raceId:r.id,raceName:r.name,
   main:row.status==='finished'?primary(r.vsr,n,row.position):0,
   historic:row.status==='finished'?historical(row.position):0,
@@ -194,12 +197,15 @@ function standings(entities,period,mode='main'){
   const points=mode==='historic'?totalHistoric:totalMain;
   const timed=finished.filter(r=>Number.isSafeInteger(r.elapsedSeconds)&&r.elapsedSeconds>=0);
   const gaps=timed.filter(r=>Number.isSafeInteger(r.gapSeconds)&&r.gapSeconds>=0);
+  const general=finished.filter(r=>Number.isSafeInteger(r.generalRank)&&r.generalRank>=1);
   return {id,name:skipper.name,status:skipper.status,
    points,main:totalMain,historic:totalHistoric,participations:attempts,finished:finish,dnf:attempts-finish,
    wins:finished.filter(r=>r.rank===1).length,podiums:finished.filter(r=>r.rank<=3).length,
    avg:attempts?points/attempts:0,avgFinished:finish?points/finish:0,max:Math.max(0,...results.map(x=>mode==='historic'?x.historic:x.main)),
    finishRate:100*finish/attempts,prestige,attendance,hybrid,records:results,
    timedRaces:timed.length,
+   generalRankedRaces:general.length,
+   bestGeneralRank:general.length?Math.min(...general.map(r=>r.generalRank)):null,
    avgTimeSeconds:timed.length?Math.round(timed.reduce((sum,r)=>sum+r.elapsedSeconds,0)/timed.length):null,
    avgGapSeconds:gaps.length?Math.round(gaps.reduce((sum,r)=>sum+r.gapSeconds,0)/gaps.length):null,
    bestGapSeconds:gaps.length?Math.min(...gaps.map(r=>r.gapSeconds)):null};

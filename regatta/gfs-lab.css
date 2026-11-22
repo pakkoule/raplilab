@@ -32,3 +32,19 @@
  .regatta-gfs-lab summary{font-size:10px;padding:9px}
  .regatta-gfs-lab .gfs-lab-results{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
+
+
+/* One real NOAA wind sample at a fixed Atlantic location. */
+.regatta-gfs-lab .gfs-wind-panel{margin-top:12px;padding:10px;border:1px solid #d0e5e7;border-radius:12px;background:#ffffffeb}
+.regatta-gfs-lab .gfs-wind-heading{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;font-size:10px;color:#21465d}
+.regatta-gfs-lab .gfs-wind-heading>span{font-size:9px;color:#638290;font-weight:700}
+.regatta-gfs-lab .gfs-wind-status{font-size:10px;color:#59798b;line-height:1.6;margin:9px 0 0}
+.regatta-gfs-lab .gfs-wind-status[data-state="success"]{color:#167167}
+.regatta-gfs-lab .gfs-wind-status[data-state="error"]{color:#a14352}
+.regatta-gfs-lab .gfs-wind-values{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-top:10px}
+.regatta-gfs-lab .gfs-wind-values[hidden]{display:none}
+.regatta-gfs-lab .gfs-wind-values>div{min-width:0;background:#f2f9fc;border:1px solid #d9e8ef;padding:8px;border-radius:9px}
+.regatta-gfs-lab .gfs-wind-values small{display:block;font-size:9px;color:#718898;font-weight:700}
+.regatta-gfs-lab .gfs-wind-values strong{font-size:15px;line-height:1.3;color:#1b5267;overflow-wrap:anywhere}
+.regatta-gfs-lab .gfs-wind-note{font-size:9px;color:#708595;margin:9px 0 0}
+@media(max-width:590px){.regatta-gfs-lab .gfs-wind-values{grid-template-columns:repeat(2,minmax(0,1fr))}}

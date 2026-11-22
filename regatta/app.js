@@ -336,6 +336,7 @@ async function replaceRows(next){if(storageRecoveryBlocked)throw Error('Stockage
      const delta=(el.dataset.raceClock==='countdown'?start-now:now-start)/1000;
      el.textContent=delta<0&&el.dataset.raceClock==='countdown'?'DÉPART IMMINENT':formatRaceClock(delta);
    });
+   updateGfsWidgets(now);
  }
  function raceClockMarkup(row){
    const clock=raceClockInfo(row);
@@ -400,6 +401,79 @@ function canExportRaceCalendar(r){
  );
 }
 /* Both columns are rendered from existing race data; no new persistent fields. */
+/* GFS windows are anchored in UTC: the Europe/Paris formatter handles CET/CEST
+   and the March/October daylight-saving transitions automatically.
+   These are schedule-based estimates, not a Virtual Regatta download API. */
+const GFS_FIRST_WINDS_UTC=[3,9,15,21];
+const GFS_LOAD_ESTIMATE_MS=80*60*1000;
+const GFS_ROUTING_DELAY_MS=30*60*1000;
+const GFS_PARIS_CLOCK=new Intl.DateTimeFormat('fr-FR',{
+ timeZone:'Europe/Paris',hour:'2-digit',minute:'2-digit',hourCycle:'h23'
+});
+function gfsWeatherState(timestamp=Date.now()){
+ const now=Number.isFinite(timestamp)?timestamp:Date.now();
+ const utcDay=Math.floor(now/86400000)*86400000;
+ const windows=[];
+ for(const offset of [-1,0,1]){
+  for(const hour of GFS_FIRST_WINDS_UTC)
+   windows.push(utcDay+offset*86400000+(hour*60+40)*60000);
+ }
+ const latest=Math.max(...windows.filter(value=>value<=now));
+ const next=Math.min(...windows.filter(value=>value>now));
+ const elapsed=now-latest;
+ const progress=Math.min(100,Math.floor(elapsed/GFS_LOAD_ESTIMATE_MS*100));
+ const seconds=Math.max(0,Math.ceil((next-now)/1000));
+ const two=n=>String(n).padStart(2,'0');
+ const countdown=[Math.floor(seconds/3600),Math.floor(seconds%3600/60),seconds%60].map(two).join(':');
+ const stage=elapsed<GFS_ROUTING_DELAY_MS?'loading':
+  elapsed<GFS_LOAD_ESTIMATE_MS?'consult':'ready';
+ const status=stage==='loading'?'INTÉGRATION ESTIMÉE':
+  stage==='consult'?'CONSULTATION PERTINENTE':'MÉTÉO À CONSULTER';
+ const advice=stage==='loading'?'Prévisions en cours de renouvellement':
+  stage==='consult'?'Bon moment pour vérifier les nouveaux vents':
+  'Fenêtre conseillée pour revoir ton routage';
+ return {latest,next,progress,countdown,stage,status,advice,
+  nextLocal:GFS_PARIS_CLOCK.format(new Date(next))};
+}
+function gfsCardMarkup(){
+ const current=gfsWeatherState();
+ return '<aside class="race-gfs-widget" data-gfs-widget data-gfs-stage="'+current.stage+
+  '" aria-label="État météo GFS estimé" title="Estimation horaire GFS, sans connexion aux serveurs météo de Virtual Regatta. Les vents affichés dans le jeu font référence.">'+
+  '<div class="race-gfs-topline"><span class="race-gfs-title"><span aria-hidden="true">☁</span> MÉTÉO GFS <small>· estimation</small></span>'+
+  '<span class="race-gfs-status" data-gfs-status>'+current.status+'</span></div>'+
+  '<div class="race-gfs-progress-row"><div class="race-gfs-progress" role="progressbar" aria-label="Avancement théorique de l’intégration météo GFS" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+current.progress+'">'+
+  '<span class="race-gfs-progress-fill" style="width:'+current.progress+'%"></span></div>'+
+  '<strong class="race-gfs-percent" data-gfs-percent>'+current.progress+' %</strong></div>'+
+  '<div class="race-gfs-bottomline"><span class="race-gfs-advice" data-gfs-advice>'+current.advice+'</span>'+
+  '<span class="race-gfs-next"><span data-gfs-next-label>PROCHAINE MAJ · '+current.nextLocal+'</span>'+
+  '<strong class="race-gfs-countdown" data-gfs-countdown>'+current.countdown+'</strong></span></div>'+
+  '</aside>';
+}
+/* Update only text and progress in place: never re-render course cards or images. */
+function updateGfsWidgets(timestamp=Date.now()){
+ const widgets=document.querySelectorAll('#cards [data-gfs-widget]');
+ if(!widgets.length)return;
+ const state=gfsWeatherState(timestamp);
+ for(const widget of widgets){
+  if(widget.dataset.gfsStage!==state.stage)widget.dataset.gfsStage=state.stage;
+  const setText=(selector,value)=>{
+   const el=widget.querySelector(selector);
+   if(el&&el.textContent!==value)el.textContent=value;
+  };
+  setText('[data-gfs-status]',state.status);
+  setText('[data-gfs-percent]',state.progress+' %');
+  setText('[data-gfs-advice]',state.advice);
+  setText('[data-gfs-next-label]','PROCHAINE MAJ · '+state.nextLocal);
+  setText('[data-gfs-countdown]',state.countdown);
+  const bar=widget.querySelector('[role="progressbar"]');
+  if(bar&&bar.getAttribute('aria-valuenow')!==String(state.progress)){
+   bar.setAttribute('aria-valuenow',String(state.progress));
+   const fill=widget.querySelector('.race-gfs-progress-fill');
+   if(fill)fill.style.width=state.progress+'%';
+  }
+ }
+}
+
 function raceCardSchedule(r,status){
  const isRecord=r.kind==='record';
  const latest=isRecord?recordEngine.latestStart(r.attempts):null;
@@ -538,7 +612,7 @@ function card(r){
     '<p class="score-pending">'+safe(score.reason||'Note en attente')+'</p>':'')+
    (showRecordRanking&&!rankPairs.some(([key])=>r[key])?
     '<p class="score-pending">Record clôturé · renseigne les classements finaux avec MODIFIER.</p>':'')+
-   gains+'</section></div></div></article>';
+   gains+'</section></div>'+(isLive?gfsCardMarkup():'')+'</div></article>';
 }
 
 /* Ajustement dynamique après mise en page : une ligne même pour > 100 000 joueurs. */
@@ -1811,6 +1885,7 @@ document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLower
 window.addEventListener?.('resize',scheduleRankingFit);
 let regattaClockTicker=window.setInterval(updateRaceClocks,1000);
 window.addEventListener('pagehide',()=>{window.clearInterval(regattaClockTicker);regattaClockTicker=null;});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)updateRaceClocks();});
 window.addEventListener('pageshow',()=>{if(regattaClockTicker===null){updateRaceClocks();regattaClockTicker=window.setInterval(updateRaceClocks,1000);}});
 const bridge=window.RapliModuleBridge={module:'regatta',ready:false,
  getState:()=>({records:rows,logos:colorSettingsState()}),notify:msg=>toast(msg),

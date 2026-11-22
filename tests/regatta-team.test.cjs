@@ -340,6 +340,8 @@ test('VR pasted classification can be previewed, reconciled and saved as one tea
  w.HTMLDialogElement.prototype.close=function(){this.open=false;};
  w.RapliTeamEngine=E;
  w.RapliTeamTime=require('../regatta/team-time.js');
+ w.eval(fs.readFileSync('regatta/score.js','utf8'));
+ w.eval(fs.readFileSync('regatta/team-rating.js','utf8'));
  w.eval(fs.readFileSync('regatta/team-app.js','utf8'));
  const roster=[m('Rapli'),m('RX8')],saved=[];
  w.RapliTeamUI.init({
@@ -408,6 +410,8 @@ test('rendered LPDB cards omit team finish dates even when personal finish exist
  const w=dom.window,d=w.document;
  w.RapliTeamEngine=E;
  w.RapliTeamTime=require('../regatta/team-time.js');
+ w.eval(fs.readFileSync('regatta/score.js','utf8'));
+ w.eval(fs.readFileSync('regatta/team-rating.js','utf8'));
  w.eval(fs.readFileSync('regatta/team-app.js','utf8'));
  const members=[m('Alpha'),m('Beta')];
  const linked=E.fromPersonal({id:'personal-42',kind:'race',name:'Atlantic Sprint',boatClass:'IMOCA',
@@ -471,6 +475,8 @@ test('user can edit overall VR rankings in a pasted classification without chang
  w.HTMLDialogElement.prototype.close=function(){this.open=false;};
  w.RapliTeamEngine=E;
  w.RapliTeamTime=require('../regatta/team-time.js');
+ w.eval(fs.readFileSync('regatta/score.js','utf8'));
+ w.eval(fs.readFileSync('regatta/team-rating.js','utf8'));
  w.eval(fs.readFileSync('regatta/team-app.js','utf8'));
  const roster=[m('Rapli'),m('RX8')],saved=[];
  w.RapliTeamUI.init({get:()=>roster,personal:()=>[],canEdit:()=>true,notify:()=>{},

@@ -136,3 +136,15 @@ Module autonome et seul espace actif de Rapli Lab dans la PR #4.
 - **Droite** : classe de bateau, équipement et VSR en tags foil, classement général avec note circulaire lorsqu’elle est applicable, quatre classements complémentaires, gains VSR et crédits VR. Les records ne reçoivent ni note ni gains fictifs, mais gardent leurs tentatives et classements de clôture. Les étapes restent évaluées selon leur règle de notation existante.
 - **Menu « … »** : capture finale, tracé (si disponibles et autorisés par le statut), modifier, exporter PNG, ajouter au calendrier iOS si le départ est futur, clôturer le record si ouvert, supprimer. Un seul menu à la fois ; fermeture au clic extérieur ou avec Échap. Les captures s’ouvrent dans la visionneuse existante.
 - Les photos, courses, classements, gains, préférences foil et sauvegardes Supabase/IndexedDB ne changent pas de format. Seule leur **présentation** est remaniée.
+
+## Indicateur météo GFS (PR #4)
+
+Les tuiles de course ou de record avec le statut **En cours** affichent automatiquement un mini-bloc météo GFS sous les deux colonnes. Les autres statuts (à venir, terminé, DNF, record clôturé) ne l'affichent pas. Aucun champ n'est enregistré et aucune donnée des courses n'est modifiée.
+
+- Cycles de premières données estimés à **03h40, 09h40, 15h40 et 21h40 UTC**, d'après [l'assistance Virtual Regatta Offshore](https://virtualregatta.zendesk.com/hc/fr/articles/115001441254-Pr%C3%A9visions-M%C3%A9t%C3%A9orologiques-et-Mise-%C3%A0-Jour).
+- Heure de prochaine actualisation présentée dans le fuseau **Europe/Paris**, automatiquement adaptée à CET/CEST, y compris lors des changements d'heure.
+- Compte à rebours **HH:MM:SS**, recalculé à chaque seconde, et estimation de progression de **0 à 100 %** sur une fenêtre indicative de 80 minutes après le début d'un cycle. Message « Intégration estimée » pendant les 30 premières minutes, « Consultation pertinente » de 30 à 80 minutes, puis « Météo à consulter ».
+- **Aucune API météo Virtual Regatta n'est consultée** : l'avancement et le conseil sont exclusivement des **estimations horaires**. Les données affichées dans Virtual Regatta font foi ; retards et durées de diffusion peuvent différer. L'interface précise « estimation » et son infobulle rappelle la limite.
+- Le rafraîchissement se fait **en place** sur le texte et la barre de progression ; aucune recréation de tuile ou de photo. Reprise immédiate au retour sur l'onglet, sans écriture Supabase/IndexedDB.
+
+Tests : `tests/regatta-gfs.test.cjs` (cycles UTC, hiver/été, bascules DST, compte à rebours, progression, statut, préservation du nœud image).

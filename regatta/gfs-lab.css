@@ -537,3 +537,42 @@
 .regatta-gfs-lab .gfs-next-day-departures-panel>small{
   display:block;margin-top:9px;font-size:9px;line-height:1.6;color:#806b77
 }
+
+
+/* Test 16: diagnose incomplete provisional polar rather than extend the GFS horizon. */
+.regatta-gfs-lab .gfs-polar-diagnostic-panel{
+  margin-top:12px;padding:11px;border:1px solid #d3d9e7;border-radius:11px;
+  background:linear-gradient(120deg,#f4f7fc,#f0faf8)
+}
+.regatta-gfs-lab .gfs-polar-diagnostic-panel>p{
+  font-size:10px;line-height:1.6;color:#547783;margin:8px 0
+}
+.regatta-gfs-lab .gfs-polar-diagnostic-panel>p[data-state="success"]{color:#186e63}
+.regatta-gfs-lab .gfs-polar-diagnostic-panel>p[data-state="error"]{color:#ad485a}
+.regatta-gfs-lab [data-gfs-polar-diagnostic-rows][hidden]{display:none}
+.regatta-gfs-lab [data-gfs-polar-diagnostic-rows]{display:grid;gap:7px;margin:9px 0}
+.regatta-gfs-lab .gfs-polar-diagnostic-row{
+  display:grid;grid-template-columns:82px minmax(0,1fr);
+  gap:3px 8px;align-items:baseline;padding:10px;border:1px solid #d8e6ec;
+  border-radius:9px;background:#fff
+}
+.regatta-gfs-lab .gfs-polar-diagnostic-row[data-state="blocked"]{
+  border-color:#e3d4d7;background:#fffaf9
+}
+.regatta-gfs-lab .gfs-polar-diagnostic-row strong{color:#2d6270;font-size:10px}
+.regatta-gfs-lab .gfs-polar-diagnostic-row span{
+  color:#6d5564;font-weight:800;font-size:10px;overflow-wrap:anywhere
+}
+.regatta-gfs-lab .gfs-polar-diagnostic-row[data-state="ok"] span{color:#15746c}
+.regatta-gfs-lab .gfs-polar-diagnostic-row small{
+  grid-column:2;font-size:9px;line-height:1.5;color:#7b8490
+}
+.regatta-gfs-lab .gfs-polar-diagnostic-panel>small{
+  display:block;font-size:9px;line-height:1.6;color:#746879;margin-top:9px
+}
+@media(max-width:400px){
+  .regatta-gfs-lab .gfs-polar-diagnostic-row{
+    grid-template-columns:1fr;gap:3px
+  }
+  .regatta-gfs-lab .gfs-polar-diagnostic-row small{grid-column:1}
+}

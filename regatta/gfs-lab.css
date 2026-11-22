@@ -168,3 +168,36 @@
 .regatta-gfs-lab .gfs-spatiotemporal-panel>small{
  display:block;margin-top:9px;font-size:9px;line-height:1.5;color:#617e8e
 }
+
+
+/* Three deliberately fixed position/time weather samples, not boat navigation. */
+.regatta-gfs-lab .gfs-demo-track-panel{
+  margin-top:12px;padding:11px;border:1px solid #b5deda;border-radius:11px;
+  background:linear-gradient(125deg,#f0faf8,#f4f9fc)
+}
+.regatta-gfs-lab .gfs-demo-track-heading{
+  display:flex;justify-content:space-between;flex-wrap:wrap;align-items:baseline;gap:6px
+}
+.regatta-gfs-lab .gfs-demo-track-heading strong{font-size:10px;color:#215e65;font-weight:900}
+.regatta-gfs-lab .gfs-demo-track-heading span{font-size:9px;color:#5c7d85;font-weight:800}
+.regatta-gfs-lab .gfs-demo-track-panel>p{
+  font-size:10px;color:#547786;line-height:1.6;margin:8px 0
+}
+.regatta-gfs-lab .gfs-demo-track-panel>p[data-state="success"]{color:#167263}
+.regatta-gfs-lab .gfs-demo-track-panel>p[data-state="error"]{color:#a14752}
+.regatta-gfs-lab [data-gfs-demo-track-results][hidden]{display:none}
+.regatta-gfs-lab [data-gfs-demo-track-results]{display:grid;gap:6px}
+.regatta-gfs-lab .gfs-demo-track-step{
+  background:#fff;border:1px solid #d6e7e6;border-radius:9px;padding:9px;
+  display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 8px;align-items:baseline
+}
+.regatta-gfs-lab .gfs-demo-track-step strong{font-size:10px;color:#2c5b6b}
+.regatta-gfs-lab .gfs-demo-track-step small{grid-column:1;font-size:9px;color:#6d8793}
+.regatta-gfs-lab .gfs-demo-track-step b{grid-column:2;grid-row:1/span 2;color:#126676;font-size:12px;white-space:nowrap}
+.regatta-gfs-lab .gfs-demo-track-panel>small{
+  display:block;margin-top:9px;color:#607d88;line-height:1.55;font-size:9px
+}
+@media(max-width:370px){
+ .regatta-gfs-lab .gfs-demo-track-step{grid-template-columns:1fr;gap:2px}
+ .regatta-gfs-lab .gfs-demo-track-step b{grid-column:1;grid-row:auto}
+}

@@ -10,6 +10,7 @@ on:
       - 'tests/regatta-gfs-wind.test.cjs'
       - 'tests/regatta-gfs-interpolation.test.cjs'
       - 'tests/regatta-gfs-spatial.test.cjs'
+      - 'tests/regatta-gfs-spatiotemporal.test.cjs'
       - 'regatta/gfs-interpolation.js'
       - 'package.json'
       - 'package-lock.json'
@@ -38,4 +39,4 @@ jobs:
           node --check netlify/functions/gfs-spatial-core.cjs
           node --check netlify/functions/gfs-wind.js
       - name: Verify GRIB source and vector sampling
-        run: node --test tests/regatta-gfs-source.test.cjs tests/regatta-gfs-wind.test.cjs tests/regatta-gfs-interpolation.test.cjs tests/regatta-gfs-spatial.test.cjs
+        run: node --test tests/regatta-gfs-source.test.cjs tests/regatta-gfs-wind.test.cjs tests/regatta-gfs-interpolation.test.cjs tests/regatta-gfs-spatial.test.cjs tests/regatta-gfs-spatiotemporal.test.cjs

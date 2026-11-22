@@ -104,6 +104,16 @@ function teamRaceCard(r,known){
  const main=results.reduce((n,s)=>n+s.main,0),historical=results.reduce((n,s)=>n+s.historic,0);
  const notes=rating.calculate(r,races(),known,engine);
  const dnf=r.results.filter(x=>x.status==='dnf').length;
+ const shared=root.RapliRegattaSharedCards;
+ const isUpcoming=r.status==='planned',isLive=r.status==='live';
+ const timer=(isUpcoming||isLive)?shared?.raceClockMarkup?.(r)||'':'';
+ const gfs=isUpcoming?shared?.gfsBriefingMarkup?.(r)||'':
+  isLive?shared?.gfsCardMarkup?.()||'':'';
+ const liveIcon=isLive?shared?.liveIconMarkup?.()||'🔴':'';
+ const boatTag=shared?.classTagMarkup?.(r.boatClass)||
+  (r.boatClass?'<span class="team-race-class">'+esc(r.boatClass)+'</span>':'');
+ const vsrTag=shared?.vsrTagMarkup?.(r.vsr)||
+  '<span class="team-race-vsr '+esc(r.vsr)+'">'+esc(r.vsr==='hc'?'HC':r.vsr.toUpperCase())+'</span>';
  const img=p&&/^data:image\/(?:png|webp|jpeg|gif);base64,/iu.test(p.icon||'')?
   '<img src="'+esc(p.icon)+'" alt="Illustration de la course '+esc(r.name)+'">':
   '<img src="assets/lpdb.webp" class="team-race-fallback-image" alt="Logo de l’équipe LPDB">';
@@ -131,29 +141,31 @@ function teamRaceCard(r,known){
  '<div class="team-race-intro"><h3 title="'+esc(r.name)+'">'+esc(r.name)+'</h3>'+
  (r.stageGroup?'<span class="team-race-stage">'+esc(r.stageGroup)+'</span>':'')+
  '<div class="team-race-departure"><span>DÉPART DE LA COURSE</span><strong>'+startText+'</strong></div>'+
+ (timer?'<div class="team-race-timer">'+timer+'</div>':'')+
  '</div></section>'+
  '<section class="team-race-right" aria-label="Résultats des skippers LPDB">'+
  '<header class="team-race-topline"><div class="team-race-tags">'+
- (r.boatClass?'<span class="team-race-class">'+esc(r.boatClass)+'</span>':'')+
- '<span class="team-race-vsr '+esc(r.vsr)+'">'+esc(r.vsr==='hc'?'HC':r.vsr.toUpperCase())+'</span>'+
+ boatTag+vsrTag+
  '</div>'+menu+'</header>'+
- '<span class="team-race-status '+statusClass+'">'+state+'</span>'+
+ '<span class="team-race-status '+statusClass+'">'+liveIcon+state+'</span>'+
+ (gfs?'<div class="team-race-weather">'+gfs+'</div>':'')+
  (err?'<p class="team-race-alert">'+esc(err)+'</p>':'')+
- '<div class="team-race-figures">'+
+ (r.status==='finished'?'<div class="team-race-figures">'+
  '<div><span>SKIPPERS INSCRITS</span><strong>'+num(r.results.length)+'</strong></div>'+
  '<div><span>CLASSÉS</span><strong>'+num(finished.length)+'</strong></div>'+
- '<div><span>DNF</span><strong>'+num(dnf)+'</strong></div></div>'+
- (winner?'<div class="team-race-first"><div><span>🥇 PREMIER LPDB</span><strong>'+esc(names.get(winner.skipperId)||'Skipper')+'</strong></div>'+
+ '<div><span>DNF</span><strong>'+num(dnf)+'</strong></div></div>':
+ '<div class="team-race-registered"><span>SKIPPERS INSCRITS</span><strong>'+num(r.results.length)+'</strong></div>')+
+ (r.status==='finished'?(winner?'<div class="team-race-first"><div><span>🥇 PREMIER LPDB</span><strong>'+esc(names.get(winner.skipperId)||'Skipper')+'</strong></div>'+
  (winner.elapsedSeconds!=null?'<span class="team-race-clock">'+clockLabel(winner.elapsedSeconds)+'</span>':'')+'</div>':
- '<p class="team-race-pending">'+(r.status==='live'?'Classement disponible à l’arrivée des skippers.':
- r.status==='planned'?'Résultats disponibles après le départ.':'Aucun résultat final validé.')+'</p>')+
+ '<p class="team-race-pending">Aucun résultat final validé.</p>'):'')+
+ (r.status==='finished'?
  (podium.length>1?'<div class="team-race-podium">'+podium.slice(1).map(x=>
  '<div><span>'+medal(x.position)+'</span><strong>'+esc(names.get(x.skipperId)||'Skipper')+'</strong></div>').join('')+'</div>':'')+
  '<div class="team-race-average" title="Moyenne des notes disponibles, équipement exclu"><span>NOTE MOYENNE DE LA COURSE</span>'+
  '<strong>'+(notes.average!==null?num(notes.average)+'/100':'—')+'</strong>'+
  '<small>'+(notes.rated?num(notes.rated)+' / '+num(notes.eligible)+' skippers notés':'En attente du classement général et de la flotte VR')+'</small></div>'+
  '<div class="team-race-points"><div><span>POINTS PRINCIPAUX</span><strong>'+num(main)+'</strong></div>'+
- '<div><span>POINTS HISTORIQUES</span><strong>'+num(historical)+'</strong></div></div>'+
+ '<div><span>POINTS HISTORIQUES</span><strong>'+num(historical)+'</strong></div></div>':'')+
  '</section></div></article>';
 }
 function renderRaces(){

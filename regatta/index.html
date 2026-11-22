@@ -136,6 +136,7 @@ html:not([data-rapli-role="editor"]) #rapli-module-cloud-save{display:none!impor
             <option value="18">+18 heures</option>
             <option value="24">+24 heures</option>
             <option value="30">+30 heures</option>
+            <option value="36">+36 heures</option>
           </select>
         </label>
         <button type="button" class="gfs-lab-run" data-gfs-wind-run>LIRE LES VENTS</button>
@@ -183,6 +184,19 @@ html:not([data-rapli-role="editor"]) #rapli-module-cloud-save{display:none!impor
             <span><small>Composantes U/V</small><strong data-gfs-spatial-components>—</strong></span>
           </div>
           <small>Interpolation spatiale des quatre nœuds voisins du GFS 0,25°. Il s'agit d'un calcul sur les vents prévus, pas d'une observation ni d'un routage.</small>
+        </section>
+        <section class="gfs-extended-departures-panel" aria-label="Test 18 de prolongement jusqu'à six heures vers 47 degrés Nord">
+          <div class="gfs-motion-heading">
+            <strong>PROLONGATION DES TRAJECTOIRES · TEST 18</strong>
+            <span>GFS +24 / +30 / +36 H · 6 H MAX.</span>
+          </div>
+          <p data-gfs-extended-status>Lis les échéances +24, +30 et +36 h du même cycle NOAA pour poursuivre les quatre trajectoires jusqu'à six heures.</p>
+          <div data-gfs-extended-summary hidden>
+            <div><small>Passages calculables à 47°N</small><strong data-gfs-extended-count>—</strong></div>
+            <div><small>Meilleure durée (si franchissement)</small><strong data-gfs-extended-best>—</strong></div>
+          </div>
+          <div data-gfs-extended-rows hidden></div>
+          <small>Comparaison des mêmes départs +24 à +27 h sur 6 h maximum, grâce aux champs GFS +24/+30/+36 h. Les résultats à 3 h restent affichés séparément. Si la porte 47°N n'est pas franchie, seule la distance restante est indiquée ; aucun temps d'arrivée n'est inventé. Polaires partielles ITYC 30°–120° NON Full Pack, sans terres, courants ni contraintes Virtual Regatta.</small>
         </section>
         <section class="gfs-polar-diagnostic-panel" aria-label="Diagnostic des polaires provisoires sur les quatre départs +24 à +27 heures">
           <div class="gfs-motion-heading">

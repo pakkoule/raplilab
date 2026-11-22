@@ -306,19 +306,19 @@ function previewImport(){
  const selected=rows.map((item,i)=>{
   const id=item.skipperId;
   if(item.generalRank!=null&&(!Number.isSafeInteger(item.generalRank)||item.generalRank<1||item.generalRank>100000000)){
-   blocked++;return {item,error:'Classement général VR invalide : entier positif ou champ vide.'};
+   blocked++;return {item,error:'Rang '+item.position+' · « '+item.name+' » : classement général VR « '+item.generalRank+' » invalide. Saisis un entier entre 1 et 100 000 000, ou laisse vide.'};
   }
   const name=item.newName?.trim()||'';
-  if(!id){missing++;blocked++;return {item,error:'Sélectionne un skipper ou crée un nouveau pseudo.'};}
+  if(!id){missing++;blocked++;return {item,error:'Rang '+item.position+' · « '+item.name+' » non associé à un skipper. Choisis une fiche existante dans le menu ou utilise « Créer un skipper » avec son pseudo complet.'};}
   if(id==='__new__'){
-   if(!name||name.length>56||/\.{2,}|…/u.test(name)){blocked++;return {item,error:'Saisis le pseudo complet (56 caractères max, sans « … »).'};}
+   if(!name||name.length>56||/\.{2,}|…/u.test(name)){blocked++;return {item,error:'Rang '+item.position+' : le pseudo « '+name+' » est incomplet ou invalide. Indique le nom entier (56 caractères maximum, sans points de troncature « … »).'};}
    const key=name.normalize('NFKC').toLowerCase().replace(/\s+/gu,' ');
    if(future.has(key)||existing.some(m=>m.name.normalize('NFKC').toLowerCase().replace(/\s+/gu,' ')===key)){
-    duplicate++;blocked++;return {item,error:'Pseudo déjà utilisé ou ajouté deux fois.'};
+    duplicate++;blocked++;return {item,error:'Rang '+item.position+' : « '+name+' » existe déjà dans l’effectif ou figure deux fois dans cet import. Associe sa fiche existante ou corrige le doublon, sans recréer ce skipper.'};
    }
    future.add(key);
    newNames.push(name);
-  }else if(!existing.some(m=>m.id===id)||seen.has(id)){duplicate++;blocked++;return {item,error:'Skipper introuvable ou choisi plusieurs fois.'};}
+  }else if(!existing.some(m=>m.id===id)||seen.has(id)){duplicate++;blocked++;return {item,error:'Rang '+item.position+' : l’identifiant choisi pour « '+item.name+' » est absent de l’effectif ou déjà affecté à un autre rang. Vérifie l’association et conserve une seule ligne par skipper.'};}
   else seen.add(id);
   return {item,error:''};
  });
@@ -335,14 +335,14 @@ function previewImport(){
  '<div class="team-table-wrap"><table class="team-import-table"><thead><tr><th>#</th><th>Nom détecté / Association</th><th>Général VR</th><th>Chrono calculé</th><th>Écart</th></tr></thead><tbody>'+
  selected.map(({item,error},i)=>{
   const allowed=[{value:'',label:'Associer un skipper…'},{value:'__new__',label:'＋ Créer un skipper'},...options];
-  return '<tr><td>'+item.position+'</td><td><strong>'+esc(item.name)+'</strong>'+
+  return '<tr'+(error?' class="team-import-row-error"':'')+'><td>'+item.position+'</td><td><strong>'+esc(item.name)+'</strong>'+
    '<select data-team-import-select="'+i+'" aria-label="Skipper pour le rang '+item.position+'">'+opts(allowed,item.skipperId)+'</select>'+
    (item.skipperId==='__new__'?'<input data-team-import-name="'+i+'" maxlength="56" value="'+esc(item.newName||'')+'" placeholder="Pseudo complet" aria-label="Nouveau pseudo pour le rang '+item.position+'">':'')+
    (error?'<small class="team-import-warning">'+esc(error)+'</small>':'')+'</td>'+
    '<td><input type="number" min="1" max="100000000" step="1" inputmode="numeric" data-team-import-general="'+i+'" value="'+(item.generalRank??'')+'" placeholder="Général VR" aria-label="Classement général VR de '+esc(item.name)+'"></td>'+ 
    '<td>'+clock.formatTime(item.elapsedSeconds)+'</td><td>+'+clock.formatTime(item.gapSeconds)+'</td></tr>'; 
  }).join('')+'</tbody></table></div>'+
- ((newNames.length>slots||rows.length+retained>50)?'<p class="team-bulk-error">Import impossible : maximum 50 membres actifs et 50 participants par course, DNF compris.</p>':'')+
+ ((newNames.length>slots||rows.length+retained>50)?'<p class="team-bulk-error">Import impossible : '+newNames.length+' nouveau(x) skipper(s) pour '+slots+' place(s) active(s) disponible(s), et '+rows.length+' résultat(s) importé(s) + '+retained+' DNF conservé(s), maximum 50 participants par course. Réduis le nombre de lignes ou libère des places.</p>':'')+
  '<p class="team-footnote">Les DNF déjà saisis restent participants. Les autres positions seront remplacées après validation. Aucun résultat n’est enregistré avant la sauvegarde de la course.</p>';
  apply.disabled=!!parsed.errors.length||blocked>0||!rows.length;
 }

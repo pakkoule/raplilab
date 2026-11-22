@@ -53,3 +53,12 @@ Le championnat LPDB démarre avec la prochaine course enregistrée. **Aucun impo
 ## Vérifications
 - Tests dans `tests/regatta-team.test.cjs` ; exécution CI avec `npm test` via `.github/workflows/regatta-team-check.yml`.
 - Les anciennes données sont conservées, sans merge de la PR ni mise en production.
+
+## Détails de course partagés entre équipe et « Mes courses »
+- Une fiche de course LPDB peut rester indépendante **ou** être associée à une fiche personnelle existante (lien par identifiant, pas par pseudo/nom).
+- Depuis **Courses d’équipe** : choix « Fiche Mes courses associée », bouton « Utiliser ses détails », « Ouvrir Mes courses », « Dissocier » ou « Créer ma fiche personnelle ». Une nouvelle fiche personnelle est préremplie à partir de la course d’équipe enregistrée ; le lien est créé quand cette nouvelle fiche est sauvegardée.
+- Depuis **Mes courses** : le menu « … » des courses ordinaires affiche « Utiliser pour le championnat LPDB », qui ouvre la fiche d’équipe existante ou prépare une nouvelle course liée.
+- La fiche personnelle devient la référence pour les **détails communs** : nom, classe de bateau, type de parcours, départ (date/heure), arrivée (date/heure), catégorie VSR, fuseau horaire et équipement. Les données se reflètent automatiquement dans la vue et les calculs LPDB à partir de la fiche personnelle, sans copier les modifications dans la base à chaque affichage.
+- **Les classements personnels et les captures (gains VSR/VR, rang général Virtual Regatta, notes, photos) restent exclusivement personnels. Les résultats de chaque skipper, le statut de validation d’équipe, les points principaux/historiques et le rattachement aux périodes restent exclusivement côté équipe.**
+- Une fiche personnelle supprimée laisse les derniers détails disponibles dans la fiche d’équipe, avec une mention « fiche introuvable » et une possibilité de dissocier ou réassocier. Aucune suppression en cascade.
+- Seul l’éditeur authentifié peut créer ou modifier les liaisons ; les visiteurs peuvent consulter les deux vues. Aucun import rétroactif de l’ancien Excel.

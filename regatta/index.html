@@ -200,6 +200,8 @@ html:not([data-rapli-role="editor"]) #rapli-module-cloud-save{display:none!impor
         <div class="gfs-lab-cell"><span>Variables vérifiées</span><strong data-gfs-lab-fields>—</strong></div>
         <div class="gfs-lab-cell"><span>Messages GRIB2</span><strong data-gfs-lab-messages>—</strong></div>
       </div>
+      <details class="gfs-debug-details" id="regatta-gfs-debug">
+        <summary>LECTURES & TESTS TECHNIQUES <span>VENTS · POLAIRES · TRAJECTOIRES</span></summary>
       <section class="gfs-wind-panel" data-gfs-wind-panel aria-label="Lectures de vent GFS sur trois points atlantiques">
         <div class="gfs-wind-heading"><strong>VENTS GFS · ATLANTIQUE</strong><span>3 POINTS · 0,25°</span></div>
         <p class="gfs-wind-status" data-gfs-wind-status role="status" aria-live="polite">Choisis une échéance, puis appuie sur LIRE LES VENTS.</p>
@@ -410,6 +412,7 @@ html:not([data-rapli-role="editor"]) #rapli-module-cloud-save{display:none!impor
         </section>
         <p class="gfs-wind-note">Vitesses en nœuds · directions météorologiques d'origine. Les trois points de référence utilisent le nœud le plus proche ; le quatrième est interpolé spatialement. Pour limiter les accès NOAA, espace les tests d'au moins 10 secondes.</p>
       </section>
+      </details>
       <p class="gfs-lab-limit">Source NOAA NOMADS · vents GFS à 10 m décodés · essais de navigation locale avec polaires provisoires, sans prédiction de record ni routage océanique.</p>
     </div>
   </details>
@@ -572,6 +575,7 @@ html:not([data-rapli-role="editor"]) #rapli-module-cloud-save{display:none!impor
 <script defer src="gfs-motion.js"></script>
 <script defer src="gfs-route-search.js"></script>
 <script defer src="gfs-departures.js"></script>
+<script defer src="gfs-routing-summary.js"></script>
 <script defer src="gfs-lab.js"></script>
 <script defer src="../shared/photo-zoom.js"></script>
 <script defer src="../shared/admin-access.js"></script>

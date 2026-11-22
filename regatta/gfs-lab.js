@@ -86,6 +86,62 @@
   };
   const verifiedFrames=new Map();
   const interpolationEngine=window.RapliGfsInterpolation;
+  const adaptiveStatus=root.querySelector('[data-gfs-adaptive-status]');
+  const adaptiveSummary=root.querySelector('[data-gfs-adaptive-summary]');
+  const adaptiveSteps=root.querySelector('[data-gfs-adaptive-steps]');
+  const renderAdaptive=()=>{
+    adaptiveSummary.hidden=true;
+    adaptiveSteps.hidden=true;
+    adaptiveSteps.replaceChildren();
+    if(!verifiedFrames.has(6)||!verifiedFrames.has(12)){
+      adaptiveStatus.dataset.state='idle';
+      adaptiveStatus.textContent='Lis les échéances +6 h et +12 h pour le même cycle GFS.';
+      return;
+    }
+    const engine=window.RapliGfsMotion;
+    if(!engine?.simulateAdaptiveHeading){
+      adaptiveStatus.dataset.state='error';
+      adaptiveStatus.textContent='Calcul du pilote adaptatif indisponible.';
+      return;
+    }
+    try{
+      const model=engine.simulateAdaptiveHeading(verifiedFrames.get(6),verifiedFrames.get(12));
+      const assign=(selector,value)=>{
+        const el=root.querySelector(selector);
+        if(el)el.textContent=value;
+      };
+      assign('[data-gfs-adaptive-south]',model.southProgressNm.toFixed(1)+' M');
+      assign('[data-gfs-adaptive-distance]',model.distanceNm.toFixed(1)+' M');
+      assign('[data-gfs-adaptive-changes]',String(model.headingChanges));
+      assign('[data-gfs-adaptive-delta]',
+        (model.deltaSouthNm>0?'+':'')+model.deltaSouthNm.toFixed(1)+' M');
+      for(const step of model.steps){
+        const line=document.createElement('div');
+        line.className='gfs-adaptive-step';
+        const when=document.createElement('strong');
+        when.textContent='+'+step.hour.toFixed(1).replace('.0','')+' h';
+        const cap=document.createElement('b');
+        cap.textContent='Cap '+step.heading+'°';
+        const detail=document.createElement('span');
+        detail.textContent=step.boatKnots.toFixed(1)+' nds · VMG sud '+
+          step.southVmg.toFixed(1)+' nds';
+        const wind=document.createElement('small');
+        wind.textContent='Vent '+step.windKnots.toFixed(1)+' nds / '+step.windDirection.toFixed(0)+
+          '° · TWA '+step.twa.toFixed(0)+'°';
+        line.append(when,cap,detail,wind);
+        adaptiveSteps.appendChild(line);
+      }
+      adaptiveSummary.hidden=false;
+      adaptiveSteps.hidden=false;
+      adaptiveStatus.dataset.state='success';
+      adaptiveStatus.textContent='6 décisions météo validées, '+model.headingChanges+
+        ' changement(s) de cap en 3 h · comparaison avec le cap fixe '+model.bestFixedHeading+'°.';
+    }catch(error){
+      adaptiveStatus.dataset.state='error';
+      adaptiveStatus.textContent='Pilote non calculable : '+String(error.message||error)+
+        ' Aucun résultat inventé.';
+    }
+  };
   const headingStatus=root.querySelector('[data-gfs-heading-status]');
   const headingSummary=root.querySelector('[data-gfs-heading-summary]');
   const headingResults=root.querySelector('[data-gfs-heading-results]');
@@ -380,6 +436,7 @@
       renderDemoTrack();
       renderMotion();
       renderHeadings();
+      renderAdaptive();
       windStatus.dataset.state='success';
       windStatus.textContent='3 vents réels décodés sur le même cycle NOAA · '+
         (result.cached?'résultat en cache.':'lecture validée.');

@@ -335,3 +335,16 @@ Chaque départ dure au maximum trois heures et utilise les vents bilinéaires/te
 Correction d'interface connexe : après une lecture réelle +6/+12/+18, le récapitulatif GRIB2 initial est resynchronisé sur **l'échéance effectivement sélectionnée** (date, taille, UGRD/VGRD, nombre de messages), supprimant l'impression que le panneau analyse encore +6 h lorsque le navigateur vient de récupérer +12 h.
 
 Toujours aucune estimation d'ETA à l'équateur ou au cap de Bonne-Espérance. Les polaires sont des relevés partiels ITYC **non Full Pack**, et les simulations restent limitées géographiquement, sans terres/courants/règles Virtual Regatta. Tests automatisés prolongés dans `tests/regatta-gfs-motion.test.cjs` et `tests/regatta-gfs-departures.test.cjs`. Validation sur Safari iPhone du test 13 à effectuer, production inchangée.
+
+
+## GFS 0,25° · troisième plage de départs (PR #4 · prototype 14)
+
+Le test 13 a été confirmé sur Safari iPhone (22 novembre 2026) : lecture du fichier NOAA f018 affichée à la bonne heure, quatre départs tardifs tous calculables (+12: 102,2 min, +13: 103,4 min, +14: 104,7 min, +15: 106,1 min jusqu'à la porte fictive 47° N). Les huit départs des tests 12 et 13 affichent le meilleur +6 à 98,7 min dans ce scénario limité.
+
+La troisième plage utilise le vrai GFS 0,25° **f018/f024**, en ajoutant une échéance NOAA +24 h dans le sélecteur manuel. Chaque clic reste un téléchargement pour une seule échéance. La même grille UGRD/VGRD à 10 m est décodée en Float32, en cache par cycle et échéance, sans nouveau téléchargement pour chaque position du bateau. Le laboratoire simule les départs **+18/+19/+20/+21 h** vers la latitude témoin **47° N**, avec un horizon de navigation de trois heures et une interpolation spatiale/temporelle strictement limitée à +18/+24 h.
+
+Un panneau **BILAN DES 12 DÉPARTS** apparaît si et seulement si les quatre fichiers +6, +12, +18 et +24 h d'un **même cycle** ont tous été validés. Les départs non calculables sont exclus du classement ; aucun temps n'est extrapolé. Le panneau précédent « bilan des 8 départs » est conservé.
+
+Limites : polaires ITYC très partielles (NON Full Pack), caps 170°–190°, pilote VMG sud glouton, aucun masque terrestre, ni courant, ni contraintes Virtual Regatta. Ces simulations de latitude témoin ne sont pas des prévisions de passage à l'équateur ni au cap de Bonne-Espérance.
+
+Tests ajoutés dans `tests/regatta-gfs-departures.test.cjs`, `tests/regatta-gfs-motion.test.cjs` et `tests/regatta-gfs-source.test.cjs`. Toujours sur la PR #4 uniquement, validation Safari à venir.

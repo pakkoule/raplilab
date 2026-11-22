@@ -222,13 +222,24 @@ async function submitMember(ev){
  if(!name||members().some(m=>m.name.toLocaleLowerCase('fr')===name.toLocaleLowerCase('fr')&&m.id!==editingMember?.id)){notify('Pseudo vide ou déjà utilisé.',true);return;}
  if(from&&until&&until<from){notify('La date de sortie doit suivre l’entrée.',true);return;}
  if(status==='active'&&!active(editingMember||{})&&members().filter(active).length>=50){notify('Maximum 50 membres actifs.',true);return;}
- const m=engine.member({id:editingMember?.id||uuid('member'),name,status,from,until,createdAt:editingMember?.createdAt||stamp(),updatedAt:stamp()});
+ const memberships=(editingMember?.memberships||[]).map(w=>({...w}));
+ const previous=editingMember?.status;
+ if(previous==='former'&&status==='active'){
+  // The previous membership remains closed; a returning skipper starts a new one.
+  if(memberships.length&&!memberships[memberships.length-1].until)
+   memberships[memberships.length-1].until=editingMember.until||today();
+  memberships.push({from:from||today(),until:''});
+ }else if(memberships.length)memberships[memberships.length-1]={from,until};
+ else memberships.push({from,until});
+ const latest=memberships[memberships.length-1];
+ const m=engine.member({id:editingMember?.id||uuid('member'),name,status,
+  from:latest.from,until:latest.until,memberships,createdAt:editingMember?.createdAt||stamp(),updatedAt:stamp()});
  if(await saveEntity(m)){$('team-member-dialog').close();editingMember=null;notify('Skipper enregistré ✓');}
 }
 function showProfile(id){
  const m=members().find(x=>x.id===id);if(!m)return;
  const model=engine.standings(all(),period(),viewMode),s=model.skippers.find(x=>x.id===id);
- const content='<div class="team-profile-head"><h3>'+esc(m.name)+'</h3><small>'+esc(m.status==='active'?'Membre actif':'Ancien membre')+' · '+esc(labelPeriod())+'</small></div>'+
+ const content='<div class="team-profile-head"><h3>'+esc(m.name)+'</h3><small>'+esc(m.status==='active'?'Membre actif':'Ancien membre')+' · '+esc(labelPeriod())+'</small><small>'+esc((m.memberships||[]).filter(w=>w.from||w.until).map(w=>(w.from||'Début inconnu')+' → '+(w.until||'En cours')).join(' · '))+'</small></div>'+
  (s?statCards([['Points',num(s.points)],['Points / course',num(s.avg)],['Courses terminées',num(s.finished)],['Victoires',num(s.wins)],['Podiums',num(s.podiums)],['Assiduité',num(s.attendance)+' %'],['Prestige moyen',num(s.prestige)],['Départage hybride',num(s.hybrid)]])+
  '<div class="team-table-wrap"><table class="team-table"><thead><tr><th>COURSE</th><th>RANG</th><th>VSR</th><th>POINTS</th></tr></thead><tbody>'+
  s.records.slice().sort((a,b)=>b.dateEnd.localeCompare(a.dateEnd)).map(r=>'<tr><td>'+esc(r.raceName)+'<small>'+esc(r.dateEnd)+'</small></td><td>'+ (r.dnf?'DNF':r.rank)+'</td><td>'+esc(r.vsr.toUpperCase())+'</td><td>'+num(viewMode==='historic'?r.historic:r.main)+'</td></tr>').join('')+'</tbody></table></div>':empty('Aucune participation sur cette période.'));
@@ -421,6 +432,13 @@ function change(ev){
  if(el.id==='team-period-value'||el.id==='team-stats-period-value'){periodValue=el.value;page=1;render();return;}
  if(el.id==='team-filter'){filter=el.value;page=1;renderMain();return;}
  if(el.id==='team-stat-mode'){statMode=el.value;renderStats();return;}
+ if(el.id==='team-member-status'){
+  if(el.value==='former'&&!$('team-member-until').value)$('team-member-until').value=today();
+  if(el.value==='active'&&editingMember?.status==='former'){
+   $('team-member-from').value=today();$('team-member-until').value='';
+  }
+  return;
+ }
  if(['team-from','team-to','team-stats-from','team-stats-to'].includes(el.id)){if(el.id.endsWith('-from'))customFrom=el.value;else customTo=el.value;page=1;render();return;}
  if(el.id==='team-race-status'||el.id==='team-race-vsr'||el.id==='team-race-date'){
   if(draft){draft.vsr=$('team-race-vsr').value;draft.status=$('team-race-status').value;editorRows();}

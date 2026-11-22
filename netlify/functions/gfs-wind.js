@@ -26,7 +26,7 @@ function respond(statusCode,data){
 function selectForecastHour(event) {
   const raw=event?.queryStringParameters?.forecastHour;
   if (raw===undefined||raw===null||raw==='') return 6;
-  if (typeof raw!=='string'||!/^(6|12|18|24|30)$/.test(raw)) return null;
+  if (typeof raw!=='string'||!/^(6|12|18|24|30|36)$/.test(raw)) return null;
   const hour=Number(raw);
   return FORECAST_HOURS.includes(hour)?hour:null;
 }
@@ -57,7 +57,7 @@ async function retrieveWind(cycle,forecastHour){
     // On fournit également la grille compacte aux tests de déplacement.
     // Chaque clic reste un seul appel NOAA, même pour f018.
     let motionGrid=null,motionGridError=null;
-    if([6,12,18,24,30].includes(forecastHour)){
+    if([6,12,18,24,30,36].includes(forecastHour)){
       try{
         motionGrid=await decodePackedGfsGrid(file);
       }catch(error){

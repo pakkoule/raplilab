@@ -86,6 +86,71 @@
   };
   const verifiedFrames=new Map();
   const interpolationEngine=window.RapliGfsInterpolation;
+  const extendedStatus=root.querySelector('[data-gfs-extended-status]');
+  const extendedSummary=root.querySelector('[data-gfs-extended-summary]');
+  const extendedRows=root.querySelector('[data-gfs-extended-rows]');
+  const renderExtendedDepartures=()=>{
+    extendedSummary.hidden=true;
+    extendedRows.hidden=true;
+    extendedRows.replaceChildren();
+    if(![24,30,36].every(h=>verifiedFrames.has(h))){
+      extendedStatus.dataset.state='idle';
+      extendedStatus.textContent='Lis +24 h, +30 h et +36 h du même cycle GFS pour comparer jusqu’à 6 h de navigation.';
+      return;
+    }
+    const engine=window.RapliGfsDepartures;
+    if(!engine?.compareExtendedNextDayDepartures){
+      extendedStatus.dataset.state='error';
+      extendedStatus.textContent='Moteur de prolongation GFS indisponible.';
+      return;
+    }
+    try{
+      const result=engine.compareExtendedNextDayDepartures(
+        verifiedFrames.get(24),verifiedFrames.get(30),verifiedFrames.get(36)
+      );
+      const count=root.querySelector('[data-gfs-extended-count]');
+      const best=root.querySelector('[data-gfs-extended-best]');
+      count.textContent=result.validCount+' / 4';
+      best.textContent=result.validCount
+        ?'+'+result.fastestStartHour+' h · '+result.fastestElapsedMinutes.toFixed(1)+' min'
+        :'Aucun franchissement calculable';
+      for(const candidate of result.windows){
+        const row=document.createElement('div');
+        row.className='gfs-extended-departure-row';
+        row.dataset.state=candidate.valid?'crossed':'incomplete';
+        const label=document.createElement('strong');
+        label.textContent='Départ +'+candidate.startHour+' h';
+        const info=document.createElement('span');
+        const detail=document.createElement('small');
+        if(candidate.valid){
+          info.textContent=candidate.elapsedMinutes.toFixed(1)+' min jusqu’à 47°N';
+          detail.textContent='Passage '+frenchTime(candidate.crossingUTC)+' (Paris)';
+        }else if(candidate.failureType==='GATE_NOT_REACHED'){
+          info.textContent='Porte non atteinte après 6 h';
+          detail.textContent='Reste '+candidate.distanceRemainingNm.toFixed(1)+' M jusqu’à 47°N';
+        }else{
+          info.textContent=candidate.failureType==='POLAR_UNAVAILABLE'
+            ?'Polaire provisoire indisponible'
+            :'Météo ou position hors des données vérifiées';
+          const time=Number.isFinite(candidate.failureForecastHour)
+            ?'+'+candidate.failureForecastHour.toFixed(1).replace('.0','')+' h'
+            :'échéance indéterminée';
+          detail.textContent='Interruption à '+time+' · reste '+
+            candidate.distanceRemainingNm.toFixed(1)+' M · '+candidate.reason;
+        }
+        row.append(label,info,detail);
+        extendedRows.appendChild(row);
+      }
+      extendedSummary.hidden=false;
+      extendedRows.hidden=false;
+      extendedStatus.dataset.state='success';
+      extendedStatus.textContent='Prolongation calculée pour 4 départs, sans extrapolation hors GFS ni polaires.';
+    }catch(error){
+      extendedStatus.dataset.state='error';
+      extendedStatus.textContent='Prolongation impossible : '+String(error?.message||error)+
+        '. Aucun temps de passage inventé.';
+    }
+  };
   const polarDiagnosticStatus=root.querySelector('[data-gfs-polar-diagnostic-status]');
   const polarDiagnosticRows=root.querySelector('[data-gfs-polar-diagnostic-rows]');
   const renderPolarDiagnostic=()=>{
@@ -796,7 +861,7 @@
   });
   windRun.addEventListener('click',async()=>{
     const hour=windHour.value;
-    if(!['6','12','18','24','30'].includes(hour))return;
+    if(!['6','12','18','24','30','36'].includes(hour))return;
     windRun.disabled=true;
     windHour.disabled=true;
     windPoints.hidden=true;
@@ -863,6 +928,7 @@
       renderEveningDepartures();
       renderNextDepartures();
       renderPolarDiagnostic();
+      renderExtendedDepartures();
       windStatus.dataset.state='success';
       windStatus.textContent='3 vents réels décodés sur le même cycle NOAA · '+
         (result.cached?'résultat en cache.':'lecture validée.');

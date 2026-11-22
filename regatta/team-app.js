@@ -20,6 +20,12 @@ const detailInputs={boatClass:'team-race-class',routeType:'team-race-route',star
  startTime:'team-race-start-time',timezone:'team-race-timezone'};
 const members=()=>all().filter(x=>x.type==='team-member');
 const editorMembers=()=>[...members(),...(draft?.newMembers||[])];
+/* Historic race normalization keeps persistent fields only. Preserve the
+   unsaved skipper profiles until they are saved with the course in one bundle. */
+function fromPersonalKeepingNewMembers(personal,base){
+ const linked=engine.fromPersonal(personal,base);
+ return linked?{...linked,newMembers:base?.newMembers||[]}:null;
+}
 const races=()=>all().filter(x=>x.type==='team-race');
 /* Display-only live state: planned team races automatically start at the local
    departure instant. Closing the team classification remains a manual action;
@@ -334,7 +340,7 @@ function previewImport(){
  (parsed.warnings.length?'<p class="team-bulk-note">'+parsed.warnings.slice(0,6).map(esc).join(' · ')+'</p>':'')+
  '<div class="team-table-wrap"><table class="team-import-table"><thead><tr><th>#</th><th>Nom détecté / Association</th><th>Général VR</th><th>Chrono calculé</th><th>Écart</th></tr></thead><tbody>'+
  selected.map(({item,error},i)=>{
-  const allowed=[{value:'',label:'Associer un skipper…'},{value:'__new__',label:'＋ Créer un skipper'},...options];
+  const allowed=[{value:'',label:'Associer un skipper…'},{value:'__new__',label:'＋ Créer automatiquement le skipper'},...options];
   return '<tr'+(error?' class="team-import-row-error"':'')+'><td>'+item.position+'</td><td><strong>'+esc(item.name)+'</strong>'+
    '<select data-team-import-select="'+i+'" aria-label="Skipper pour le rang '+item.position+'">'+opts(allowed,item.skipperId)+'</select>'+
    (item.skipperId==='__new__'?'<input data-team-import-name="'+i+'" maxlength="56" value="'+esc(item.newName||'')+'" placeholder="Pseudo complet" aria-label="Nouveau pseudo pour le rang '+item.position+'">':'')+
@@ -343,7 +349,7 @@ function previewImport(){
    '<td>'+clock.formatTime(item.elapsedSeconds)+'</td><td>+'+clock.formatTime(item.gapSeconds)+'</td></tr>'; 
  }).join('')+'</tbody></table></div>'+
  ((newNames.length>slots||rows.length+retained>50)?'<p class="team-bulk-error">Import impossible : '+newNames.length+' nouveau(x) skipper(s) pour '+slots+' place(s) active(s) disponible(s), et '+rows.length+' résultat(s) importé(s) + '+retained+' DNF conservé(s), maximum 50 participants par course. Réduis le nombre de lignes ou libère des places.</p>':'')+
- '<p class="team-footnote">Les DNF déjà saisis restent participants. Les autres positions seront remplacées après validation. Aucun résultat n’est enregistré avant la sauvegarde de la course.</p>';
+ '<p class="team-footnote">Les pseudos inconnus complets sont préparés automatiquement comme nouveaux skippers. Leur fiche sera créée avec la course à l’enregistrement. Les DNF restent participants. Aucun résultat n’est sauvegardé avant validation.</p>';
  apply.disabled=!!parsed.errors.length||blocked>0||!rows.length;
 }
 function analyzeRanking(){
@@ -386,7 +392,7 @@ function applyRanking(){
  document.querySelector('[data-team-action="toggle-ranking-import"]').setAttribute('aria-expanded','false');
  $('team-ranking-paste').value='';
  choices();editorRows();
- notify(next.length+' résultat(s) importé(s), avec chronos et écarts. Enregistre puis valide la course pour le championnat.');
+ notify(next.length+' résultat(s) importé(s), dont '+newMembers.length+' nouveau(x) skipper(s). Leurs fiches seront créées automatiquement avec la course lors de l’enregistrement.');
 }
 function syncEditorTimes(row,field,value){
  if(!draft||!row||row.status==='dnf')return;
@@ -413,9 +419,10 @@ function editorRows(){
  $('team-participants-count').textContent=draft.results.length+' / 50 participants';
  $('team-result-rows').innerHTML=draft.results.map(row=>{
   const name=known.get(row.skipperId)?.name||'Skipper inconnu';
+  const pendingCreation=(draft.newMembers||[]).some(m=>m.id===row.skipperId);
   const n=draft.results.length,sc=row.status==='finished'&&row.position?engine.primary(draft.vsr,n,row.position):0;
   const hc=row.status==='finished'&&row.position?engine.historical(row.position):0;
-  return '<div class="team-result-row" data-team-row="'+esc(row.skipperId)+'"><span class="team-result-name" title="'+esc(name)+'">'+esc(name)+'</span>'+
+  return '<div class="team-result-row" data-team-row="'+esc(row.skipperId)+'"><span class="team-result-name" title="'+esc(name)+'">'+esc(name)+(pendingCreation?' <small class="team-new-skipper-badge">NOUVEAU</small>':'')+'</span>'+
    '<input type="number" min="1" max="50" step="1" inputmode="numeric" data-team-rank="'+esc(row.skipperId)+'" aria-label="Rang de '+esc(name)+'" value="'+(row.position??'')+'"'+(row.status==='dnf'?' disabled':'')+' placeholder="Rang">'+
    '<input type="number" min="1" max="100000000" step="1" inputmode="numeric" data-team-general-rank="'+esc(row.skipperId)+'" aria-label="Classement général VR de '+esc(name)+'" title="Rang général Virtual Regatta distinct du rang LPDB" value="'+(row.generalRank??'')+'"'+(row.status==='dnf'?' disabled':'')+' placeholder="Général">'+
    '<select data-team-status="'+esc(row.skipperId)+'" aria-label="Résultat de '+esc(name)+'">'+opts([{value:'pending',label:'À saisir'},{value:'finished',label:'Classé'},{value:'dnf',label:'DNF'}],row.status)+'</select>'+
@@ -593,7 +600,7 @@ function openRace(id,personalId=''){
  const p=personalById(personalId);
  const base=existing?structuredClone(existing):{id:uuid('race'),type:'team-race',name:'',dateEnd:'',
   vsr:'vsr2',status:'planned',stageGroup:'',results:[],createdAt:stamp()};
- draft=p?engine.fromPersonal(p,base):base;
+ draft=p?fromPersonalKeepingNewMembers(p,base):base;
  draft.newMembers=[];rankingImport=null;
  $('team-ranking-import-body').hidden=true;
  $('team-ranking-paste').value='';
@@ -617,24 +624,39 @@ function addMemberToDraft(id){
  if(draft.results.length>=50){notify('Maximum 50 participants par course.',true);return;}
  draft.results.push({skipperId:id,status:'pending',position:null});choices();editorRows();
 }
-async function quickMember(){
+function quickMember(){
  if(!canWrite()||!draft)return;
- const name=$('team-create-member').value.trim().slice(0,56);
- if(!name){notify('Saisis un pseudo.',true);return;}
- const already=members().find(m=>m.name.toLocaleLowerCase('fr')===name.toLocaleLowerCase('fr'));
- if(already){addMemberToDraft(already.id);$('team-create-member').value='';return;}
- if(members().filter(active).length>=50){notify('Effectif actif complet (50 skippers).',true);return;}
- const m=engine.member({id:uuid('member'),name,status:'active',createdAt:stamp(),updatedAt:stamp()});
- if(await saveEntity(m)){
-  addMemberToDraft(m.id);$('team-create-member').value='';
+ const name=$('team-create-member').value.trim();
+ if(!name){notify('Saisis le pseudo du skipper à ajouter.',true);return;}
+ if(name.length>56||/[\t\u0000-\u001f\u007f]/u.test(name)){
+  notify('Pseudo « '+name+' » invalide : 56 caractères maximum, sans saut de ligne ni tabulation.',true);return;
  }
+ if(draft.results.length>=50){notify('Impossible d’ajouter « '+name+' » : cette course compte déjà 50 participants.',true);return;}
+ const roster=editorMembers(),key=name.normalize('NFKC').toLocaleLowerCase('fr').replace(/\s+/gu,' ');
+ const already=roster.find(m=>m.name.normalize('NFKC').toLocaleLowerCase('fr').replace(/\s+/gu,' ')===key);
+ if(already){
+  addMemberToDraft(already.id);
+  $('team-create-member').value='';
+  notify('« '+already.name+' » est déjà dans l’effectif : sa fiche existante a été réutilisée.');
+  return;
+ }
+ const activeCount=members().filter(active).length+(draft.newMembers||[]).length;
+ if(activeCount>=50){
+  notify('Impossible de créer « '+name+' » : l’effectif compte déjà 50 skippers actifs, créations en attente comprises.',true);return;
+ }
+ const m=engine.member({id:uuid('member'),name,status:'active',createdAt:stamp(),updatedAt:stamp()});
+ if(!m){notify('Impossible de préparer la fiche de « '+name+' ». Vérifie son pseudo.',true);return;}
+ draft.newMembers=[...(draft.newMembers||[]),m];
+ addMemberToDraft(m.id);
+ $('team-create-member').value='';
+ notify('« '+name+' » ajouté au classement. Sa fiche skipper sera créée automatiquement lorsque tu enregistreras la course.');
 }
 async function submitRace(ev){
  ev.preventDefault();if(!canWrite()||!draft)return;
  if(illustrationBusy){notify('L’illustration est encore en cours de préparation.',true);return;}
  const linked=personalById(draft.personalRaceId);
  if(linked){
-  draft=engine.fromPersonal(linked,draft);
+  draft=fromPersonalKeepingNewMembers(linked,draft);
   if(linked.kind==='record')draft.vsr=$('team-race-vsr').value;
  }
  else{
@@ -904,7 +926,7 @@ async function click(ev){
   if(!p){notify('Choisis une fiche personnelle existante.',true);return;}
   const linkedElsewhere=races().some(r=>r.personalRaceId===p.id&&r.id!==draft.id);
   if(linkedElsewhere){notify('Cette fiche personnelle est déjà liée à une autre course d’équipe.',true);return;}
-  draft=engine.fromPersonal(p,draft);fillSharedFields();renderPersonalLink();renderTeamIllustration();editorRows();return;
+  draft=fromPersonalKeepingNewMembers(p,draft);fillSharedFields();renderPersonalLink();renderTeamIllustration();editorRows();return;
  }
  if(cmd==='unlink-personal'&&draft){
   draft.personalRaceId='';renderPersonalLink();renderTeamIllustration();notify('Liaison retirée dans le formulaire. Enregistre la course pour confirmer.');return;

@@ -53,6 +53,33 @@
   const windStatus=root.querySelector('[data-gfs-wind-status]');
   const windPoints=root.querySelector('[data-gfs-wind-points]');
   const windMeta=root.querySelector('[data-gfs-wind-meta]');
+  const spatialStatus=root.querySelector('[data-gfs-spatial-status]');
+  const spatialValues=root.querySelector('[data-gfs-spatial-values]');
+  const showSpatial=data=>{
+    spatialValues.hidden=true;
+    if(!data?.spatial||data.spatial.verifiedWind!==true||
+       data.spatial.spatiallyInterpolated!==true||
+       !Number.isFinite(data.spatial.speedKnots)||
+       !Number.isFinite(data.spatial.directionFromDeg)||
+       !Number.isFinite(data.spatial.uMs)||!Number.isFinite(data.spatial.vMs)){
+      spatialStatus.dataset.state='error';
+      spatialStatus.textContent='Interpolation spatiale non confirmée'+
+        (data?.spatialError?' : '+String(data.spatialError).slice(0,120):'.');
+      return;
+    }
+    const wind=data.spatial;
+    const assign=(selector,value)=>{
+      const node=root.querySelector(selector);
+      if(node)node.textContent=value;
+    };
+    assign('[data-gfs-spatial-speed]',wind.speedKnots.toFixed(1)+' nds');
+    assign('[data-gfs-spatial-direction]',wind.directionFromDeg.toFixed(0)+'°');
+    assign('[data-gfs-spatial-components]',wind.uMs.toFixed(2)+' / '+wind.vMs.toFixed(2)+' m/s');
+    spatialValues.hidden=false;
+    spatialStatus.dataset.state='success';
+    spatialStatus.textContent='Vent bilinéaire calculé à partir de quatre coins GFS 0,25° · '+
+      frenchTime(data.validUTC)+' (Paris).';
+  };
   const windText=(name,value)=>{
     const node=root.querySelector('[data-gfs-'+name+']');
     if(node)node.textContent=value;
@@ -112,6 +139,9 @@
   windHour.addEventListener('change',()=>{
     windPoints.hidden=true;
     windMeta.hidden=true;
+    spatialValues.hidden=true;
+    spatialStatus.dataset.state='idle';
+    spatialStatus.textContent='Lis cette échéance pour calculer le vent intermédiaire.';
     windStatus.dataset.state='idle';
     windStatus.textContent='Échéance +'+windHour.value+' h sélectionnée · lance une nouvelle lecture.';
   });
@@ -122,6 +152,9 @@
     windHour.disabled=true;
     windPoints.hidden=true;
     windMeta.hidden=true;
+    spatialValues.hidden=true;
+    spatialStatus.dataset.state='loading';
+    spatialStatus.textContent='Calcul bilinéaire en cours…';
     windStatus.dataset.state='loading';
     windStatus.textContent='Lecture GFS +'+hour+' h, trois points atlantiques…';
     const controller=new AbortController();
@@ -149,6 +182,7 @@
       windText('wind-valid',frenchTime(result.validUTC));
       windPoints.hidden=false;
       windMeta.hidden=false;
+      showSpatial(result);
       // Une interpolation ne peut jamais utiliser des trames de deux cycles différents.
       for(const prior of verifiedFrames.values()){
         if(prior.cycleUTC!==result.cycleUTC){
@@ -162,6 +196,8 @@
       windStatus.textContent='3 vents réels décodés sur le même cycle NOAA · '+
         (result.cached?'résultat en cache.':'lecture validée.');
     }catch(error){
+      spatialStatus.dataset.state='error';
+      spatialStatus.textContent='Interpolation spatiale indisponible (échéance non vérifiée).';
       windStatus.dataset.state='error';
       windStatus.textContent='Lecture indisponible : '+String(error.message||error)+
         ' Aucune vitesse fictive affichée.';

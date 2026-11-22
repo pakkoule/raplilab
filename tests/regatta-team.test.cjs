@@ -1053,6 +1053,8 @@ test('timezone aware team departure transitions only after a valid start and nev
  w.eval(fs.readFileSync('regatta/team-app.js','utf8'));
  const winterStart=w.RapliRegattaTime.fromWall('2026-11-22','17:00','Europe/Paris');
  const summerStart=w.RapliRegattaTime.fromWall('2027-07-01','17:00','Europe/Paris');
+ // Freeze the first render before the intended departure, regardless of CI time.
+ w.Date.now=()=>winterStart-1000;
  assert.equal(new Date(winterStart).toISOString(),'2026-11-22T16:00:00.000Z');
  assert.equal(new Date(summerStart).toISOString(),'2027-07-01T15:00:00.000Z');
  const noClock=E.race({...r('no-clock','2027-01-01','vsr2','planned',[]),start:'2026-11-22',startTime:''});
@@ -1066,7 +1068,7 @@ test('timezone aware team departure transitions only after a valid start and nev
  assert.equal(card(noClock.id).dataset.teamState,'planned');
  assert.equal(card(finished.id).dataset.teamState,'finished');
  assert.equal(card(live.id).dataset.teamState,'live');
- assert.equal(w.RapliTeamUI.refreshLiveStatuses(winterStart-1000),true);
+ assert.equal(w.RapliTeamUI.refreshLiveStatuses(winterStart-1000),false);
  assert.equal(card(past.id).dataset.teamState,'planned');
  assert.equal(w.RapliTeamUI.refreshLiveStatuses(winterStart),true);
  assert.equal(card(past.id).dataset.teamState,'live');

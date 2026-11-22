@@ -267,10 +267,101 @@
       method:'Quatre paires NOAA f006/f012, f012/f018, f018/f024, f024/f030 du même cycle'
     };
   }
+  // Test 18 — continue exactly the four +24...+27 start times using two verified,
+  // adjacent NOAA pairs. No extrapolation, route optimization or synthetic polar data.
+  function compareExtendedNextDayDepartures(frame24,frame30,frame36){
+    const pair1=compatibleFrames(frame24,frame30);
+    const pair2=compatibleFrames(frame30,frame36);
+    if(pair1.first.hour!==24||pair1.second.hour!==30||
+       pair2.first.hour!==30||pair2.second.hour!==36||
+       pair1.first.cycle!==pair2.first.cycle||
+       GRID_KEYS.some(key=>pair1.first.g[key]!==pair2.first.g[key]))
+      throw Error('Trois échéances NOAA +24/+30/+36 du même cycle sont nécessaires.');
+
+    const windows=NEXT_DAY_DEPARTURES.map(startHour=>{
+      let position={...motion.START};
+      let priorHeading=null;
+      let changes=0;
+      const steps=[];
+      let lastWind=null;
+      for(let step=0;step<12;step++){
+        const hour=startHour+step*STEP_HOURS;
+        const pair=hour<30?pair1:pair2;
+        let wind,selection,next;
+        try{
+          wind=motion.windAt(pair.first,pair.second,hour,position.latitude,position.longitude);
+          const angles=motion.CANDIDATE_HEADINGS.map(heading=>
+            Math.abs(((wind.from-heading+540)%360)-180));
+          lastWind={
+            windKnots:round(wind.knots),windDirection:Math.round(wind.from),
+            twaMin:round(Math.min(...angles)),twaMax:round(Math.max(...angles))
+          };
+          selection=motion.selectSouthHeading(wind).selected;
+          next=motion.move(position,selection.heading,selection.boatKnots,STEP_HOURS);
+          motion.windAt(pair.first,pair.second,hour+STEP_HOURS,next.latitude,next.longitude);
+        }catch(error){
+          const failure=String(error?.message||error);
+          const type=failure.includes('polaires')||failure.includes('cap autorisé')
+            ?'POLAR_UNAVAILABLE':'GFS_UNAVAILABLE';
+          return {
+            startHour,valid:false,reason:failure.slice(0,160),
+            failureType:type,failureForecastHour:hour,
+            elapsedHours:round(step*STEP_HOURS),
+            finalLatitude:round(position.latitude,5),
+            distanceRemainingNm:round(Math.max(0,(position.latitude-GATE_LATITUDE)*60),1),
+            lastWind,steps
+          };
+        }
+        if(priorHeading!==null&&priorHeading!==selection.heading)changes++;
+        priorHeading=selection.heading;
+        steps.push({
+          forecastHour:hour,heading:selection.heading,
+          boatKnots:round(selection.boatKnots),windKnots:round(wind.knots),
+          windDirection:Math.round(wind.from)
+        });
+        if(next.latitude<=GATE_LATITUDE&&position.latitude>GATE_LATITUDE){
+          const fraction=(position.latitude-GATE_LATITUDE)/(position.latitude-next.latitude);
+          if(!finite(fraction)||fraction<0||fraction>1)throw Error('Passage de porte incohérent.');
+          const crossingHour=hour+STEP_HOURS*fraction;
+          const elapsedMinutes=round((crossingHour-startHour)*60);
+          return {
+            startHour,valid:true,extended:true,
+            departureUTC:new Date(pair1.first.cycle+startHour*3600000).toISOString(),
+            crossingUTC:new Date(pair1.first.cycle+crossingHour*3600000).toISOString(),
+            crossingForecastHour:round(crossingHour,3),
+            elapsedMinutes,changes,steps,
+            latitude:GATE_LATITUDE,
+            interpolatedCrossing:true
+          };
+        }
+        position=next;
+      }
+      return {
+        startHour,valid:false,
+        failureType:'GATE_NOT_REACHED',
+        reason:'Latitude 47°N non atteinte dans les 6 heures de simulation.',
+        elapsedHours:6,
+        finalLatitude:round(position.latitude,5),
+        distanceRemainingNm:round(Math.max(0,(position.latitude-GATE_LATITUDE)*60),1),
+        lastWind,steps
+      };
+    });
+    const valid=windows.filter(w=>w.valid);
+    const fastest=[...valid].sort((x,y)=>
+      x.elapsedMinutes-y.elapsedMinutes||x.startHour-y.startHour)[0];
+    return {
+      cycleUTC:frame24.cycleUTC,windows,validCount:valid.length,
+      fastestStartHour:fastest?.startHour??null,
+      fastestElapsedMinutes:fastest?.elapsedMinutes??null,
+      horizonHours:6,gateLatitude:GATE_LATITUDE,
+      fullPack:false,isEquatorForecast:false,
+      method:'Même pilote VMG sud; GFS +24/+30/+36 du même cycle, pas 30 minutes, horizon 6 heures'
+    };
+  }
   return {
     DEPARTURES,LATER_DEPARTURES,EVENING_DEPARTURES,NEXT_DAY_DEPARTURES,GATE_LATITUDE,HORIZON_HOURS,STEP_HOURS,
     compatibleFrames,sailToGate,compareDepartureWindows,compareLaterDepartureWindows,
     compareAllDepartureWindows,compareEveningDepartureWindows,compareTwelveDepartureWindows,
-    compareNextDayDepartureWindows,compareSixteenDepartureWindows,diagnoseDeparture
+    compareNextDayDepartureWindows,compareSixteenDepartureWindows,diagnoseDeparture,compareExtendedNextDayDepartures
   };
 });

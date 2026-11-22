@@ -3,7 +3,7 @@
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const {
-  SPATIAL_SITE,validateGrid,cornersForSite,sampleBilinear,decodeWindSpatial
+  SPATIAL_SITE,TRACK_SITES,validateGrid,cornersForSite,sampleBilinear,decodeWindSpatial,decodeWindSpatialPoints
 }=require('../netlify/functions/gfs-spatial-core.cjs');
 
 function grid(overrides={}){
@@ -104,4 +104,31 @@ test('refuse les données absentes à un coin et les grilles U/V incompatibles',
   let count=0;
   dec.parseGrid=()=>({ ...g,gridKey:++count===1?'a':'b'});
   await assert.rejects(decodeWindSpatial(Buffer.alloc(40),site,dec),/Maillages U\/V incompatibles/);
+});
+
+test('décodage spatial groupé pour trois positions sans redécoder chaque variable',async()=>{
+  const g=grid();
+  const u=[0,4,8,12,16,20,24,28,32];
+  const v=[0,0,0,0,0,0,0,0,0];
+  const decoder=mock(g,u,v);
+  let decodedCount=0;
+  const original=decoder.decodeFieldValues;
+  decoder.decodeFieldValues=f=>{decodedCount++;return original(f);};
+  const sites=[
+    {latitude:47.375,longitude:-9.125,label:'A'},
+    {latitude:47.25,longitude:-9,label:'B'},
+    {latitude:47.125,longitude:-9.125,label:'C'}
+  ];
+  const winds=await decodeWindSpatialPoints(Buffer.alloc(40),sites,decoder);
+  assert.equal(decodedCount,2);
+  assert.deepEqual(winds.map(w=>w.site.label),['A','B','C']);
+  assert.equal(winds[0].uMs,8);
+  assert.equal(winds[1].uMs,16);
+  assert.equal(winds[2].uMs,20);
+  assert.ok(winds.every(w=>w.spatiallyInterpolated&&w.verifiedWind));
+  assert.deepEqual(TRACK_SITES.map(p=>p.forecastHour),[7,9,11]);
+  await assert.rejects(
+    decodeWindSpatialPoints(Buffer.alloc(40),[],decoder),
+    /Liste de points/
+  );
 });

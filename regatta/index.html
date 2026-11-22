@@ -225,6 +225,8 @@ html:not([data-rapli-role="editor"]) #rapli-module-cloud-save{display:none!impor
             <div class="ranking-input"><span class="ranking-label">🏴‍☠️ TEAM</span><div class="ranking-pair"><input id="race-rank-team" type="text" inputmode="numeric" maxlength="40" placeholder="2" aria-label="Classement team"><span>/</span><input id="race-rank-team-total" type="text" inputmode="numeric" maxlength="12" placeholder="15" aria-label="Joueurs en team"></div></div>
           </div>
         </fieldset>
+        <label>PARTICIPANTS AU DÉPART<input id="race-start-participant-count" type="number" min="1" step="1" placeholder="Ex. 12 500" inputmode="numeric" aria-describedby="race-start-participant-help"></label>
+        <p id="race-start-participant-help" class="hint wide">Effectif relevé au départ : référence fixe pour le classement théorique. Il n’est jamais remplacé automatiquement par l’effectif final.</p>
         <label>EFFECTIF FINAL DES PARTICIPANTS<input id="race-participant-count" type="number" min="1" step="1" placeholder="Ex. 12 000" inputmode="numeric" aria-describedby="race-participant-help"></label>
         <p id="race-participant-help" class="hint wide">Nombre définitif officiel, y compris si abandon DNF. À défaut, l’effectif du classement général est utilisé pour les courses classées.</p>
         <label>NIVEAU VSR<select id="race-vsr"><option value="">Non renseignée</option><option value="hc">Hors Catégorie</option><option value="vsr1">VSR 1</option><option value="vsr2">VSR 2</option><option value="vsr3">VSR 3</option></select></label>

@@ -55,9 +55,9 @@ async function retrieveWind(cycle,forecastHour){
       spatialError=String(error?.message||error).slice(0,130);
     }
     // On fournit également la grille compacte aux tests de déplacement.
-    // Le coût ne change pas le nombre d'appels NOAA : mêmes f006 et f012.
+    // Chaque clic reste un seul appel NOAA, même pour f018.
     let motionGrid=null,motionGridError=null;
-    if(forecastHour===6||forecastHour===12){
+    if(forecastHour===6||forecastHour===12||forecastHour===18){
       try{
         motionGrid=await decodePackedGfsGrid(file);
       }catch(error){
@@ -69,7 +69,7 @@ async function retrieveWind(cycle,forecastHour){
       cycleUTC:cycle.iso,forecastHour,
       validUTC:new Date(Date.parse(cycle.iso)+forecastHour*3600000).toISOString(),
       bounds:{top:52,bottom:40,left:-20,right:5},
-      fileBytes:file.length,fields:metadata.variables,points,spatial,trackSamples,spatialError,motionGrid,motionGridError,
+      fileBytes:file.length,fields:metadata.variables,messages:metadata.messages,points,spatial,trackSamples,spatialError,motionGrid,motionGridError,
       // Compatibilité des clients utilisant l'ancienne lecture au large de Brest.
       wind:points[0]
     };

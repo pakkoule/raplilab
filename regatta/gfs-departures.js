@@ -85,6 +85,60 @@
     throw Error('Latitude témoin non franchie dans la fenêtre de 3 heures.');
   }
 
+  // Test 16 — observe the *first* obstacle on each rejected departure.
+  // This does not estimate boat speed outside the supplied partial polar.
+  function diagnoseDeparture(first,second,startHour){
+    const allowed=first.hour===6?DEPARTURES:first.hour===12?LATER_DEPARTURES:
+      first.hour===18?EVENING_DEPARTURES:NEXT_DAY_DEPARTURES;
+    if(!allowed.includes(startHour))
+      throw Error('Départ non autorisé pour le diagnostic.');
+    let position={...motion.START};
+    for(let step=0;step<MAX_STEPS;step++){
+      const hour=startHour+step*STEP_HOURS;
+      let wind;
+      try{
+        wind=motion.windAt(first,second,hour,position.latitude,position.longitude);
+      }catch(error){
+        return {startHour,forecastHour:hour,type:'GFS_UNAVAILABLE',
+          reason:String(error?.message||error).slice(0,130)};
+      }
+      const twas=motion.CANDIDATE_HEADINGS.map(heading=>
+        Math.abs(((wind.from-heading+540)%360)-180)
+      );
+      const twaMin=Math.min(...twas),twaMax=Math.max(...twas);
+      const base={
+        startHour,forecastHour:hour,
+        windKnots:round(wind.knots),windDirection:Math.round(wind.from),
+        twaMin:round(twaMin),twaMax:round(twaMax),
+        allowedTwaMin:Math.min(...motion.ANGLES),
+        allowedTwaMax:Math.max(...motion.ANGLES),
+        allowedWindMin:Math.min(...motion.TWS),
+        allowedWindMax:Math.max(...motion.TWS)
+      };
+      if(wind.knots<motion.TWS[0])
+        return {...base,type:'WIND_TOO_LOW'};
+      if(wind.knots>motion.TWS[motion.TWS.length-1])
+        return {...base,type:'WIND_TOO_HIGH'};
+      if(!twas.some(twa=>twa>=base.allowedTwaMin&&twa<=base.allowedTwaMax))
+        return {...base,type:'ANGLE_OUTSIDE_POLAR'};
+      let choice;
+      try{choice=motion.selectSouthHeading(wind).selected;}
+      catch(error){
+        return {...base,type:'POLAR_NOT_AVAILABLE',reason:String(error?.message||error).slice(0,130)};
+      }
+      const next=motion.move(position,choice.heading,choice.boatKnots,STEP_HOURS);
+      try{motion.windAt(first,second,hour+STEP_HOURS,next.latitude,next.longitude);}
+      catch(error){
+        return {...base,type:'GFS_UNAVAILABLE',reason:String(error?.message||error).slice(0,130)};
+      }
+      if(next.latitude<=GATE_LATITUDE)
+        return {...base,type:'CROSSING_UNEXPECTED'};
+      position=next;
+    }
+    return {startHour,forecastHour:startHour+HORIZON_HOURS,
+      type:'GATE_NOT_REACHED'};
+  }
+
   function compareForPair(a,b,firstHour,allowEmpty=false){
     const {first,second}=compatibleFrames(a,b);
     if(first.hour!==firstHour)throw Error('Échéances météo non compatibles avec cette plage de départs.');
@@ -93,7 +147,11 @@
     const windows=departures.map(startHour=>{
       try{return sailToGate(first,second,startHour);}
       catch(error){
-        return {startHour,valid:false,reason:String(error?.message||error).slice(0,150)};
+        let diagnostic=null;
+        try{diagnostic=diagnoseDeparture(first,second,startHour);}
+        catch(_){/* Preserve the original failure, never invent a polar diagnosis. */}
+        return {startHour,valid:false,
+          reason:String(error?.message||error).slice(0,150),diagnostic};
       }
     });
     const valid=windows.filter(w=>w.valid);
@@ -205,6 +263,6 @@
     DEPARTURES,LATER_DEPARTURES,EVENING_DEPARTURES,NEXT_DAY_DEPARTURES,GATE_LATITUDE,HORIZON_HOURS,STEP_HOURS,
     compatibleFrames,sailToGate,compareDepartureWindows,compareLaterDepartureWindows,
     compareAllDepartureWindows,compareEveningDepartureWindows,compareTwelveDepartureWindows,
-    compareNextDayDepartureWindows,compareSixteenDepartureWindows
+    compareNextDayDepartureWindows,compareSixteenDepartureWindows,diagnoseDeparture
   };
 });

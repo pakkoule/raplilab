@@ -1,0 +1,117 @@
+/* LAB GFS · prototype 12 : comparaison de quatre heures de départ sur latitude témoin.
+ * Franchissement 47°N uniquement, sur un mini-parcours Atlantique et la météo f006/f012.
+ * Ces calculs ne prédisent ni l'équateur ni le cap de Bonne-Espérance.
+ */
+(function(root,factory){
+  'use strict';
+  const motion=typeof module==='object'&&module.exports
+    ?require('./gfs-motion.js'):root?.RapliGfsMotion;
+  const api=factory(motion);
+  if(typeof module==='object'&&module.exports)module.exports=api;
+  if(root)root.RapliGfsDepartures=api;
+})(typeof window!=='undefined'?window:null,function(motion){
+  'use strict';
+  const DEPARTURES=Object.freeze([6,7,8,9]);
+  const GATE_LATITUDE=47;
+  const HORIZON_HOURS=3;
+  const STEP_HOURS=.5;
+  const MAX_STEPS=HORIZON_HOURS/STEP_HOURS;
+  const round=(n,p=1)=>Math.round(n*10**p)/10**p;
+  const finite=Number.isFinite;
+  const GRID_KEYS=[
+    'ni','nj','latitudeOfFirstGridPoint','longitudeOfFirstGridPoint',
+    'iDirectionIncrement','jDirectionIncrement','iScansNegatively',
+    'jScansPositively','jPointsAreConsecutive','alternativeRowScanning'
+  ];
+
+  function compatibleFrames(a,b){
+    if(!motion?.loadFrame||!motion?.windAt||!motion?.selectSouthHeading||!motion?.move)
+      throw Error('Moteur météo/nav indisponible.');
+    const first=motion.loadFrame(a),second=motion.loadFrame(b);
+    if(first.cycle!==second.cycle||first.hour!==6||second.hour!==12||
+       GRID_KEYS.some(key=>first.g[key]!==second.g[key]))
+      throw Error('Prévisions NOAA +6/+12 incompatibles.');
+    return {first,second};
+  }
+
+  function sailToGate(first,second,startHour,gateLatitude=GATE_LATITUDE){
+    if(!DEPARTURES.includes(startHour)||
+       !finite(gateLatitude)||gateLatitude>=motion.START.latitude||
+       gateLatitude<=40)
+      throw Error('Départ ou latitude témoin non autorisé.');
+    const cycle=first.cycle;
+    let position={...motion.START};
+    let priorHeading=null;
+    let changes=0;
+    const steps=[];
+    for(let step=0;step<MAX_STEPS;step++){
+      const hour=startHour+step*STEP_HOURS;
+      const wind=motion.windAt(first,second,hour,position.latitude,position.longitude);
+      const selection=motion.selectSouthHeading(wind).selected;
+      if(priorHeading!==null&&priorHeading!==selection.heading)changes++;
+      priorHeading=selection.heading;
+      const next=motion.move(position,selection.heading,selection.boatKnots,STEP_HOURS);
+      // Stop before any fabricated interpolation outside the available downloaded grid.
+      motion.windAt(first,second,hour+STEP_HOURS,next.latitude,next.longitude);
+      steps.push({
+        hour,heading:selection.heading,latitude:round(position.latitude,5),
+        longitude:round(position.longitude,5),
+        windKnots:round(wind.knots),boatKnots:round(selection.boatKnots)
+      });
+      if(next.latitude<=gateLatitude&&position.latitude>gateLatitude){
+        const fraction=(position.latitude-gateLatitude)/(position.latitude-next.latitude);
+        if(!finite(fraction)||fraction<0||fraction>1)
+          throw Error('Franchissement de latitude incohérent.');
+        const crossingHour=hour+STEP_HOURS*fraction;
+        const elapsedMinutes=(crossingHour-startHour)*60;
+        if(!finite(elapsedMinutes)||elapsedMinutes<=0)
+          throw Error('Durée de navigation incohérente.');
+        return {
+          startHour,departureUTC:new Date(cycle+startHour*3600000).toISOString(),
+          crossingUTC:new Date(cycle+crossingHour*3600000).toISOString(),
+          crossingForecastHour:round(crossingHour,3),
+          elapsedMinutes:round(elapsedMinutes,1),
+          latitude:gateLatitude,changes,steps,
+          valid:true,interpolatedCrossing:true
+        };
+      }
+      position=next;
+    }
+    throw Error('Latitude témoin non franchie dans la fenêtre de 3 heures.');
+  }
+
+  function compareDepartureWindows(a,b){
+    const {first,second}=compatibleFrames(a,b);
+    const windows=DEPARTURES.map(startHour=>{
+      try{return sailToGate(first,second,startHour);}
+      catch(error){
+        return {startHour,valid:false,reason:String(error?.message||error).slice(0,150)};
+      }
+    });
+    const valid=windows.filter(w=>w.valid);
+    if(!valid.length)throw Error('Aucun départ n’atteint la latitude témoin avec les polaires provisoires.');
+    const fastest=[...valid].sort((a,b)=>
+      a.elapsedMinutes-b.elapsedMinutes||a.startHour-b.startHour
+    )[0];
+    const earliest=[...valid].sort((a,b)=>
+      Date.parse(a.crossingUTC)-Date.parse(b.crossingUTC)||a.startHour-b.startHour
+    )[0];
+    return {
+      cycleUTC:a.cycleUTC,
+      gateLatitude:GATE_LATITUDE,
+      horizonHours:HORIZON_HOURS,
+      windows,validCount:valid.length,
+      fastestStartHour:fastest.startHour,
+      fastestElapsedMinutes:fastest.elapsedMinutes,
+      earliestArrivalStartHour:earliest.startHour,
+      earliestArrivalUTC:earliest.crossingUTC,
+      objective:'Durée minimale de passage de 47°N sur quatre départs simulés',
+      experimental:true,fullPack:false,isEquatorForecast:false,
+      method:'Pilote VMG sud + GFS 0,25°, bilinéaire et interpolation temporelle; pas 30 min'
+    };
+  }
+  return {
+    DEPARTURES,GATE_LATITUDE,HORIZON_HOURS,STEP_HOURS,
+    compatibleFrames,sailToGate,compareDepartureWindows
+  };
+});

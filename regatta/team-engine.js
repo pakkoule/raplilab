@@ -57,28 +57,39 @@ function member(input){
  return {id,type:'team-member',name,status:input.status==='former'?'former':'active',
   from,until,memberships,createdAt:safe(input.createdAt,40),updatedAt:safe(input.updatedAt,40)};
 }
-/* A linked personal race owns shared metadata; team standings own their finish status and results.
-   Reconciliation is read-only and never rewrites the personal journal. */
+/* Team metadata may reuse a personal race OR a multi-attempt record (Jules Verne).
+   Record start date comes from its most recent attempt, never a fabricated finish date.
+   The LPDB ranking/date/status/results remain wholly independent. */
+function sharedPersonalStart(personal){
+ if(personal.kind==='record'&&Array.isArray(personal.attempts)){
+  const dates=personal.attempts.filter(a=>dateOk(a?.startDate)).sort((a,b)=>
+   (b.startDate+'T'+(b.startTime||'00:00')).localeCompare(a.startDate+'T'+(a.startTime||'00:00')));
+  if(dates.length)return {start:dates[0].startDate,startTime:safe(dates[0].startTime,8)};
+ }
+ return {start:dateOk(personal.start)?personal.start:'',startTime:safe(personal.startTime,8)};
+}
+function shareablePersonal(personal){
+ return personal&&(personal.kind==='race'||personal.kind==='record');
+}
 function resolveLinkedRace(team,personal){
  const r=race(team);
- if(!r||!r.personalRaceId||!personal||personal.id!==r.personalRaceId||personal.kind!=='race')return r;
+ if(!r||!r.personalRaceId||!personal||personal.id!==r.personalRaceId||!shareablePersonal(personal))return r;
  const name=safe(personal.name,160)||r.name;
  const vsr=BASE[personal.vsr]?personal.vsr:r.vsr;
- // Closing the team's results is separate from an individual's finish date.
+ const dates=sharedPersonalStart(personal);
  return {...r,name,vsr,
   boatClass:safe(personal.boatClass,100)||r.boatClass,
-  start:dateOk(personal.start)?personal.start:r.start,
-  startTime:safe(personal.startTime,8)||r.startTime,
+  start:dates.start||r.start,startTime:dates.startTime||r.startTime,
   routeType:safe(personal.routeType,40)||r.routeType,
-  timezone:safe(personal.timezone,80)||r.timezone,
-  equipment:r.equipment};
+  timezone:safe(personal.timezone,80)||r.timezone};
 }
 function fromPersonal(personal,base={}){
- if(!personal||personal.kind!=='race')return null;
+ if(!shareablePersonal(personal))return null;
+ const dates=sharedPersonalStart(personal);
  return race({...base,personalRaceId:personal.id,
   name:safe(personal.name,160)||safe(base.name,160),
   vsr:BASE[personal.vsr]?personal.vsr:base.vsr,
-  boatClass:personal.boatClass,start:personal.start,startTime:personal.startTime,
+  boatClass:personal.boatClass,start:dates.start||base.start,startTime:dates.startTime||base.startTime,
   routeType:personal.routeType,timezone:personal.timezone});
 }
 function race(input){

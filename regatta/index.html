@@ -182,6 +182,20 @@ html:not([data-rapli-role="editor"]) #rapli-module-cloud-save{display:none!impor
           </div>
           <small>Interpolation spatiale des quatre nœuds voisins du GFS 0,25°. Il s'agit d'un calcul sur les vents prévus, pas d'une observation ni d'un routage.</small>
         </section>
+        <section class="gfs-departures-panel" aria-label="Quatre fenêtres de départ GFS vers une latitude témoin">
+          <div class="gfs-motion-heading">
+            <strong>FENÊTRES DE DÉPART · TEST 12</strong>
+            <span>PORTE TÉMOIN : 47°N</span>
+          </div>
+          <p data-gfs-departures-status>Lis +6 h puis +12 h du même cycle NOAA pour comparer quatre heures de départ et leurs durées estimées jusqu'à 47°N.</p>
+          <div data-gfs-departures-summary hidden>
+            <div><small>Départ le plus rapide</small><strong data-gfs-departures-fastest>—</strong></div>
+            <div><small>Durée jusqu'à 47°N</small><strong data-gfs-departures-duration>—</strong></div>
+            <div><small>Première arrivée absolue</small><strong data-gfs-departures-earliest>—</strong></div>
+          </div>
+          <div data-gfs-departures-rows hidden></div>
+          <small>TEST LOCAL : départs à +6, +7, +8, +9 h du même cycle, trajectoire adaptative évaluée sur trois heures maximum. Porte fictive de 47°N. Classement par durée de navigation, distinct de la première arrivée dans le temps. Polaires partielles NON Full Pack. Ce test ne prédit ni l'heure de passage à l'équateur ni le record du tour du monde.</small>
+        </section>
         <section class="gfs-route-search-panel" aria-label="Recherche exhaustive de trajectoires de trois heures">
           <div class="gfs-motion-heading">
             <strong>RECHERCHE DE TRAJECTOIRES · TEST 11</strong>
@@ -426,6 +440,7 @@ html:not([data-rapli-role="editor"]) #rapli-module-cloud-save{display:none!impor
 <script defer src="gfs-interpolation.js"></script>
 <script defer src="gfs-motion.js"></script>
 <script defer src="gfs-route-search.js"></script>
+<script defer src="gfs-departures.js"></script>
 <script defer src="gfs-lab.js"></script>
 <script defer src="../shared/photo-zoom.js"></script>
 <script defer src="../shared/admin-access.js"></script>

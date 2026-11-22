@@ -22,6 +22,13 @@ const members=()=>all().filter(x=>x.type==='team-member');
 const editorMembers=()=>[...members(),...(draft?.newMembers||[])];
 const races=()=>all().filter(x=>x.type==='team-race');
 const unique=(values)=>[...new Set(values)];
+const normalizedSearch=value=>String(value??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('fr');
+const matchesSearch=values=>{
+ const terms=normalizedSearch(search).trim().split(/\s+/u).filter(Boolean);
+ if(!terms.length)return true;
+ const searchable=normalizedSearch(values.filter(Boolean).join(' '));
+ return terms.every(term=>searchable.includes(term));
+};
 const active=m=>m.status==='active';
 const opts=(options,value)=>options.map(x=>'<option value="'+esc(x.value)+'"'+(x.value===value?' selected':'')+'>'+esc(x.label)+'</option>').join('');
 function period(){
@@ -67,7 +74,7 @@ const medal=r=>r===1?'🥇':r===2?'🥈':r===3?'🥉':num(r);
 const clockLabel=value=>Number.isSafeInteger(value)&&value>=0?clock.formatTime(value):'—';
 const pngClock=value=>clockLabel(value).replace(/(\d{2})j (\d{2})h (\d{2})m (\d{2})s/u,'$1j $2:$3:$4').replace(/(\d{2})h (\d{2})m (\d{2})s/u,'$1:$2:$3');
 function sortedItems(items){
- const rows=items.filter(s=>filter==='all'||s.status===filter).filter(s=>!search||s.name.toLocaleLowerCase('fr').includes(search.toLocaleLowerCase('fr')));
+ const rows=items.filter(s=>filter==='all'||s.status===filter).filter(s=>matchesSearch([s.name]));
  return rows;
 }
 function rankTable(list,{top=false}={}){
@@ -86,8 +93,7 @@ function renderMain(){
  el.innerHTML='<div class="team-heading"><div><span>LPDB · RAPLI REGATTA</span><h2>CHAMPIONNAT DE L’ÉQUIPE</h2><p>Classement officiel et barème historique, automatiquement recalculés.</p></div><img src="assets/lpdb.webp" alt="LPDB" class="team-emblem"></div>'+
  selectionControls('team')+statCards([['Épreuves validées',num(model.races.length)],['Skippers classés',num(model.skippersCount)],['Points distribués',num(model.pointsTotal)]])+
  '<div class="team-subhead"><div><h3>CLASSEMENT · '+esc(p.toLocaleUpperCase('fr'))+'</h3><p>'+esc(viewMode==='main'?'Barème principal VSR et primes':'Barème historique bonus')+' · '+esc(String(list.length))+' skippers affichés</p></div><div class="team-toolbar">'+action('recalculate','↻ RECALCULER')+action('png-table','↓ PNG TABLEAU')+action('png-podium','↓ PODIUM')+action('png-top10','↓ TOP 10')+'</div></div>'+
- '<div class="team-filters"><input id="team-search" type="search" aria-label="Rechercher un skipper" placeholder="Rechercher un skipper…" value="'+esc(search)+'">'+
- '<select id="team-filter" aria-label="Filtrer les skippers">'+opts([{value:'all',label:'Tous les skippers'},{value:'active',label:'Membres actifs'},{value:'former',label:'Anciens membres'}],filter)+'</select></div>'+
+ '<div class="team-filters team-filters--compact"><select id="team-filter" aria-label="Filtrer les skippers">'+opts([{value:'all',label:'Tous les skippers'},{value:'active',label:'Membres actifs'},{value:'former',label:'Anciens membres'}],filter)+'</select></div>'+
  rankTable(list)+'<p class="team-footnote">Le filtre ne modifie pas les rangs officiels. Les DNF comptent comme participations, avec 0 point. Les anciennes périodes restent recalculables.</p>';
 }
 function teamRaceCard(r,known){
@@ -168,42 +174,53 @@ function teamRaceCard(r,known){
  '</section></div></article>';
 }
 function renderRaces(){
- const rs=races().slice().sort((a,b)=>(b.start||b.dateEnd||b.createdAt||'').localeCompare(a.start||a.dateEnd||a.createdAt||'')||a.name.localeCompare(b.name,'fr'));
+ const skipperNames=new Map(members().map(m=>[m.id,m.name]));
+ const rs=races().filter(r=>matchesSearch([r.name,r.boatClass,r.vsr,r.stageGroup,r.routeType,r.status,
+  ...(r.results||[]).map(row=>skipperNames.get(row.skipperId))]))
+  .sort((a,b)=>(b.start||b.dateEnd||b.createdAt||'').localeCompare(a.start||a.dateEnd||a.createdAt||'')||a.name.localeCompare(b.name,'fr'));
  const el=$('team-races-panel');if(!el)return;
  const known=new Map(members().map(m=>[m.id,m]));
  const groups=unique(rs.map(r=>r.stageGroup).filter(Boolean));
  el.innerHTML='<div class="team-heading"><div><span>LPDB · RÉSULTATS</span><h2>COURSES DE L’ÉQUIPE</h2><p>Courses, départs, classements et chronos de l’équipe LPDB.</p></div><img src="assets/lpdb.webp" class="team-emblem" alt="LPDB"></div>'+
- '<div class="team-toolbar">'+action('new-race','＋ NOUVELLE COURSE','team-primary')+action('recalculate-notes','↻ RECALCULER LES NOTES','team-secondary')+action('team-colors','⚙ PUCES BATEAUX','team-secondary')+'</div>'+
+
  (rs.length?'<div class="team-race-list">'+rs.map(r=>teamRaceCard(r,known)).join('')+'</div>':
-  empty('Aucune course d’équipe. Ajoute la première épreuve du nouveau championnat.'))+
+  empty(search?'Aucune course ne correspond à ta recherche.':'Aucune course d’équipe. Ajoute la première épreuve du championnat.'))+
  (groups.length?'<section class="team-groups"><h3>CLASSEMENTS BONUS · ENSEMBLES D’ÉTAPES</h3><p>Somme des étapes, sans redistribuer de points.</p>'+
  groups.map(g=>'<div class="team-group-row"><strong>'+esc(g)+'</strong><div>'+action('stage-'+encodeURIComponent(g),'Voir le classement')+action('png-stage-'+encodeURIComponent(g),'↓ PNG')+'</div></div>').join('')+'</section>':'');
 }
 function renderMembers(){
- const ms=members().sort((a,b)=>(b.status==='active')-(a.status==='active')||a.name.localeCompare(b.name,'fr'));
+ const ms=members().filter(m=>matchesSearch([m.name,m.status])).sort((a,b)=>(b.status==='active')-(a.status==='active')||a.name.localeCompare(b.name,'fr'));
  const el=$('team-skippers-panel');if(!el)return;
  el.innerHTML='<div class="team-heading"><div><span>LPDB · EFFECTIF</span><h2>LES SKIPPERS</h2><p>Jusqu’à 50 membres actifs · historique sans limite.</p></div><img class="team-emblem" src="assets/lpdb.webp" alt="LPDB"></div>'+
  statCards([['Effectif actif',num(ms.filter(active).length)+' / 50'],['Anciens membres',num(ms.filter(m=>!active(m)).length)],['Skippers historiques',num(ms.length)]])+
- '<div class="team-toolbar">'+action('new-member','＋ AJOUTER UN SKIPPER','team-primary')+action('bulk-members','＋ AJOUT PAR BLOC','team-secondary')+'</div>'+
- (ms.length?'<div class="team-member-list">'+ms.map(m=>'<div class="team-member-card"><div><strong>'+esc(m.name)+'</strong><small>'+esc(active(m)?'Membre actif':'Ancien membre')+(m.from?' · Depuis '+esc(m.from):'')+'</small></div><div class="team-toolbar">'+action('member-'+esc(m.id),'Modifier','team-secondary')+action('profile-'+esc(m.id),'Palmarès')+'</div></div>').join('')+'</div>':empty('L’effectif est vide. Ajoute les skippers pour créer des courses.'))+
+
+ (ms.length?'<div class="team-member-list">'+ms.map(m=>'<div class="team-member-card"><div><strong>'+esc(m.name)+'</strong><small>'+esc(active(m)?'Membre actif':'Ancien membre')+(m.from?' · Depuis '+esc(m.from):'')+'</small></div><div class="team-toolbar">'+action('member-'+esc(m.id),'Modifier','team-secondary')+action('profile-'+esc(m.id),'Palmarès')+'</div></div>').join('')+'</div>':empty(search?'Aucun skipper ne correspond à ta recherche.':'L’effectif est vide. Ajoute les skippers pour créer des courses.'))+
  '<p class="team-footnote">Un ancien membre conserve tous ses points. Tu peux le réactiver sans perdre son identité ni son palmarès.</p>';
 }
 function renderStats(){
  const model=engine.standings(all(),period(),viewMode);
  const el=$('team-stats-panel');if(!el)return;
  const sortTime=(a,b,key)=>(a[key]??Infinity)-(b[key]??Infinity);
- const sorted=[...model.skippers].sort((a,b)=>statMode==='avg'?b.avg-a.avg:statMode==='finish'?b.finishRate-a.finishRate:statMode==='wins'?b.wins-a.wins:statMode==='time'?sortTime(a,b,'avgTimeSeconds'):statMode==='gap'?sortTime(a,b,'avgGapSeconds'):b.points-a.points||b.hybrid-a.hybrid);
+ const sorted=[...model.skippers].sort((a,b)=>statMode==='avg'?b.avg-a.avg:statMode==='finish'?b.finishRate-a.finishRate:statMode==='wins'?b.wins-a.wins:statMode==='time'?sortTime(a,b,'avgTimeSeconds'):statMode==='gap'?sortTime(a,b,'avgGapSeconds'):b.points-a.points||b.hybrid-a.hybrid)
+  .map((m,i)=>({...m,statsRank:i+1})).filter(m=>matchesSearch([m.name]));
  el.innerHTML='<div class="team-heading"><div><span>LPDB · ANALYSE</span><h2>STATISTIQUES D’ÉQUIPE</h2><p>Points par course, efficacité, assiduité, victoires et palmarès.</p></div><img class="team-emblem" src="assets/lpdb.webp" alt="LPDB"></div>'+
  selectionControls('team-stats')+statCards([['Participations',num(model.skippers.reduce((s,m)=>s+m.participations,0))],['Moyenne globale',num(model.skippers.reduce((s,m)=>s+m.points,0)/Math.max(1,model.skippers.reduce((s,m)=>s+m.participations,0)))+' pts/course'],['Fin de course',num(model.skippers.reduce((s,m)=>s+m.finished,0)/Math.max(1,model.skippers.reduce((s,m)=>s+m.participations,0))*100)+' %'],['Chronos relevés',num(model.skippers.reduce((s,m)=>s+m.timedRaces,0))]])+
  '<div class="team-subhead"><h3>COMPARATIF DE PERFORMANCE</h3><div class="team-toolbar">'+action('png-stats','↓ PNG TABLEAU')+action('png-stats-social','↓ TOP 10')+'</div></div>'+
  '<label class="team-sort-label">CRITÈRE <select id="team-stat-mode">'+opts([{value:'avg',label:'Points / course'},{value:'finish',label:'Taux de finition'},{value:'wins',label:'Victoires'},{value:'points',label:'Points totaux'},{value:'time',label:'Chrono moyen'},{value:'gap',label:'Écart moyen au vainqueur'}],statMode)+'</select></label>'+
  (sorted.length?'<div class="team-table-wrap"><table class="team-table"><thead><tr><th>#</th><th>SKIPPER</th><th>COURSES</th><th>PTS/COURSE</th><th>CHRONO MOY.</th><th>ÉCART MOY.</th><th>FINITIONS</th><th>VICT.</th><th>POINTS</th></tr></thead><tbody>'+
- sorted.map((s,i)=>'<tr><td>'+medal(i+1)+'</td><td><button class="team-skipper-link" data-team-profile="'+esc(s.id)+'">'+esc(s.name)+'</button></td><td>'+num(s.participations)+'</td><td class="team-points">'+num(s.avg)+'</td><td>'+clockLabel(s.avgTimeSeconds)+'</td><td>'+clockLabel(s.avgGapSeconds)+'</td><td>'+num(s.finishRate)+' %</td><td>'+num(s.wins)+'</td><td>'+num(s.points)+'</td></tr>').join('')+'</tbody></table></div>':empty('Les statistiques apparaîtront après la première course validée.'))+
+ sorted.map((s,i)=>'<tr><td>'+medal(s.statsRank)+'</td><td><button class="team-skipper-link" data-team-profile="'+esc(s.id)+'">'+esc(s.name)+'</button></td><td>'+num(s.participations)+'</td><td class="team-points">'+num(s.avg)+'</td><td>'+clockLabel(s.avgTimeSeconds)+'</td><td>'+clockLabel(s.avgGapSeconds)+'</td><td>'+num(s.finishRate)+' %</td><td>'+num(s.wins)+'</td><td>'+num(s.points)+'</td></tr>').join('')+'</tbody></table></div>':empty(search?'Aucun skipper ne correspond à ta recherche.':'Les statistiques apparaîtront après la première course validée.'))+
  '<p class="team-footnote">Chronos et écarts moyens : statistiques descriptives. Comparer des parcours différents ne mesure pas directement la performance sportive.</p>';
 }
 function render(){
  if(!api)return;
  preset();renderMain();renderRaces();renderMembers();renderStats();
+}
+function renderCurrentTab(){
+ const view=$('lpdb-global-controls')?.dataset.view;
+ if(view==='team')renderMain();
+ else if(view==='team-races')renderRaces();
+ else if(view==='team-skippers')renderMembers();
+ else if(view==='team-stats')renderStats();
 }
 function notify(message,error=false){notice=message;api.notify?.(message,error);}
 /* Notes are derived from the latest recorded team results and global VR
@@ -706,6 +723,12 @@ async function deleteRace(id){
  if(await removeEntity(id))notify('Course supprimée · classement recalculé.');
 }
 async function click(ev){
+ if(ev.target.closest('#lpdb-search-clear')){
+  search='';page=1;
+  const input=$('lpdb-global-search');if(input){input.value='';input.focus();}
+  $('lpdb-search-clear').hidden=true;
+  renderCurrentTab();return;
+ }
  const profile=ev.target.closest('[data-team-profile]');if(profile){showProfile(profile.dataset.teamProfile);return;}
  const remove=ev.target.closest('[data-team-remove]');if(remove&&draft){draft.results=draft.results.filter(x=>x.skipperId!==remove.dataset.teamRemove);draft.newMembers=(draft.newMembers||[]).filter(m=>draft.results.some(r=>r.skipperId===m.id));choices();editorRows();return;}
  const button=ev.target.closest('[data-team-action]');if(!button)return;
@@ -795,6 +818,11 @@ function change(ev){
 }
 function input(ev){
  const el=ev.target;
+ if(el.id==='lpdb-global-search'){
+  search=el.value;page=1;
+  $('lpdb-search-clear').hidden=!search;
+  renderCurrentTab();return;
+ }
  if(el.id==='team-bulk-input'){renderBulkPreview();return;}
  if(el.dataset.teamImportGeneral!==undefined&&rankingImport){
   const item=rankingImport.rows[Number(el.dataset.teamImportGeneral)];
@@ -811,8 +839,7 @@ function input(ev){
   }
   return;
  }
- if(el.id==='team-search'){search=el.value;page=1;renderMain();$('team-search')?.focus();$('team-search')?.setSelectionRange(search.length,search.length);return;}
- if(el.dataset.teamGeneralRank&&draft){
+if(el.dataset.teamGeneralRank&&draft){
   const row=draft.results.find(r=>r.skipperId===el.dataset.teamGeneralRank);
   if(row){row.generalRank=el.value.trim()?Number(el.value):null;editorSummary();}
   return;
@@ -838,6 +865,10 @@ function init(bridge){
  document.addEventListener('click',click);
  document.addEventListener('change',change);
  document.addEventListener('input',input);
+ $('lpdb-global-search')?.addEventListener('keydown',ev=>{
+  if(ev.key==='Escape'&&ev.target.value){ev.preventDefault();search='';ev.target.value='';
+   $('lpdb-search-clear').hidden=true;page=1;renderCurrentTab();}
+ });
  $('team-race-form')?.addEventListener('submit',submitRace);
  $('team-member-form')?.addEventListener('submit',submitMember);
  $('team-bulk-form')?.addEventListener('submit',submitBulkMembers);

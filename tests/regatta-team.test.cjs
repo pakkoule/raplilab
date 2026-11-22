@@ -1279,3 +1279,88 @@ test('LPDB editor exposes multiple actionable errors and marks the exact invalid
  assert.ok(summary.querySelectorAll('li').length>=2);
  dom.window.close();
 });
+
+test('LPDB linked record preserves automatically imported skipper until the race and profile save together',async()=>{
+ for(const linkFirst of [true,false]){
+  const dom=new JSDOM(fs.readFileSync('regatta/index.html','utf8'),{runScripts:'outside-only',url:'https://example.org/regatta/'});
+  const w=dom.window,d=w.document,saved=[];
+  w.structuredClone=global.structuredClone;
+  w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};
+  w.HTMLDialogElement.prototype.close=function(){this.open=false;};
+  w.RapliTeamEngine=E;w.RapliTeamTime=require('../regatta/team-time.js');
+  w.eval(fs.readFileSync('regatta/score.js','utf8'));
+  w.eval(fs.readFileSync('regatta/team-rating.js','utf8'));
+  w.eval(fs.readFileSync('regatta/team-app.js','utf8'));
+  const record={id:'personal-jules',kind:'record',name:'Trophée Jules Verne',boatClass:'ULTIM',
+   vsr:'hc',attempts:[{startDate:'2026-11-20',startTime:'17:00'}],timezone:'Europe/Paris'};
+  const roster=[m('Rapli')];
+  w.RapliTeamUI.init({
+   get:()=>roster,personal:()=>[record],canEdit:()=>true,notify:()=>{},
+   save:async()=>{throw Error('No separate skipper save should be needed');},
+   saveRaceBundle:async(race,incoming)=>{saved.push({race,incoming});},
+   remove:async()=>{}
+  });
+  d.querySelector('[data-team-action="new-race"]').click();
+  const link=()=>{
+   d.getElementById('team-race-personal').value=record.id;
+   d.querySelector('[data-team-action="link-existing"]').click();
+  };
+  if(linkFirst)link();
+  d.getElementById('team-race-date').value='2026-12-03';
+  d.getElementById('team-race-status').value='finished';
+  d.getElementById('team-race-status').dispatchEvent(new w.Event('change',{bubbles:true}));
+  d.querySelector('[data-team-action="toggle-ranking-import"]').click();
+  d.getElementById('team-ranking-paste').value='Rapli LPDB\n11j 16h 58m\nNouveau Marin - LPDB\n+ 01h 10m';
+  d.querySelector('[data-team-action="analyze-ranking"]').click();
+  assert.equal(d.getElementById('team-ranking-apply').disabled,false);
+  d.querySelector('[data-team-action="apply-ranking"]').click();
+  assert.match(d.getElementById('team-result-rows').textContent,/Nouveau Marin/);
+  assert.match(d.getElementById('team-result-rows').textContent,/NOUVEAU/);
+  if(!linkFirst)link();
+  assert.doesNotMatch(d.getElementById('team-race-validation').textContent,/Skipper introuvable/);
+  d.getElementById('team-race-form').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));
+  for(let i=0;i<12&&!saved.length;i++)await new Promise(resolve=>setTimeout(resolve,0));
+  assert.equal(saved.length,1,'race must save whether linked before or after import');
+  assert.equal(saved[0].incoming.length,1,'new skipper profile is saved along with race');
+  assert.equal(saved[0].incoming[0].name,'Nouveau Marin');
+  assert.equal(saved[0].race.personalRaceId,record.id);
+  assert.ok(saved[0].race.results.some(row=>row.skipperId===saved[0].incoming[0].id));
+  const members=new Map([...roster,...saved[0].incoming].map(member=>[member.id,member]));
+  assert.equal(E.verifyRace(saved[0].race,members),'','the bundled race and roster validate together');
+  dom.window.close();
+ }
+});
+test('LPDB quick-create skipper stays provisional until course save and avoids duplicates',async()=>{
+ const dom=new JSDOM(fs.readFileSync('regatta/index.html','utf8'),{runScripts:'outside-only',url:'https://example.org/regatta/'});
+ const w=dom.window,d=w.document,saved=[],separate=[];
+ w.structuredClone=global.structuredClone;
+ w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};
+ w.HTMLDialogElement.prototype.close=function(){this.open=false;};
+ w.RapliTeamEngine=E;w.RapliTeamTime=require('../regatta/team-time.js');
+ w.eval(fs.readFileSync('regatta/score.js','utf8'));
+ w.eval(fs.readFileSync('regatta/team-rating.js','utf8'));
+ w.eval(fs.readFileSync('regatta/team-app.js','utf8'));
+ w.RapliTeamUI.init({get:()=>[],personal:()=>[],canEdit:()=>true,notify:()=>{},
+  save:async(x)=>{separate.push(x);},saveRaceBundle:async(race,incoming)=>{saved.push({race,incoming});},remove:async()=>{}});
+ d.querySelector('[data-team-action="new-race"]').click();
+ d.getElementById('team-race-name').value='Course découverte';
+ d.getElementById('team-race-date').value='2026-12-03';
+ d.getElementById('team-race-status').value='finished';
+ d.getElementById('team-race-status').dispatchEvent(new w.Event('change',{bubbles:true}));
+ d.getElementById('team-create-member').value='Nouvelle Skipper';
+ d.querySelector('[data-team-action="create-member"]').click();
+ assert.equal(separate.length,0,'no orphan profile is saved before course is submitted');
+ assert.equal(d.querySelectorAll('#team-result-rows .team-result-row').length,1);
+ assert.match(d.getElementById('team-result-rows').textContent,/Nouvelle Skipper.*NOUVEAU/);
+ const rank=d.querySelector('#team-result-rows [data-team-rank]');
+ rank.value='1';
+ rank.dispatchEvent(new w.Event('input',{bubbles:true}));
+ assert.doesNotMatch(d.getElementById('team-race-validation').textContent,/Skipper introuvable/);
+ d.getElementById('team-race-form').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));
+ for(let i=0;i<12&&!saved.length;i++)await new Promise(resolve=>setTimeout(resolve,0));
+ assert.equal(saved.length,1);
+ assert.equal(saved[0].incoming.length,1);
+ assert.equal(saved[0].incoming[0].name,'Nouvelle Skipper');
+ assert.equal(saved[0].race.results[0].skipperId,saved[0].incoming[0].id);
+ dom.window.close();
+});

@@ -751,3 +751,79 @@ test('personal GFS clock ticker and configured foil boat settings also serve LPD
  assert.match(style,/\.lpdb-shell \.team-race-weather \.race-gfs-briefing/);
  assert.match(style,/\.lpdb-shell \.team-race-timer \.race-live-clock/);
 });
+
+
+test('LPDB can link Trophée Jules Verne record using latest attempt without sharing arrivals or statuses',()=>{
+ const record={id:'personal-jules-verne',kind:'record',name:'Trophée Jules Verne',
+  boatClass:'ULTIM',vsr:'hc',start:'2026-11-01',startTime:'08:00',
+  end:'2026-12-20',endTime:'16:30',timezone:'Europe/Paris',equipment:'full-pack',
+  attempts:[
+   {id:'attempt-1',startDate:'2026-11-02',startTime:'10:45',seconds:700000,aborted:false},
+   {id:'attempt-2',startDate:'2026-11-16',startTime:'13:20',seconds:null,aborted:false}
+  ]};
+ const base=r('jv','2026-12-29','vsr1','live',[rr('Alpha',null,'pending')]);
+ const linked=E.fromPersonal(record,base);
+ assert.equal(linked.personalRaceId,record.id);
+ assert.equal(linked.name,'Trophée Jules Verne');
+ assert.equal(linked.boatClass,'ULTIM');
+ assert.equal(linked.vsr,'hc');
+ assert.equal(linked.start,'2026-11-16','use most recent record departure');
+ assert.equal(linked.startTime,'13:20');
+ assert.equal(linked.dateEnd,'2026-12-29','team closure must not come from personal record');
+ assert.equal(linked.status,'live','personal record status must not override LPDB');
+ assert.equal(linked.results.length,1);
+ assert.equal(linked.equipment,'','equipment remains personal');
+ const updated=E.resolveLinkedRace(linked,{...record,name:'Jules Verne actualisé',
+  attempts:[...record.attempts,{id:'attempt-3',startDate:'2027-01-03',startTime:'09:00'}]});
+ assert.equal(updated.name,'Jules Verne actualisé');
+ assert.equal(updated.start,'2027-01-03');
+ assert.equal(updated.startTime,'09:00');
+ assert.equal(updated.dateEnd,'2026-12-29');
+ assert.equal(updated.status,'live');
+ assert.equal(updated.results.length,1);
+ assert.equal(updated.equipment,'');
+ assert.equal(E.resolveLinkedRace(linked,null).name,'Trophée Jules Verne');
+});
+test('Jules Verne record is selectable from LPDB creation on iPhone-sized DOM',()=>{
+ const dom=new JSDOM(fs.readFileSync('regatta/index.html','utf8'),{runScripts:'outside-only',url:'https://example.org/regatta/'});
+ const w=dom.window,doc=w.document;
+ w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};
+ w.HTMLDialogElement.prototype.close=function(){this.open=false;};
+ w.RapliTeamEngine=E;
+ w.RapliTeamTime=require('../regatta/team-time.js');
+ w.eval(fs.readFileSync('regatta/score.js','utf8'));
+ w.eval(fs.readFileSync('regatta/team-rating.js','utf8'));
+ w.eval(fs.readFileSync('regatta/team-app.js','utf8'));
+ const personal={id:'personal-jv',kind:'record',name:'Trophée Jules Verne',boatClass:'ULTIM',
+  vsr:'hc',start:'2026-11-02',startTime:'09:00',end:'',equipment:'',
+  attempts:[{id:'a',startDate:'2026-11-19',startTime:'17:45'}],icon:'data:image/png;base64,AA=='};
+ w.RapliTeamUI.init({get:()=>[],personal:()=>[personal],canEdit:()=>true,notify:()=>{},
+  save:async()=>{},saveRaceBundle:async()=>{},remove:async()=>{}});
+ doc.querySelector('[data-team-action="new-race"]').click();
+ const dialog=doc.getElementById('team-race-dialog');
+ assert.equal(dialog.open,true);
+ const select=doc.getElementById('team-race-personal');
+ assert.equal(select.options.length,2,'personal Record is no longer filtered out');
+ assert.match(select.options[1].textContent,/RECORD · Trophée Jules Verne/);
+ select.value=personal.id;
+ doc.querySelector('[data-team-action="link-existing"]').click();
+ assert.equal(select.value,personal.id);
+ assert.equal(doc.getElementById('team-race-name').value,'Trophée Jules Verne');
+ assert.equal(doc.getElementById('team-race-start').value,'2026-11-19');
+ assert.equal(doc.getElementById('team-race-start-time').value,'17:45');
+ assert.equal(doc.getElementById('team-race-vsr').value,'hc');
+ assert.equal(doc.getElementById('team-race-date').disabled,false,'LPDB closure must remain editable');
+ assert.equal(doc.getElementById('team-race-name').disabled,true,'record owns its name');
+ assert.equal(doc.getElementById('team-race-date').value,'');
+ assert.match(doc.getElementById('team-linked-help').textContent,/Record personnel lié/);
+ doc.getElementById('team-race-date').value='2026-12-05';
+ assert.equal(doc.getElementById('team-race-date').value,'2026-12-05');
+ dom.window.close();
+});
+test('the personal Record menu also provides LPDB association and record opening',()=>{
+ const src=fs.readFileSync('regatta/app.js','utf8');
+ const ui=fs.readFileSync('regatta/team-app.js','utf8');
+ assert.match(src,/r\.kind==='race'\|\|r\.kind==='record'\)\?action\('team-link'/);
+ assert.match(src,/r=>r\.id===id&&\(r\.kind==='race'\|\|r\.kind==='record'\)/);
+ assert.match(ui,/const personalById=id=>personal\(\)\.find\(x=>x\.id===id&&\(x\.kind==='race'\|\|x\.kind==='record'\)\)/);
+});

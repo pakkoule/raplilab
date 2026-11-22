@@ -64,6 +64,7 @@ function statCards(items){return '<div class="team-stats-grid">'+items.map(([k,v
 const action=(cmd,label,cls='')=>'<button type="button" class="team-action '+cls+'" data-team-action="'+cmd+'">'+label+'</button>';
 const empty=message=>'<div class="team-empty">'+esc(message)+'</div>';
 const medal=r=>r===1?'🥇':r===2?'🥈':r===3?'🥉':num(r);
+const clockLabel=value=>Number.isSafeInteger(value)&&value>=0?clock.formatTime(value):'—';
 function sortedItems(items){
  const rows=items.filter(s=>filter==='all'||s.status===filter).filter(s=>!search||s.name.toLocaleLowerCase('fr').includes(search.toLocaleLowerCase('fr')));
  return rows;
@@ -73,8 +74,8 @@ function rankTable(list,{top=false}={}){
  const pageSize=top?10:30,limit=Math.max(1,Math.ceil(list.length/pageSize));
  page=Math.min(Math.max(1,page),limit);
  const sliced=top?list.slice(0,10):list.slice((page-1)*pageSize,page*pageSize);
- return '<div class="team-table-wrap"><table class="team-table"><thead><tr><th>#</th><th>SKIPPER</th><th>COURSES</th><th>V.</th><th>POD.</th><th>POINTS</th><th>PTS/COURSE</th></tr></thead><tbody>'+
- sliced.map(s=>'<tr><td>'+(s.points>0?medal(s.rank):num(s.rank))+'</td><td><button class="team-skipper-link" data-team-profile="'+esc(s.id)+'">'+esc(s.name)+'</button>'+(s.status==='former'?'<small>Ancien membre</small>':'')+'</td><td>'+num(s.participations)+'</td><td>'+num(s.wins)+'</td><td>'+num(s.podiums)+'</td><td class="team-points">'+num(s.points)+'</td><td>'+num(s.avg)+'</td></tr>').join('')+'</tbody></table></div>'+
+ return '<div class="team-table-wrap"><table class="team-table"><thead><tr><th>#</th><th>SKIPPER</th><th>COURSES</th><th>V.</th><th>POD.</th><th>POINTS</th><th>PTS/COURSE</th><th>CHRONO MOY.</th><th>ÉCART MOY.</th></tr></thead><tbody>'+
+ sliced.map(s=>'<tr><td>'+(s.points>0?medal(s.rank):num(s.rank))+'</td><td><button class="team-skipper-link" data-team-profile="'+esc(s.id)+'">'+esc(s.name)+'</button>'+(s.status==='former'?'<small>Ancien membre</small>':'')+'</td><td>'+num(s.participations)+'</td><td>'+num(s.wins)+'</td><td>'+num(s.podiums)+'</td><td class="team-points">'+num(s.points)+'</td><td>'+num(s.avg)+'</td><td>'+clockLabel(s.avgTimeSeconds)+'</td><td>'+clockLabel(s.avgGapSeconds)+'</td></tr>').join('')+'</tbody></table></div>'+
  (!top&&limit>1?'<nav class="team-pages">'+action('previous','← Précédent','team-secondary')+'<span>Page '+page+' / '+limit+'</span>'+action('next','Suivant →','team-secondary')+'</nav>':'');
 }
 function renderMain(){
@@ -107,7 +108,7 @@ function renderRaces(){
  (r.personalRaceId?'<small class="team-link-marker">'+(p?'↔ Liée à Mes courses':'⚠ Fiche personnelle introuvable')+'</small>':'')+
  '</div><div class="team-race-score"><strong>'+num(total)+'</strong><small>pts distribués</small></div><div class="team-toolbar">'+action('race-'+esc(r.id),'Modifier','team-secondary')+
  (p?action('open-personal-'+esc(p.id),'↗ MA COURSE','team-secondary'):action('new-personal-'+esc(r.id),'＋ MA COURSE','team-secondary'))+
- action('export-race-'+esc(r.id),'↓ PNG')+action('delete-race-'+esc(r.id),'Supprimer','team-danger')+'</div></article>';
+ action('show-ranking-'+esc(r.id),'CLASSEMENT + CHRONOS','team-secondary')+action('export-race-'+esc(r.id),'↓ PNG TABLEAU')+action('export-race-top10-'+esc(r.id),'↓ TOP 10')+action('export-race-podium-'+esc(r.id),'↓ PODIUM')+action('delete-race-'+esc(r.id),'Supprimer','team-danger')+'</div></article>';
  }).join('')+'</div>':empty('Aucune course d’équipe. Ajoute la première épreuve du nouveau championnat.'))+
  (groups.length?'<section class="team-groups"><h3>CLASSEMENTS BONUS · ENSEMBLES D’ÉTAPES</h3><p>Somme des étapes, sans redistribuer de points.</p>'+groups.map(g=>'<div class="team-group-row"><strong>'+esc(g)+'</strong><div>'+action('stage-'+encodeURIComponent(g),'Voir le classement')+action('png-stage-'+encodeURIComponent(g),'↓ PNG')+'</div></div>').join('')+'</section>':'');
 }
@@ -123,13 +124,15 @@ function renderMembers(){
 function renderStats(){
  const model=engine.standings(all(),period(),viewMode);
  const el=$('team-stats-panel');if(!el)return;
- const sorted=[...model.skippers].sort((a,b)=>statMode==='avg'?b.avg-a.avg:statMode==='finish'?b.finishRate-a.finishRate:statMode==='wins'?b.wins-a.wins:b.points-a.points||b.hybrid-a.hybrid);
+ const sortTime=(a,b,key)=>(a[key]??Infinity)-(b[key]??Infinity);
+ const sorted=[...model.skippers].sort((a,b)=>statMode==='avg'?b.avg-a.avg:statMode==='finish'?b.finishRate-a.finishRate:statMode==='wins'?b.wins-a.wins:statMode==='time'?sortTime(a,b,'avgTimeSeconds'):statMode==='gap'?sortTime(a,b,'avgGapSeconds'):b.points-a.points||b.hybrid-a.hybrid);
  el.innerHTML='<div class="team-heading"><div><span>LPDB · ANALYSE</span><h2>STATISTIQUES D’ÉQUIPE</h2><p>Points par course, efficacité, assiduité, victoires et palmarès.</p></div><img class="team-emblem" src="assets/lpdb.webp" alt="LPDB"></div>'+
- selectionControls('team-stats')+statCards([['Participations',num(model.skippers.reduce((s,m)=>s+m.participations,0))],['Moyenne globale',num(model.skippers.reduce((s,m)=>s+m.points,0)/Math.max(1,model.skippers.reduce((s,m)=>s+m.participations,0)))+' pts/course'],['Fin de course',num(model.skippers.reduce((s,m)=>s+m.finished,0)/Math.max(1,model.skippers.reduce((s,m)=>s+m.participations,0))*100)+' %']])+
+ selectionControls('team-stats')+statCards([['Participations',num(model.skippers.reduce((s,m)=>s+m.participations,0))],['Moyenne globale',num(model.skippers.reduce((s,m)=>s+m.points,0)/Math.max(1,model.skippers.reduce((s,m)=>s+m.participations,0)))+' pts/course'],['Fin de course',num(model.skippers.reduce((s,m)=>s+m.finished,0)/Math.max(1,model.skippers.reduce((s,m)=>s+m.participations,0))*100)+' %'],['Chronos relevés',num(model.skippers.reduce((s,m)=>s+m.timedRaces,0))]])+
  '<div class="team-subhead"><h3>COMPARATIF DE PERFORMANCE</h3><div class="team-toolbar">'+action('png-stats','↓ PNG TABLEAU')+action('png-stats-social','↓ TOP 10')+'</div></div>'+
- '<label class="team-sort-label">CRITÈRE <select id="team-stat-mode">'+opts([{value:'avg',label:'Points / course'},{value:'finish',label:'Taux de finition'},{value:'wins',label:'Victoires'},{value:'points',label:'Points totaux'}],statMode)+'</select></label>'+
- (sorted.length?'<div class="team-table-wrap"><table class="team-table"><thead><tr><th>#</th><th>SKIPPER</th><th>COURSES</th><th>PTS/COURSE</th><th>FINITIONS</th><th>VICT.</th><th>POINTS</th></tr></thead><tbody>'+
- sorted.map((s,i)=>'<tr><td>'+medal(i+1)+'</td><td><button class="team-skipper-link" data-team-profile="'+esc(s.id)+'">'+esc(s.name)+'</button></td><td>'+num(s.participations)+'</td><td class="team-points">'+num(s.avg)+'</td><td>'+num(s.finishRate)+' %</td><td>'+num(s.wins)+'</td><td>'+num(s.points)+'</td></tr>').join('')+'</tbody></table></div>':empty('Les statistiques apparaîtront après la première course validée.'));
+ '<label class="team-sort-label">CRITÈRE <select id="team-stat-mode">'+opts([{value:'avg',label:'Points / course'},{value:'finish',label:'Taux de finition'},{value:'wins',label:'Victoires'},{value:'points',label:'Points totaux'},{value:'time',label:'Chrono moyen'},{value:'gap',label:'Écart moyen au vainqueur'}],statMode)+'</select></label>'+
+ (sorted.length?'<div class="team-table-wrap"><table class="team-table"><thead><tr><th>#</th><th>SKIPPER</th><th>COURSES</th><th>PTS/COURSE</th><th>CHRONO MOY.</th><th>ÉCART MOY.</th><th>FINITIONS</th><th>VICT.</th><th>POINTS</th></tr></thead><tbody>'+
+ sorted.map((s,i)=>'<tr><td>'+medal(i+1)+'</td><td><button class="team-skipper-link" data-team-profile="'+esc(s.id)+'">'+esc(s.name)+'</button></td><td>'+num(s.participations)+'</td><td class="team-points">'+num(s.avg)+'</td><td>'+clockLabel(s.avgTimeSeconds)+'</td><td>'+clockLabel(s.avgGapSeconds)+'</td><td>'+num(s.finishRate)+' %</td><td>'+num(s.wins)+'</td><td>'+num(s.points)+'</td></tr>').join('')+'</tbody></table></div>':empty('Les statistiques apparaîtront après la première course validée.'))+
+ '<p class="team-footnote">Chronos et écarts moyens : statistiques descriptives. Comparer des parcours différents ne mesure pas directement la performance sportive.</p>';
 }
 function render(){
  if(!api)return;
@@ -468,9 +471,9 @@ function showProfile(id){
  const m=members().find(x=>x.id===id);if(!m)return;
  const model=engine.standings(all(),period(),viewMode),s=model.skippers.find(x=>x.id===id);
  const content='<div class="team-profile-head"><h3>'+esc(m.name)+'</h3><small>'+esc(m.status==='active'?'Membre actif':'Ancien membre')+' · '+esc(labelPeriod())+'</small><small>'+esc((m.memberships||[]).filter(w=>w.from||w.until).map(w=>(w.from||'Début inconnu')+' → '+(w.until||'En cours')).join(' · '))+'</small></div>'+
- (s?statCards([['Points',num(s.points)],['Points / course',num(s.avg)],['Courses terminées',num(s.finished)],['Victoires',num(s.wins)],['Podiums',num(s.podiums)],['Assiduité',num(s.attendance)+' %'],['Prestige moyen',num(s.prestige)],['Départage hybride',num(s.hybrid)]])+
- '<div class="team-table-wrap"><table class="team-table"><thead><tr><th>COURSE</th><th>RANG</th><th>VSR</th><th>POINTS</th></tr></thead><tbody>'+
- s.records.slice().sort((a,b)=>b.dateEnd.localeCompare(a.dateEnd)).map(r=>'<tr><td>'+esc(r.raceName)+'<small>'+esc(r.dateEnd)+'</small></td><td>'+ (r.dnf?'DNF':r.rank)+'</td><td>'+esc(r.vsr.toUpperCase())+'</td><td>'+num(viewMode==='historic'?r.historic:r.main)+'</td></tr>').join('')+'</tbody></table></div>':empty('Aucune participation sur cette période.'));
+ (s?statCards([['Points',num(s.points)],['Points / course',num(s.avg)],['Courses terminées',num(s.finished)],['Victoires',num(s.wins)],['Podiums',num(s.podiums)],['Assiduité',num(s.attendance)+' %'],['Prestige moyen',num(s.prestige)],['Départage hybride',num(s.hybrid)],['Courses chronométrées',num(s.timedRaces)],['Chrono moyen',clockLabel(s.avgTimeSeconds)],['Écart moyen',clockLabel(s.avgGapSeconds)]])+
+ '<div class="team-table-wrap"><table class="team-table"><thead><tr><th>COURSE</th><th>RANG</th><th>VSR</th><th>CHRONO</th><th>ÉCART</th><th>POINTS</th></tr></thead><tbody>'+
+ s.records.slice().sort((a,b)=>b.dateEnd.localeCompare(a.dateEnd)).map(r=>'<tr><td>'+esc(r.raceName)+'<small>'+esc(r.dateEnd)+'</small></td><td>'+ (r.dnf?'DNF':r.rank)+'</td><td>'+esc(r.vsr.toUpperCase())+'</td><td>'+clockLabel(r.elapsedSeconds)+'</td><td>'+clockLabel(r.gapSeconds)+'</td><td>'+num(viewMode==='historic'?r.historic:r.main)+'</td></tr>').join('')+'</tbody></table></div>':empty('Aucune participation sur cette période.'));
  $('team-profile-body').innerHTML=content;
  $('team-profile-dialog').showModal();
 }

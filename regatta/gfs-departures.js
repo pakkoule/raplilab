@@ -93,6 +93,7 @@
     if(!allowed.includes(startHour))
       throw Error('Départ non autorisé pour le diagnostic.');
     let position={...motion.START};
+    let lastWind=null;
     for(let step=0;step<MAX_STEPS;step++){
       const hour=startHour+step*STEP_HOURS;
       let wind;
@@ -115,6 +116,7 @@
         allowedWindMin:Math.min(...motion.TWS),
         allowedWindMax:Math.max(...motion.TWS)
       };
+      lastWind=base;
       if(wind.knots<motion.TWS[0])
         return {...base,type:'WIND_TOO_LOW'};
       if(wind.knots>motion.TWS[motion.TWS.length-1])
@@ -135,8 +137,14 @@
         return {...base,type:'CROSSING_UNEXPECTED'};
       position=next;
     }
-    return {startHour,forecastHour:startHour+HORIZON_HOURS,
-      type:'GATE_NOT_REACHED'};
+    return {
+      ...lastWind,
+      startHour,
+      type:'GATE_NOT_REACHED',
+      elapsedHours:HORIZON_HOURS,
+      finalLatitude:round(position.latitude,5),
+      distanceRemainingNm:round((position.latitude-GATE_LATITUDE)*60,1)
+    };
   }
 
   function compareForPair(a,b,firstHour,allowEmpty=false){

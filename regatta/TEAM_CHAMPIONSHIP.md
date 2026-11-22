@@ -125,3 +125,11 @@ Le championnat LPDB démarre avec la prochaine course enregistrée. **Aucun impo
 - Les écrans LPDB masquent les tuiles « Points », « Note moyenne », « Podium », « Classés » et « DNF » encore vides pour une course à venir ou en cours, et affichent à la place l'effectif inscrit et les widgets utiles. Une course terminée conserve tous ses résultats, points et notes, sans widget météo d'avant-course.
 - Les **puces bateau** et VSR reproduisent le **même composant foil et les mêmes couleurs personnalisées** que « Mes courses » ; une mise à jour des couleurs depuis la bibliothèque est immédiatement visible sur les deux vues. La déclinaison LPDB conserve la palette gris perle argenté avec des accents issus des couleurs sélectionnées.
 - La logique partagée est exposée par `window.RapliRegattaSharedCards` dans `regatta/app.js`, réutilisée par `regatta/team-app.js`. Aucun enregistrement de données météo supplémentaires, aucune fusion des classements personnels et d'équipe.
+
+
+## Réutilisation des fiches Records (Trophée Jules Verne)
+- Les fiches personnelles de type `record`, dont le **Trophée Jules Verne**, sont désormais listées dans le sélecteur « Fiche Mes courses associée » des nouvelles courses LPDB (préfixe **RECORD ·**). Les fiches de type `race` restent disponibles.
+- Le lien reprend le nom, l'illustration, le bateau et les informations communes. Pour un record à plusieurs tentatives, la **date et l'heure de départ de la dernière tentative datée** servent de référence aux widgets météo, au compte à rebours et au chrono, sans écraser l'historique des tentatives du record.
+- **Les classements, les résultats des skippers et la date de clôture LPDB restent indépendants**. La date de clôture du classement reste modifiable même lorsqu'une fiche personnelle est liée. Pour une fiche de type Record, la catégorie VSR du championnat reste également réglable séparément.
+- Une fiche Record peut être ouverte depuis le menu de course LPDB et le menu « … » de la fiche personnelle propose dorénavant **Utiliser pour le championnat LPDB**. Les dossiers de type `event` ne sont pas proposés.
+- La liaison d'une fiche n'affecte pas ses résultats personnels, ses tentatives, ses durées ou son statut ; elle ne présume pas non plus que les arrivées d'équipe sont identiques.

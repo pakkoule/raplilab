@@ -39,18 +39,18 @@ const labelPeriod=()=>{
  }
  return periodValue;
 };
-function selectionControls(){
+function selectionControls(prefix='team'){
  preset();
  const data=engine.periods(all());
  const vals=periodType==='month'?data.months:periodType==='quarter'?data.quarters:data.years;
  const extras=vals.includes(periodValue)?vals:[periodValue,...vals];
  const pretty=v=>periodType==='month'?new Date(Number(v.slice(0,4)),Number(v.slice(5,7))-1,1).toLocaleDateString('fr-FR',{month:'long',year:'numeric'}):v;
  return '<div class="team-selector">'+
- '<label>BARÈME<select id="team-mode"><option value="main"'+(viewMode==='main'?' selected':'')+'>Principal · VSR & primes</option><option value="historic"'+(viewMode==='historic'?' selected':'')+'>Historique · 200 à 1</option></select></label>'+
- '<label>PÉRIODE<select id="team-period-type">'+opts(Object.entries(types).map(([value,label])=>({value,label})),periodType)+'</select></label>'+
+ '<label>BARÈME<select id="'+prefix+'-mode"><option value="main"'+(viewMode==='main'?' selected':'')+'>Principal · VSR & primes</option><option value="historic"'+(viewMode==='historic'?' selected':'')+'>Historique · 200 à 1</option></select></label>'+
+ '<label>PÉRIODE<select id="'+prefix+'-period-type">'+opts(Object.entries(types).map(([value,label])=>({value,label})),periodType)+'</select></label>'+
  ((periodType==='month'||periodType==='quarter'||periodType==='year')?
- '<label>CHOISIR<select id="team-period-value">'+opts(extras.map(v=>({value:v,label:pretty(v)})),periodValue)+'</select></label>':'')+
- (periodType==='custom'?'<label>DU<input type="date" id="team-from" value="'+esc(customFrom)+'"></label><label>AU<input type="date" id="team-to" value="'+esc(customTo)+'"></label>':'')+
+ '<label>CHOISIR<select id="'+prefix+'-period-value">'+opts(extras.map(v=>({value:v,label:pretty(v)})),periodValue)+'</select></label>':'')+
+ (periodType==='custom'?'<label>DU<input type="date" id="'+prefix+'-from" value="'+esc(customFrom)+'"></label><label>AU<input type="date" id="'+prefix+'-to" value="'+esc(customTo)+'"></label>':'')+
  '</div>';
 }
 function statCards(items){return '<div class="team-stats-grid">'+items.map(([k,v])=>'<div class="team-stat"><span>'+esc(k)+'</span><strong>'+esc(v)+'</strong></div>').join('')+'</div>';}
@@ -75,7 +75,7 @@ function renderMain(){
  const p=labelPeriod(),list=sortedItems(model.skippers);
  const el=$('team-panel');if(!el)return;
  el.innerHTML='<div class="team-heading"><div><span>LPDB · RAPLI REGATTA</span><h2>CHAMPIONNAT DE L’ÉQUIPE</h2><p>Classement officiel et barème historique, automatiquement recalculés.</p></div><img src="assets/lpdb.webp" alt="LPDB" class="team-emblem"></div>'+
- selectionControls()+statCards([['Épreuves validées',num(model.races.length)],['Skippers classés',num(model.skippersCount)],['Points distribués',num(model.pointsTotal)]])+
+ selectionControls('team')+statCards([['Épreuves validées',num(model.races.length)],['Skippers classés',num(model.skippersCount)],['Points distribués',num(model.pointsTotal)]])+
  '<div class="team-subhead"><div><h3>CLASSEMENT · '+esc(p.toLocaleUpperCase('fr'))+'</h3><p>'+esc(viewMode==='main'?'Barème principal VSR et primes':'Barème historique bonus')+' · '+esc(String(list.length))+' skippers affichés</p></div><div class="team-toolbar">'+action('png-table','↓ PNG TABLEAU')+action('png-podium','↓ PODIUM')+action('png-top10','↓ TOP 10')+'</div></div>'+
  '<div class="team-filters"><input id="team-search" type="search" aria-label="Rechercher un skipper" placeholder="Rechercher un skipper…" value="'+esc(search)+'">'+
  '<select id="team-filter" aria-label="Filtrer les skippers">'+opts([{value:'all',label:'Tous les skippers'},{value:'active',label:'Membres actifs'},{value:'former',label:'Anciens membres'}],filter)+'</select></div>'+
@@ -109,7 +109,7 @@ function renderStats(){
  const el=$('team-stats-panel');if(!el)return;
  const sorted=[...model.skippers].sort((a,b)=>statMode==='avg'?b.avg-a.avg:statMode==='finish'?b.finishRate-a.finishRate:statMode==='wins'?b.wins-a.wins:b.points-a.points||b.hybrid-a.hybrid);
  el.innerHTML='<div class="team-heading"><div><span>LPDB · ANALYSE</span><h2>STATISTIQUES D’ÉQUIPE</h2><p>Points par course, efficacité, assiduité, victoires et palmarès.</p></div><img class="team-emblem" src="assets/lpdb.webp" alt="LPDB"></div>'+
- selectionControls()+statCards([['Participations',num(model.skippers.reduce((s,m)=>s+m.participations,0))],['Moyenne globale',num(model.skippers.reduce((s,m)=>s+m.points,0)/Math.max(1,model.skippers.reduce((s,m)=>s+m.participations,0)))+' pts/course'],['Fin de course',num(model.skippers.reduce((s,m)=>s+m.finished,0)/Math.max(1,model.skippers.reduce((s,m)=>s+m.participations,0))*100)+' %']])+
+ selectionControls('team-stats')+statCards([['Participations',num(model.skippers.reduce((s,m)=>s+m.participations,0))],['Moyenne globale',num(model.skippers.reduce((s,m)=>s+m.points,0)/Math.max(1,model.skippers.reduce((s,m)=>s+m.participations,0)))+' pts/course'],['Fin de course',num(model.skippers.reduce((s,m)=>s+m.finished,0)/Math.max(1,model.skippers.reduce((s,m)=>s+m.participations,0))*100)+' %']])+
  '<div class="team-subhead"><h3>COMPARATIF DE PERFORMANCE</h3><div class="team-toolbar">'+action('png-stats','↓ PNG TABLEAU')+action('png-stats-social','↓ TOP 10')+'</div></div>'+
  '<label class="team-sort-label">CRITÈRE <select id="team-stat-mode">'+opts([{value:'avg',label:'Points / course'},{value:'finish',label:'Taux de finition'},{value:'wins',label:'Victoires'},{value:'points',label:'Points totaux'}],statMode)+'</select></label>'+
  (sorted.length?'<div class="team-table-wrap"><table class="team-table"><thead><tr><th>#</th><th>SKIPPER</th><th>COURSES</th><th>PTS/COURSE</th><th>FINITIONS</th><th>VICT.</th><th>POINTS</th></tr></thead><tbody>'+
@@ -315,7 +315,7 @@ function doExport(kind,arg){
  const p=period(),data=all();
  const model=engine.standings(data,p,viewMode);
  const title=(viewMode==='main'?'Principal':'Historique')+' · '+labelPeriod();
- let list=model.skippers,style='table',limit=0,filename='lpdb-'+viewMode+'-'+periodType;
+ let list=sortedItems(model.skippers),style='table',limit=0,filename='lpdb-'+viewMode+'-'+periodType;
  if(kind==='png-podium'){style='social';limit=3;}
  if(kind==='png-top10'){style='social';limit=10;}
  if(kind==='png-stats'||kind==='png-stats-social'){
@@ -376,12 +376,12 @@ async function click(ev){
 }
 function change(ev){
  const el=ev.target;
- if(el.id==='team-mode'){viewMode=el.value;page=1;render();return;}
- if(el.id==='team-period-type'){periodType=el.value;periodValue='';page=1;render();return;}
- if(el.id==='team-period-value'){periodValue=el.value;page=1;render();return;}
+ if(el.id==='team-mode'||el.id==='team-stats-mode'){viewMode=el.value;page=1;render();return;}
+ if(el.id==='team-period-type'||el.id==='team-stats-period-type'){periodType=el.value;periodValue='';page=1;render();return;}
+ if(el.id==='team-period-value'||el.id==='team-stats-period-value'){periodValue=el.value;page=1;render();return;}
  if(el.id==='team-filter'){filter=el.value;page=1;renderMain();return;}
  if(el.id==='team-stat-mode'){statMode=el.value;renderStats();return;}
- if(['team-from','team-to'].includes(el.id)){if(el.id==='team-from')customFrom=el.value;else customTo=el.value;page=1;render();return;}
+ if(['team-from','team-to','team-stats-from','team-stats-to'].includes(el.id)){if(el.id.endsWith('-from'))customFrom=el.value;else customTo=el.value;page=1;render();return;}
  if(el.id==='team-race-status'||el.id==='team-race-vsr'||el.id==='team-race-date'){
   if(draft){draft.vsr=$('team-race-vsr').value;draft.status=$('team-race-status').value;editorRows();}
  }

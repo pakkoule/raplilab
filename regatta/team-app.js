@@ -926,7 +926,16 @@ async function click(ev){
   if(!p){notify('Choisis une fiche personnelle existante.',true);return;}
   const linkedElsewhere=races().some(r=>r.personalRaceId===p.id&&r.id!==draft.id);
   if(linkedElsewhere){notify('Cette fiche personnelle est déjà liée à une autre course d’équipe.',true);return;}
-  draft=fromPersonalKeepingNewMembers(p,draft);fillSharedFields();renderPersonalLink();renderTeamIllustration();editorRows();return;
+  // Linking a historical illustration must not wipe unsaved team results or
+  // closure/status edits already entered in the same course form.
+  draft.dateEnd=$('team-race-date').value;
+  draft.status=$('team-race-status').value;
+  draft.vsr=$('team-race-vsr').value;
+  draft.stageGroup=$('team-race-group').value.trim().slice(0,100);
+  const fleetValue=$('team-race-fleet').value.trim();
+  if(!fleetValue||Number.isSafeInteger(Number(fleetValue)))draft.fleetTotal=fleetValue?Number(fleetValue):null;
+  draft=fromPersonalKeepingNewMembers(p,draft);
+  fillSharedFields();renderPersonalLink();renderTeamIllustration();editorRows();return;
  }
  if(cmd==='unlink-personal'&&draft){
   draft.personalRaceId='';renderPersonalLink();renderTeamIllustration();notify('Liaison retirée dans le formulaire. Enregistre la course pour confirmer.');return;

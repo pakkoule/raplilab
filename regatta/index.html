@@ -598,6 +598,7 @@ html:not([data-rapli-role="editor"]) #rapli-module-cloud-save{display:none!impor
       <div class="team-form-grid">
         <label class="team-wide">NOM DE LA COURSE<input id="team-race-name" maxlength="160" required placeholder="Ex. Pornichet Select"></label>
         <label>DATE DE CLÔTURE DU CLASSEMENT<input id="team-race-date" type="date"></label>
+        <label>EFFECTIF GLOBAL VIRTUAL REGATTA<input id="team-race-fleet" type="number" min="2" max="100000000" step="1" inputmode="numeric" placeholder="Ex. 18 500" aria-describedby="team-fleet-help"></label>
         <label>CATÉGORIE VSR<select id="team-race-vsr"><option value="vsr3">VSR 3</option><option value="vsr2">VSR 2</option><option value="vsr1">VSR 1</option><option value="hc">Hors catégorie</option></select></label>
         <label>STATUT<select id="team-race-status"><option value="planned">À venir</option><option value="live">En cours</option><option value="finished">Terminée et validée</option></select></label>
         <label>COMPÉTITION / ÉTAPES (FACULTATIF)<input id="team-race-group" maxlength="100" placeholder="Ex. Tour du monde 2027"></label>
@@ -608,6 +609,7 @@ html:not([data-rapli-role="editor"]) #rapli-module-cloud-save{display:none!impor
         <label>FUSEAU HORAIRE<input id="team-race-timezone" maxlength="80" placeholder="Ex. Europe/Paris"></label>
       </div>
       <p class="team-close-date-help">La date de clôture sert uniquement à attribuer les points au mois, trimestre et à l’année correspondants. Chaque skipper conserve son propre chrono et sa propre arrivée.</p>
+      <p id="team-fleet-help" class="team-close-date-help">Effectif global VR requis pour calculer les notes individuelles, distinct des skippers LPDB. Il ne modifie pas les barèmes du championnat.</p>
       <div class="team-dialog-participants">
         <div class="team-subhead"><h3>PARTICIPANTS ET POSITIONS</h3><strong id="team-participants-count">0 / 50 participants</strong></div>
         <div class="team-input-actions">
@@ -694,6 +696,7 @@ html:not([data-rapli-role="editor"]) #rapli-module-cloud-save{display:none!impor
 <script defer src="honors.js"></script>
 <script defer src="search.js"></script>
 <script defer src="team-engine.js"></script>
+<script defer src="team-rating.js"></script>
 <script defer src="team-time.js"></script>
 <script defer src="team-app.js"></script>
 <script defer src="app.js"></script>

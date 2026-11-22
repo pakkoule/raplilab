@@ -141,6 +141,7 @@ function teamRaceCard(r,known,now=Date.now()){
  const menu='<details class="team-race-menu"><summary aria-label="Options de la course '+esc(r.name)+'" title="Options de la course">⋯</summary>'+
   '<div class="team-race-menu-popover" role="group" aria-label="Actions de '+esc(r.name)+'">'+
   menuItem('race-'+esc(r.id),'✎ Modifier la course')+
+  menuItem('change-photo-'+esc(r.id),'▣ Changer l’illustration')+
   menuItem('show-ranking-'+esc(r.id),'▤ Classement et chronos')+
   '<div class="team-race-menu-divider"></div>'+
   menuItem('export-race-'+esc(r.id),'↓ Export PNG tableau')+
@@ -863,6 +864,11 @@ async function click(ev){
  if(cmd==='previous'){page=Math.max(1,page-1);if($('team-stage-dialog')?.open)stageDialog(currentStage);else renderMain();return;}
  if(cmd==='next'){page++;if($('team-stage-dialog')?.open)stageDialog(currentStage);else renderMain();return;}
  if(cmd.startsWith('show-ranking-'))return showRaceRanking(cmd.slice(13));
+ if(cmd.startsWith('change-photo-')){
+  if(!canWrite())return;
+  openRace(cmd.slice('change-photo-'.length));
+  $('team-race-illustration-file')?.click();return;
+ }
  if(cmd.startsWith('race-'))return openRace(cmd.slice(5));
  if(cmd.startsWith('member-'))return openMember(cmd.slice(7));
  if(cmd.startsWith('profile-'))return showProfile(cmd.slice(8));

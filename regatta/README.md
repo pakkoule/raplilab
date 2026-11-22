@@ -361,3 +361,14 @@ Si les cinq échéances NOAA +6/+12/+18/+24/+30 h ont été décodées dans **le
 Ce travail ne constitue toujours **pas** une comparaison de départs à l'équateur : le domaine géographique, l'horizon de 3 heures, l'absence de terres et les polaires ITYC très partielles (NON Full Pack) interdisent une estimation réaliste du record. Tests automatisés ajoutés aux fichiers `tests/regatta-gfs-source.test.cjs`, `tests/regatta-gfs-motion.test.cjs` et `tests/regatta-gfs-departures.test.cjs`.
 
 Le test 15 doit encore être validé sur Safari iPhone avec de véritables grilles NOAA f030. Production inchangée.
+
+
+## GFS 0,25° · diagnostic des polaires provisoires (PR #4 · prototype 16)
+
+Le test 15 a été confirmé sur Safari iPhone le 22 novembre 2026 : les quatre départs simulés +24, +25, +26 et +27 h étaient tous **non calculables** avec les polaires ITYC partielles. Le **BILAN DES 16 DÉPARTS** a conservé 11 créneaux calculables et +6 h (98,7 min) comme meilleur temps jusqu'à 47°N. Ce résultat ne doit pas être interprété comme une impossibilité de naviguer pour l'Ultim Full Pack.
+
+Plutôt que de poursuivre immédiatement l'extension des échéances GFS, le test 16 explique la première condition manquante des quatre départs +24 à +27 h : force et provenance du vent NOAA interpolé en U/V, intervalle d'angles au vent (TWA) pour les caps 170/175/180/185/190°, et comparaison avec les plages **documentées dans les polaires partielles** : TWS 4–40 nds, TWA 90°–120°.
+
+Le moteur distingue, sans inventer de vitesse : **vent inférieur ou supérieur au tableau**, **aucun angle au vent couvert**, **polaire partielle indisponible**, **météo GFS manquante ou hors grille**, et **absence de franchissement de 47°N dans les trois heures**. Le diagnostic suit les mêmes étapes de 30 min jusqu'au premier blocage, lorsqu'il dispose de vents et de vitesses vérifiés. Il ne remplace pas les polaires Full Pack ni le calcul de routage océanique.
+
+Le code modifié se trouve dans `regatta/gfs-departures.js`, `regatta/gfs-lab.js`, `regatta/index.html` et `regatta/gfs-lab.css`; les vérifications supplémentaires sont dans `tests/regatta-gfs-departures.test.cjs`. Production inchangée ; validation en situation réelle Safari du diagnostic encore requise.

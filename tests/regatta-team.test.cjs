@@ -1376,3 +1376,42 @@ test('LPDB VSR foil badge always keeps VSR 1, VSR 2 and VSR 3 on one line',()=>{
  assert.match(css,/\.lpdb-shell \.team-race-tags \.team-race-vsr\{[^}]*white-space:nowrap/s);
  assert.match(css,/\.team-race-tags\{[^}]*flex-wrap:wrap/s,'long boat classes may move the entire VSR badge to the next row');
 });
+
+test('LPDB course image displays live course status instead of branding, without duplicate badges',()=>{
+ const dom=new JSDOM(fs.readFileSync('regatta/index.html','utf8'),{runScripts:'outside-only',url:'https://example.org/regatta/'});
+ const w=dom.window,d=w.document;
+ w.RapliTeamEngine=E;w.RapliTeamTime=require('../regatta/team-time.js');
+ w.eval(fs.readFileSync('regatta/score.js','utf8'));
+ w.eval(fs.readFileSync('regatta/team-rating.js','utf8'));
+ w.RapliRegattaSharedCards={liveIconMarkup:()=>'<span class="live-neon" aria-label="En direct"></span>'};
+ w.eval(fs.readFileSync('regatta/team-app.js','utf8'));
+ const roster=[m('Alpha'),m('Beta')];
+ const races=[
+  {...r('planned-image','2028-04-01','vsr2','planned',[]),name:'Course future'},
+  {...r('live-image','2028-04-01','vsr2','live',[]),name:'Course en mer'},
+  r('finished-image','2028-04-01','vsr2','finished',[rr('Alpha',1),rr('Beta',2)]),
+  r('pending-image','2028-04-01','vsr2','finished',[rr('Alpha',1),rr('Beta',null,'pending')])
+ ];
+ w.RapliTeamUI.init({get:()=>[...roster,...races],personal:()=>[],canEdit:()=>false,notify:()=>{},
+  save:async()=>{},remove:async()=>{}});
+ const cases=[
+  ['planned-image','À VENIR','is-upcoming'],
+  ['live-image','EN COURS','is-live'],
+  ['finished-image','TERMINÉE · VALIDÉE','is-complete'],
+  ['pending-image','RÉSULTATS À COMPLÉTER','is-pending']
+ ];
+ for(const [slug,label,cssClass] of cases){
+  const card=d.querySelector('[data-team-race="lpdb-race-'+slug+'"]');
+  assert.ok(card,slug+' should render');
+  const badge=card.querySelector('.team-race-photo .team-race-photo-status');
+  assert.ok(badge,slug+' should display status on the illustration');
+  assert.equal(badge.textContent.trim(),label);
+  assert.ok(badge.classList.contains(cssClass));
+  assert.equal(card.querySelectorAll('.team-race-status').length,1,'no duplicate status label below the image');
+  assert.ok(!card.querySelector('.team-race-photo-mark'),'branding label no longer overlays race artwork');
+ }
+ assert.equal(d.querySelector('[data-team-race="lpdb-race-live-image"] .live-neon')?.getAttribute('aria-label'),'En direct');
+ const css=fs.readFileSync('regatta/team.css','utf8');
+ assert.match(css,/\.lpdb-shell \.team-race-photo \.team-race-photo-status\{/);
+ dom.window.close();
+});

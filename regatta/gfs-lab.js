@@ -86,6 +86,61 @@
   };
   const verifiedFrames=new Map();
   const interpolationEngine=window.RapliGfsInterpolation;
+  const departuresStatus=root.querySelector('[data-gfs-departures-status]');
+  const departuresSummary=root.querySelector('[data-gfs-departures-summary]');
+  const departuresRows=root.querySelector('[data-gfs-departures-rows]');
+  const renderDepartures=()=>{
+    departuresSummary.hidden=true;
+    departuresRows.hidden=true;
+    departuresRows.replaceChildren();
+    if(!verifiedFrames.has(6)||!verifiedFrames.has(12)){
+      departuresStatus.dataset.state='idle';
+      departuresStatus.textContent='Lis +6 h puis +12 h du même cycle GFS pour comparer quatre départs.';
+      return;
+    }
+    const engine=window.RapliGfsDepartures;
+    if(!engine?.compareDepartureWindows){
+      departuresStatus.dataset.state='error';
+      departuresStatus.textContent='Module de comparaison des départs indisponible.';
+      return;
+    }
+    try{
+      const comparison=engine.compareDepartureWindows(verifiedFrames.get(6),verifiedFrames.get(12));
+      const update=(name,value)=>{
+        const el=root.querySelector('[data-gfs-departures-'+name+']');
+        if(el)el.textContent=value;
+      };
+      const forecastTime=hour=>frenchTime(new Date(Date.parse(comparison.cycleUTC)+hour*3600000).toISOString());
+      update('fastest','+'+comparison.fastestStartHour+' h · '+forecastTime(comparison.fastestStartHour));
+      update('duration',comparison.fastestElapsedMinutes.toFixed(1)+' min');
+      update('earliest','+'+comparison.earliestArrivalStartHour+' h · '+frenchTime(comparison.earliestArrivalUTC));
+      for(const window of comparison.windows){
+        const row=document.createElement('div');
+        row.className='gfs-departure-row';
+        if(window.valid&&window.startHour===comparison.fastestStartHour)row.dataset.fastest='true';
+        const start=document.createElement('strong');
+        start.textContent='Départ +'+window.startHour+' h';
+        const summary=document.createElement('span');
+        const arrival=document.createElement('small');
+        if(window.valid){
+          summary.textContent=window.elapsedMinutes.toFixed(1)+' min jusqu’à 47°N';
+          arrival.textContent='Passage : '+frenchTime(window.crossingUTC)+' (Paris)';
+        }else{
+          summary.textContent='Non calculable';
+          arrival.textContent=window.reason;
+        }
+        row.append(start,summary,arrival);
+        departuresRows.appendChild(row);
+      }
+      departuresSummary.hidden=false;
+      departuresRows.hidden=false;
+      departuresStatus.dataset.state='success';
+      departuresStatus.textContent=comparison.validCount+' départ(s) calculable(s) sur 4 · classement sur la durée jusqu’à 47°N.';
+    }catch(error){
+      departuresStatus.dataset.state='error';
+      departuresStatus.textContent='Comparaison impossible : '+String(error.message||error)+' Aucune estimation fictive.';
+    }
+  };
   const routeStatus=root.querySelector('[data-gfs-route-search-status]');
   const routeSummary=root.querySelector('[data-gfs-route-search-summary]');
   const routeSteps=root.querySelector('[data-gfs-route-search-steps]');
@@ -493,6 +548,7 @@
       renderHeadings();
       renderAdaptive();
       renderRouteSearch();
+      renderDepartures();
       windStatus.dataset.state='success';
       windStatus.textContent='3 vents réels décodés sur le même cycle NOAA · '+
         (result.cached?'résultat en cache.':'lecture validée.');

@@ -191,3 +191,20 @@ Le chargement reste **déclenché uniquement sur clic**, avec cache temporaire p
 Les horaires de cycle et de validité sont affichés en heure française, automatiquement adaptée à l'heure d'été/hiver. Le fichier `f006` sélectionné est un cycle suffisamment ancien pour le test, **pas nécessairement le plus récent**. L'étape suivante sera de récupérer plusieurs échéances et de produire un champ de vent interpolable pour le routage à l'équateur.
 
 Tests automatisés `tests/regatta-gfs-wind.test.cjs` et `tests/regatta-gfs-source.test.cjs`. Un **test réel du bouton** sur la Deploy Preview Netlify reste indispensable avant de considérer le décodage NOAA comme confirmé en exploitation.
+
+
+## GFS 0,25° · lecture multi-points / échéances (PR #4 · prototype 3)
+
+Suite à la validation sur iPhone du vent NOAA réel à 48,5°N / 8°O (27,9 nds, 289° sur le cycle 00Z / f006 du 22 novembre 2026), le LAB GFS permet à présent de sélectionner **f006, f012 ou f018** sur un même cycle et d'afficher simultanément **trois points de vent** :
+
+- 48,50°N / 8,00°O : large de Brest
+- 44,50°N / 12,00°O : ouest du golfe de Gascogne
+- 41,50°N / 15,00°O : large du Portugal
+
+Un seul fichier GRIB2 est demandé par clic : chaque composante UGRD/VGRD est décodée une fois, puis les valeurs sont lues aux trois points de grille les plus proches. Toutes les mesures sont des **prévisions** du GFS, pas des observations. La lecture ne simule pas encore de mouvement de bateau ni de temps de passage à l'équateur.
+
+Protection NOAA : liste fermée des échéances, un seul appel manuel à la fois dans l'interface, cache serveur par échéance, espacement minimal de 10 secondes entre appels NOAA par instance Netlify et aucune tâche automatique. Les erreurs restent visibles sans valeur météo fictive.
+
+Les polaires Ultim BP XI fournies par captures sont encore provisoires (non Full Pack). La grille actuelle est volontairement limitée à l'Atlantique nord-est ; ce premier affichage **n'est pas encore le routage**. L'étape suivante consiste à élargir la zone et à interpoler le vent dans l'espace et le temps, puis à lancer un premier moteur de trajectoire sous contraintes.
+
+Les textes obsolètes indiquant « aucun décodage des vitesses » ont été corrigés, puisque le décodage est désormais effectif.

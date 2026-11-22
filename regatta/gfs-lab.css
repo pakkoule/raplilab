@@ -463,3 +463,19 @@
 .regatta-gfs-lab .gfs-later-departures-panel>small{
   display:block;margin-top:9px;font-size:9px;line-height:1.6;color:#806b77
 }
+
+
+.regatta-gfs-lab .gfs-all-departures{
+  margin:9px 0;padding:10px;border:1px solid #96cebb;background:#effaf5;
+  border-radius:10px;display:grid;gap:5px
+}
+.regatta-gfs-lab .gfs-all-departures[hidden]{display:none}
+.regatta-gfs-lab .gfs-all-departures strong{
+  font-size:10px;font-weight:900;color:#156a63
+}
+.regatta-gfs-lab .gfs-all-departures span{
+  font-size:12px;font-weight:900;color:#195e6e
+}
+.regatta-gfs-lab .gfs-all-departures small{
+  font-size:9px;line-height:1.5;color:#5a7f7c
+}

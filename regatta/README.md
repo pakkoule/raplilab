@@ -139,7 +139,7 @@ Module autonome et seul espace actif de Rapli Lab dans la PR #4.
 
 ## Indicateur météo GFS (PR #4)
 
-Les tuiles de course ou de record avec le statut **En cours** affichent automatiquement un mini-bloc météo GFS sous les deux colonnes. Les autres statuts (à venir, terminé, DNF, record clôturé) ne l'affichent pas. Aucun champ n'est enregistré et aucune donnée des courses n'est modifiée.
+Les tuiles de course ou de record avec le statut **En cours** affichent automatiquement un mini-bloc météo GFS **dans la colonne de droite, à la place du classement non disponible**. Les autres statuts (à venir, terminé, DNF, record clôturé) ne l'affichent pas. Aucun champ n'est enregistré et aucune donnée des courses n'est modifiée.
 
 - Cycles de premières données estimés à **03h40, 09h40, 15h40 et 21h40 UTC**, d'après [l'assistance Virtual Regatta Offshore](https://virtualregatta.zendesk.com/hc/fr/articles/115001441254-Pr%C3%A9visions-M%C3%A9t%C3%A9orologiques-et-Mise-%C3%A0-Jour).
 - Heure de prochaine actualisation présentée dans le fuseau **Europe/Paris**, automatiquement adaptée à CET/CEST, y compris lors des changements d'heure.

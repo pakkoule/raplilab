@@ -157,3 +157,17 @@ test('lecture +18/+24 h : interpolation météo sans extrapolation ni mélange d
   const foreign=m.loadFrame(frame(24,{cycle:'2026-11-22T06:00:00.000Z'}));
   assert.throws(()=>m.windAt(f18,foreign,21,48.125,-8.625),/consécutives/);
 });
+
+
+test('la cinquième échéance f030 permet une interpolation bornée f024/f030',()=>{
+  const f24=m.loadFrame(frame(24,{windU:12,windV:-5}));
+  const f30=m.loadFrame(frame(30,{windU:8,windV:-1}));
+  const midpoint=m.windAt(f24,f30,27,48.125,-8.625);
+  assert.ok(Math.abs(midpoint.u-10)<0.0001);
+  assert.ok(Math.abs(midpoint.v+3)<0.0001);
+  assert.throws(()=>m.windAt(f24,f30,23.5,48.125,-8.625),/consécutives/);
+  assert.throws(()=>m.windAt(f24,f30,30.5,48.125,-8.625),/consécutives/);
+  assert.throws(()=>m.windAt(f24,
+    m.loadFrame(frame(30,{cycle:'2026-11-22T06:00:00.000Z'})),27,48.125,-8.625),
+    /consécutives/);
+});

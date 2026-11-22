@@ -276,8 +276,28 @@ function normal(x={}){const r={id:typeof x.id==='string'&&x.id.length<130?x.id:u
  const formatted=durationFromParts(r);
  if(formatted!==null&&formatted!=='')r.duration=formatted;
  for(const k of imageKeys)r[k]=validImage(x[k])?x[k]:'';if(r.kind!=='record'){const arrival=calculateArrival(r.start,r.startTime,r.duration,r.timezone);if(arrival.status==='ready'){r.end=arrival.end;r.endTime=arrival.endTime;}}return r;}
-let rows=[],db=null,editId='',pictures={icon:'',result:'',route:''},uploads=0,writeBusy=false,timer;
+let rows=[],teamRecords=[],db=null,editId='',pictures={icon:'',result:'',route:''},uploads=0,writeBusy=false,timer;
 let storageRecoveryBlocked=false;
+const teamEngine=window.RapliTeamEngine;
+if(!teamEngine)throw Error('Moteur championnat LPDB manquant.');
+function partitionRecords(items){
+ const records=Array.isArray(items)?items:[];
+ rows=records.filter(x=>x?.type!=='team-member'&&x?.type!=='team-race').map(normal);
+ teamRecords=teamEngine.normalize(records.filter(x=>x?.type==='team-member'||x?.type==='team-race'));
+}
+function renderTeam(){window.RapliTeamUI?.render?.();}
+async function saveTeamEntity(entity){
+ if(!entity||!['team-member','team-race'].includes(entity.type))throw Error('Fiche d’équipe non valide.');
+ await saveRow(entity);
+ teamRecords=teamEngine.normalize([...teamRecords.filter(r=>r.id!==entity.id),entity]);
+ renderTeam();window.RapliSharedCollection?.changed?.();
+}
+async function removeTeamEntity(id){
+ await deleteRow(id);
+ teamRecords=teamRecords.filter(r=>r.id!==id);
+ renderTeam();window.RapliSharedCollection?.changed?.();
+}
+
  let regattaPage=1,regattaResultsCount=0;
  const REGATTA_PAGE_SIZE=30;
  function regattaPager(total){
@@ -306,10 +326,10 @@ const req=r=>new Promise((yes,no)=>{r.onsuccess=()=>yes(r.result);r.onerror=()=>
 const done=tx=>new Promise((yes,no)=>{tx.oncomplete=yes;tx.onerror=()=>no(tx.error||Error('Sauvegarde locale impossible'));tx.onabort=()=>no(tx.error||Error('Stockage local annulé'));});
 async function openDB(){if(!window.indexedDB)return;const r=indexedDB.open('rapli-regatta-v1',1);r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains('races'))r.result.createObjectStore('races',{keyPath:'id'});};db=await req(r);}
 function backup(){const raw=localStorage.getItem('rapli-regatta-v1');if(raw===null)return [];const stored=JSON.parse(raw);if(!Array.isArray(stored))throw Error('Sauvegarde Regatta invalide');return stored;}
-async function load(){return db?(await req(db.transaction('races').objectStore('races').getAll())).map(normal):backup().map(normal);}
-async function saveRow(row){if(!window.RapliSharedCollection?.canEdit?.())throw Error("Collection partagée non prête ou mode édition inactif.");if(storageRecoveryBlocked)throw Error('Stockage des courses inaccessible : enregistrement bloqué.');if(!db){localStorage.setItem('rapli-regatta-v1',JSON.stringify([...rows.filter(x=>x.id!==row.id),row]));return;}const tx=db.transaction('races','readwrite');tx.objectStore('races').put(row);await done(tx);}
-async function deleteRow(id){if(!window.RapliSharedCollection?.canEdit?.())throw Error("Collection partagée non prête ou mode édition inactif.");if(storageRecoveryBlocked)throw Error('Stockage des courses inaccessible : suppression bloquée.');if(!db){localStorage.setItem('rapli-regatta-v1',JSON.stringify(rows.filter(x=>x.id!==id)));return;}const tx=db.transaction('races','readwrite');tx.objectStore('races').delete(id);await done(tx);}
-async function replaceRows(next){if(storageRecoveryBlocked)throw Error('Stockage des courses inaccessible : restauration bloquée.');if(!db){localStorage.setItem('rapli-regatta-v1',JSON.stringify(next));}else{const tx=db.transaction('races','readwrite'),store=tx.objectStore('races');store.clear();next.forEach(x=>store.put(x));await done(tx);}rows=next.map(normal);render();}
+async function load(){return db?await req(db.transaction('races').objectStore('races').getAll()):backup();}
+async function saveRow(row){if(!window.RapliSharedCollection?.canEdit?.())throw Error("Collection partagée non prête ou mode édition inactif.");if(storageRecoveryBlocked)throw Error('Stockage des courses inaccessible : enregistrement bloqué.');if(!db){localStorage.setItem('rapli-regatta-v1',JSON.stringify([...rows,...teamRecords].filter(x=>x.id!==row.id).concat(row)));return;}const tx=db.transaction('races','readwrite');tx.objectStore('races').put(row);await done(tx);}
+async function deleteRow(id){if(!window.RapliSharedCollection?.canEdit?.())throw Error("Collection partagée non prête ou mode édition inactif.");if(storageRecoveryBlocked)throw Error('Stockage des courses inaccessible : suppression bloquée.');if(!db){localStorage.setItem('rapli-regatta-v1',JSON.stringify([...rows,...teamRecords].filter(x=>x.id!==id)));return;}const tx=db.transaction('races','readwrite');tx.objectStore('races').delete(id);await done(tx);}
+async function replaceRows(next){if(storageRecoveryBlocked)throw Error('Stockage des courses inaccessible : restauration bloquée.');if(!db){localStorage.setItem('rapli-regatta-v1',JSON.stringify(next));}else{const tx=db.transaction('races','readwrite'),store=tx.objectStore('races');store.clear();next.forEach(x=>store.put(x));await done(tx);}partitionRecords(next);render();renderTeam();}
 
  function localDateTime(date,time='',zone=timeEngine.DEFAULT){
  return timeEngine.fromWall(date,time||'00:00',zone);
@@ -1255,7 +1275,7 @@ function changeVSRColor(key,value){
  toast('Couleur '+VSR[key]+' appliquée à toutes les courses correspondantes ✓');
 }
 function selectWorkspace(view){
- const valid=['races','stats','honors','colors'];
+ const valid=['team','team-races','team-skippers','team-stats','races','stats','honors','colors'];
  if(!valid.includes(view))return;
  for(const name of valid){
   const active=name===view;
@@ -1263,6 +1283,7 @@ function selectWorkspace(view){
   const tab=$('view-'+name);
   tab.classList.toggle('active',active);tab.setAttribute('aria-selected',String(active));tab.tabIndex=active?0:-1;
  }
+ if(view.startsWith('team'))renderTeam();
  if(view==='stats')renderStatistics();
   if(view==='honors')renderHonors();
  if(view==='colors')renderClassColors();
@@ -1934,7 +1955,7 @@ $('record-attempts-list').addEventListener('change',event=>{
 $('race-timezone').addEventListener('change',updateArrival);
 $('race-kind').addEventListener('change',updateKindFields);
 $('race-event-id').addEventListener('change',updateKindFields);
-for(const view of ['races','stats','honors','colors'])$('view-'+view).addEventListener('click',()=>selectWorkspace(view));
+for(const view of ['team','team-races','team-skippers','team-stats','races','stats','honors','colors'])$('view-'+view).addEventListener('click',()=>selectWorkspace(view));
 // Palette des classes: disponible dans la barre d'actions de Courses, sans troisième onglet encombrant.
 $('manage-class-colors').addEventListener('click',()=>selectWorkspace('colors'));
 $('colors-back-races').addEventListener('click',()=>selectWorkspace('races'));
@@ -2064,34 +2085,36 @@ window.addEventListener('pagehide',()=>{window.clearInterval(regattaClockTicker)
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)updateRaceClocks();});
 window.addEventListener('pageshow',()=>{if(regattaClockTicker===null){updateRaceClocks();regattaClockTicker=window.setInterval(updateRaceClocks,1000);}});
 const bridge=window.RapliModuleBridge={module:'regatta',ready:false,
- getState:()=>({records:rows,logos:colorSettingsState()}),notify:msg=>toast(msg),
+ getState:()=>({records:[...rows,...teamRecords],logos:colorSettingsState()}),notify:msg=>toast(msg),
  previewState:data=>{
    if(!Array.isArray(data?.records))throw Error('Collection publique invalide');
-   rows=data.records.map(normal);
+   partitionRecords(data.records);
    classSettings=normalizeClassSettings(data.logos?.[0]||defaultClassSettings());
-   render();
+   render();renderTeam();
  },
  replaceState:async data=>{
   if(!Array.isArray(data?.records)||!Array.isArray(data?.logos)||data.records.length>20000||data.logos.length>1||
      (data.logos.length===1&&data.logos[0]?.id!==COLOR_SETTINGS_ID))
     throw Error('Collection Regatta cloud invalide');
-  const next=data.records.map(normal);
+  const next=data.records.map(x=>x?.type==='team-member'?teamEngine.member(x):x?.type==='team-race'?teamEngine.race(x):normal(x));
+  if(next.some(x=>!x))throw Error('Enregistrement équipe invalide');
   if(new Set(next.map(r=>r.id)).size!==next.length)throw Error('Doublons cloud');
   await replaceRows(next);
   storeClassSettings(data.logos[0]||defaultClassSettings(),{notifyCloud:false});
  }};
-window.RapliRegatta={getCount:()=>rows.length};
-(async()=>{try{await openDB();rows=await load();render();}catch(err){
+window.RapliRegatta={getCount:()=>rows.length,teamCount:()=>teamRecords.length};
+window.RapliTeamUI?.init?.({get:()=>teamRecords,save:saveTeamEntity,remove:removeTeamEntity,canEdit:()=>window.RapliSharedCollection?.canEdit?.(),notify:toast});
+(async()=>{try{await openDB();partitionRecords(await load());render();renderTeam();}catch(err){
  console.warn('Regatta : IndexedDB indisponible',err);db=null;
  try{
   if(localStorage.getItem('rapli-regatta-v1')===null)throw Error('Aucune sauvegarde de secours');
-  rows=backup().map(normal);
+  partitionRecords(backup());
   toast('IndexedDB indisponible : sauvegarde locale de secours chargée.',true);
  }catch(recoveryError){
   console.warn('Regatta : récupération locale impossible',recoveryError);
-  storageRecoveryBlocked=true;rows=[];
+  storageRecoveryBlocked=true;rows=[];teamRecords=[];
   toast('Stockage des courses inaccessible. Modifications bloquées pour protéger tes données.',true);
  }
- render();
+ render();renderTeam();
 }bridge.ready=true;window.dispatchEvent(new Event('rapli-module-ready'));})();
 })();

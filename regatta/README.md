@@ -208,3 +208,15 @@ Protection NOAA : liste fermée des échéances, un seul appel manuel à la fois
 Les polaires Ultim BP XI fournies par captures sont encore provisoires (non Full Pack). La grille actuelle est volontairement limitée à l'Atlantique nord-est ; ce premier affichage **n'est pas encore le routage**. L'étape suivante consiste à élargir la zone et à interpoler le vent dans l'espace et le temps, puis à lancer un premier moteur de trajectoire sous contraintes.
 
 Les textes obsolètes indiquant « aucun décodage des vitesses » ont été corrigés, puisque le décodage est désormais effectif.
+
+
+## GFS 0,25° · interpolation temporelle (PR #4 · prototype 4)
+
+Après lecture **réussie** de deux échéances voisines (+6 et +12, ou +12 et +18 heures) du **même cycle NOAA**, le LAB GFS affiche respectivement un vent intermédiaire à **+9 h** ou **+15 h** pour chacun des trois points atlantiques.
+
+- Méthode : interpolation temporelle linéaire des **composantes vectorielles U/V**, puis recalcul de la force (nœuds) et de la direction météorologique. Ne pas interpoler directement les directions en degrés (difficulté du passage 359° → 1°).
+- Les trames météo sont mémorisées **uniquement dans la page ouverte**, sans Supabase, IndexedDB ni requête supplémentaire. Une trame d'un nouveau cycle vide les anciennes pour interdire les mélanges.
+- Les interpolations sont refusées lorsque les cycles, échéances, dates de validité, points ou vecteurs sont incohérents ou incomplets. L'écran distingue clairement **INTERPOLÉ** des prévisions réelles NOAA.
+- L'interpolation **spatiale** n'est pas encore implémentée : les trois sites restent des lectures au nœud de grille le plus proche. Aucun calcul de trajectoire, départ optimal, équateur ou cap de Bonne-Espérance n'est affiché.
+
+Tests : `tests/regatta-gfs-interpolation.test.cjs`. Le déploiement reste strictement limité à la PR #4.

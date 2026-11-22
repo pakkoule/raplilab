@@ -567,7 +567,8 @@ function card(r){
    'Classements à venir')+'</p>';
  const rewardPoints=!record&&moneyNumber(r.gainPoints);
  const rewardCredits=!record&&moneyNumber(r.gainCredits);
- const gains=!record?'<div class="race-card-rewards">'+
+ /* Rewards only belong on courses with an outcome; hide empty chips while sailing or waiting for departure. */
+ const gains=!record&&!isLive&&status!=='planned'?'<div class="race-card-rewards">'+
   '<span class="stat-chip reward-points">⭐ '+(rewardPoints?'+'+safe(Number(r.gainPoints).toLocaleString('fr-FR')):'—')+' POINTS VSR</span>'+
   '<span class="stat-chip reward-credits">🪙 '+(rewardCredits?'+'+safe(Number(r.gainCredits).toLocaleString('fr-FR')):'—')+' CRÉDITS VR</span>'+
   '</div>':'';

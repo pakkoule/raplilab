@@ -32,7 +32,7 @@ function decodeBase64Float32(base64,count){
 function loadFrame(frame){
  const g=frame?.motionGrid;
  if(frame?.ok!==true||!g||g.verifiedGrid!==true||g.format!=='float32le-base64'||
-   ![6,12,18].includes(frame.forecastHour)||!Number.isInteger(g.ni)||!Number.isInteger(g.nj)||
+   ![6,12,18,24].includes(frame.forecastHour)||!Number.isInteger(g.ni)||!Number.isInteger(g.nj)||
    g.ni<2||g.nj<2||g.numberOfDataPoints!==g.ni*g.nj||
    g.numberOfDataPoints>25000||
    ![g.latitudeOfFirstGridPoint,g.longitudeOfFirstGridPoint,g.iDirectionIncrement,g.jDirectionIncrement].every(finite)||
@@ -74,7 +74,7 @@ function sampleGrid(frame,lat,lon){
  return {u,v};
 }
 function windAt(a,b,hour,lat,lon){
- if(a.cycle!==b.cycle||!([6,12].includes(a.hour)&&b.hour===a.hour+6)||
+ if(a.cycle!==b.cycle||!([6,12,18].includes(a.hour)&&b.hour===a.hour+6)||
    hour<a.hour||hour>b.hour)
    throw Error('Deux échéances consécutives NOAA du même cycle requises.');
  const p=sampleGrid(a,lat,lon),q=sampleGrid(b,lat,lon),t=(hour-a.hour)/6;

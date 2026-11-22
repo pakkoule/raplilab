@@ -46,7 +46,8 @@
       clearTimeout(timer);
       run.disabled=false;
     }
- 
+  });
+
   const windRun=root.querySelector('[data-gfs-wind-run]');
   const windStatus=root.querySelector('[data-gfs-wind-status]');
   const windValues=root.querySelector('[data-gfs-wind-values]');
@@ -88,6 +89,5 @@
       clearTimeout(timer);
       windRun.disabled=false;
     }
-  });
   });
 })();

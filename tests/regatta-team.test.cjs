@@ -527,11 +527,11 @@ test('LPDB race scores reuse personal scoring without equipment, on /100',()=>{
  const one=root.RapliTeamRating.calculate(saved,[saved],known,E,root.RapliRegattaScore);
  const two=root.RapliTeamRating.calculate(other,[other],known,E,root.RapliRegattaScore);
  assert.equal(one.rated,2);
- assert.equal(one.average,78.5);
- assert.deepEqual([...one.scores.values()].map(s=>s.value),[79,78]);
+ assert.equal(one.average,70.5);
+ assert.deepEqual([...one.scores.values()].map(s=>s.value),[71,70]);
  assert.deepEqual([...one.scores.values()].map(s=>s.value),[...two.scores.values()].map(s=>s.value));
  assert.equal(one.scores.get(a.id).parts.equipment,undefined);
- assert.deepEqual(root.RapliTeamRating.WEIGHTS,{relative:43.75,progress:25,vsr:12.5,attendance:18.75});
+ assert.deepEqual(root.RapliTeamRating.WEIGHTS,{progress:45,relative:30,attendance:15,vsr:10});
 });
 test('LPDB race rating remains unavailable with missing VR rank or global fleet',()=>{
  const root={};new Function('window',fs.readFileSync('regatta/score.js','utf8'))(root);
@@ -591,7 +591,7 @@ test('LPDB classification dialog renders an independent note for each skipper',(
  const tile=d.querySelector('.team-race-card');
  assert.ok(tile);
  assert.match(tile.textContent,/NOTE MOYENNE DE LA COURSE/);
- assert.match(tile.querySelector('.team-race-average .team-score-ring')?.getAttribute('aria-label')||'',/Note moyenne de la course : 78,5 sur 100/);
+ assert.match(tile.querySelector('.team-race-average .team-score-ring')?.getAttribute('aria-label')||'',/Note moyenne de la course : 70,5 sur 100/);
  d.querySelector('[data-team-action="show-ranking-'+race.id+'"]').click();
  const dialog=d.getElementById('team-race-classification-dialog');
  assert.equal(dialog.open,true);
@@ -599,8 +599,8 @@ test('LPDB classification dialog renders an independent note for each skipper',(
  assert.ok(noteHeader);
  const cells=dialog.querySelectorAll('tbody tr');
  assert.equal(cells.length,2);
- assert.equal(cells[0].querySelector('.team-score-ring')?.getAttribute('aria-label')?.includes('79 sur 100'),true);
- assert.equal(cells[1].querySelector('.team-score-ring')?.getAttribute('aria-label')?.includes('78 sur 100'),true);
+ assert.equal(cells[0].querySelector('.team-score-ring')?.getAttribute('aria-label')?.includes('71 sur 100'),true);
+ assert.equal(cells[1].querySelector('.team-score-ring')?.getAttribute('aria-label')?.includes('70 sur 100'),true);
  dom.window.close();
 });
 
@@ -1573,4 +1573,67 @@ test('LPDB PNG branding and numeric summary counters are removed while score pro
  assert.match(html,/team-export\.js\?v=20261122-score-rings-v5/);
  assert.match(html,/team\.css\?v=20261122-score-rings-v5/);
  assert.match(html,/team-app\.js\?v=20261122-score-rings-v5/);
+});
+
+test('LPDB personal notes reward exceeding own baseline even when ranked behind a teammate',()=>{
+ const root={};
+ new Function('window',fs.readFileSync('regatta/score.js','utf8'))(root);
+ new Function('window',fs.readFileSync('regatta/team-rating.js','utf8'))(root);
+ const a=m('Alpha'),b=m('Beta'),known=new Map([[a.id,a],[b.id,b]]);
+ const history=[1,2,3].map(n=>{
+  const race=r('history-'+n,'2027-0'+n+'-05','hc','finished',[
+   {...rr('Alpha',1),generalRank:300},
+   {...rr('Beta',2),generalRank:2000}
+  ]);
+  race.start='2027-0'+n+'-01';race.boatClass='IMOCA';race.fleetTotal=20000;
+  return E.race(race);
+ });
+ const current=r('current-personal','2027-05-20','hc','finished',[
+  {...rr('Alpha',1),generalRank:400},
+  {...rr('Beta',2),generalRank:600}
+ ]);
+ current.start='2027-05-01';current.boatClass='IMOCA';current.fleetTotal=20000;
+ const race=E.race(current);
+ const output=root.RapliTeamRating.calculate(race,[...history,race],known,E,root.RapliRegattaScore);
+ const ahead=output.scores.get(a.id),behind=output.scores.get(b.id);
+ assert.equal(output.rated,2);
+ assert.ok(behind.value>ahead.value,'the improving skipper scores higher despite finishing behind his teammate');
+ assert.ok(behind.parts.progress>ahead.parts.progress,'personal performance drives the reversal');
+ assert.ok(ahead.parts.relative>behind.parts.relative,'absolute placement still rewards the higher VR finish');
+ assert.equal(ahead.progression.count,3);
+ assert.equal(behind.progression.count,3);
+ assert.equal(ahead.provisional,false);
+ assert.equal(behind.provisional,false);
+ assert.equal(ahead.bonus,null);
+ assert.equal(behind.bonus,null);
+ assert.deepEqual(Object.keys(behind.parts),['progress','relative','attendance','vsr']);
+ assert.equal(Object.values(root.RapliTeamRating.WEIGHTS).reduce((sum,v)=>sum+v,0),100);
+ const teammates=[1,2,3].map(n=>{
+  const record=r('other-'+n,'2027-0'+n+'-06','hc','finished',[
+   {...rr('Alpha',1),generalRank:10}
+  ]);
+  record.start='2027-0'+n+'-02';record.boatClass='CLASS40';record.fleetTotal=10000;
+  return E.race(record);
+ });
+ const after=root.RapliTeamRating.calculate(race,[...teammates,...history,race],known,E,root.RapliRegattaScore);
+ assert.equal(after.scores.get(b.id).value,behind.value,'another skipper history cannot distort the personal baseline');
+});
+test('LPDB podium bonus cannot impose a 100 rating on an ordinary personal performance',()=>{
+ const root={};
+ new Function('window',fs.readFileSync('regatta/score.js','utf8'))(root);
+ new Function('window',fs.readFileSync('regatta/team-rating.js','utf8'))(root);
+ const a=m('Alpha'),known=new Map([[a.id,a]]);
+ const current=E.race({...r('vr-victory','2027-09-02','hc','finished',[
+  {...rr('Alpha',1),generalRank:1}
+ ]),start:'2027-09-01',boatClass:'IMOCA',fleetTotal:50000});
+ const notes=root.RapliTeamRating.calculate(current,[current],known,E,root.RapliRegattaScore);
+ const note=notes.scores.get(a.id);
+ assert.ok(note.available);
+ assert.ok(note.value<100,'first overall does not guarantee full score without exceptional personal improvement');
+ assert.ok(note.provisional,'fewer than three historical references are flagged as provisional');
+ assert.equal(note.bonus,null);
+ assert.equal(note.bonusEligible,false);
+ assert.equal(note.parts.equipment,undefined);
+ assert.equal(note.weights.progress,45);
+ assert.equal(notes.rated,1);
 });

@@ -813,15 +813,20 @@ function showRaceRanking(id){
  $('team-classification-title').textContent='CLASSEMENT · '+r.name;
  $('team-classification-body').innerHTML='<p class="team-footnote">'+esc(r.dateEnd||'Date inconnue')+' · '+esc(r.vsr.toUpperCase())+' · '+
   (r.status==='finished'&&scored.length?'Résultats validés':'Résultats non encore validés au championnat')+'</p>'+
- '<div class="team-table-wrap"><table class="team-table"><thead><tr><th>RANG LPDB</th><th>SKIPPER</th><th>GÉNÉRAL VR</th><th>CHRONO TOTAL</th><th>ÉCART AU 1ER</th><th>NOTE /100</th><th>PRINCIPAL</th><th>HISTORIQUE</th></tr></thead><tbody>'+
+ '<div class="team-table-wrap team-classification-wrap"><table class="team-table team-classification-table"><thead><tr><th>RANG LPDB</th><th>SKIPPER</th><th>NOTE /100</th><th>PTS PRINCIPAUX</th><th>GÉNÉRAL VR</th><th>CHRONO TOTAL</th><th>ÉCART AU 1ER</th><th>PTS HIST.</th></tr></thead><tbody>'+
  rows.map(row=>{
   const points=byId.get(row.skipperId),mark=notes.scores.get(row.skipperId);
-  const note=mark?.available?scoreRing(mark.value,{provisional:mark.provisional,mention:mark.mention}):'<span class="team-note-unavailable" title="'+esc(mark?.reason||'Note en attente du rang général VR et de l’effectif global')+'">—</span>';
-  return '<tr class="'+podiumClass(row.position,row.status==='finished')+'"><td>'+(row.status==='dnf'?'DNF':row.position??'—')+'</td><td>'+skipperLabel(names.get(row.skipperId)||'Skipper inconnu')+'</td>'+ 
-   '<td>'+(row.generalRank!=null?'#'+num(row.generalRank):'—')+'</td>'+
-   '<td>'+clockLabel(row.elapsedSeconds)+'</td><td>'+(row.gapSeconds!=null?'+ '+clockLabel(row.gapSeconds):'—')+'</td>'+ 
-   '<td>'+note+'</td>'+
-   '<td>'+num(points?.main??0)+'</td><td>'+num(points?.historic??0)+'</td></tr>';
+  const reason=mark?.reason||'Note en attente du classement général VR et de l’effectif global';
+  const note=mark?.available?scoreRing(mark.value,{provisional:mark.provisional,mention:mark.mention}):'<span class="team-note-unavailable" aria-label="'+esc(reason)+'" title="'+esc(reason)+'">—</span>';
+  return '<tr class="'+podiumClass(row.position,row.status==='finished')+'">'+
+   '<td class="team-classification-rank" data-label="RANG">'+(row.status==='dnf'?'DNF':row.position??'—')+'</td>'+
+   '<td class="team-classification-skipper" data-label="SKIPPER">'+skipperLabel(names.get(row.skipperId)||'Skipper inconnu')+'</td>'+
+   '<td class="team-classification-note" data-label="NOTE">'+note+'</td>'+
+   '<td class="team-classification-main" data-label="POINTS">'+num(points?.main??0)+'</td>'+
+   '<td class="team-classification-overall" data-label="GÉN. VR">'+(row.generalRank!=null?'#'+num(row.generalRank):'—')+'</td>'+
+   '<td class="team-classification-time" data-label="CHRONO">'+clockLabel(row.elapsedSeconds)+'</td>'+
+   '<td class="team-classification-gap" data-label="ÉCART">'+(row.gapSeconds!=null?'+ '+clockLabel(row.gapSeconds):'—')+'</td>'+
+   '<td class="team-classification-historic" data-label="PTS HIST.">'+num(points?.historic??0)+'</td></tr>';
  }).join('')+'</tbody></table></div>'+
  '<p class="team-footnote">Note personnelle : progression face aux performances habituelles (45 %), classement relatif VR (30 %), affluence (15 %) et difficulté VSR (10 %). Historique comparable insuffisant : note provisoire (*). Sans équipement ni bonus de podium. Les notes ne modifient pas les points LPDB.</p>';
  $('team-race-classification-dialog').showModal();

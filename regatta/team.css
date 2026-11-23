@@ -1188,3 +1188,98 @@
  .lpdb-shell .team-score-ring--medium{--size:58px;--thickness:9px}
  .lpdb-shell .team-score-ring--medium>span{font-size:17px}
 }
+
+/* Course ranking readability — keep scoring visible at every breakpoint.
+   Full-width desktop table; a compact two-row layout on smartphones. */
+#team-race-classification-dialog{width:min(1140px,calc(100vw - 22px));}
+#team-classification-body .team-classification-wrap{
+ max-width:100%;overflow-x:auto;overscroll-behavior-inline:contain;
+ -webkit-overflow-scrolling:touch;
+}
+#team-classification-body .team-classification-table{
+ min-width:1020px;table-layout:auto;
+}
+#team-classification-body .team-classification-table th,
+#team-classification-body .team-classification-table td{vertical-align:middle}
+#team-classification-body .team-classification-table th:nth-child(1){min-width:75px}
+#team-classification-body .team-classification-table th:nth-child(2){min-width:155px}
+#team-classification-body .team-classification-table th:nth-child(3){min-width:80px}
+#team-classification-body .team-classification-table th:nth-child(4){min-width:106px}
+#team-classification-body .team-classification-table td.team-classification-main{
+ font-weight:850;color:#233e5b;font-variant-numeric:tabular-nums
+}
+#team-classification-body .team-classification-table td.team-classification-skipper{
+ white-space:normal;overflow-wrap:anywhere;
+}
+@media(max-width:700px){
+ #team-classification-body .team-classification-wrap{
+  overflow-x:visible;border:0;background:transparent;border-radius:0;
+ }
+ #team-classification-body .team-classification-table,
+ #team-classification-body .team-classification-table tbody{
+  display:block;width:100%;min-width:0;max-width:100%;
+ }
+ #team-classification-body .team-classification-table thead{display:none}
+ #team-classification-body .team-classification-table tr{
+  display:grid;grid-template-columns:44px minmax(0,1fr) 66px 64px;
+  grid-template-areas:
+   "rank skipper note main"
+   "rank overall time gap"
+   "rank historic historic historic";
+  gap:7px 9px;align-items:center;
+  min-width:0;padding:12px 9px;margin:0 0 9px;
+  border:1px solid #d5dade;border-radius:12px;
+  box-shadow:0 2px 9px #152b3d0a;
+ }
+ #team-classification-body .team-classification-table td{
+  display:flex;flex-direction:column;align-items:flex-start;
+  justify-content:center;gap:4px;
+  border:0!important;padding:0;min-width:0;
+  font:650 11px/1.4 Poppins,system-ui,sans-serif;
+  white-space:normal;overflow-wrap:anywhere;
+ }
+ #team-classification-body .team-classification-table td::before{
+  content:attr(data-label);display:block;
+  color:#68737e;font:750 8px/1.2 Poppins,system-ui,sans-serif;
+  letter-spacing:.025em;white-space:nowrap;
+ }
+ #team-classification-body .team-classification-table td.team-classification-rank{
+  grid-area:rank;align-items:center;justify-content:center;align-self:stretch;
+  border-right:1px solid #b5c4cc!important;
+  font-size:16px;font-weight:850;
+ }
+ #team-classification-body .team-classification-table td.team-classification-skipper{
+  grid-area:skipper;font-size:12px;font-weight:750;
+ }
+ #team-classification-body .team-classification-skipper .team-skipper-name{
+  font-size:12px;line-height:1.4;white-space:normal;overflow-wrap:anywhere;
+ }
+ #team-classification-body .team-classification-table td.team-classification-note{
+  grid-area:note;align-items:center;justify-content:center;
+ }
+ #team-classification-body .team-classification-table td.team-classification-main{
+  grid-area:main;align-items:center;text-align:center;
+  font-size:14px;font-weight:850;color:#15395e;
+ }
+ #team-classification-body .team-classification-table td.team-classification-overall{grid-area:overall}
+ #team-classification-body .team-classification-table td.team-classification-time{grid-area:time}
+ #team-classification-body .team-classification-table td.team-classification-gap{grid-area:gap}
+ #team-classification-body .team-classification-table td.team-classification-historic{
+  grid-area:historic;flex-direction:row;justify-content:flex-start;gap:6px;
+  border-top:1px solid #bbc5cb88!important;padding-top:7px;font-size:11px;
+ }
+ #team-classification-body .team-classification-table td.team-classification-historic::before{font-size:9px}
+ #team-classification-body .team-classification-note .team-score-ring{
+  --size:44px;--thickness:7px;
+ }
+ #team-classification-body .team-classification-note .team-score-ring>span{font-size:13px}
+}
+@media(max-width:390px){
+ #team-classification-body .team-classification-table tr{
+  grid-template-columns:36px minmax(0,1fr) 56px 50px;
+  gap:6px;padding:10px 7px;
+ }
+ #team-classification-body .team-classification-note .team-score-ring{--size:40px;--thickness:7px}
+ #team-classification-body .team-classification-table td.team-classification-main{font-size:13px}
+ #team-classification-body .team-classification-table td.team-classification-skipper{font-size:11px}
+}

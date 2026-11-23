@@ -4372,7 +4372,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         // data URLs into the complete grid markup during every cloud update.
         const photo='<img data-card-photo="'+safeText(item.id)+
           '" alt="Carte de '+safeText(item.player||'cet athlète')+
-          '" loading="lazy" decoding="async" hidden>'+
+          '" loading="eager" decoding="async" hidden>'+
           '<span class="sports-gallery-placeholder" data-card-photo-fallback>'+ico('layers')+'</span>';
         const athlete=cardPlayers(item).map(p=>p.name).filter(Boolean).join(' / ')||item.player||'Athlète non renseigné';
         return '<article class="sports-gallery-tile '+cardTileFoilClass(item)+(item.rookie===true?' is-rookie-card':'')+
@@ -4512,7 +4512,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         // The collection grid never serializes the full data URI into HTML.
         // Card-tools calls this function normally for Rainbow modal previews.
         const photo=deferPhoto?
-          `<img data-card-photo="${safeText(c.id)}" alt="Carte de ${safeText(c.player)}" loading="lazy" decoding="async" hidden>`+placeholder:
+          `<img data-card-photo="${safeText(c.id)}" alt="Carte de ${safeText(c.player)}" loading="eager" decoding="async" hidden>`+placeholder:
           imgSafe(c.photo)?`<img src="${c.photo}" alt="Carte de ${safeText(c.player)}" loading="lazy" decoding="async">`:
           placeholder;const tags=orderedCardTags(c.tags).slice(0,8).map(tag=>'<span class="card-tag-entry">'+cardTagMarkup(tag,c.season)+'</span>').join('')+
         ((c.tags||[]).length>8?`<span class="card-tag-entry"><span class="tag more">+${c.tags.length-8}</span></span>`:'');return `<article class="card-item ${cardTileFoilClass(c)}${c.rookie===true?' is-rookie-card':''}${c.status==='wishlist'&&c.dream?' is-dream-card':''}" data-id="${safeText(c.id)}" data-card-id="${safeText(c.id)}"><span class="sports-tile-corners" aria-hidden="true"></span><div class="photo-side"><div class="card-photo" style="${sportFrameStyle(c.sport)}">${photo}${c.demo?'<span class="photo-flag">DÉMO</span>':''}${recentCard(c)?'<span class="sports-new-flag">NEW</span>':''}</div></div><div class="card-info"><div class="card-top"><div class="card-athlete">${playerCardSummary(c)}</div></div><div class="identity-row"><div class="identity-logos"><div class="brand-lockup">${brandBadge('brand',c.brand)}${logoFor('brand',c.brand)?'':'<span>'+safeText(c.brand||'Sans marque')+'</span>'}</div><div class="team-identity">${c.team?brandBadge('team',c.team,c.season,c.teamLogoOverride):''}${logoFor('team',c.team,c.season,c.teamLogoOverride)?'':'<span>'+safeText(c.team||'Équipe non renseignée')+'</span>'}</div></div></div><div class="tags">${tags||'<span class="blank-tag">Aucune variation</span>'}</div><div class="card-bottom"><div class="card-status-badges">${sportsSportBadge(c.sport)}${collectorBadgeMarkup(c)}${seasonBadge(c)}${gradingBadgeMarkup(c)}${c.status==='wishlist'&&c.dream?'<span class="card-dream-badge"><span class="dream-sparkle" aria-hidden="true">✨</span> DANS MES RÊVES</span>':''}</div><div class="card-kebab-wrap">${cardMenuTriggerMarkup(c)}</div></div></div></article>`}
@@ -4874,6 +4874,8 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
       const activeCardPhotoSources=new WeakMap();
       const activeCardPhotoVisibility=new WeakSet();
       const registeredCardPhotoNodes=new WeakSet();
+      // IntersectionObserver already defers each tile. Hidden photos must load
+      // eagerly so onload can reveal them without a visibility/loading deadlock.
       function loadDeferredCardPhoto(img){
         if(!img.isConnected)return;
         const card=cards.find(row=>row.id===img.dataset.cardPhoto);

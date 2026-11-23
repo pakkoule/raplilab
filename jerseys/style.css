@@ -1,0 +1,106 @@
+/* Jerseys tile preview - foil silver with shared logo slots. */
+.jerseys-start{margin:24px auto 0;padding:24px clamp(16px,4vw,34px);max-width:1000px;text-align:left}
+.jerseys-start-header{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:18px}
+.jerseys-start .jerseys-symbol{width:56px;height:56px;margin:0;border-radius:16px;font-size:29px}
+.jerseys-start-header h1{margin:3px 0 2px;font-size:clamp(19px,4vw,27px)}
+.jerseys-start-header p{margin:0;max-width:680px;color:#5b7584;font-size:11px}
+.jerseys-logo-note{border:1px solid #c4dedf;background:linear-gradient(110deg,#f5fff9,#eaf4fd);
+  padding:12px 14px;border-radius:11px;color:#40677a;font-size:11px;font-weight:700}
+.jerseys-logo-note[data-warning=true]{color:#94564b;border-color:#e8c5c2}
+.jerseys-preview-layout{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(250px,.9fr);gap:18px;align-items:start;margin-top:17px}
+.jerseys-preview-controls{display:grid;gap:12px;padding:16px;border:1px solid #d5e5e9;border-radius:15px;background:rgba(255,255,255,.89)}
+.jerseys-preview-controls h2{font-size:13px;letter-spacing:.05em;color:#214a61;margin:0 0 5px}
+.jerseys-preview-controls>p{font-size:10px;line-height:1.6;margin:0;color:#667d88}
+.jerseys-preview-controls label{display:grid;gap:5px;font-size:10px;font-weight:850;color:#426276}
+.jerseys-preview-controls select,.jerseys-preview-controls input{
+ width:100%;max-width:100%;min-width:0;min-height:39px;
+ border:1px solid #c8dbe1;border-radius:10px;padding:9px 10px;
+ background:#fff;color:#243e54;font:650 12px Poppins,system-ui,sans-serif}
+.jerseys-preview-controls select:focus-visible,.jerseys-preview-controls input:focus-visible{
+ outline:2px solid #5aa9a6;outline-offset:2px}
+.jerseys-preview-controls select:disabled{opacity:.6}
+.jerseys-preview-controls .jerseys-variant-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.jerseys-controls-title{padding:2px 0 4px;border-bottom:1px solid #e1ebed;font-size:10px;color:#66818e;font-weight:900;letter-spacing:.08em}
+.jerseys-preview-controls button{
+ justify-self:start;min-height:38px;border-radius:11px;padding:8px 13px;
+ background:linear-gradient(120deg,#f0fff8,#e9f4fe,#fdf2f6);
+ border:1px solid #b8d6d8;color:#286276;font:850 10px Poppins,system-ui,sans-serif;cursor:pointer}
+.jerseys-card-preview{
+ position:relative;overflow:hidden;border-radius:19px;padding:13px;
+ border:2px solid transparent;isolation:isolate;
+ background:linear-gradient(130deg,#f9fdfc,#f8fbff) padding-box,
+ linear-gradient(120deg,#b8ecd9,#a2cbe4,#d4c6e6,#dcb9af,#a8e6cf) border-box;
+ box-shadow:0 12px 30px rgba(46,83,102,.12)}
+.jerseys-card-preview::before{
+ content:"";position:absolute;inset:0;pointer-events:none;z-index:-1;
+ background:repeating-linear-gradient(115deg,transparent 0 19px,rgba(167,182,196,.06) 19px 21px),
+   linear-gradient(145deg,rgba(255,255,255,.6),rgba(206,217,227,.18) 50%,rgba(255,255,255,.8))}
+.jerseys-card-preview header{display:grid;grid-template-columns:1fr 1fr;align-items:start;gap:10px}
+.jerseys-logo-slot{display:flex;align-items:center;gap:7px;min-width:0;min-height:49px}
+.jerseys-logo-slot:last-child{justify-content:flex-end;text-align:right}
+.jerseys-logo-slot img{width:auto;height:auto;max-width:57px;max-height:45px;object-fit:contain;flex:none}
+.jerseys-logo-slot img[hidden],.jerseys-logo-fallback[hidden]{display:none!important}
+.jerseys-logo-fallback{display:grid;place-items:center;width:40px;height:40px;flex:none;
+ border-radius:12px;background:linear-gradient(140deg,#e8eee9,#dae6ed);color:#5a7884;font-size:11px;font-weight:900}
+.jerseys-logo-slot small{font-size:9px;font-weight:800;color:#425e6e;overflow-wrap:anywhere;line-height:1.25}
+.jerseys-preview-illustration{margin:18px auto 12px;min-height:225px;display:grid;place-items:center;
+ border:1px solid #d5e4e8;border-radius:14px;
+ background:radial-gradient(ellipse at 35% 16%,#fff,transparent 60%),linear-gradient(140deg,#e8f0f2,#fff,#e4eaf0)}
+.jerseys-preview-illustration span{font-size:92px;filter:drop-shadow(0 6px 9px rgba(37,71,87,.13))}
+.jerseys-card-preview footer{display:grid;gap:5px}
+.jerseys-card-preview footer strong{font:900 13px Poppins,system-ui,sans-serif;overflow-wrap:anywhere;color:#244761}
+.jerseys-card-preview footer span{font-size:10px;color:#628090;font-weight:750}
+.jerseys-card-preview .jerseys-card-flag{
+ margin:10px 0 0;font-size:9px;text-align:center;font-weight:800;letter-spacing:.07em;color:#7c939c}
+.jerseys-implementation-note{margin-top:15px;padding:11px;border:1px dashed #bed8dc;border-radius:12px;
+ font-size:10px;line-height:1.55;color:#66818b}
+@media(max-width:760px){
+ .jerseys-preview-layout{grid-template-columns:1fr;gap:12px}
+ .jerseys-card-preview{max-width:470px;width:100%;margin:auto}
+ .jerseys-start{padding:18px 12px;margin-top:16px}
+}
+@media(max-width:370px){.jerseys-preview-controls .jerseys-variant-grid{grid-template-columns:1fr}}
+
+/* Real imported flocage rendered on a clean jersey-back silhouette. */
+.jerseys-preview-controls .jerseys-library-link{
+ display:flex;justify-content:center;align-items:center;
+ padding:9px 12px;min-height:41px;border-radius:10px;
+ border:1px solid #abd2d2;background:linear-gradient(115deg,#e8fff5,#eaf4ff,#faf1f7);
+ text-align:center;text-decoration:none;font:850 10px/1.45 Poppins,system-ui,sans-serif;
+ letter-spacing:.025em;color:#2b6571}
+.jerseys-font-status{font:700 10px/1.5 Poppins,sans-serif;color:#2e7a69}
+.jerseys-font-status[data-warning=true]{color:#a6524d}
+.jerseys-preview-controls input[type=color]{min-height:39px;max-width:110px;padding:3px;cursor:pointer}
+.jerseys-preview-illustration{overflow:hidden;position:relative;min-height:250px}
+.jerseys-shirt-back{
+ --lettering-color:#ffffff;
+ position:relative;isolation:isolate;
+ width:min(77%,280px);aspect-ratio:1.05/1;max-height:260px;min-width:155px;
+ padding:22px 17px 16px;
+ display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:10px;
+ clip-path:polygon(31% 0%,42% 6%,58% 6%,69% 0%,100% 15%,87% 43%,80% 37%,80% 100%,20% 100%,20% 37%,13% 43%,0 15%);
+ background:
+  linear-gradient(90deg,rgba(255,255,255,.08) 0%,transparent 28%,transparent 70%,rgba(0,0,0,.15) 100%),
+  linear-gradient(155deg,#1a4269,#133556 52%,#1a4164);
+ box-shadow:inset 0 3px 24px #ffffff0a;
+}
+.jerseys-shirt-back::after{content:"";position:absolute;inset:0;z-index:-1;
+ background:radial-gradient(ellipse at 50% 10%,#ffffff22,transparent 52%);pointer-events:none}
+.jerseys-shirt-neck{width:30%;height:13px;flex:none;margin:-10px 0 12px;border-radius:0 0 80% 80%;
+ border:3px solid #e4edf2;border-top:0;background:#102f4c;opacity:.9}
+.jerseys-shirt-back .jerseys-flocage-name{
+ display:block;max-width:82%;overflow-wrap:anywhere;text-align:center;
+ margin:0;padding:0;font-size:clamp(12px,3.6vw,22px);font-weight:400;
+ line-height:1.13;letter-spacing:.045em;color:var(--lettering-color);
+ text-shadow:1px 1px 1px #091929aa,-.5px -.5px 0 #09192977;
+}
+.jerseys-shirt-back .jerseys-flocage-number{
+ display:block;max-width:90%;font-size:clamp(65px,18vw,113px);font-weight:400;
+ font-variant-numeric:tabular-nums;line-height:1.05;color:var(--lettering-color);
+ text-shadow:1px 2px 1px #09192988;
+}
+@media(max-width:450px){
+ .jerseys-shirt-back{min-width:155px;max-height:235px;padding-top:19px}
+ .jerseys-shirt-back .jerseys-flocage-number{font-size:clamp(68px,20vw,95px)}
+ .jerseys-shirt-back .jerseys-flocage-name{font-size:clamp(11px,3.7vw,17px)}
+}

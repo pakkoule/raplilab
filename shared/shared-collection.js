@@ -1,11 +1,11 @@
-/* Rapli Regatta — collection synchronisée.
+/* Rapli Lab — collection Sports partagée.
  * Supabase reste le stockage central; aucun appairage ni bouton Cloud.
  * Les visiteurs lisent, seul l'éditeur vérifié peut enregistrer (RLS côté serveur).
  * Ne jamais écrire dans une autre collection que la référence sélectionnée. */
 (() => {
   'use strict';
   const bridge = window.RapliModuleBridge;
-  if (!bridge || bridge.module !== 'regatta') return;
+  if (!bridge || bridge.module !== 'sports') return;
   const MODULE = bridge.module;
 
   const SUPABASE_URL = 'https://widiyulvmthbaypdxhbw.supabase.co';
@@ -18,6 +18,8 @@
   const CHECK_TTL = 60000;
   const CHECK_KEY = 'rapli-last-check-v1-'+OWNER_ID+'-'+MODULE;
   const MAX_IMAGE = 10 * 1024 * 1024;
+  const MAX_FONT = 5 * 1024 * 1024; // Small, validated font uploads (below the bucket's 10 MB limit).
+  const FONT_MIMES = Object.freeze({'font/woff2':'woff2','font/woff':'woff','font/ttf':'ttf','font/otf':'otf'});
   const Diff = window.RapliCollectionDiff;
   const emptyState = () => ({records:[], logos:[]});
   let remoteState = emptyState(), baseDisplay = emptyState(), hashes = {};
@@ -31,7 +33,7 @@
   let busy = false, blocked = false, bootPromise = null, saveTimer = null;
   let refreshTimer = null;
   const uploaded = new Map(), downloaded = new Map();
-  const loader = null; // Regatta displays its own progress.
+  const loader = MODULE === 'sports' ? document.getElementById('rapliSharedLoading') : null;
   const loaderMessage = document.getElementById('rapliSharedLoadingMessage');
   const loaderProgress = document.getElementById('rapliSharedProgress');
   const loaderProgressFill = document.getElementById('rapliSharedProgressFill');
@@ -79,7 +81,7 @@
         request.onsuccess = () => resolve(request.result || null);
         request.onerror = () => reject(request.error);
       });
-      return blob instanceof Blob ? await blobAsDataURI(blob) : null;
+      return blob instanceof Blob ? normaliseFontURI(ref,await blobAsDataURI(blob)) : null;
     } catch (_) { return null; }
   }
   async function rememberImage(ref, blob) {
@@ -256,35 +258,14 @@
         owner: OWNER_ID, revision, hash: fingerprint(state)
       }));
     } catch (error) {
-      console.warn('Rapli Regatta : marque de sauvegarde locale inaccessible', error);
+      console.warn('Rapli Sports : marque de sauvegarde locale inaccessible', error);
     }
   }
-  let statusHideTimer = null;
   function status(message, level = 'ok') {
     const element = document.getElementById('rapli-shared-status-' + MODULE);
     if (element) {
       element.textContent = message;
       element.dataset.status = level;
-      // A glass notification replaces the old permanent status line.
-      // It auto-dismisses even if the network stays offline or a request stalls.
-      const overlay = document.getElementById('regatta-cloud-overlay');
-      if (overlay) {
-        if (statusHideTimer !== null) clearTimeout(statusHideTimer);
-        overlay.dataset.visible = 'true';
-        overlay.dataset.status = level;
-        overlay.setAttribute('aria-hidden', 'false');
-        // In LPDB the notification is now a persistent profile-menu detail,
-        // not a floating toast that vanishes before a skipper can read it.
-        if (typeof overlay.closest === 'function' && overlay.closest('#rapliProfileMenu')) {
-          statusHideTimer = null;
-        } else {
-          statusHideTimer = setTimeout(() => {
-            overlay.dataset.visible = 'false';
-            overlay.setAttribute('aria-hidden', 'true');
-            statusHideTimer = null;
-          }, level === 'error' ? 6500 : level === 'pending' ? 4800 : 3600);
-        }
-      }
     }
     if (window.parent !== window)
       window.parent.postMessage({type: 'RAPLI_SHARED_STATUS', module: MODULE, message, level}, location.origin);
@@ -316,16 +297,25 @@
 
   const isImage = value => typeof value === 'string' &&
     /^data:image\/(png|jpeg|webp|gif);base64,[A-Za-z0-9+/=]+$/i.test(value);
+  const isFont = value => typeof value === 'string' &&
+    /^data:font\/(woff2|woff|ttf|otf);base64,[A-Za-z0-9+/=]+$/i.test(value);
+  // Supabase may return a font Blob as application/octet-stream.
+  // Restore the exact validated font MIME using its hashed file extension.
+  function normaliseFontURI(ref,value) {
+    const match=String(ref).match(/\.(woff2|woff|ttf|otf)$/);
+    return match ? String(value).replace(/^data:[^,]*;base64,/i,'data:font/'+match[1]+';base64,') : value;
+  }
   const isReference = value => typeof value === 'string' && value.startsWith(IMAGE_PREFIX);
   async function uploadImage(value) {
     if (uploaded.has(value)) return uploaded.get(value);
     const response = await fetch(value);
     if (!response.ok) throw Error('Image locale illisible.');
     const blob = await response.blob();
-    if (blob.size > MAX_IMAGE) throw Error('Une image dépasse 10 Mo.');
     const mime = (blob.type || '').toLowerCase();
-    const ext = {'image/png':'png','image/jpeg':'jpg','image/webp':'webp','image/gif':'gif'}[mime];
-    if (!ext) throw Error('Format image non pris en charge.');
+    const ext = {'image/png':'png','image/jpeg':'jpg','image/webp':'webp','image/gif':'gif',...FONT_MIMES}[mime];
+    if (!ext) throw Error('Format de ressource non pris en charge.');
+    if (mime.startsWith('font/') && blob.size > MAX_FONT) throw Error('Police de flocage trop volumineuse (5 Mo max).');
+    if (!mime.startsWith('font/') && blob.size > MAX_IMAGE) throw Error('Une image dépasse 10 Mo.');
     const digest = await crypto.subtle.digest('SHA-256', await blob.arrayBuffer());
     const hex = [...new Uint8Array(digest)].map(x => x.toString(16).padStart(2, '0')).join('');
     const path = OWNER_ID + '/' + MODULE + '/' + hex + '.' + ext;
@@ -341,13 +331,13 @@
     const path = value.slice(IMAGE_PREFIX.length);
     const prefix = OWNER_ID + '/' + MODULE + '/';
     if (!path.startsWith(prefix) ||
-        !/^[a-f0-9]{64}\.(png|jpg|webp|gif)$/.test(path.slice(prefix.length)))
+        !/^[a-f0-9]{64}\.(png|jpg|webp|gif|woff2|woff|ttf|otf)$/.test(path.slice(prefix.length)))
       throw Error('Référence image en dehors de la collection commune.');
     return path;
   }
   async function transfer(value, direction) {
     if (typeof value === 'string') {
-      if (direction === 'upload' && isImage(value)) return uploadImage(value);
+      if (direction === 'upload' && (isImage(value)||isFont(value))) return uploadImage(value);
       if ((direction === 'download' || direction === 'cached') && isReference(value)) {
         const path = safeImagePath(value);
         if (downloaded.has(value)) {
@@ -364,7 +354,7 @@
         if (direction === 'cached') return value; // Retain the reference while its image is still pending.
         const {data, error} = await (await supabase()).storage.from(BUCKET).download(path);
         if (error) throw error;
-        const dataUri = await blobAsDataURI(data);
+        const dataUri = normaliseFontURI(value,await blobAsDataURI(data));
         downloaded.set(value, dataUri);
         uploaded.set(dataUri, value);
         markImageLoaded(value);
@@ -540,6 +530,15 @@
       await showCachedPreview();
       await window.RapliAdminAccess?.initialize?.();
       if(isEditor()) {
+        const ack=knownBaseline();
+        if(MODULE==='sports' && ack && ack.hash!==fingerprint(legacyLocal)) {
+          if(!cachedVisible){blockOnConflict();return;}
+          bridge.previewState(legacyLocal);dirty=true;restoredPending=true;
+        } else if(MODULE==='sports' && !ack && !restoredPending &&
+            (legacyLocal.records.some(row=>!row.demo)||legacyLocal.logos.length) &&
+            (!cachedVisible || !Diff.equal(legacyLocal,snapshot()))) {
+          blockOnConflict();return;
+        }
         if(restoredPending) {
           // Normalize/persist the journal without losing the state captured before login.
           initialized=true;
@@ -565,19 +564,18 @@
     });
     return bootPromise;
   }
-  async function syncNow() {
-    lastCheck=0;
-    if(dirty && !mediaIncomplete) {
-      if(isEditor())return saveNow();
-      status('Modifications en attente · connecte-toi comme administrateur pour les envoyer.','error');
-      return;
-    }
-    return refresh(true);
-  }
-  window.RapliSharedCollection={changed,canEdit,refresh:()=>refresh(true),syncNow,
+  window.RapliSharedCollection={changed,canEdit,refresh:()=>refresh(true),
     getStatus:()=>({initialized,revision,dirty,blocked,busy,mediaIncomplete,busyLoading})};
-  // Manual LPDB sync and its latest status are available from the profile menu.
-  // Other workspaces may still rely on their legacy sync controls.
+  // Explicit refresh rather than full polling or an always-on Realtime connection.
+  const statusElement=document.getElementById('rapli-shared-status-'+MODULE);
+  if(statusElement){
+    const button=document.createElement('button');
+    button.type='button';button.textContent='↻';button.title='Vérifier les nouveautés';
+    button.setAttribute('aria-label','Actualiser la collection');
+    button.style.cssText='margin-left:8px;border:1px solid #b8c8c9;border-radius:50%;width:28px;height:28px;cursor:pointer;background:linear-gradient(120deg,#d2f2e6,#dbe6f9,#f3dfd8);color:#182b3b';
+    button.onclick=()=>{lastCheck=0;if(dirty && !mediaIncomplete)void saveNow();else void refresh(true);};
+    statusElement.after(button);
+  }
   window.addEventListener('rapli-module-ready',()=>{void boot();},{once:true});
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)scheduleRefresh();});
   window.addEventListener('focus',scheduleRefresh);

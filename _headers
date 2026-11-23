@@ -1,4 +1,4 @@
-# Rapli Regatta — static resources
+# Rapli Lab — static resources for Rapli Archives
 /*.html
   Cache-Control: public, max-age=0, must-revalidate
 /*/index.html

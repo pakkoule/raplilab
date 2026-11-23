@@ -7,11 +7,5 @@
   "devDependencies": {
     "fake-indexeddb": "6.2.4",
     "jsdom": "^26.1.0"
-  },
-  "dependencies": {
-    "@azohra/meteo.grib": "0.1.4"
-  },
-  "engines": {
-    "node": ">=22"
   }
 }

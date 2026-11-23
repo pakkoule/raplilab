@@ -527,8 +527,8 @@ test('LPDB race scores reuse personal scoring without equipment, on /100',()=>{
  const one=root.RapliTeamRating.calculate(saved,[saved],known,E,root.RapliRegattaScore);
  const two=root.RapliTeamRating.calculate(other,[other],known,E,root.RapliRegattaScore);
  assert.equal(one.rated,2);
- assert.equal(one.average,70.5);
- assert.deepEqual([...one.scores.values()].map(s=>s.value),[71,70]);
+ assert.equal(one.average,71);
+ assert.deepEqual([...one.scores.values()].map(s=>s.value),[71,71]);
  assert.deepEqual([...one.scores.values()].map(s=>s.value),[...two.scores.values()].map(s=>s.value));
  assert.equal(one.scores.get(a.id).parts.equipment,undefined);
  assert.deepEqual(root.RapliTeamRating.WEIGHTS,{progress:45,relative:30,attendance:15,vsr:10});
@@ -563,7 +563,7 @@ test('LPDB tile removes personal-link label and adds mean rating while classific
  const html=fs.readFileSync('regatta/index.html','utf8');
  const d=new JSDOM(html).window.document;
  assert.ok(d.getElementById('team-race-fleet'));
- assert.ok([...d.querySelectorAll('script')].some(x=>x.getAttribute('src')==='team-rating.js'));
+ assert.ok([...d.querySelectorAll('script')].some(x=>x.getAttribute('src')?.split('?')[0]==='team-rating.js'));
  assert.equal(ui.includes('↔ Fiche « Mes courses » associée'),false);
  assert.match(ui,/NOTE MOYENNE DE LA COURSE/);
  assert.match(ui,/<th>NOTE \/100<\/th>/);
@@ -591,7 +591,7 @@ test('LPDB classification dialog renders an independent note for each skipper',(
  const tile=d.querySelector('.team-race-card');
  assert.ok(tile);
  assert.match(tile.textContent,/NOTE MOYENNE DE LA COURSE/);
- assert.match(tile.querySelector('.team-race-average .team-score-ring')?.getAttribute('aria-label')||'',/Note moyenne de la course : 70,5 sur 100/);
+ assert.match(tile.querySelector('.team-race-average .team-score-ring')?.getAttribute('aria-label')||'',/Note moyenne de la course : 71 sur 100/);
  d.querySelector('[data-team-action="show-ranking-'+race.id+'"]').click();
  const dialog=d.getElementById('team-race-classification-dialog');
  assert.equal(dialog.open,true);
@@ -600,7 +600,7 @@ test('LPDB classification dialog renders an independent note for each skipper',(
  const cells=dialog.querySelectorAll('tbody tr');
  assert.equal(cells.length,2);
  assert.equal(cells[0].querySelector('.team-score-ring')?.getAttribute('aria-label')?.includes('71 sur 100'),true);
- assert.equal(cells[1].querySelector('.team-score-ring')?.getAttribute('aria-label')?.includes('70 sur 100'),true);
+ assert.equal(cells[1].querySelector('.team-score-ring')?.getAttribute('aria-label')?.includes('71 sur 100'),true);
  dom.window.close();
 });
 
@@ -1418,7 +1418,7 @@ test('LPDB course image displays live course status instead of branding, without
  assert.match(css,/\.lpdb-shell \.team-race-photo \.team-race-photo-status\{/);
  const html=fs.readFileSync('regatta/index.html','utf8');
  assert.match(html,/team\.css\?v=20261122-score-rings-v5/,'team badge CSS stays cache-busted');
-assert.match(html,/team-app\.js\?v=20261122-score-rings-v5/,'team badge markup script stays cache-busted');
+assert.match(html,/team-app\.js\?v=20261123-personal-performance-v2/,'team badge markup script stays cache-busted');
  dom.window.close();
 });
 
@@ -1457,7 +1457,7 @@ test('LPDB mobile selectors use a full-width barème and readable compact type',
  assert.match(css,/\.lpdb-shell \.team-stats-grid\{grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
  assert.match(css,/\.lpdb-shell \.team-emblem\{[^}]*background:transparent!important/s);
  assert.match(html,/team\.css\?v=20261122-score-rings-v5/);
- assert.match(html,/team-app\.js\?v=20261122-score-rings-v5/);
+ assert.match(html,/team-app\.js\?v=20261123-personal-performance-v2/);
  assert.match(html,/app\.js\?v=20261122-lpdb-responsive-v2/);
  assert.equal(ui.includes('assets/lpdb.webp'),false,'all section headings and race fallback use the new transparent emblem');
  assert.equal(ui.split('assets/lpdb-header-transparent.png').length-1,5,'all five emblem instances are replaced');
@@ -1572,7 +1572,7 @@ test('LPDB PNG branding and numeric summary counters are removed while score pro
  assert.match(css,/team-score-ring.*conic-gradient/s);
  assert.match(html,/team-export\.js\?v=20261122-score-rings-v5/);
  assert.match(html,/team\.css\?v=20261122-score-rings-v5/);
- assert.match(html,/team-app\.js\?v=20261122-score-rings-v5/);
+ assert.match(html,/team-app\.js\?v=20261123-personal-performance-v2/);
 });
 
 test('LPDB personal notes reward exceeding own baseline even when ranked behind a teammate',()=>{
@@ -1636,4 +1636,17 @@ test('LPDB podium bonus cannot impose a 100 rating on an ordinary personal perfo
  assert.equal(note.parts.equipment,undefined);
  assert.equal(note.weights.progress,45);
  assert.equal(notes.rated,1);
+});
+
+test('LPDB personal scoring labels and script are updated without modifying championship points',()=>{
+ const ui=fs.readFileSync('regatta/team-app.js','utf8');
+ const html=fs.readFileSync('regatta/index.html','utf8');
+ assert.match(ui,/progression face aux performances habituelles \(45 %\)/);
+ assert.match(ui,/classement relatif VR \(30 %\)/);
+ assert.match(ui,/affluence \(15 %\)/);
+ assert.match(ui,/difficulté VSR \(10 %\)/);
+ assert.match(ui,/Sans équipement ni bonus de podium/);
+ assert.match(html,/team-rating\.js\?v=20261123-personal-performance-v2/);
+ assert.match(html,/team-app\.js\?v=20261123-personal-performance-v2/);
+ assert.ok(fs.readFileSync('regatta/team-engine.js','utf8').includes('function primary('),'official championship calculation remains separate');
 });

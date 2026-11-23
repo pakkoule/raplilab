@@ -527,8 +527,8 @@ test('LPDB race scores reuse personal scoring without equipment, on /100',()=>{
  const one=root.RapliTeamRating.calculate(saved,[saved],known,E,root.RapliRegattaScore);
  const two=root.RapliTeamRating.calculate(other,[other],known,E,root.RapliRegattaScore);
  assert.equal(one.rated,2);
- assert.equal(one.average,71);
- assert.deepEqual([...one.scores.values()].map(s=>s.value),[71,71]);
+ assert.equal(one.average,70);
+ assert.deepEqual([...one.scores.values()].map(s=>s.value),[73,67]);
  assert.deepEqual([...one.scores.values()].map(s=>s.value),[...two.scores.values()].map(s=>s.value));
  assert.equal(one.scores.get(a.id).parts.equipment,undefined);
  assert.deepEqual(root.RapliTeamRating.WEIGHTS,{progress:45,relative:30,attendance:15,vsr:10});
@@ -591,7 +591,7 @@ test('LPDB classification dialog renders an independent note for each skipper',(
  const tile=d.querySelector('.team-race-card');
  assert.ok(tile);
  assert.match(tile.textContent,/NOTE MOYENNE DE LA COURSE/);
- assert.match(tile.querySelector('.team-race-average .team-score-ring')?.getAttribute('aria-label')||'',/Note moyenne de la course : 71 sur 100/);
+ assert.match(tile.querySelector('.team-race-average .team-score-ring')?.getAttribute('aria-label')||'',/Note moyenne de la course : 70 sur 100/);
  d.querySelector('[data-team-action="show-ranking-'+race.id+'"]').click();
  const dialog=d.getElementById('team-race-classification-dialog');
  assert.equal(dialog.open,true);
@@ -599,8 +599,8 @@ test('LPDB classification dialog renders an independent note for each skipper',(
  assert.ok(noteHeader);
  const cells=dialog.querySelectorAll('tbody tr');
  assert.equal(cells.length,2);
- assert.equal(cells[0].querySelector('.team-score-ring')?.getAttribute('aria-label')?.includes('71 sur 100'),true);
- assert.equal(cells[1].querySelector('.team-score-ring')?.getAttribute('aria-label')?.includes('71 sur 100'),true);
+ assert.equal(cells[0].querySelector('.team-score-ring')?.getAttribute('aria-label')?.includes('73 sur 100'),true);
+ assert.equal(cells[1].querySelector('.team-score-ring')?.getAttribute('aria-label')?.includes('67 sur 100'),true);
  dom.window.close();
 });
 
@@ -1418,7 +1418,7 @@ test('LPDB course image displays live course status instead of branding, without
  assert.match(css,/\.lpdb-shell \.team-race-photo \.team-race-photo-status\{/);
  const html=fs.readFileSync('regatta/index.html','utf8');
  assert.match(html,/team\.css\?v=20261123-classification-visible-v6/,'team badge CSS stays cache-busted');
-assert.match(html,/team-app\.js\?v=20261123-classification-visible-v6/,'team badge markup script stays cache-busted');
+assert.match(html,/team-app\.js\?v=20261123-exponential-progress-v3/,'team badge markup script stays cache-busted');
  dom.window.close();
 });
 
@@ -1457,7 +1457,7 @@ test('LPDB mobile selectors use a full-width barème and readable compact type',
  assert.match(css,/\.lpdb-shell \.team-stats-grid\{grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
  assert.match(css,/\.lpdb-shell \.team-emblem\{[^}]*background:transparent!important/s);
  assert.match(html,/team\.css\?v=20261123-classification-visible-v6/);
- assert.match(html,/team-app\.js\?v=20261123-classification-visible-v6/);
+ assert.match(html,/team-app\.js\?v=20261123-exponential-progress-v3/);
  assert.match(html,/app\.js\?v=20261122-lpdb-responsive-v2/);
  assert.equal(ui.includes('assets/lpdb.webp'),false,'all section headings and race fallback use the new transparent emblem');
  assert.equal(ui.split('assets/lpdb-header-transparent.png').length-1,5,'all five emblem instances are replaced');
@@ -1572,7 +1572,7 @@ test('LPDB PNG branding and numeric summary counters are removed while score pro
  assert.match(css,/team-score-ring.*conic-gradient/s);
  assert.match(html,/team-export\.js\?v=20261122-score-rings-v5/);
  assert.match(html,/team\.css\?v=20261123-classification-visible-v6/);
- assert.match(html,/team-app\.js\?v=20261123-classification-visible-v6/);
+ assert.match(html,/team-app\.js\?v=20261123-exponential-progress-v3/);
 });
 
 test('LPDB personal notes reward exceeding own baseline even when ranked behind a teammate',()=>{
@@ -1634,20 +1634,21 @@ test('LPDB podium bonus cannot impose a 100 rating on an ordinary personal perfo
  assert.equal(note.bonus,null);
  assert.equal(note.bonusEligible,false);
  assert.equal(note.parts.equipment,undefined);
- assert.equal(note.weights.progress,45);
+ assert.equal(note.weights.progress,0);
+ assert.equal(note.weights.relative,75);
  assert.equal(notes.rated,1);
 });
 
 test('LPDB personal scoring labels and script are updated without modifying championship points',()=>{
  const ui=fs.readFileSync('regatta/team-app.js','utf8');
  const html=fs.readFileSync('regatta/index.html','utf8');
- assert.match(ui,/progression face aux performances habituelles \(45 %\)/);
- assert.match(ui,/classement relatif VR \(30 %\)/);
- assert.match(ui,/affluence \(15 %\)/);
- assert.match(ui,/difficulté VSR \(10 %\)/);
- assert.match(ui,/Sans équipement ni bonus de podium/);
- assert.match(html,/team-rating\.js\?v=20261123-personal-performance-v2/);
- assert.match(html,/team-app\.js\?v=20261123-classification-visible-v6/);
+ assert.match(ui,/progression personnelle/);
+ assert.match(ui,/classement 30 %/);
+ assert.match(ui,/affluence 15 %/);
+ assert.match(ui,/VSR 10 %/);
+ assert.match(ui,/courbe exponentielle/);
+ assert.match(html,/team-rating\.js\?v=20261123-exponential-progress-v3/);
+ assert.match(html,/team-app\.js\?v=20261123-exponential-progress-v3/);
  assert.ok(fs.readFileSync('regatta/team-engine.js','utf8').includes('function primary('),'official championship calculation remains separate');
 });
 
@@ -1664,5 +1665,51 @@ test('LPDB course ranking shows note and principal points before VR chrono on al
  assert.match(css,/\.team-classification-note\{[^}]*grid-area:note/);
  assert.match(css,/\.team-classification-main\{[^}]*grid-area:main/);
  assert.match(html,/team\.css\?v=20261123-classification-visible-v6/);
- assert.match(html,/team-app\.js\?v=20261123-classification-visible-v6/);
+ assert.match(html,/team-app\.js\?v=20261123-exponential-progress-v3/);
+});
+
+test('LPDB exponential VR curve honors 1st/last and separates top ranks in large fleets',()=>{
+ const rate=require('../regatta/team-rating.js');
+ const f=rate.relativeFactor;
+ assert.equal(f(1,130000),1,'the winner earns full relative-credit');
+ assert.equal(f(130000,130000),0,'the last place earns no relative-credit');
+ assert.equal(f(0,130000),null);
+ assert.equal(f(130001,130000),null);
+ assert.ok(f(328,130000)>f(598,130000));
+ assert.ok(f(598,130000)>f(1630,130000));
+ assert.ok(f(1630,130000)>f(3426,130000));
+ assert.ok(75*(f(328,130000)-f(3426,130000))>=20,'328th vs 3426th must differ by at least twenty provisional points');
+ assert.ok(f(2,130000)-f(1,130000)<0,'even near 1st the slope rewards improvement');
+ assert.ok(f(1,130000)-f(2,130000)>f(100001,130000)-f(100002,130000),'improvement at the front matters more than at the back');
+ assert.ok(rate.CURVE.steepness>0&&rate.CURVE.exponent>0&&rate.CURVE.exponent<1);
+});
+test('LPDB provisional score progressively transfers ranking weight to individual progression',()=>{
+ const rate=require('../regatta/team-rating.js');
+ assert.deepEqual(rate.weightForHistory(0),{progress:0,relative:75,attendance:15,vsr:10});
+ assert.deepEqual(rate.weightForHistory(1),{progress:15,relative:60,attendance:15,vsr:10});
+ assert.deepEqual(rate.weightForHistory(2),{progress:30,relative:45,attendance:15,vsr:10});
+ assert.deepEqual(rate.weightForHistory(3),{progress:45,relative:30,attendance:15,vsr:10});
+ assert.deepEqual(rate.weightForHistory(9),rate.weightForHistory(3));
+ for(let n=0;n<=9;n++)assert.equal(Object.values(rate.weightForHistory(n)).reduce((s,v)=>s+v,0),100);
+});
+test('LPDB vsr1 provisional grades visibly distinguish 328th and 3426th of 130,000',()=>{
+ const root={};new Function('window',fs.readFileSync('regatta/score.js','utf8'))(root);
+ new Function('window',fs.readFileSync('regatta/team-rating.js','utf8'))(root);
+ const a=m('Alpha'),b=m('Beta'),known=new Map([[a.id,a],[b.id,b]]);
+ const race=E.race({...r('exp-wide','2027-06-01','vsr1','finished',[
+  {...rr('Alpha',1),generalRank:328},{...rr('Beta',2),generalRank:3426}
+ ]),start:'2027-05-30',boatClass:'IMOCA',fleetTotal:130000});
+ const result=root.RapliTeamRating.calculate(race,[race],known,E,root.RapliRegattaScore);
+ const first=result.scores.get(a.id),second=result.scores.get(b.id);
+ assert.equal(first.value,85);
+ assert.equal(second.value,63);
+ assert.ok(first.value-second.value>=20);
+ assert.equal(first.provisional,true);
+ assert.equal(second.provisional,true);
+ assert.equal(first.parts.progress,0);
+ assert.equal(second.parts.progress,0);
+ assert.equal(first.weights.relative,75);
+ assert.equal(result.rated,2);
+ assert.equal(result.average,74);
+ assert.equal(first.curve.exponent,.62);
 });

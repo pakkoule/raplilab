@@ -208,7 +208,7 @@ function teamRaceCard(r,known,now=Date.now()){
  (status==='finished'?
  (podium.length>1?'<div class="team-race-podium">'+podium.slice(1).map(x=>
  '<div><span>'+medal(x.position)+'</span><strong>'+esc(names.get(x.skipperId)||'Skipper')+'</strong></div>').join('')+'</div>':'')+
- '<div class="team-race-average" title="Note personnelle : progression 45 %, performance relative VR 30 %, affluence 15 %, difficulté VSR 10 % ; équipement et bonus de podium exclus"><span>NOTE MOYENNE DE LA COURSE</span>'+
+ '<div class="team-race-average" title="Note personnelle : courbe exponentielle privilégiant les meilleurs rangs VR. Sans historique suffisant, le rang peut peser jusqu’à 75 %. Dès trois références comparables : progression 45 %, rang VR 30 %, affluence 15 %, VSR 10 %."><span>NOTE MOYENNE DE LA COURSE</span>'+
  '<div class="team-race-average-value">'+scoreRing(notes.average,{size:'medium',label:'Note moyenne de la course'})+'</div>'+
  '<small>'+(notes.rated?num(notes.rated)+' / '+num(notes.eligible)+' skippers notés':'En attente du classement général et de la flotte VR')+'</small></div>'+
  '<div class="team-race-points"><div><span>POINTS PRINCIPAUX</span><strong>'+num(main)+'</strong></div>'+
@@ -797,7 +797,7 @@ function showProfile(id){
  '<div class="team-table-wrap"><table class="team-table"><thead><tr><th>COURSE</th><th>RANG LPDB</th><th>GÉNÉRAL VR</th><th>VSR</th><th>CHRONO</th><th>ÉCART</th><th>NOTE</th><th>POINTS</th></tr></thead><tbody>'+
  s.records.slice().sort((a,b)=>b.dateEnd.localeCompare(a.dateEnd)).map(r=>{
   const note=notes.get(r.raceId);
-  return '<tr><td>'+esc(r.raceName)+'<small>'+esc(r.dateEnd)+'</small></td><td>'+ (r.dnf?'DNF':r.rank)+'</td><td>'+(r.generalRank!=null?'#'+num(r.generalRank):'—')+'</td><td>'+esc(r.vsr.toUpperCase())+'</td><td>'+clockLabel(r.elapsedSeconds)+'</td><td>'+clockLabel(r.gapSeconds)+'</td><td>'+(note?.available?scoreRing(note.value,{provisional:note.provisional,mention:note.mention}):'<span class="team-note-unavailable">—</span>')+'</td><td>'+num(viewMode==='historic'?r.historic:r.main)+'</td></tr>';
+  return '<tr><td>'+esc(r.raceName)+'<small>'+esc(r.dateEnd)+'</small></td><td>'+ (r.dnf?'DNF':r.rank)+'</td><td>'+(r.generalRank!=null?'#'+num(r.generalRank):'—')+'</td><td>'+esc(r.vsr.toUpperCase())+'</td><td>'+clockLabel(r.elapsedSeconds)+'</td><td>'+clockLabel(r.gapSeconds)+'</td><td>'+(note?.available?scoreRing(note.value,{provisional:note.provisional,mention:[note.mention,note.explanation].filter(Boolean).join(' · ')}):'<span class="team-note-unavailable">—</span>')+'</td><td>'+num(viewMode==='historic'?r.historic:r.main)+'</td></tr>';
  }).join('')+'</tbody></table></div>':empty('Aucune participation sur cette période.'));
  $('team-profile-body').innerHTML=content;
  $('team-profile-dialog').showModal();
@@ -817,7 +817,7 @@ function showRaceRanking(id){
  rows.map(row=>{
   const points=byId.get(row.skipperId),mark=notes.scores.get(row.skipperId);
   const reason=mark?.reason||'Note en attente du classement général VR et de l’effectif global';
-  const note=mark?.available?scoreRing(mark.value,{provisional:mark.provisional,mention:mark.mention}):'<span class="team-note-unavailable" aria-label="'+esc(reason)+'" title="'+esc(reason)+'">—</span>';
+  const note=mark?.available?scoreRing(mark.value,{provisional:mark.provisional,mention:[mark.mention,mark.explanation].filter(Boolean).join(' · ')}):'<span class="team-note-unavailable" aria-label="'+esc(reason)+'" title="'+esc(reason)+'">—</span>';
   return '<tr class="'+podiumClass(row.position,row.status==='finished')+'">'+
    '<td class="team-classification-rank" data-label="RANG">'+(row.status==='dnf'?'DNF':row.position??'—')+'</td>'+
    '<td class="team-classification-skipper" data-label="SKIPPER">'+skipperLabel(names.get(row.skipperId)||'Skipper inconnu')+'</td>'+
@@ -828,7 +828,7 @@ function showRaceRanking(id){
    '<td class="team-classification-gap" data-label="ÉCART">'+(row.gapSeconds!=null?'+ '+clockLabel(row.gapSeconds):'—')+'</td>'+
    '<td class="team-classification-historic" data-label="PTS HIST.">'+num(points?.historic??0)+'</td></tr>';
  }).join('')+'</tbody></table></div>'+
- '<p class="team-footnote">Note personnelle : progression face aux performances habituelles (45 %), classement relatif VR (30 %), affluence (15 %) et difficulté VSR (10 %). Historique comparable insuffisant : note provisoire (*). Sans équipement ni bonus de podium. Les notes ne modifient pas les points LPDB.</p>';
+ '<p class="team-footnote">Note personnelle : classement VR valorisé par une courbe exponentielle (plus on approche de la 1re place, plus le gain est important). Sans historique, le classement pèse 75 %, puis son poids diminue progressivement au profit de la progression personnelle. Dès 3 courses comparables : progression 45 %, classement 30 %, affluence 15 %, VSR 10 %. * Note provisoire. Aucun impact sur les points LPDB.</p>';
  $('team-race-classification-dialog').showModal();
 }
 let currentStage='';

@@ -1417,7 +1417,7 @@ test('LPDB course image displays live course status instead of branding, without
  const css=fs.readFileSync('regatta/team.css','utf8');
  assert.match(css,/\.lpdb-shell \.team-race-photo \.team-race-photo-status\{/);
  const html=fs.readFileSync('regatta/index.html','utf8');
- assert.match(html,/team\.css\?v=20261123-classification-visible-v6/,'team badge CSS stays cache-busted');
+ assert.match(html,/team\.css\?v=20261123-unified-red-foil-v7/,'team badge CSS stays cache-busted');
 assert.match(html,/team-app\.js\?v=20261123-exponential-progress-v3/,'team badge markup script stays cache-busted');
  dom.window.close();
 });
@@ -1435,7 +1435,7 @@ test('LPDB pirate header uses the requested logo and premium foil without changi
  assert.match(css,/LPDB premium pirate foil header/);
  assert.match(css,/\.regatta-topbar>\.lpdb-tabs \.lpdb-tab\.active\{/);
  assert.match(css,/@media\(max-width:620px\)\{/);
- assert.match(html,/team\.css\?v=20261123-classification-visible-v6/);
+ assert.match(html,/team\.css\?v=20261123-unified-red-foil-v7/);
  const logoPath=require('node:path').join('regatta','assets','lpdb-header-transparent.png');
  assert.ok(fs.existsSync(logoPath),'new header logo exists in PR');
  const logo=fs.readFileSync(logoPath);
@@ -1456,7 +1456,7 @@ test('LPDB mobile selectors use a full-width barème and readable compact type',
  assert.match(css,/\.lpdb-shell \.team-selector select\{[^}]*text-overflow:ellipsis/s);
  assert.match(css,/\.lpdb-shell \.team-stats-grid\{grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
  assert.match(css,/\.lpdb-shell \.team-emblem\{[^}]*background:transparent!important/s);
- assert.match(html,/team\.css\?v=20261123-classification-visible-v6/);
+ assert.match(html,/team\.css\?v=20261123-unified-red-foil-v7/);
  assert.match(html,/team-app\.js\?v=20261123-exponential-progress-v3/);
  assert.match(html,/app\.js\?v=20261122-lpdb-responsive-v2/);
  assert.equal(ui.includes('assets/lpdb.webp'),false,'all section headings and race fallback use the new transparent emblem');
@@ -1475,7 +1475,7 @@ test('LPDB navigation labels do not use heavy text shadows',()=>{
  assert.match(navRule,/text-shadow:none!important/);
  assert.match(navRule,/-webkit-text-stroke:0/);
  assert.doesNotMatch(css,/color:#f0fdfc;text-shadow:0 1px 2px #092630e0/);
- assert.match(html,/team\.css\?v=20261123-classification-visible-v6/);
+ assert.match(html,/team\.css\?v=20261123-unified-red-foil-v7/);
 });
 
 test('LPDB profile holds manual sync and live status, remaining icons stay next to search on iPhone',()=>{
@@ -1571,7 +1571,7 @@ test('LPDB PNG branding and numeric summary counters are removed while score pro
  assert.match(ui,/--score-mid:/,'Safari receives precalculated arc angles');
  assert.match(css,/team-score-ring.*conic-gradient/s);
  assert.match(html,/team-export\.js\?v=20261122-score-rings-v5/);
- assert.match(html,/team\.css\?v=20261123-classification-visible-v6/);
+ assert.match(html,/team\.css\?v=20261123-unified-red-foil-v7/);
  assert.match(html,/team-app\.js\?v=20261123-exponential-progress-v3/);
 });
 
@@ -1664,7 +1664,7 @@ test('LPDB course ranking shows note and principal points before VR chrono on al
  assert.match(css,/grid-template-areas:[\s\S]*"rank skipper note main"/);
  assert.match(css,/\.team-classification-note\{[^}]*grid-area:note/);
  assert.match(css,/\.team-classification-main\{[^}]*grid-area:main/);
- assert.match(html,/team\.css\?v=20261123-classification-visible-v6/);
+ assert.match(html,/team\.css\?v=20261123-unified-red-foil-v7/);
  assert.match(html,/team-app\.js\?v=20261123-exponential-progress-v3/);
 });
 
@@ -1712,4 +1712,30 @@ test('LPDB vsr1 provisional grades visibly distinguish 328th and 3426th of 130,0
  assert.equal(result.rated,2);
  assert.equal(result.average,74);
  assert.equal(first.curve.exponent,.62);
+});
+
+test('LPDB header integrates foil with navy shell instead of overlay card',()=>{
+ const html=fs.readFileSync('regatta/index.html','utf8');
+ const css=fs.readFileSync('regatta/team.css','utf8');
+ const d=new JSDOM(html).window.document;
+ const shell=d.querySelector('main.shell.lpdb-integrated-header');
+ assert.ok(shell,'the same app shell owns the foil header');
+ assert.equal(shell.querySelectorAll(':scope > .regatta-topbar').length,1);
+ assert.equal(shell.querySelectorAll(':scope > .lpdb-global-controls').length,1);
+ const wave=shell.querySelector(':scope > svg.lpdb-header-wave[aria-hidden=true]');
+ assert.ok(wave,'non-interactive sailing wave artwork is integrated into the shell');
+ assert.ok(wave.querySelector('path[stroke]'),'the curved highlight remains');
+ assert.ok(wave.outerHTML.includes('#e54343'),'header wave has LPDB red, not magenta');
+ assert.equal(shell.querySelectorAll('.regatta-brand-header img.regatta-brand-logo').length,1);
+ assert.match(shell.querySelector('.regatta-brand-logo').getAttribute('src'),/lpdb-header-transparent\.png/);
+ assert.equal(shell.querySelectorAll('.lpdb-tabs .lpdb-tab').length,4);
+ assert.equal(d.querySelector('#lpdb-global-controls')?.nextElementSibling?.id,'lpdb-panel','content and search retain their stable DOM siblings');
+ assert.match(css,/LPDB unified navy header - cyan and RED foil/);
+ assert.match(css,/\.shell\.lpdb-integrated-header>\.regatta-topbar::before,/);
+ assert.match(css,/\.shell\.lpdb-integrated-header>\.regatta-topbar::after\{content:none;display:none\}/);
+ assert.match(css,/\.shell\.lpdb-integrated-header>\.regatta-topbar\{[^}]*background:transparent;box-shadow:none/s);
+ assert.match(css,/\.shell\.lpdb-integrated-header>\.regatta-topbar>\.lpdb-tabs \.lpdb-tab\{[^}]*#da4545/s);
+ assert.match(css,/#d94242\) border-box!important/,'actions use cyan-to-red premium foil');
+ assert.match(css,/@media\(max-width:620px\)\{[\s\S]*?grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
+ assert.match(html,/team\.css\?v=20261123-unified-red-foil-v7/,'Safari receives new header CSS');
 });

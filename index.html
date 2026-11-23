@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#0d2039">
-  <meta name="description" content="Cartes de sport, catalogue Dragon Blanc et maillots de collection.">
+  <meta name="description" content="Cartes de sport et maillots de collection.">
   <title>Rapli Archives</title>
   <link rel="icon" type="image/x-icon" sizes="16x16 32x32" href="/assets/rapli-archives-favicon.ico">
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=20261117">
@@ -144,9 +144,6 @@ body[data-active="sports"] .portal-header{background:linear-gradient(115deg,#0b2
 
 
 /* RapliLab workspaces — espaces actifs. */
-body[data-active="archives"]{--accent:#03bac8;--frame-bg:#ebf7f6;--frame-border:#bedede}
-body[data-active="archives"] .portal-header{background:linear-gradient(120deg,#102c3f,#006174 53%,#112a40)}
-.product-tab[data-product="archives"][aria-selected="true"]{background-color:rgba(0,200,212,.16)!important}
 @media(min-width:801px){.product-tabs{grid-template-columns:repeat(2,minmax(0,1fr));width:min(100%,1018px)}}
 /* Mobile: both workspaces stay accessible and compact. */
 @media(max-width:800px){
@@ -471,18 +468,12 @@ html[data-rapli-role="editor"] #rapli-admin-login{display:none}
           <button type="button" id="tab-sports" class="product-tab" data-product="sports" role="tab" aria-selected="true" aria-controls="panel-sports" tabindex="0" title="Rapli Sports — collection de cartes">
             <img src="sports/assets/logo.png" alt="Rapli Sports" draggable="false">
           </button>
-          <button type="button" id="tab-archives" class="product-tab" data-product="archives" role="tab" aria-selected="false" aria-controls="panel-archives" tabindex="-1" title="Rapli Archives — Dragon Blanc">
-            Dragon Blanc
-          </button>
           <button type="button" id="tab-jerseys" class="product-tab" data-product="jerseys" role="tab" aria-selected="false" aria-controls="panel-jerseys" tabindex="-1" title="Rapli Jerseys — collection de maillots">Jerseys</button>
         </nav>
     </div>
     <div class="frame-wrap">
       <section id="panel-sports" role="tabpanel" aria-label="Rapli Sports">
         <iframe id="frame-sports" class="app-frame" data-src="sports/index.html" title="Rapli Sports — cartes de sport" loading="eager"></iframe>
-      </section>
-      <section id="panel-archives" role="tabpanel" aria-labelledby="tab-archives" hidden>
-        <iframe id="frame-archives" class="app-frame" data-src="archives/index.html" title="Rapli Archives — Dragon Blanc" allow="clipboard-read; clipboard-write" loading="lazy"></iframe>
       </section>
       <section id="panel-jerseys" role="tabpanel" aria-labelledby="tab-jerseys" hidden>
         <iframe id="frame-jerseys" class="app-frame" data-src="jerseys/index.html" title="Rapli Jerseys — collection de maillots" loading="lazy"></iframe>
@@ -493,15 +484,15 @@ html[data-rapli-role="editor"] #rapli-admin-login{display:none}
   <script>
   (() => {
     'use strict';
-    const projects=['sports','archives','jerseys'];
+    const projects=['sports','jerseys'];
     // Jerseys is currently an informational workspace, with no collection writes.
-    const visibleProjects=['sports','archives','jerseys'];
+    const visibleProjects=['sports','jerseys'];
     const tabs=Object.fromEntries(projects.map(n=>[n,document.getElementById('tab-'+n)]));
     const panels=Object.fromEntries(projects.map(n=>[n,document.getElementById('panel-'+n)]));
     const frames=Object.fromEntries(projects.map(n=>[n,document.getElementById('frame-'+n)]));
-    const names={sports:'Sports',archives:'Dragon Blanc',jerseys:'Jerseys'};
+    const names={sports:'Sports',jerseys:'Jerseys'};
     let current='sports';
-    const fromHash=()=>{const route=location.hash.slice(1).toLowerCase();return route==='archives'?'archives':route==='jerseys'?'jerseys':'sports';};
+    const fromHash=()=>{const route=location.hash.slice(1).toLowerCase();return route==='jerseys'?'jerseys':'sports';};
     const sportsViewFromHash=()=>location.hash.slice(1).toLowerCase()==='wishlist'?'wishlist':'own';
     function routeSportsView(){
       const frame=frames.sports;

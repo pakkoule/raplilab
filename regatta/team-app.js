@@ -208,7 +208,7 @@ function teamRaceCard(r,known,now=Date.now()){
  (status==='finished'?
  (podium.length>1?'<div class="team-race-podium">'+podium.slice(1).map(x=>
  '<div><span>'+medal(x.position)+'</span><strong>'+esc(names.get(x.skipperId)||'Skipper')+'</strong></div>').join('')+'</div>':'')+
- '<div class="team-race-average" title="Moyenne des notes disponibles, équipement exclu"><span>NOTE MOYENNE DE LA COURSE</span>'+
+ '<div class="team-race-average" title="Note personnelle : progression 45 %, performance relative VR 30 %, affluence 15 %, difficulté VSR 10 % ; équipement et bonus de podium exclus"><span>NOTE MOYENNE DE LA COURSE</span>'+
  '<div class="team-race-average-value">'+scoreRing(notes.average,{size:'medium',label:'Note moyenne de la course'})+'</div>'+
  '<small>'+(notes.rated?num(notes.rated)+' / '+num(notes.eligible)+' skippers notés':'En attente du classement général et de la flotte VR')+'</small></div>'+
  '<div class="team-race-points"><div><span>POINTS PRINCIPAUX</span><strong>'+num(main)+'</strong></div>'+
@@ -823,7 +823,7 @@ function showRaceRanking(id){
    '<td>'+note+'</td>'+
    '<td>'+num(points?.main??0)+'</td><td>'+num(points?.historic??0)+'</td></tr>';
  }).join('')+'</tbody></table></div>'+
- '<p class="team-footnote">Note de course : classement relatif, progression, VSR et affluence, sans équipement. * Provisoire en l’absence de références historiques suffisantes. Les notes ne modifient pas les points LPDB.</p>';
+ '<p class="team-footnote">Note personnelle : progression face aux performances habituelles (45 %), classement relatif VR (30 %), affluence (15 %) et difficulté VSR (10 %). Historique comparable insuffisant : note provisoire (*). Sans équipement ni bonus de podium. Les notes ne modifient pas les points LPDB.</p>';
  $('team-race-classification-dialog').showModal();
 }
 let currentStage='';

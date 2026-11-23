@@ -1434,3 +1434,69 @@
  .shell.lpdb-integrated-header>.regatta-topbar>.lpdb-tabs .lpdb-tab{font-size:9px}
  .shell.lpdb-integrated-header>.lpdb-global-controls{max-width:calc(100% - 14px)}
 }
+
+/* LPDB race editor: large, near-full-height working area, without resizing
+   other dialogs. Keep the title and save bar fixed while details scroll. */
+#team-race-dialog[open]{
+ display:flex;flex-direction:column;
+ width:min(1480px,calc(100vw - 20px));
+ max-width:calc(100vw - 12px);
+ height:min(96dvh,1160px);
+ max-height:calc(100dvh - 12px);
+ min-height:0;margin:auto;overflow:hidden;
+}
+#team-race-dialog>form{
+ display:flex;flex:1 1 auto;flex-direction:column;
+ min-width:0;min-height:0;max-height:100%;height:100%;
+}
+#team-race-dialog .team-dialog-head,
+#team-race-dialog .team-dialog-footer{flex:0 0 auto}
+#team-race-dialog .team-dialog-scroll{
+ flex:1 1 auto;min-height:0;min-width:0;
+ overflow-y:auto;overflow-x:hidden;
+ overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch;
+ padding:20px clamp(14px,2.2vw,32px) 26px;
+}
+#team-race-dialog .team-result-rows{gap:8px}
+@media(min-width:1121px){
+ #team-race-dialog .team-result-head,
+ #team-race-dialog .team-result-row{
+  grid-template-columns:minmax(175px,1.5fr) 82px 127px 118px
+   minmax(133px,1fr) minmax(133px,1fr) 118px 36px;
+  gap:9px;
+ }
+ #team-race-dialog .team-result-name{font-size:12px}
+ #team-race-dialog .team-result-row :is(input,select){height:39px;font-size:12px;padding:6px 8px}
+ #team-race-dialog .team-result-points{font-size:12px}
+}
+@media(min-width:701px) and (max-width:1120px){
+ #team-race-dialog .team-result-head{display:none}
+ #team-race-dialog .team-result-row{
+  display:grid;
+  grid-template-columns:minmax(140px,1.5fr) 70px minmax(110px,1fr) minmax(110px,1fr) 34px;
+  grid-template-rows:auto auto;
+  gap:8px 9px;align-items:center;
+  padding:10px;
+ }
+ #team-race-dialog .team-result-name{grid-column:1;grid-row:1;font-size:12px}
+ #team-race-dialog .team-result-row [data-team-rank]{grid-column:2;grid-row:1}
+ #team-race-dialog .team-result-row [data-team-general-rank]{grid-column:3;grid-row:1}
+ #team-race-dialog .team-result-row [data-team-status]{grid-column:4;grid-row:1}
+ #team-race-dialog .team-result-row .team-remove-row{grid-column:5;grid-row:1}
+ #team-race-dialog .team-result-row .team-result-points{
+  grid-column:1;grid-row:2;justify-self:start;text-align:left;font-size:12px;
+ }
+ #team-race-dialog .team-result-row [data-team-elapsed]{grid-column:2 / 4;grid-row:2}
+ #team-race-dialog .team-result-row [data-team-gap]{grid-column:4 / 6;grid-row:2}
+ #team-race-dialog .team-result-row :is(input,select){min-width:0;height:38px;font-size:12px;padding:5px 7px}
+}
+@media(max-width:700px){
+ #team-race-dialog[open]{
+  width:calc(100vw - 12px);max-width:calc(100vw - 12px);
+  height:calc(100dvh - 12px);max-height:calc(100dvh - 12px);
+ }
+ #team-race-dialog .team-dialog-scroll{padding:12px 10px 22px}
+ #team-race-dialog .team-dialog-footer{
+  padding:11px 10px max(11px,env(safe-area-inset-bottom));
+ }
+}

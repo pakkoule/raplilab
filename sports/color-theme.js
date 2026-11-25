@@ -6,7 +6,7 @@ const TARGETS={
  heading:{label:'Titres des fenêtres et sections',selector:'.modal-title, .modal h2, .modal h3, .rainbow-versions-dialog h2, .rainbow-versions-dialog h3',global:true,text:true},
  tabs:{label:'Onglets de collection',selector:'.section-nav .tab',global:true},
  activeTab:{label:'Onglet actif',selector:'.section-nav .tab.active',global:true},
- menus:{label:'Menus des vues et du tri',selector:'#sportsViewSelect, #sortSelect',global:true},
+ menus:{label:'Menus des vues et du tri',selector:'#sportsViewSelect, #sportsDisplaySelect, #sortSelect',global:true},
  counter:{label:'Compteur de cartes',selector:'#resultsLabel',global:true},
  buttons:{label:'Boutons d’action',selector:'.button, .card-export-actions button',global:true},
  search:{label:'Champ de recherche',selector:'#filterSearch',global:true},

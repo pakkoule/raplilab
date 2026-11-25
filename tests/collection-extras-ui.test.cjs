@@ -1,7 +1,7 @@
 const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('fs');const {JSDOM,VirtualConsole}=require('jsdom');
-async function setup(editor=true){const html=fs.readFileSync('sports/index.html','utf8'),errors=[];const vc=new VirtualConsole();vc.on('jsdomError',e=>{if(e.type!=='css parsing')errors.push(e.message);});const dom=new JSDOM(html,{runScripts:'outside-only',url:'https://test.local/sports/',pretendToBeVisual:true,virtualConsole:vc});const w=dom.window;w.RapliAdminAccess={isEditor:()=>editor};w.RapliSharedCollection={canEdit:()=>editor,changed:()=>{}};w.HTMLElement.prototype.scrollIntoView=function(){};w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};w.HTMLDialogElement.prototype.close=function(){this.open=false;this.dispatchEvent(new w.Event('close'));};w.matchMedia=()=>({matches:false,addEventListener(){},removeEventListener(){}});for(const f of ['collection-extras.js','collection-stats.js','stats-visuals.js','rainbow.js','card-tools.js'])w.eval(fs.readFileSync('sports/'+f,'utf8'));const inline=[...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)].filter(m=>!m[1].includes('src='));for(const m of inline)w.eval(m[2]);for(const f of ['color-theme.js','collection-extras-ui.js'])w.eval(fs.readFileSync('sports/'+f,'utf8'));await new Promise(r=>setTimeout(r,20));const $=id=>w.document.getElementById(id),change=(id,value)=>{$(id).value=value;$(id).dispatchEvent(new w.Event('change',{bubbles:true}));};return {w,dom,$,change,errors};}
+async function setup(editor=true){const html=fs.readFileSync('sports/index.html','utf8'),errors=[];const vc=new VirtualConsole();vc.on('jsdomError',e=>{if(e.type!=='css parsing')errors.push(e.message);});const dom=new JSDOM(html,{runScripts:'outside-only',url:'https://test.local/sports/',pretendToBeVisual:true,virtualConsole:vc});const w=dom.window;w.RapliAdminAccess={isEditor:()=>editor};w.RapliSharedCollection={canEdit:()=>editor,changed:()=>{}};w.HTMLElement.prototype.scrollIntoView=function(){};w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};w.HTMLDialogElement.prototype.close=function(){this.open=false;this.dispatchEvent(new w.Event('close'));};w.matchMedia=()=>({matches:false,addEventListener(){},removeEventListener(){}});for(const f of ['collection-extras.js','collection-stats.js','stats-visuals.js','rainbow.js'])w.eval(fs.readFileSync('sports/'+f,'utf8'));const inline=[...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)].filter(m=>!m[1].includes('src='));for(const m of inline)w.eval(m[2]);for(const f of ['card-tools.js','color-theme.js','collection-extras-ui.js'])w.eval(fs.readFileSync('sports/'+f,'utf8'));await new Promise(r=>setTimeout(r,20));const $=id=>w.document.getElementById(id),change=(id,value)=>{$(id).value=value;$(id).dispatchEvent(new w.Event('change',{bubbles:true}));};return {w,dom,$,change,errors};}
 const cards=[{id:'a',status:'own',player:'Tyrese Maxey',brand:'Topps',team:'Philadelphia 76ers',tags:['Topps Chrome','Orange Refractor'],reference:'#41',numbered:true,serial:'12',printRun:'99',season:'2025',rookie:true,graded:true,gradeScore:'10',gradeOrg:'PSA'},{id:'b',status:'wishlist',player:'Sakina Karchaoui',brand:'Topps',reference:'#12',tags:['Blue Refractor'],dream:true,wishStage:'ordered',legendary:true},{id:'c',status:'own',player:'James Harden',brand:'Panini',numbered:true,serial:'1',printRun:'1',uniqueKind:'plate'}];
-test('full catalogue integration: views, search, editor fields, readonly and gold grading',async()=>{const s=await setup();try{s.w.RapliModuleBridge.previewState({records:cards,logos:[]});s.change('sportsViewSelect','plates');assert.match(s.$('resultsLabel').textContent,/1 carte/);s.change('sportsViewSelect','details');s.$('filterSearch').value='Topps Maxey 12/99';s.$('filterSearch').dispatchEvent(new s.w.Event('input',{bubbles:true}));assert.match(s.$('resultsLabel').textContent,/1 carte/);assert.ok(s.w.document.querySelector('.grading-perfect'));s.$('filterSearch').value='Maxey 2/99';s.$('filterSearch').dispatchEvent(new s.w.Event('input',{bubbles:true}));assert.match(s.$('resultsLabel').textContent,/0 carte/);s.w.RapliExtrasBridge.openCard(cards[0]);assert.ok(s.$('cardDialog').open);assert.equal(s.$('uniqueKind').disabled,true);s.w.RapliExtrasBridge.openCard(cards[1]);assert.equal(s.$('wishStage').value,'ordered');s.change('wishStage','shipping');assert.equal(s.w.RapliExtrasUI.cardFields().wishStage,'shipping');assert.deepEqual(s.errors,[]);}finally{await new Promise(r=>setTimeout(r,100));s.dom.window.close();}});
+test('full catalogue integration: views, search, editor fields, readonly and gold grading',async()=>{const s=await setup();try{s.w.RapliModuleBridge.previewState({records:cards,logos:[]});s.change('sportsViewSelect','plates');assert.match(s.$('resultsLabel').textContent,/1 carte/);s.change('sportsViewSelect','all');s.$('filterSearch').value='Topps Maxey 12/99';s.$('filterSearch').dispatchEvent(new s.w.Event('input',{bubbles:true}));assert.match(s.$('resultsLabel').textContent,/1 carte/);assert.ok(s.w.document.querySelector('.grading-perfect'));s.$('filterSearch').value='Maxey 2/99';s.$('filterSearch').dispatchEvent(new s.w.Event('input',{bubbles:true}));assert.match(s.$('resultsLabel').textContent,/0 carte/);s.w.RapliExtrasBridge.openCard(cards[0]);assert.ok(s.$('cardDialog').open);assert.equal(s.$('uniqueKind').disabled,true);s.w.RapliExtrasBridge.openCard(cards[1]);assert.equal(s.$('wishStage').value,'ordered');s.change('wishStage','shipping');assert.equal(s.w.RapliExtrasUI.cardFields().wishStage,'shipping');assert.deepEqual(s.errors,[]);}finally{await new Promise(r=>setTimeout(r,100));s.dom.window.close();}});
 test('visitors cannot write new settings',async()=>{const s=await setup(false);try{assert.equal(s.w.document.querySelector('[data-view="stats"]'),null);assert.equal([...s.w.document.querySelectorAll('.section-nav .tabs button')].some(b=>b.textContent==='ARRIVÉES'),false);await assert.rejects(s.w.RapliExtrasBridge.saveCard({id:'bad'}));assert.deepEqual(s.errors,[]);}finally{await new Promise(r=>setTimeout(r,100));s.dom.window.close();}});
 test('historical logos switch per season; editing preserves certification and provenance; rainbow remains read only',async()=>{const s=await setup();try{const png='data:image/png;base64,iVBORw0KGgo=';const record={...cards[0],gradePhoto:png,source:'Topps',sourceUrl:'https://www.topps.com/',customLegacyField:'keep'};const logo={id:'team:sixers',type:'team',name:'Philadelphia 76ers',image:png,historical:[{id:'old',from:'2025',to:'2025',image:png+'AA'}]};const rainbow={id:'rainbow:test',type:'rainbow',name:'Test',variants:[{label:'Base',cardId:'a'},{label:'Blue /99',cardId:'b'}]};s.w.RapliModuleBridge.previewState({records:[record,cards[1]],logos:[logo,rainbow]});assert.equal(s.w.document.querySelector('.team-identity img').getAttribute('src'),png+'AA');s.w.document.querySelector('[data-grade-photo]').click();assert.equal(s.w.document.querySelector('.extras-grade-zoom').getAttribute('src'),png);s.w.document.querySelector('.extras-dialog header button').click();s.w.RapliExtrasBridge.openCard(record);s.$('cardForm').dispatchEvent(new s.w.Event('submit',{bubbles:true,cancelable:true}));await new Promise(r=>setTimeout(r,20));const saved=s.w.RapliExtrasBridge.cards().find(c=>c.id==='a');assert.equal(saved.gradePhoto,png);assert.equal(saved.source,'Topps');assert.equal(saved.customLegacyField,'keep');s.change('sportsViewSelect','rainbows');const before=JSON.stringify(s.w.RapliModuleBridge.getState());assert.ok(s.w.document.querySelector('.sports-rainbow-variant'));assert.equal(s.w.document.querySelector('[data-rainbow-sim]'),null);assert.equal(s.w.document.querySelector('.simulation-result'),null);assert.equal(JSON.stringify(s.w.RapliModuleBridge.getState()),before);assert.deepEqual(s.errors,[]);}finally{await new Promise(r=>setTimeout(r,100));s.dom.window.close();}});
 
@@ -306,7 +306,7 @@ test('1/1 à vérifier is no longer a view; unclassified cards are preserved',as
   assert.ok(layouts.includes('plates'));
   assert.equal(s.w.RapliExtras.classification(unclassified),'review');
   assert.ok(s.w.document.querySelector('[data-card-id="legacy-1of1"]'));
-  s.change('sportsViewSelect','cards');
+  s.change('sportsDisplaySelect','cards');
   assert.match(s.$('resultsLabel').textContent,/1 carte/);
   assert.deepEqual(s.errors,[]);
  }finally{await new Promise(resolve=>setTimeout(resolve,100));s.dom.window.close();}
@@ -346,7 +346,7 @@ test('Rainbow manager lives inside the logo library and tile consultation stays 
   assert.equal(s.w.document.querySelector('#rainbowList [data-rainbow-delete]'),null);
   s.w.document.querySelector('[data-view="wishlist"]').click();
   assert.equal(s.$('rainbowPanel').hidden,true);
-  assert.equal(s.$('sportsViewSelect').value,'details');
+  assert.equal(s.$('sportsViewSelect').value,'all');
   assert.equal(s.$('collectionPanel').hidden,false);
   assert.ok(s.w.RapliExtrasBridge.logos().some(row=>row.id===rainbow.id),
     'Rainbow records are never migrated or deleted by this navigation change');
@@ -371,7 +371,7 @@ test('card three-dot menu replaces direct tile controls and duplicates without c
   const menu=s.$('cardActionsMenu');
   assert.equal(menu.hidden,false);
   assert.equal(trigger.getAttribute('aria-expanded'),'true');
-  assert.equal(menu.querySelectorAll('[data-card-tool]').length,2);
+  assert.deepEqual([...menu.querySelectorAll('[data-card-tool]')].map(button=>button.dataset.cardTool).sort(),['photo','png','stats']);
   assert.match(menu.textContent,/Dupliquer la carte/);
   assert.match(menu.textContent,/Passer en WISHLIST/);
   assert.ok(menu.querySelector('[data-action="edit"]'));
@@ -381,7 +381,7 @@ test('card three-dot menu replaces direct tile controls and duplicates without c
   await new Promise(resolve=>setTimeout(resolve,40));
   const collection=s.w.RapliExtrasBridge.cards();
   assert.equal(collection.length,2);
-  assert.deepEqual(collection.find(c=>c.id==='menu-original'),previous);
+  assert.deepEqual({...collection.find(c=>c.id==='menu-original')},previous);
   const duplicate=collection.find(c=>c.id!=='menu-original');
   assert.equal(duplicate.status,'own');
   assert.equal(duplicate.photo,previous.photo);
@@ -393,18 +393,18 @@ test('card three-dot menu replaces direct tile controls and duplicates without c
   assert.deepEqual(s.errors,[]);
  }finally{await new Promise(resolve=>setTimeout(resolve,100));s.dom.window.close();}
 });
-test('card action menu stays export-only for visitors and appears in vignette view',async()=>{
+test('card action menu stays read-only for visitors and appears in vignette view',async()=>{
  const s=await setup(false);
  try{
   s.w.RapliModuleBridge.previewState({records:cards,logos:[]});
   s.w.document.querySelector('#cardGrid [data-card-menu-trigger]').click();
   const menu=s.$('cardActionsMenu');
   assert.equal(menu.hidden,false);
-  assert.equal(menu.querySelectorAll('[data-card-tool]').length,2);
+  assert.deepEqual([...menu.querySelectorAll('[data-card-tool]')].map(button=>button.dataset.cardTool).sort(),['photo','png','stats']);
   assert.equal(menu.querySelector('[data-action]'),null);
-  s.w.document.dispatchEvent(new s.w.KeyboardEvent('keydown',{key:'Escape',bubbles:true}));
+  s.w.document.activeElement.dispatchEvent(new s.w.KeyboardEvent('keydown',{key:'Escape',bubbles:true}));
   assert.equal(menu.hidden,true);
-  s.change('sportsViewSelect','cards');
+  s.change('sportsDisplaySelect','cards');
   const tile=s.w.document.querySelector('.sports-gallery-tile');
   assert.ok(tile?.querySelector('[data-card-menu-trigger]'));
   tile.querySelector('[data-card-menu-trigger]').click();
@@ -457,4 +457,49 @@ test('collection card images are deferred without removing original source or ex
     'existing image nodes survive changes to non-photo metadata');
   assert.deepEqual(s.errors,[]);
  }finally{await new Promise(resolve=>setTimeout(resolve,100));s.dom.window.close();}
+});
+
+test('presentation changes keep the selected group, search, sort and page',async()=>{
+ const s=await setup();
+ try{
+  const tag={id:'tag:nba',type:'tag',name:'NBA',categories:['competition']};
+  const records=Array.from({length:31},(_,i)=>({...cards[0],id:String(i),tags:['NBA']}));
+  s.w.RapliModuleBridge.previewState({records,logos:[tag]});
+  s.$('filterSearch').value='Maxey';
+  s.change('sortSelect','name');
+  s.change('sportsViewSelect','competition');
+  s.w.document.querySelector('[data-sports-gallery-group]').click();
+  s.w.document.querySelector('[data-sports-gallery-page="2"]').click();
+  for(const mode of ['museum','cards','details']){
+   s.change('sportsDisplaySelect',mode);
+   assert.match(s.$('cardGrid').textContent,/NBA/);
+   assert.equal(s.$('cardGrid').querySelectorAll('[data-card-id]').length,1);
+   assert.equal(s.$('filterSearch').value,'Maxey');
+   assert.equal(s.$('sortSelect').value,'name');
+   assert.equal(s.$('sportsViewSelect').value,'competition');
+   assert.equal(s.w.localStorage.getItem('rapli-sports-display-v1'),mode);
+  }
+  assert.deepEqual(s.errors,[]);
+ }finally{s.dom.window.close();}
+});
+
+test('museum lights use classified parallels in saved order, with custom overrides first',async()=>{
+ const s=await setup();
+ try{
+  const profiles=[['Red Prizm','parallel'],['Gold','parallel'],['Mystery','parallel'],['Green','insert'],['Black','parallel'],['Custom','parallel','#abcdef']];
+  const logos=profiles.map(([name,category,spotlightColor])=>({id:'tag:'+name,name,type:'tag',categories:[category],spotlightColor}));
+  const cases=[[[], '#ffffff'],[['Green'],'#ffffff'],[['Mystery'],'#ffffff'],[['Mystery','Gold'],'#ebc16d'],
+   [['Red Prizm','Gold'],'#ed676a'],[['Black'],'#a3b0bd'],[['Gold','Custom'],'#abcdef']];
+  const records=cases.map(([tags],id)=>({...cards[2],id:String(id),tags}));
+  s.w.RapliModuleBridge.previewState({records,logos});
+  s.change('sportsDisplaySelect','museum');
+  cases.forEach(([,color],id)=>{
+   const media=s.$('cardGrid').querySelector('[data-card-id="'+id+'"] .sports-gallery-media');
+   assert.equal(media.style.getPropertyValue('--lamp'),color);
+  });
+  s.$('cardGrid').querySelector('[data-card-menu-trigger]').click();
+  s.$('cardActionsMenu').querySelector('[data-card-tool="stats"]').click();
+  assert.ok(s.w.document.querySelector('.card-statistics-dialog').open);
+  assert.deepEqual(s.errors,[]);
+ }finally{s.dom.window.close();}
 });

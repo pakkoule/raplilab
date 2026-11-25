@@ -24,11 +24,13 @@
 }
 .is-rainbow-consultation .collection-pickers label:last-child {display:none}
 #cardGrid>.sports-gallery-back,#cardGrid>.sports-gallery-breadcrumb {grid-column:1/-1}
-#cardGrid.museum-view {min-width:0; max-width:100%; box-sizing:border-box; padding:0; overflow:hidden}
+#cardGrid.museum-view {
+  --museum-wall:linear-gradient(180deg,#28292c 0%,#1b1c1e 40%,#111214 82%,#191a1c 100%);
+  min-width:0; max-width:100%; box-sizing:border-box; padding:0; overflow:hidden}
 #cardGrid.museum-view .museum-strip {
   position:relative; display:flex; align-items:stretch; gap:0; overflow-x:auto;
   scroll-snap-type:x proximity; overscroll-behavior-x:contain; scrollbar-color:#707987 #1a2029;
-  background:linear-gradient(#202531,#10131a 80%,#191d24);
+  background:var(--museum-wall);
 }
 #cardGrid.museum-view.is-gallery-layout .museum-strip .sports-gallery-tile {
   flex:0 0 min(82%,350px); min-width:0; padding:0; scroll-snap-align:start;
@@ -47,7 +49,8 @@
   background:radial-gradient(ellipse at top,#2d3341,#11151e 68%,#10141b);
 }
 #cardGrid.museum-view.is-gallery-layout .sports-gallery-grid .sports-gallery-media {
-  container-type:size; background:transparent; aspect-ratio:4/5; padding:17% 9% 11%; width:100%; border:0; border-radius:0;
+  /* Paint the wall directly behind the beam, above any foil tile theme. */
+  container-type:size; background:var(--museum-wall) #191a1c!important; aspect-ratio:4/5; padding:17% 9% 11%; width:100%; border:0; border-radius:0;
   grid-template: minmax(0,1fr)/minmax(0,1fr);
 }
 #cardGrid.museum-view.is-gallery-layout .sports-gallery-grid .sports-gallery-media::before,

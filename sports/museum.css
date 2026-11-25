@@ -24,19 +24,22 @@
 }
 .is-rainbow-consultation .collection-pickers label:last-child {display:none}
 #cardGrid>.sports-gallery-back,#cardGrid>.sports-gallery-breadcrumb {grid-column:1/-1}
-#cardGrid.museum-view .sports-gallery-grid:not(.is-group-gallery) {
-  grid-template-columns:repeat(auto-fill,minmax(min(100%,235px),1fr)); gap:clamp(10px,1.8vw,24px);
+#cardGrid.museum-view {min-width:0; max-width:100%; box-sizing:border-box; padding:0; overflow:hidden}
+#cardGrid.museum-view .museum-strip {
+  position:relative; display:flex; align-items:stretch; gap:0; overflow-x:auto;
+  scroll-snap-type:x proximity; overscroll-behavior-x:contain; scrollbar-color:#707987 #1a2029;
+  background:linear-gradient(#202531,#10131a 80%,#191d24);
 }
-#cardGrid.museum-view .sports-gallery-grid .sports-gallery-tile {
-  padding:0; min-width:0; border:1px solid #49515e; border-radius:14px;
-  background:#10141b!important; box-shadow:0 10px 22px #080c1466;
+#cardGrid.museum-view.is-gallery-layout .museum-strip .sports-gallery-tile {
+  flex:0 0 min(82%,350px); min-width:0; padding:0; scroll-snap-align:start;
+  background:transparent!important; border:0!important; box-shadow:none!important; border-radius:0;
 }
 #cardGrid.museum-view .sports-gallery-tile::before,
 #cardGrid.museum-view .sports-gallery-tile::after,
 #cardGrid.museum-view .sports-tile-corners,
 #cardGrid.museum-view .sports-gallery-new {display:none!important}
 #cardGrid.museum-view.is-gallery-layout .sports-gallery-grid .sports-gallery-card-action {
-  width:100%; background:transparent; border:0; padding:0;
+  display:block; width:100%; background:transparent; border:0; border-radius:0; padding:0;
 }
 #cardGrid.museum-view.is-gallery-layout .sports-gallery-grid .sports-gallery-media,
 .spotlight-preview {
@@ -44,31 +47,38 @@
   background:radial-gradient(ellipse at top,#2d3341,#11151e 68%,#10141b);
 }
 #cardGrid.museum-view.is-gallery-layout .sports-gallery-grid .sports-gallery-media {
-  aspect-ratio:4/5; padding:17% 11% 11%; width:100%; border:0; border-radius:0;
+  container-type:size; background:transparent; aspect-ratio:4/5; padding:17% 9% 11%; width:100%; border:0; border-radius:0;
   grid-template: minmax(0,1fr)/minmax(0,1fr);
 }
 #cardGrid.museum-view.is-gallery-layout .sports-gallery-grid .sports-gallery-media::before,
 #cardGrid.museum-view .sports-gallery-media::after {display:none!important}
 .museum-light {
-  position:absolute; inset:0; pointer-events:none;
+  position:absolute; inset:0; z-index:2; pointer-events:none;
   background:
-    radial-gradient(ellipse 5% .8% at 50% 4%,white 15%,var(--lamp) 50%,transparent),
-    radial-gradient(ellipse 13% 5% at 50% 4%,color-mix(in srgb,var(--lamp) 50%,transparent),transparent),
+    radial-gradient(ellipse 11% 1.3% at 50% 4%,white 15%,var(--lamp) 50%,transparent),
+    radial-gradient(ellipse 19% 6% at 50% 4%,color-mix(in srgb,var(--lamp) 50%,transparent),transparent),
     radial-gradient(ellipse 46% 3% at 50% 94%,color-mix(in srgb,var(--lamp) 62%,transparent),transparent);
 }
 .museum-light::before {
   content:""; position:absolute; inset:4% 0 6%;
-  background:conic-gradient(from 150deg at 50% 0%,transparent 0deg,
+  background:conic-gradient(from 150deg at 50% -22%,transparent 0deg,
     var(--beam-right) 18deg,var(--lamp) 30deg,var(--beam-left) 42deg,transparent 60deg);
-  mask-image:linear-gradient(to bottom,#000b,#0005 45%,transparent);
-  -webkit-mask-image:linear-gradient(to bottom,#000b,#0005 45%,transparent);
+  mask-image:linear-gradient(to bottom,#000b,#0005 22%,#0002 62%,transparent);
+  -webkit-mask-image:linear-gradient(to bottom,#000b,#0005 22%,#0002 62%,transparent);
 }
-#cardGrid.museum-view.is-gallery-layout .sports-gallery-grid .sports-gallery-media img {
-  position:relative; z-index:1; width:100%; height:100%; min-height:0; object-fit:contain;
-  filter:drop-shadow(0 7px 5px #0009);
+.museum-artwork {
+  display:grid; grid-template: auto / minmax(0,1fr); place-items:center; width:100%;
 }
-.museum-caption {display:grid; gap:2px; padding:7px 12px 14px; color:#ecedf0; text-align:center; font:500 14px Poppins,sans-serif; overflow-wrap:anywhere}
-.museum-caption small {font:11px monospace; color:#b8bdc8}
+#cardGrid.museum-view.is-gallery-layout .sports-gallery-grid .museum-artwork img {
+  grid-area:1/1; position:relative; width:100%; height:auto; max-height:100cqh;
+  object-fit:contain; filter:drop-shadow(0 7px 5px #0009);
+}
+.museum-artwork [data-card-photo-fallback] {grid-area:1/1; min-height:9rem}
+.museum-caption {
+  grid-area:1/1; align-self:end; z-index:3; padding:0 5px 6px; text-align:center;
+  color:white; font:700 clamp(13px,1.5vw,18px)/1.15 Poppins,sans-serif; overflow-wrap:anywhere;
+  text-shadow:0 1px 3px #000,0 1px 7px #000,0 0 2px #000;
+}
 #spotlightEditor {border:1px solid #aebfc7; border-radius:10px; margin:12px 0; min-width:0}
 #spotlightEditor legend {font:700 11px Poppins,sans-serif}
 #spotlightHex {width:8em; font-size:16px}

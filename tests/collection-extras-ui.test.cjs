@@ -473,7 +473,7 @@ test('presentation changes keep the selected group, search, sort and page',async
   for(const mode of ['museum','cards','details']){
    s.change('sportsDisplaySelect',mode);
    assert.match(s.$('cardGrid').textContent,/NBA/);
-   assert.equal(s.$('cardGrid').querySelectorAll('[data-card-id]').length,1);
+   assert.equal(s.$('cardGrid').querySelectorAll('[data-card-id]').length,mode==='museum'?31:1);
    assert.equal(s.$('filterSearch').value,'Maxey');
    assert.equal(s.$('sortSelect').value,'name');
    assert.equal(s.$('sportsViewSelect').value,'competition');

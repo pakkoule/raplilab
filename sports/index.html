@@ -4436,8 +4436,8 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         const athlete=cardPlayers(item).map(p=>p.name).filter(Boolean).join(' / ')||item.player||'Athlète non renseigné';
         const museum=sportsDisplay==='museum';
         const light=museum?resolveSpotlight((item.tags||[]).map(tagProfile).filter(Boolean)):null;
-        const plaque='<span class="museum-caption"><strong>'+safeText(athlete)+'</strong>'+
-          (item.reference?'<small>'+safeText(item.reference)+'</small>':'')+'</span>';
+        const exhibit='<span class="museum-artwork">'+photo+'<span class="museum-caption">'+safeText(athlete)+'</span></span>'+
+          '<span class="museum-light" aria-hidden="true"></span>';
         return '<article class="sports-gallery-tile '+cardTileFoilClass(item)+(item.rookie===true?' is-rookie-card':'')+
           (item.status==='wishlist'&&item.dream?' is-dream-gallery':'')+'" data-card-id="'+safeText(item.id)+'">'+
           '<span class="sports-tile-corners" aria-hidden="true"></span>'+
@@ -4445,9 +4445,8 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
           '<button type="button" class="sports-gallery-card-action" data-sports-gallery-card="'+safeText(item.id)+
           '" aria-label="Ouvrir la fiche de '+safeText(athlete)+'">'+
           '<span class="sports-gallery-media"'+(museum?' style="'+spotlightStyle(light)+'"':'')+'>'+
-          (museum?'<span class="museum-light" aria-hidden="true"></span>':'')+photo+
-          (museum?'':'<span class="sports-gallery-athlete-foil">'+safeText(athlete)+'</span>')+
-          '</span>'+(museum?plaque:'')+'</button><button type="button" class="card-summary-button" data-card-tool="summary" aria-label="Résumé de la carte" title="Résumé de la carte">ⓘ</button>'+cardMenuTriggerMarkup(item)+'</article>';
+          (museum?exhibit:photo+'<span class="sports-gallery-athlete-foil">'+safeText(athlete)+'</span>')+
+          '</span></button><button type="button" class="card-summary-button" data-card-tool="summary" aria-label="Résumé de la carte" title="Résumé de la carte">ⓘ</button>'+cardMenuTriggerMarkup(item)+'</article>';
       }
       const PORTRAIT_CROP_DEFAULT=Object.freeze({scale:1,x:0,y:0});
       function portraitCropConfig(value){
@@ -4525,6 +4524,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
       }
       const directViews=['all','recent','legendary','rookies','graded','dreammuseum','oneofone','plates'];
       function renderCardPage(items){
+        if(sportsDisplay==='museum')return '<div class="sports-gallery-grid museum-strip" tabindex="0" role="region" aria-label="Galerie Musée à défilement horizontal">'+items.map(sportsGalleryCard).join('')+'</div>';
         if(sportsDisplay!=='details')return sportsGalleryPageMarkup(items,sportsGalleryCard);
         return currentPageItems(items).map(card=>cardMarkup(card,true)).join('');
       }
@@ -5019,6 +5019,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
           lastGridLayout===sportsGalleryLayout &&
           lastGridSelection===sportsGallerySelected &&
           Boolean(oldGallery)===Boolean(nextGallery) &&
+          oldGallery?.className===nextGallery?.className &&
           keysBefore.every(Boolean)&&keysAfter.every(Boolean) &&
           new Set(keysBefore).size===keysBefore.length &&
           new Set(keysAfter).size===keysAfter.length;
@@ -5118,7 +5119,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         $('cardGrid').classList.toggle('is-gallery-layout',!cardPage||sportsDisplay!=='details');
         const cardsUpdated=patchCardGrid(markup);
         if(cardsUpdated&&sportsDisplay==='details')scheduleCardAthleteFit();
-        const nav=sportsGalleryPagination(sportsGalleryCount(match));
+        const nav=museum?'':sportsGalleryPagination(sportsGalleryCount(match));
         $('sportsPaginationTop').innerHTML=nav;
         $('sportsPaginationBottom').innerHTML=nav;
         const hasAny=cards.some(x=>x.status===currentView);
@@ -5684,6 +5685,9 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         sportsDisplay=event.target.value;
         savePreference(DISPLAY_KEY,sportsDisplay);
         renderAll();
+        const strip=$('cardGrid').querySelector('.museum-strip');
+        const first=strip?.children[(sportsGalleryPage-1)*SPORTS_GALLERY_PAGE_SIZE];
+        if(first)strip.scrollLeft=first.offsetLeft-strip.firstElementChild.offsetLeft;
       });
       $('sportsViewSelect').addEventListener('change',()=>chooseSportsGalleryLayout($('sportsViewSelect').value));
       $('sportsGalleryToolbar').addEventListener('click',event=>{

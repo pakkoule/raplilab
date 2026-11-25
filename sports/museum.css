@@ -42,6 +42,16 @@
   flex:0 0 calc(100% / var(--museum-columns,1)); min-width:0; padding:0; scroll-snap-align:start;
   background:transparent!important; border:0!important; box-shadow:none!important; border-radius:0;
 }
+#cardGrid .museum-strip, #cardGrid .museum-strip * {
+  -webkit-user-select:none; user-select:none;
+}
+#cardGrid .museum-strip img {-webkit-user-drag:none}
+@media(any-pointer:fine) {
+  #cardGrid.museum-view .museum-strip {scroll-snap-type:none}
+  #cardGrid .museum-strip, #cardGrid .museum-strip .sports-gallery-card-action,
+  #cardGrid .museum-strip img {cursor:grab}
+  #cardGrid .museum-strip.is-panning, #cardGrid .museum-strip.is-panning * {cursor:grabbing}
+}
 @container (min-width:540px) { .museum-strip {--museum-columns:2} }
 @container (min-width:850px) { .museum-strip {--museum-columns:3} }
 @container (min-width:1160px) { .museum-strip {--museum-columns:4} }

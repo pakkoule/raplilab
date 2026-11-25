@@ -52,6 +52,10 @@
   #cardGrid .museum-strip img {cursor:grab}
   #cardGrid .museum-strip.is-panning, #cardGrid .museum-strip.is-panning * {cursor:grabbing}
 }
+/* Museum exhibits have no decorative Rookie or arrival outline. */
+#cardGrid.museum-view .sports-gallery-tile:not(:focus-visible) {
+  outline:none!important;
+}
 @container (min-width:540px) { .museum-strip {--museum-columns:2} }
 @container (min-width:850px) { .museum-strip {--museum-columns:3} }
 @container (min-width:1160px) { .museum-strip {--museum-columns:4} }

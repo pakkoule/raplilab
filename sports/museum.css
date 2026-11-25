@@ -106,3 +106,25 @@
 @media(prefers-reduced-motion:reduce){
   #cardGrid.museum-view .sports-gallery-tile {transform:none!important;transition:none}
 }
+/* Fill the embedded collection viewport while the museum strip is visible. */
+html[data-rapli-shared-state="ready"]:has(#collectionPanel:not(.is-rainbow-consultation) #cardGrid.museum-view) {
+  background:#191a1d;
+  & body, & body::before, & .app-shell {
+    background:linear-gradient(180deg,#28292d,#191a1d 55%,#141517)!important;
+  }
+  & .app-shell {
+    box-sizing:border-box; min-height:100dvh; margin:0 auto;
+    display:flex; flex-direction:column;
+    padding-bottom:clamp(12px,2vh,24px); border-color:#36383c;
+  }
+  & .app-shell > main, & main > section:has(> #collectionPanel), & #collectionPanel {
+    display:flex; flex:1 0 auto; flex-direction:column; min-width:0;
+  }
+  & #cardGrid.museum-view {
+    margin-block:auto; border-color:transparent; box-shadow:none;
+    background:transparent;
+  }
+  & .collection-pickers label, & .section-nav .tabs .tab:not(.active),
+  & .app-shell > .footer {color:#c8cbd1!important}
+  & .app-shell > .footer {margin-top:0; border-color:#37393d}
+}

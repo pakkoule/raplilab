@@ -71,6 +71,63 @@
   if(typeof module!=='undefined'&&module.exports){module.exports={cardInfo,cleanName,jpegPdf,normalizeSeason,referenceText,collectionCardStats};return;}
   root.RapliCardTools={normalizeSeason,referenceText};
   const bridge=root.RapliCardToolsBridge;if(!bridge)return;
+  // Delegate to the current strip because navigation can replace its DOM.
+  let mousePan=null, blockClick=false;
+  function endMousePan(){
+    if(!mousePan)return;
+    const {strip,id,dragging}=mousePan;
+    mousePan=null;
+    strip.classList.remove('is-panning');
+    if(strip.hasPointerCapture(id))strip.releasePointerCapture(id);
+    blockClick=dragging;
+  }
+  window.addEventListener('pointerdown',event=>{
+    endMousePan();
+    blockClick=false;
+    const strip=event.target.closest?.('.museum-strip');
+    if(event.pointerType!=='mouse'||event.button!==0||!strip||strip.scrollWidth<=strip.clientWidth)return;
+    mousePan={strip,id:event.pointerId,x:event.clientX,left:strip.scrollLeft,dragging:false};
+  },true);
+  window.addEventListener('pointermove',event=>{
+    if(!mousePan||event.pointerId!==mousePan.id)return;
+    if(!(event.buttons&1)||!mousePan.strip.isConnected){endMousePan();return;}
+    const {strip,id,x,left}=mousePan;
+    const delta=event.clientX-x;
+    if(!mousePan.dragging){
+      if(Math.abs(delta)<5)return;
+      mousePan.dragging=true;
+      strip.classList.add('is-panning');
+      strip.setPointerCapture(id);
+    }
+    strip.scrollLeft=left-delta;
+    event.preventDefault();
+  },true);
+  for(const type of ['pointerup','pointercancel','lostpointercapture']){
+    window.addEventListener(type,event=>{
+      if(mousePan?.id===event.pointerId && (type!=='lostpointercapture'||event.target===mousePan.strip))endMousePan();
+    },true);
+  }
+  window.addEventListener('blur',endMousePan);
+  window.addEventListener('click',event=>{
+    if(!blockClick||event.detail===0)return;
+    blockClick=false;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+  },true);
+  document.addEventListener('dragstart',event=>{
+    if(event.target.closest?.('.museum-strip'))event.preventDefault();
+  });
+  document.addEventListener('wheel',event=>{
+    const strip=event.target.closest?.('.museum-strip');
+    if(!strip||event.ctrlKey||event.shiftKey||event.deltaX||!event.deltaY)return;
+    const unit=event.deltaMode===1?16:event.deltaMode===2?strip.clientWidth:1;
+    const limit=strip.scrollWidth-strip.clientWidth;
+    const next=Math.max(0,Math.min(limit,strip.scrollLeft+event.deltaY*unit));
+    if(Math.abs(next-strip.scrollLeft)<0.5)return;
+    event.preventDefault();
+    strip.scrollLeft=next;
+  },{passive:false});
+
   const imageSource=value=>/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(value||'');
   function bytesOf(source){const raw=atob(source.split(',')[1]);return Uint8Array.from(raw,ch=>ch.charCodeAt(0));}
   function download(blob,name){

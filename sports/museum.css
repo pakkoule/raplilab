@@ -133,6 +133,14 @@ html[data-rapli-shared-state="ready"]:has(#collectionPanel:not(.is-rainbow-consu
       #000 calc(100% - var(--museum-footer-fade)),transparent);
     -webkit-mask-image:var(--wall-fade); mask-image:var(--wall-fade);
   }
+  @supports (top:anchor(--museum-search center)) {
+    & .sports-catalogue-search {anchor-name:--museum-search}
+    & .app-shell::after {
+      top:anchor(--museum-search center);
+      --museum-fade-start:0px;
+      --museum-header-fade:clamp(105px,19vh,240px);
+    }
+  }
   & .app-shell > main, & main > section:has(> #collectionPanel), & #collectionPanel {
     display:flex; flex:1 0 auto; flex-direction:column; min-width:0;
   }

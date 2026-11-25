@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#0d2039">
-  <meta name="description" content="Cartes de sport et maillots de collection.">
+  <meta name="description" content="Collection de cartes de sport.">
   <title>Rapli Archives</title>
   <link rel="icon" type="image/x-icon" sizes="16x16 32x32" href="/assets/rapli-archives-favicon.ico">
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=20261117">
@@ -468,15 +468,11 @@ html[data-rapli-role="editor"] #rapli-admin-login{display:none}
           <button type="button" id="tab-sports" class="product-tab" data-product="sports" role="tab" aria-selected="true" aria-controls="panel-sports" tabindex="0" title="Rapli Sports — collection de cartes">
             <img src="sports/assets/logo.png" alt="Rapli Sports" draggable="false">
           </button>
-          <button type="button" id="tab-jerseys" class="product-tab" data-product="jerseys" role="tab" aria-selected="false" aria-controls="panel-jerseys" tabindex="-1" title="Rapli Jerseys — collection de maillots">Jerseys</button>
         </nav>
     </div>
     <div class="frame-wrap">
       <section id="panel-sports" role="tabpanel" aria-label="Rapli Sports">
         <iframe id="frame-sports" class="app-frame" data-src="sports/index.html" title="Rapli Sports — cartes de sport" loading="eager"></iframe>
-      </section>
-      <section id="panel-jerseys" role="tabpanel" aria-labelledby="tab-jerseys" hidden>
-        <iframe id="frame-jerseys" class="app-frame" data-src="jerseys/index.html" title="Rapli Jerseys — collection de maillots" loading="lazy"></iframe>
       </section>
     </div>
 
@@ -484,15 +480,11 @@ html[data-rapli-role="editor"] #rapli-admin-login{display:none}
   <script>
   (() => {
     'use strict';
-    const projects=['sports','jerseys'];
-    // Jerseys is currently an informational workspace, with no collection writes.
-    const visibleProjects=['sports','jerseys'];
+    const projects=['sports'];
     const tabs=Object.fromEntries(projects.map(n=>[n,document.getElementById('tab-'+n)]));
     const panels=Object.fromEntries(projects.map(n=>[n,document.getElementById('panel-'+n)]));
     const frames=Object.fromEntries(projects.map(n=>[n,document.getElementById('frame-'+n)]));
-    const names={sports:'Sports',jerseys:'Jerseys'};
     let current='sports';
-    const fromHash=()=>{const route=location.hash.slice(1).toLowerCase();return route==='jerseys'?'jerseys':'sports';};
     const sportsViewFromHash=()=>location.hash.slice(1).toLowerCase()==='wishlist'?'wishlist':'own';
     function routeSportsView(){
       const frame=frames.sports;
@@ -507,16 +499,10 @@ html[data-rapli-role="editor"] #rapli-admin-login{display:none}
       if(frame?.contentWindow&&frame.src)try{frame.contentWindow.postMessage({type:'RAPLI_APP_ACTIVITY',active},location.origin)}catch(_){}
     }
     function select(name,hash=false,focus=false){
-      if(!visibleProjects.includes(name))name='sports';
+      if(!projects.includes(name))name='sports';
       current=name;
       const frame=frames[name];
       if(!frame.getAttribute('src')&&frame.dataset.src){frame.src=frame.dataset.src;delete frame.dataset.src;}
-      // Jerseys borrows Sports' logo library: mount Sports invisibly on direct
-      // #jerseys entry as well, without making Sports the active workspace.
-      if(name==='jerseys'&&!frames.sports.getAttribute('src')&&frames.sports.dataset.src){
-        frames.sports.src=frames.sports.dataset.src;
-        delete frames.sports.dataset.src;
-      }
       document.body.dataset.active=name;
       for(const project of projects){
         const active=project===name;
@@ -544,14 +530,12 @@ html[data-rapli-role="editor"] #rapli-admin-login{display:none}
         activity(name,name===current);
         if(name==='sports'){
           if(current==='sports')routeSportsView();
-          // In case Jerseys asked before Sports' bridge initialized.
-          frames.jerseys?.contentWindow?.postMessage({type:'RAPLI_JERSEYS_LOGOS_UPDATED'},location.origin);
         }
       });
     }
-    window.addEventListener('popstate',()=>select(fromHash()));
-    window.addEventListener('hashchange',()=>select(fromHash()));
-    select(fromHash());
+    window.addEventListener('popstate',()=>select('sports'));
+    window.addEventListener('hashchange',()=>select('sports'));
+    select('sports');
 
   })();
   </script>

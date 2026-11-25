@@ -26,16 +26,28 @@
 #cardGrid>.sports-gallery-back,#cardGrid>.sports-gallery-breadcrumb {grid-column:1/-1}
 #cardGrid.museum-view {
   --museum-wall:linear-gradient(180deg,#28292c 0%,#1b1c1e 40%,#111214 82%,#191a1c 100%);
-  min-width:0; max-width:100%; box-sizing:border-box; padding:0; overflow:hidden}
+  min-width:0; width:100%; max-width:100%; box-sizing:border-box; overflow:hidden;
+  margin-inline:auto; padding:clamp(14px,2.5vw,44px);
+  background:#18191b; border:1px solid #343538; border-radius:20px;
+  box-shadow:inset 0 1px 0 #ffffff0c;
+  container-type:inline-size;
+}
 #cardGrid.museum-view .museum-strip {
-  position:relative; display:flex; align-items:stretch; gap:0; overflow-x:auto;
+  position:relative; display:flex; align-items:stretch; justify-content:safe center;
+  width:100%; margin-inline:auto; gap:0; overflow-x:auto; border-radius:10px;
   scroll-snap-type:x proximity; overscroll-behavior-x:contain; scrollbar-color:#707987 #1a2029;
   background:var(--museum-wall);
 }
 #cardGrid.museum-view.is-gallery-layout .museum-strip .sports-gallery-tile {
-  flex:0 0 min(82%,350px); min-width:0; padding:0; scroll-snap-align:start;
+  flex:0 0 calc(100% / var(--museum-columns,1)); min-width:0; padding:0; scroll-snap-align:start;
   background:transparent!important; border:0!important; box-shadow:none!important; border-radius:0;
 }
+@container (min-width:540px) { .museum-strip {--museum-columns:2} }
+@container (min-width:850px) { .museum-strip {--museum-columns:3} }
+@container (min-width:1160px) { .museum-strip {--museum-columns:4} }
+#cardGrid.museum-view .museum-caption,
+#cardGrid.museum-view .card-summary-button,
+#cardGrid.museum-view .sports-card-menu-trigger,
 #cardGrid.museum-view .sports-gallery-tile::before,
 #cardGrid.museum-view .sports-gallery-tile::after,
 #cardGrid.museum-view .sports-tile-corners,

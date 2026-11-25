@@ -1,12 +1,13 @@
 /* Rapli Lab — one navigation language across Sports, Archives and Jerseys.
  * This stylesheet is intentionally loaded after the module styles.
- * No layout shift when switching tabs; three equally sized slots on iPhone. */
+ * No layout shift when switching tabs; equally sized slots on iPhone. */
+.section-nav .tabs{--collection-tab-count:2}
 .section-nav .tabs,
 
 .jerseys-collection-tabs{
   box-sizing:border-box;
   display:grid!important;
-  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  grid-template-columns:repeat(var(--collection-tab-count,3),minmax(0,1fr))!important;
   grid-auto-flow:row!important;
   align-items:stretch!important;
   justify-content:stretch!important;
@@ -122,7 +123,7 @@
  .section-nav .tabs,
 
  .jerseys-collection-tabs{
-   grid-template-columns:repeat(3,minmax(0,1fr))!important;
+   grid-template-columns:repeat(var(--collection-tab-count,3),minmax(0,1fr))!important;
    gap:3px!important;
  }
  .section-nav .tabs .tab,

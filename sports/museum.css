@@ -25,7 +25,6 @@
 .is-rainbow-consultation .collection-pickers label:last-child {display:none}
 #cardGrid>.sports-gallery-back,#cardGrid>.sports-gallery-breadcrumb {grid-column:1/-1}
 #cardGrid.museum-view {
-  --museum-wall:linear-gradient(180deg,#28292c 0%,#1b1c1e 40%,#111214 82%,#191a1c 100%);
   min-width:0; width:100%; max-width:100%; box-sizing:border-box; overflow:hidden;
   margin-inline:auto; padding:clamp(14px,2.5vw,44px);
   background:#18191b; border:1px solid #343538; border-radius:20px;
@@ -34,8 +33,8 @@
 }
 #cardGrid.museum-view .museum-strip {
   position:relative; display:flex; align-items:stretch; justify-content:safe center;
-  width:100%; margin-inline:auto; gap:0; overflow-x:auto; border-radius:10px;
-  scroll-snap-type:x proximity; overscroll-behavior-x:contain; scrollbar-color:#707987 #1a2029;
+  width:100%; margin-inline:auto; gap:0; overflow-x:auto; padding-bottom:clamp(24px,5vh,60px);
+  scroll-snap-type:x proximity; overscroll-behavior-x:contain; scrollbar-color:#667079 var(--museum-wall);
   background:var(--museum-wall);
 }
 #cardGrid.museum-view.is-gallery-layout .museum-strip .sports-gallery-tile {
@@ -62,7 +61,7 @@
 }
 #cardGrid.museum-view.is-gallery-layout .sports-gallery-grid .sports-gallery-media {
   /* Paint the wall directly behind the beam, above any foil tile theme. */
-  container-type:size; background:var(--museum-wall) #191a1c!important; aspect-ratio:4/5; padding:17% 9% 11%; width:100%; border:0; border-radius:0;
+  container-type:size; background:var(--museum-wall)!important; aspect-ratio:3/4; padding:17% 9% 11%; width:100%; border:0; border-radius:0;
   grid-template: minmax(0,1fr)/minmax(0,1fr);
 }
 #cardGrid.museum-view.is-gallery-layout .sports-gallery-grid .sports-gallery-media::before,
@@ -108,14 +107,23 @@
 }
 /* Fill the embedded collection viewport while the museum strip is visible. */
 html[data-rapli-shared-state="ready"]:has(#collectionPanel:not(.is-rainbow-consultation) #cardGrid.museum-view) {
-  background:#191a1d;
-  & body, & body::before, & .app-shell {
-    background:linear-gradient(180deg,#28292d,#191a1d 55%,#141517)!important;
+  --museum-wall:#191a1c;
+  --museum-header-fade:clamp(105px,15vh,150px);
+  --museum-footer-fade:clamp(58px,9vh,100px);
+  @media(max-width:750px) {
+    --museum-header-fade:165px;
+    --museum-footer-fade:68px;
   }
   & .app-shell {
     box-sizing:border-box; min-height:100dvh; margin:0 auto;
-    display:flex; flex-direction:column;
+    display:flex; flex-direction:column; isolation:isolate;
     padding-bottom:clamp(12px,2vh,24px); border-color:#36383c;
+  }
+  /* Fade the wall over the site's own background at both ends. */
+  & .app-shell::after {
+    content:""; position:absolute; inset:0; z-index:-1; pointer-events:none; border-radius:inherit;
+    background:linear-gradient(to bottom,transparent,var(--museum-wall) var(--museum-header-fade),
+      var(--museum-wall) calc(100% - var(--museum-footer-fade)),transparent);
   }
   & .app-shell > main, & main > section:has(> #collectionPanel), & #collectionPanel {
     display:flex; flex:1 0 auto; flex-direction:column; min-width:0;
@@ -124,7 +132,6 @@ html[data-rapli-shared-state="ready"]:has(#collectionPanel:not(.is-rainbow-consu
     margin-block:auto; border-color:transparent; box-shadow:none;
     background:transparent;
   }
-  & .collection-pickers label, & .section-nav .tabs .tab:not(.active),
-  & .app-shell > .footer {color:#c8cbd1!important}
-  & .app-shell > .footer {margin-top:0; border-color:#37393d}
+  & .collection-pickers label {color:#e2e5ea; text-shadow:0 1px 3px #17191c}
+  & .app-shell > .footer {margin-top:0; border-color:transparent}
 }

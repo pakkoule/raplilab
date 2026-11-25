@@ -71,7 +71,8 @@
   background:radial-gradient(ellipse at top,#2d3341,#11151e 68%,#10141b);
 }
 #cardGrid.museum-view.is-gallery-layout .sports-gallery-grid .sports-gallery-media {
-  container-type:size; background:transparent!important; aspect-ratio:3/4; padding:17% 9% 11%; width:100%; border:0; border-radius:0;
+  container-type:size; background:transparent!important; aspect-ratio:auto;
+  height:max(440px,calc(100dvh - 270px)); padding:90px 9% 40px; width:100%; border:0; border-radius:0;
   grid-template: minmax(0,1fr)/minmax(0,1fr);
 }
 #cardGrid.museum-view.is-gallery-layout .sports-gallery-grid .sports-gallery-media::before,
@@ -79,12 +80,12 @@
 .museum-light {
   position:absolute; inset:0; z-index:2; pointer-events:none;
   background:
-    radial-gradient(ellipse 9% 1.1% at 50% 8%,#fff 0%,var(--lamp) 30%,transparent 100%),
-    radial-gradient(ellipse 16% 5% at 50% 8%,color-mix(in srgb,var(--lamp) 48%,transparent),transparent),
+    radial-gradient(ellipse 9% 1.1% at 50% 16px,#fff 0%,var(--lamp) 30%,transparent 100%),
+    radial-gradient(ellipse 16% 5% at 50% 16px,color-mix(in srgb,var(--lamp) 48%,transparent),transparent),
     radial-gradient(ellipse 43% 3.4% at 50% 93%,color-mix(in srgb,var(--lamp) 53%,transparent),transparent);
 }
 .museum-light::before {
-  content:""; position:absolute; inset:4% 2% 4%; pointer-events:none;
+  content:""; position:absolute; inset:8px 2% 4%; pointer-events:none;
   background:conic-gradient(from 146deg at 50% -15%,transparent 0deg,
     color-mix(in srgb,var(--beam-right) 40%,transparent) 17deg,var(--lamp) 34deg,
     color-mix(in srgb,var(--beam-left) 40%,transparent) 51deg,transparent 68deg);
@@ -155,19 +156,24 @@ html[data-rapli-shared-state="ready"]:has(#collectionPanel:not(.is-rainbow-consu
     display:flex; flex:1 0 auto; flex-direction:column; min-width:0;
   }
   & #cardGrid.museum-view {
-    margin-block:auto; border-color:transparent; box-shadow:none;
+    margin-block:8px auto; padding-top:0; border-color:transparent; box-shadow:none;
     background:transparent;
   }
   & .collection-pickers label {color:#294957; text-shadow:0 1px 2px #fffc}
-  @media(min-width:751px) {
-    & .sports-catalogue-controls {align-items:end; --control-height:40px}
-    & .sports-catalogue-controls > * {align-self:end; margin-block:0}
-    & .sports-catalogue-controls > .nav-actions {padding-block:0}
-    & .sports-catalogue-controls :is(.collection-pickers select,#filterSearch,#sortSelect,#resultsLabel,.sports-icon-action,.rapli-profile-toggle) {
+  & .app-shell > .footer {margin-top:0; border-color:transparent}
+}
+@media(min-width:751px) {
+  .sports-catalogue-controls {align-items:end; --control-height:40px}
+  .sports-catalogue-controls > * {align-self:end!important; margin-block:0}
+  .sports-catalogue-controls > .nav-actions {padding-block:0}
+  .sports-catalogue-controls :is(.collection-pickers select,#filterSearch,#sortSelect,#resultsLabel,.sports-icon-action,.rapli-profile-toggle) {
       box-sizing:border-box; height:var(--control-height)!important; min-height:var(--control-height)!important;
       margin-block:0; vertical-align:bottom;
     }
-    & .sports-catalogue-controls #resultsLabel {display:flex; align-items:center; justify-content:center; gap:.3em}
+  .sports-catalogue-controls #resultsLabel {display:flex; align-items:center; justify-content:center; gap:.3em}
   }
-  & .app-shell > .footer {margin-top:0; border-color:transparent}
+@media(max-width:750px) {
+  .sports-catalogue-controls :is(#sortSelect,#resultsLabel,.sports-icon-action,.rapli-profile-toggle) {
+    box-sizing:border-box; height:40px!important; min-height:40px!important; margin-block:0!important;
+  }
 }

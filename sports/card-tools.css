@@ -180,3 +180,56 @@
 /* Stable, deferred card photos: fallback remains until its image decodes. */
 #cardGrid img[data-card-photo][hidden],
 #cardGrid [data-card-photo-fallback][hidden]{display:none!important}
+
+/* Museum gallery — native pagination, filters and controls. */
+#cardGrid.museum-view.is-gallery-layout .sports-gallery-grid:not(.is-group-gallery){
+ grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(12px,2vw,28px);padding:clamp(12px,2vw,28px);
+ border:1px solid #37424a;border-radius:18px;background:radial-gradient(ellipse at top,#35444d,#141e27 70%);align-items:stretch;
+}
+#cardGrid.museum-view.is-gallery-layout .sports-gallery-grid:not(.is-group-gallery) .sports-gallery-tile{
+ padding:10px;border:1px solid #9e8b65;border-radius:10px;background:linear-gradient(145deg,#353c42,#1c252c)!important;
+ box-shadow:0 10px 24px #080e1766;min-width:0;display:flex;
+}
+#cardGrid.museum-view.is-gallery-layout .sports-gallery-grid:not(.is-group-gallery) .sports-gallery-card-action{
+ display:flex;flex-direction:column;width:100%;height:100%;border-radius:3px;overflow:visible;
+}
+#cardGrid.museum-view.is-gallery-layout .sports-gallery-grid:not(.is-group-gallery) .sports-gallery-media{
+ box-sizing:border-box;padding:clamp(12px,2vw,28px);aspect-ratio:3/4;min-width:0;border-radius:3px;
+ border:1px solid #6b6355;background:radial-gradient(ellipse at 50% 15%,#a7a39966,transparent 68%),#11191f;
+ box-shadow:inset 0 0 20px #0008;
+}
+#cardGrid.museum-view.is-gallery-layout .sports-gallery-grid:not(.is-group-gallery) .sports-gallery-media img{
+ filter:drop-shadow(0 8px 9px #0009);object-fit:contain;
+}
+#cardGrid.museum-view.is-gallery-layout .sports-gallery-grid:not(.is-group-gallery) .sports-gallery-media::before,
+#cardGrid.museum-view.is-gallery-layout .sports-gallery-grid:not(.is-group-gallery) .sports-gallery-media::after,
+#cardGrid.museum-view .sports-tile-corners{display:none!important}
+#cardGrid.museum-view .sports-gallery-placeholder{color:#e6d8b9}
+#cardGrid.museum-view .museum-plaque{
+ display:flex;flex:1;flex-direction:column;align-items:center;justify-content:center;box-sizing:border-box;width:100%;
+ text-align:center;gap:4px;margin-top:8px;padding:10px 7px;border:1px solid #c2af82;border-radius:3px;
+ background:linear-gradient(125deg,#f8f0dd,#e7dac0);color:#312e29;overflow-wrap:anywhere;min-height:66px;
+}
+#cardGrid.museum-view .museum-plaque strong{font:700 clamp(12px,1.25vw,17px)/1.25 Poppins,sans-serif}
+#cardGrid.museum-view .museum-plaque small{font:500 10px/1.35 Poppins,sans-serif;color:#645742}
+#cardGrid.museum-view .museum-plaque .museum-reference{font-family:monospace}
+#cardGrid.museum-view .sports-gallery-tile>.sports-card-menu-trigger,
+#cardGrid.museum-view .sports-gallery-tile>.card-summary-button{background:#242e36e8;border-color:#b7a176;color:#f8ecd4}
+#cardGrid.museum-view .sports-gallery-card-action:focus-visible{outline:2px solid #e8c98e;outline-offset:3px}
+@media(max-width:720px){#cardGrid.museum-view.is-gallery-layout .sports-gallery-grid:not(.is-group-gallery){grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:10px}#cardGrid.museum-view.is-gallery-layout .sports-gallery-grid:not(.is-group-gallery) .sports-gallery-tile{padding:6px}}
+@media(max-width:360px){#cardGrid.museum-view.is-gallery-layout .sports-gallery-grid:not(.is-group-gallery){grid-template-columns:minmax(0,1fr)}}
+.card-statistics-dialog{width:min(660px,94vw)}
+.card-stats-eyebrow{font:700 10px Poppins,sans-serif;color:#537687;letter-spacing:.1em}
+.card-statistics-dialog header p{margin:4px 0 0;font-size:12px;color:#537687;overflow-wrap:anywhere}
+.card-statistics-dialog h3{font:700 14px Poppins,sans-serif;margin:18px 0 6px}
+.card-stat-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.card-stat-metric{display:grid;gap:4px;min-width:0;padding:11px;border:1px solid #b6cfd5;border-radius:10px;background:#ffffffb0;overflow-wrap:anywhere}
+.card-stat-metric small{font-size:10px;color:#54738b;font-weight:600}
+.card-stat-metric strong{font-size:16px}
+.card-stat-note{font-size:11px;color:#537687;margin:5px 0 12px}
+.card-stat-group{padding:8px 10px;margin:6px 0;border:1px solid #d0e0e2;border-radius:9px;background:#ffffff80}
+.card-stat-group>div:first-child{display:flex;justify-content:space-between;gap:10px;font-size:12px}
+.card-stat-group strong{overflow-wrap:anywhere;min-width:0}
+.card-stat-group p{font-size:10px;margin:4px 0 0;color:#537687}
+.card-stat-track{margin-top:5px;height:7px;overflow:hidden;border-radius:10px;background:#ddd6ee}
+.card-stat-track>span{display:block;height:100%;border-radius:10px;background:#80c7ad}

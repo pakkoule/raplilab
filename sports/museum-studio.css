@@ -40,6 +40,14 @@ html.custom-page-finish.museum-metal:not(:has(#cardGrid.museum-view)) .app-shell
 .museum-immersive #cardGrid.museum-view .museum-strip .sports-gallery-media {height:100vh;height:100dvh;padding:clamp(44px,8vh,92px) 6% max(38px,8vh)}
 .museum-immersive #museumFullscreen {position:fixed;top:max(8px,env(safe-area-inset-top));right:max(10px,env(safe-area-inset-right));transform:none}
 
+@media (min-width:751px) {
+  html:not(.museum-immersive) #cardGrid.museum-view .museum-strip {
+    --exhibit-lift:clamp(0px,calc(13vh - 70px),90px);
+  }
+  #cardGrid.museum-view .museum-strip .museum-artwork {
+    bottom:var(--exhibit-lift,0px);
+  }
+}
 #cardGrid.museum-view .museum-strip .museum-artwork,.museum-sample .museum-artwork {
   position:relative;isolation:auto;align-self:end;justify-self:center;overflow:visible;
   width:100%;width:min(100%,calc(100cqh * var(--art-ratio,.72)));z-index:auto;
@@ -76,7 +84,7 @@ html.custom-page-finish.museum-metal:not(:has(#cardGrid.museum-view)) .app-shell
   content:"";position:absolute;inset:0;opacity:var(--light-alpha);
   background:radial-gradient(ellipse 8% 1.1% at var(--light-x) var(--light-y),color-mix(in srgb,white var(--bulb-power),transparent),transparent),
     radial-gradient(ellipse 16% 4% at var(--light-x) var(--light-y),color-mix(in srgb,var(--lit-color) var(--bulb-power),transparent),transparent),
-    radial-gradient(ellipse 38% 2.5% at 50% 95%,color-mix(in srgb,var(--lit-color) var(--floor-power),transparent),transparent);
+    radial-gradient(ellipse 38% 2.5% at 50% calc(95% - var(--exhibit-lift,0px)),color-mix(in srgb,var(--lit-color) var(--floor-power),transparent),transparent);
 }
 :is(.museum-view,.museum-sample) .museum-air {
   pointer-events:none;position:absolute;z-index:1;inset:3% 0 6%;opacity:var(--mist-alpha);

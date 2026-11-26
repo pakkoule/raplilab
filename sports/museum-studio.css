@@ -1,0 +1,104 @@
+:root {
+  --brushed-strokes:repeating-linear-gradient(0deg,#fff2 0 .45px,transparent .7px 2.9px,#6e747b12 3px 3.55px,transparent 4px 6.4px);
+  --silver-sheet:var(--brushed-strokes),linear-gradient(110deg,#cdd1d4,#f4f5f5 26%,#d7dbde 45%,#f9fafa 69%,#d1d4d8);
+  --prismatic-edge:conic-gradient(from 28deg,#fff9,#bbd9ed 11%,transparent 24%,#ecd9bd 38%,white 43%,transparent 56%,#b8dcd1 72%,white 78%,#d3c1de 93%,#fff9);
+  --base-matte:linear-gradient(176deg,#494a4c,#292a2c 36%,#131416 54%,#1e1f21);
+  --base-aluminium:var(--brushed-strokes),linear-gradient(173deg,#c0c2c5,#898b8d 38%,#646568 46%,#a9aaad);
+  --base-chrome:linear-gradient(175deg,#707985,#fafcff 25%,#9ea5ac 40%,#404650 52%,#e6ebee 70%,#737c86);
+  --base-gold:var(--brushed-strokes),linear-gradient(175deg,#d4bb82,#ead9a2 31%,#705b34 48%,#aa915f);
+  --base-marble:repeating-linear-gradient(153deg,transparent 0 21px,#bbc2c338 22px,transparent 23px 39px),linear-gradient(165deg,#4a4b4c,#17191a 48%,#2a2c2e);
+  --base-glass:linear-gradient(170deg,#d0e3e44d,#45565985 40%,#bad1d467 46%,#293236b8);
+}
+html.museum-metal:not(:has(#cardGrid.museum-view)):not(.custom-page-finish) .app-shell,
+.metal-preview[data-section="Environnement"] {background:var(--silver-sheet)!important}
+html.custom-page-finish.museum-metal:not(:has(#cardGrid.museum-view)) .app-shell {background:var(--brushed-strokes)!important}
+.museum-edge-glint {display:none}
+#cardGrid:not(.museum-view) [data-card-id] > .museum-edge-glint {
+  display:block;z-index:3;position:absolute;inset:0;border-radius:inherit;padding:1.5px;pointer-events:none;
+  background:var(--prismatic-edge);opacity:var(--museum-edge,.38);
+  -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+  -webkit-mask-composite:xor;mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);mask-composite:exclude;
+}
+.museum-stage-controls {position:relative;height:0;z-index:8}
+.museum-stage-controls:not(:has(button:not([hidden]))) {display:none}
+#museumFullscreen {
+  position:absolute;top:0;right:8px;transform:translateY(6px);z-index:8;width:38px;height:38px;
+  border:1px solid #f0f2f347;border-radius:50%;background:#202325dc;color:#f0f2f4;
+  display:grid;place-items:center;cursor:pointer;
+}
+#museumFullscreen[hidden], #museumStudio[hidden] {display:none!important}
+#museumFullscreen svg {width:18px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round}
+#museumFullscreen:focus-visible {outline:2px solid #fff;outline-offset:2px}
+.museum-immersive, .museum-immersive body {overflow:hidden}
+.museum-immersive .app-shell {position:fixed!important;inset:0;margin:0!important;padding:0!important;width:100%!important;max-width:none!important;border:0!important;border-radius:0!important}
+.museum-immersive .app-shell::after {inset:0!important;mask:none!important;-webkit-mask:none!important}
+.museum-immersive .app-shell > :not(main),.museum-immersive main > section > :not(#collectionPanel),
+.museum-immersive #collectionPanel > :not(#cardGrid):not(.museum-stage-controls),
+.museum-immersive #cardGrid > :not(.museum-strip),.museum-immersive #sportsBackToTop {display:none!important}
+.museum-immersive #cardGrid.museum-view {margin:0!important;padding:0!important;border:0;border-radius:0}
+.museum-immersive #cardGrid .museum-strip {padding:0;align-items:center;min-height:100vh;min-height:100dvh}
+.museum-immersive #cardGrid.museum-view .museum-strip .sports-gallery-media {height:100vh;height:100dvh;padding:clamp(44px,8vh,92px) 6% max(38px,8vh)}
+.museum-immersive #museumFullscreen {position:fixed;top:max(8px,env(safe-area-inset-top));right:max(10px,env(safe-area-inset-right));transform:none}
+
+#cardGrid.museum-view .museum-strip .museum-artwork,.museum-sample .museum-artwork {
+  position:relative;isolation:auto;align-self:end;justify-self:center;overflow:visible;
+  width:100%;width:min(100%,calc(100cqh * var(--art-ratio,.72)));z-index:auto;
+}
+#cardGrid.museum-view.is-gallery-layout .sports-gallery-grid .museum-artwork img,.museum-sample img {
+  position:relative;z-index:5;grid-area:1/1;width:100%;height:auto;max-height:100cqh;object-fit:contain;
+  filter:drop-shadow(0 2px 2px rgba(0,0,0,var(--shadow-alpha))) drop-shadow(var(--shadow-x) 8px var(--shadow-soft) rgba(0,0,0,var(--shadow-alpha)));
+}
+:is(.museum-view,.museum-sample) .museum-artwork::before {
+  content:"";position:absolute;pointer-events:none;z-index:0;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:var(--halo-size);height:var(--halo-size);opacity:var(--halo-alpha);
+  background:radial-gradient(ellipse,var(--halo-tint) 0%,color-mix(in srgb,var(--halo-tint) 52%,transparent) var(--halo-core),transparent 70%);
+}
+:is(.museum-view,.museum-sample) .museum-artwork::after {
+  content:"";position:absolute;display:var(--base-show);pointer-events:none;z-index:4;
+  left:-3%;right:-3%;top:calc(100% + 2px);height:clamp(8px,1.4vh,16px);border-radius:12% 12% 5% 5% / 45% 45% 16% 16%;
+  transform:perspective(90px) rotateX(17deg);background:var(--base-surface);
+  border-top:1px solid #a2a6a9;border-top-color:color-mix(in srgb,var(--lamp) 35%,#525456);
+  box-shadow:inset 0 -3px 2px #0005,0 6px 8px rgba(0,0,0,var(--shadow-alpha));
+}
+:is(.museum-view,.museum-sample) .museum-light {
+  z-index:2;opacity:1;background:none;
+}
+:is(.museum-view,.museum-sample) .museum-light::before {
+  inset:var(--light-y) 0 auto;height:var(--beam-length);transform-origin:var(--light-x) top;
+  transform:rotate(var(--beam-angle));filter:blur(var(--beam-blur));
+  opacity:calc(var(--beam-power) * var(--light-alpha));
+  background:conic-gradient(from calc(180deg - var(--beam-half)) at var(--light-x) -8%,transparent,
+    var(--beam-right) calc(var(--beam-half) * .72),var(--lit-color) var(--beam-half),
+    var(--beam-left) calc(var(--beam-half) * 1.28),transparent calc(var(--beam-half) * 2));
+  --beam-fade:linear-gradient(transparent,#000b 4%,#0008 18%,#0003 57%,transparent 99%);
+}
+:is(.museum-view,.museum-sample) .museum-light::after {
+  content:"";position:absolute;inset:0;opacity:var(--light-alpha);
+  background:radial-gradient(ellipse 8% 1.1% at var(--light-x) var(--light-y),color-mix(in srgb,white var(--bulb-power),transparent),transparent),
+    radial-gradient(ellipse 16% 4% at var(--light-x) var(--light-y),color-mix(in srgb,var(--lit-color) var(--bulb-power),transparent),transparent),
+    radial-gradient(ellipse 38% 2.5% at 50% 95%,color-mix(in srgb,var(--lit-color) var(--floor-power),transparent),transparent);
+}
+:is(.museum-view,.museum-sample) .museum-air {
+  pointer-events:none;position:absolute;z-index:1;inset:3% 0 6%;opacity:var(--mist-alpha);
+  background:radial-gradient(ellipse 24% 39% at var(--light-x) 25%,var(--lit-color),transparent),
+    radial-gradient(ellipse 44% 26% at 50% 65%,var(--lamp),transparent);
+}
+#museumStudio {font:500 14px Poppins,sans-serif}
+.museum-studio-layout {display:grid;grid-template-columns:minmax(200px,.9fr) minmax(230px,1.1fr);gap:18px;align-items:start}
+.museum-sample {container-type:size;display:grid;place-items:end center;position:sticky;top:0;isolation:isolate;
+  overflow:hidden;box-sizing:border-box;height:clamp(250px,48vh,460px);padding:42px 17% 38px;border-radius:16px;
+  background-color:#191a1c;background-image:var(--museum-bricks);background-size:auto,192px 80px}
+.museum-sample-card {display:grid;place-items:center;text-align:center;width:100%;aspect-ratio:5/7;color:white;background:linear-gradient(145deg,#566372,#1c2530);z-index:5}
+.museum-sample[data-section="Environnement"] {box-shadow:inset 0 0 0 2px rgb(173 208 227 / var(--sample-edge))}
+#museumStudio label {display:block;font-size:13px;font-weight:650}
+.museum-setting {margin:9px 0}
+.museum-setting > div {display:flex;align-items:center;gap:6px}
+.museum-setting input[type=range] {width:100%;padding:0;min-width:0}
+.museum-setting input[type=number] {width:5.2em;flex-shrink:0}
+.museum-setting input[type=color] {width:42px;height:34px;padding:2px}
+#museumStudio footer {position:static;margin-top:14px}
+@media(max-width:650px){
+ .museum-studio-layout {grid-template-columns:minmax(0,1fr)}
+ .museum-sample {position:relative;height:230px}
+ #museumStudio input,#museumStudio select {font-size:16px}
+}

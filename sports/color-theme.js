@@ -74,6 +74,7 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 function annotate(container=document){
  const nodes=[...(container.matches?.('[data-card-id]')?[container]:[]),...container.querySelectorAll('[data-card-id]')];
  for(const node of nodes){if(!node.matches('.card-item,.sports-gallery-tile'))continue;const card=bridge.card(node.dataset.cardId);if(!card)continue;
+  if(node.closest('.museum-strip')){delete node.dataset.appearanceCard;continue;}
   const set=(key,value)=>{if(node.dataset[key]!==value)node.dataset[key]=value;};
   set('appearanceCard','');set('appearanceStatus',card.status);
   for(const key of ['rookie','legendary','dream','graded','numbered'])
@@ -85,6 +86,7 @@ function annotate(container=document){
 }
 let lastAppliedCss='';
 function apply(value){
+ document.documentElement.classList.toggle('custom-page-finish',!!value?.base?.page);
  const nextCss=value?compile(value):'';
  // Rewriting an identical stylesheet repaints iOS Safari photo layers.
  if(nextCss!==lastAppliedCss){sheet.textContent=nextCss;lastAppliedCss=nextCss;}

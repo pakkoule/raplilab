@@ -459,6 +459,11 @@ html[data-rapli-role="editor"] #rapli-admin-login{display:none}
   <script defer src="shared/ios-input-focus.js"></script>
   <!-- Keep session callback handling at the top-level after admin magic-link redirects. -->
   <script defer src="shared/admin-access.js"></script>
+<style>
+html.museum-presenting, html.museum-presenting body {overflow:hidden}
+html.museum-presenting #frame-sports {position:fixed;inset:0;width:100%;height:100%;height:100dvh;z-index:2147483600;border:0}
+html.museum-presenting :is(.frame-wrap,.portal,#panel-sports){transform:none!important;animation:none!important;overflow:visible}
+</style>
 </head>
 <body data-active="sports">
   <div class="portal">
@@ -472,7 +477,7 @@ html[data-rapli-role="editor"] #rapli-admin-login{display:none}
     </div>
     <div class="frame-wrap">
       <section id="panel-sports" role="tabpanel" aria-label="Rapli Sports">
-        <iframe id="frame-sports" class="app-frame" data-src="sports/index.html" title="Rapli Sports — cartes de sport" loading="eager"></iframe>
+        <iframe allowfullscreen id="frame-sports" class="app-frame" data-src="sports/index.html" title="Rapli Sports — cartes de sport" loading="eager"></iframe>
       </section>
     </div>
 

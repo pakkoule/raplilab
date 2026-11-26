@@ -3040,6 +3040,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
 <link rel="stylesheet" href="jersey-fonts.css">
   <link rel="stylesheet" href="../shared/collection-navigation.css">
 <link rel="stylesheet" href="museum.css">
+<link rel="stylesheet" href="museum-studio.css">
 </head>
 <body>
   <div class="app-shell">
@@ -3093,6 +3094,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         </div>
         <div id="demoBanner" class="demo-strip hidden"><span><strong>APERÇU DE DÉMONSTRATION</strong> — Ces cartes sont des exemples modifiables.</span><button class="link-btn" id="clearDemoBtn" type="button">Supprimer les exemples</button></div>
         <button id="sportsNavigationReturn" type="button" class="sports-navigation-return" hidden aria-label="Revenir à la vue précédente">← Retour à la vue précédente</button>
+        <div class="museum-stage-controls"><button id="museumFullscreen" type="button" aria-label="Ouvrir le musée en plein écran" title="Plein écran" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4H4v5m11-5h5v5M4 15v5h5m11-5v5h-5"/></svg></button></div>
         <div id="sportsPaginationTop" class="sports-pagination-host" aria-label="Pagination supérieure"></div>
         <div id="cardGrid" class="cards-grid" aria-live="polite"></div>
         <div id="sportsPaginationBottom" class="sports-pagination-host" aria-label="Pagination inférieure"></div>
@@ -3187,7 +3189,8 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
   <dialog id="logoDialog" class="modal small" aria-labelledby="logoDialogTitle">
     <div class="modal-header"><div><span class="modal-kicker">RAPLI SPORTS / IDENTITÉS VISUELLES</span><h2 id="logoDialogTitle" class="modal-title">Bibliothèque de logos</h2></div><button type="button" class="close-modal" data-close="logoDialog" aria-label="Fermer">×</button></div>
     <div class="modal-body">
-      <div class="logo-tabs"><button type="button" class="logo-tab" id="appearanceSettingsBtn" data-logo-type="appearance">Couleurs &amp; variations</button><button type="button" class="logo-tab" data-logo-type="jersey-font">👕 Polices de flocage</button><button type="button" class="logo-tab active" data-logo-type="brand">Marques</button><button type="button" class="logo-tab" data-logo-type="team">Équipes</button><button type="button" class="logo-tab" data-logo-type="rainbow">Rainbows</button><button type="button" class="logo-tab" data-logo-type="rookie">Rookie / RC</button><button type="button" class="logo-tab" data-logo-type="athlete">Portraits athlètes</button><button type="button" class="logo-tab" data-logo-type="nationality">Pays</button><button type="button" class="logo-tab" data-logo-type="sport">Sports</button><button type="button" class="logo-tab" data-logo-type="grading">Organismes de grading</button><button type="button" class="logo-tab" data-logo-type="tag">Tags / variations</button><button type="button" class="logo-tab" data-logo-type="labels">Étiquettes</button><button type="button" class="logo-tab" data-logo-type="collector">Style des badges</button></div>
+      <div class="logo-tabs"><button type="button" class="logo-tab" id="appearanceSettingsBtn" data-logo-type="appearance">Couleurs &amp; variations</button><button type="button" class="logo-tab" data-logo-type="museum">Musée</button><button type="button" class="logo-tab" data-logo-type="jersey-font">👕 Polices de flocage</button><button type="button" class="logo-tab active" data-logo-type="brand">Marques</button><button type="button" class="logo-tab" data-logo-type="team">Équipes</button><button type="button" class="logo-tab" data-logo-type="rainbow">Rainbows</button><button type="button" class="logo-tab" data-logo-type="rookie">Rookie / RC</button><button type="button" class="logo-tab" data-logo-type="athlete">Portraits athlètes</button><button type="button" class="logo-tab" data-logo-type="nationality">Pays</button><button type="button" class="logo-tab" data-logo-type="sport">Sports</button><button type="button" class="logo-tab" data-logo-type="grading">Organismes de grading</button><button type="button" class="logo-tab" data-logo-type="tag">Tags / variations</button><button type="button" class="logo-tab" data-logo-type="labels">Étiquettes</button><button type="button" class="logo-tab" data-logo-type="collector">Style des badges</button></div>
+      <section id="museumStudio" class="appearance-dialog" aria-label="Paramètres du musée" hidden></section>
       <section id="appearanceSettingsPanel" class="appearance-dialog" aria-label="Couleurs et variations" hidden></section>
       <section id="jerseyFontPanel" class="jersey-font-panel" aria-label="Bibliothèque des polices de flocage" hidden>
         <div class="jersey-font-intro">
@@ -3362,6 +3365,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
   <button type="button" id="sportsBackToTop" hidden aria-label="Retour en haut de la collection" title="Retour en haut">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 14 6-6 6 6"/><path d="M12 9v11"/></svg>
   </button>
+  <script src="museum-studio.js"></script>
   <script src="collection-extras.js"></script>
   <script src="collection-stats.js"></script>
   <script src="stats-visuals.js"></script>
@@ -4435,16 +4439,17 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
           '<span class="sports-gallery-placeholder" data-card-photo-fallback>'+ico('layers')+'</span>';
         const athlete=cardPlayers(item).map(p=>p.name).filter(Boolean).join(' / ')||item.player||'Athlète non renseigné';
         const museum=sportsDisplay==='museum';
-        const light=museum?resolveSpotlight((item.tags||[]).map(tagProfile).filter(Boolean)):null;
+        const profiles=museum?(item.tags||[]).map(tagProfile).filter(p=>p&&normalizeTagCategories(p.categories).includes('parallel')):[];
+        const light=museum?resolveSpotlight(profiles):null;
         const exhibit='<span class="museum-artwork">'+photo+'<span class="museum-caption">'+safeText(athlete)+'</span></span>'+
-          '<span class="museum-light" aria-hidden="true"></span>';
+          '<span class="museum-air" aria-hidden="true"></span><span class="museum-light" aria-hidden="true"></span>';
         return '<article class="sports-gallery-tile '+cardTileFoilClass(item)+(item.rookie===true?' is-rookie-card':'')+
           (item.status==='wishlist'&&item.dream?' is-dream-gallery':'')+'" data-card-id="'+safeText(item.id)+'">'+
-          '<span class="sports-tile-corners" aria-hidden="true"></span>'+
+          '<span class="sports-tile-corners" aria-hidden="true"></span><span class="museum-edge-glint" aria-hidden="true"></span>'+
           (recentCard(item)?'<span class="sports-gallery-new" title="Ajoutée il y a moins de 7 jours">NEW</span>':'')+
           '<button type="button" class="sports-gallery-card-action" data-sports-gallery-card="'+safeText(item.id)+
           '" aria-label="Ouvrir la fiche de '+safeText(athlete)+'">'+
-          '<span class="sports-gallery-media"'+(museum?' style="'+spotlightStyle(light)+'"':'')+'>'+
+          '<span class="sports-gallery-media"'+(museum?' style="'+(window.RapliMuseum?.style(profiles,light)||spotlightStyle(light))+'"':'')+'>'+
           (museum?exhibit:photo+'<span class="sports-gallery-athlete-foil">'+safeText(athlete)+'</span>')+
           '</span></button><button type="button" class="card-summary-button" data-card-tool="summary" aria-label="Résumé de la carte" title="Résumé de la carte">ⓘ</button>'+cardMenuTriggerMarkup(item)+'</article>';
       }
@@ -4581,7 +4586,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
           `<img data-card-photo="${safeText(c.id)}" alt="Carte de ${safeText(c.player)}" loading="eager" decoding="async" hidden>`+placeholder:
           imgSafe(c.photo)?`<img src="${c.photo}" alt="Carte de ${safeText(c.player)}" loading="lazy" decoding="async">`:
           placeholder;const tags=orderedCardTags(c.tags).slice(0,8).map(tag=>'<span class="card-tag-entry">'+cardTagMarkup(tag,c.season)+'</span>').join('')+
-        ((c.tags||[]).length>8?`<span class="card-tag-entry"><span class="tag more">+${c.tags.length-8}</span></span>`:'');return `<article class="card-item ${cardTileFoilClass(c)}${c.rookie===true?' is-rookie-card':''}${c.status==='wishlist'&&c.dream?' is-dream-card':''}" data-id="${safeText(c.id)}" data-card-id="${safeText(c.id)}"><span class="sports-tile-corners" aria-hidden="true"></span><div class="photo-side"><div class="card-photo" style="${sportFrameStyle(c.sport)}">${photo}${c.demo?'<span class="photo-flag">DÉMO</span>':''}${recentCard(c)?'<span class="sports-new-flag">NEW</span>':''}</div></div><div class="card-info"><div class="card-top"><div class="card-athlete">${playerCardSummary(c)}</div></div><div class="identity-row"><div class="identity-logos"><div class="brand-lockup">${brandBadge('brand',c.brand)}${logoFor('brand',c.brand)?'':'<span>'+safeText(c.brand||'Sans marque')+'</span>'}</div><div class="team-identity">${c.team?brandBadge('team',c.team,c.season,c.teamLogoOverride):''}${logoFor('team',c.team,c.season,c.teamLogoOverride)?'':'<span>'+safeText(c.team||'Équipe non renseignée')+'</span>'}</div></div></div><div class="tags">${tags||'<span class="blank-tag">Aucune variation</span>'}</div><div class="card-bottom"><div class="card-status-badges">${sportsSportBadge(c.sport)}${collectorBadgeMarkup(c)}${seasonBadge(c)}${gradingBadgeMarkup(c)}${c.status==='wishlist'&&c.dream?'<span class="card-dream-badge"><span class="dream-sparkle" aria-hidden="true">✨</span> DANS MES RÊVES</span>':''}</div><div class="card-kebab-wrap">${cardMenuTriggerMarkup(c)}</div></div></div></article>`}
+        ((c.tags||[]).length>8?`<span class="card-tag-entry"><span class="tag more">+${c.tags.length-8}</span></span>`:'');return `<article class="card-item ${cardTileFoilClass(c)}${c.rookie===true?' is-rookie-card':''}${c.status==='wishlist'&&c.dream?' is-dream-card':''}" data-id="${safeText(c.id)}" data-card-id="${safeText(c.id)}"><span class="sports-tile-corners" aria-hidden="true"></span><span class="museum-edge-glint" aria-hidden="true"></span><div class="photo-side"><div class="card-photo" style="${sportFrameStyle(c.sport)}">${photo}${c.demo?'<span class="photo-flag">DÉMO</span>':''}${recentCard(c)?'<span class="sports-new-flag">NEW</span>':''}</div></div><div class="card-info"><div class="card-top"><div class="card-athlete">${playerCardSummary(c)}</div></div><div class="identity-row"><div class="identity-logos"><div class="brand-lockup">${brandBadge('brand',c.brand)}${logoFor('brand',c.brand)?'':'<span>'+safeText(c.brand||'Sans marque')+'</span>'}</div><div class="team-identity">${c.team?brandBadge('team',c.team,c.season,c.teamLogoOverride):''}${logoFor('team',c.team,c.season,c.teamLogoOverride)?'':'<span>'+safeText(c.team||'Équipe non renseignée')+'</span>'}</div></div></div><div class="tags">${tags||'<span class="blank-tag">Aucune variation</span>'}</div><div class="card-bottom"><div class="card-status-badges">${sportsSportBadge(c.sport)}${collectorBadgeMarkup(c)}${seasonBadge(c)}${gradingBadgeMarkup(c)}${c.status==='wishlist'&&c.dream?'<span class="card-dream-badge"><span class="dream-sparkle" aria-hidden="true">✨</span> DANS MES RÊVES</span>':''}</div><div class="card-kebab-wrap">${cardMenuTriggerMarkup(c)}</div></div></div></article>`}
       const statsEngine=window.RapliSportsStats;
       const statsVisuals=window.RapliSportsStatsVisuals;
       function renderOwnedStatistics(data=statsEngine.calculate(cards)){
@@ -4916,6 +4921,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         for(const attribute of [...current.attributes]){
           // Runtime annotations, loaded photo source and fallback visibility do
           // not belong to HTML reconciliation.
+          if(attribute.name==='style'&&current.matches('.museum-artwork'))continue;
           if(attribute.name.startsWith('data-appearance-')||
              (isLivePhoto&&['src','hidden'].includes(attribute.name)))continue;
           if(!next.hasAttribute(attribute.name))current.removeAttribute(attribute.name);
@@ -5065,7 +5071,12 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         return true;
       }
 
+      let navigationState='';
       function renderAll(){
+        window.RapliMuseum?.refresh();
+        const nextNavigation=JSON.stringify([currentView,sportsGalleryLayout,sportsDisplay,sportsGallerySelected,sportsGalleryPage,$('filterSearch').value,$('filterDream').checked,$('sortSelect').value]);
+        if(navigationState&&nextNavigation!==navigationState)window.RapliMuseum?.transition(sportsGalleryLayout==='rainbows'?$('rainbowPanel'):$('cardGrid'));
+        navigationState=nextNavigation;
         window.RapliJerseyFontsUI?.refresh?.();
         window.RapliAppearance?.refresh();
         window.RapliExtrasUI?.refresh();
@@ -5094,6 +5105,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         $('statsPanel').hidden=!showStats;
         $('rainbowPanel').hidden=!showRainbow;
         if(showRainbow){
+          $('museumFullscreen').hidden=true;window.RapliMuseum?.stageAvailable(false);
           $('sportsPaginationTop').replaceChildren();$('sportsPaginationBottom').replaceChildren();
           renderRainbows();renderRainbowManager();return;
         }
@@ -5114,6 +5126,8 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         const markup=renderSportsGallery(match);
         const cardPage=directViews.includes(sportsGalleryLayout)||Boolean(sportsGallerySelected);
         const museum=cardPage&&sportsDisplay==='museum';
+        $('museumFullscreen').hidden=!museum||!match.length;
+        window.RapliMuseum?.stageAvailable(museum&&match.length);
         $('cardGrid').classList.toggle('dream-museum',museum);
         $('cardGrid').classList.toggle('museum-view',museum);
         $('cardGrid').classList.toggle('is-gallery-layout',!cardPage||sportsDisplay!=='details');
@@ -5425,8 +5439,10 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         savedCountryTags().forEach(item=>list.append(new Option(item,item)));
       }
       function setLogoType(type){
-        if(!['brand','team','rainbow','rookie','athlete','nationality','sport','grading','tag','labels','collector','appearance','jersey-font'].includes(type))type='brand';
-        if(type==='appearance'&&!isRapliEditor())return;
+        if(!['brand','team','rainbow','rookie','athlete','nationality','sport','grading','tag','labels','collector','appearance','museum','jersey-font'].includes(type))type='brand';
+        if(['appearance','museum'].includes(type)&&!isRapliEditor())return;
+        $('museumStudio').hidden=type!=='museum';
+        window.RapliMuseum?.edit(type==='museum');
         $('appearanceSettingsPanel').hidden=type!=='appearance';
         if(type==='appearance')window.RapliAppearance?.open();else window.RapliAppearance?.leave();
         $('jerseyFontPanel').hidden=type!=='jersey-font';
@@ -5447,7 +5463,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         if(type==='tag')renderTagBrandOptions();
         document.querySelectorAll('#tagCategoryPanel [data-tag-category]').forEach(box=>box.checked=false);
         $('logoImageLabel').textContent=['tag','grading'].includes(type)?'Image du logo (facultative)':'Image du logo';
-        const styleTab=type==='collector',labelsTab=type==='labels',rainbowTab=type==='rainbow',customTab=styleTab||labelsTab||rainbowTab||type==='appearance'||type==='jersey-font';
+        const styleTab=type==='collector',labelsTab=type==='labels',rainbowTab=type==='rainbow',customTab=styleTab||labelsTab||rainbowTab||['appearance','museum','jersey-font'].includes(type);
         $('rainbowLibraryPanel').hidden=!rainbowTab;
         $('logoCreatePanel').hidden=customTab;$('logoList').hidden=customTab;
         $('collectorSettingsPanel').hidden=!styleTab;$('labelSettingsPanel').hidden=!labelsTab;
@@ -5463,7 +5479,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
           : 'Associe un logo à une marque ou une équipe pour l’afficher sur les cartes correspondantes.';
         $('saveLogoBtn').textContent=type==='rookie'?'Enregistrer le logo RC':type==='athlete'?'Enregistrer le portrait':(type==='nationality'?'Enregistrer le tag pays':type==='sport'?'Enregistrer l’icône':type==='grading'?'Enregistrer le style du grading':type==='tag'?'Enregistrer le tag':'Ajouter');
         document.querySelectorAll('.logo-tab').forEach(b=>b.classList.toggle('active',b.dataset.logoType===type));
-        if(styleTab)openCollectorSettings();else if(labelsTab)renderLabelEditors();else if(rainbowTab)renderRainbowManager();else if(!['appearance','jersey-font'].includes(type))renderLogos();
+        if(styleTab)openCollectorSettings();else if(labelsTab)renderLabelEditors();else if(rainbowTab)renderRainbowManager();else if(!['appearance','museum','jersey-font'].includes(type))renderLogos();
         if(type==='grading')syncGradingEditor(true);
         if(type==='nationality')syncCountryIconEditor(true);
         if(type==='athlete')syncAthleteCountry();
@@ -6166,6 +6182,13 @@ function rapliModuleReady(){
       function cardTagMarkup(name,season){return groupLink('tag',name,cardTagMarkupRaw(name,season));}
       function sportsSportBadge(name){return groupLink('sport',name,sportsSportBadgeRaw(name));}
       window.RapliExtrasBridge={cards:()=>cards,logos:()=>logos,saveCard,saveLogo,removeLogo,render:renderAll,canEdit:isRapliEditor,notify:showToast,readPhoto,tagCategories,players:savedPlayers,brands:savedBrands,tags:savedTags,openCard,labelBadge:collectionLabelMarkup};
+      window.RapliMuseumBridge={
+        settings:()=>logos.find(row=>row.id==='settings:museum')?.config,
+        parallels:()=>logos.filter(row=>row.type==='tag'&&normalizeTagCategories(row.categories).includes('parallel')),
+        canEdit:isRapliEditor,notify:showToast,
+        previewCard:()=>cards.find(card=>imgSafe(card.photo)),
+        async save(config){await saveLogo({id:'settings:museum',type:'appearance',name:'Musée',config,updatedAt:Date.now()});renderAll();}
+      };
       window.RapliAppearanceBridge={
         card:id=>cards.find(card=>card.id===id),
         canEdit:isRapliEditor,notify:showToast,
@@ -6215,6 +6238,7 @@ function rapliModuleReady(){
           setLogoType(event.data.palette);openModal('logoDialog');
         }
       });
+      window.RapliMuseum?.init();
       initialize().then(rapliModuleReady).catch(err=>console.warn('Rapli module startup',err));
     })();
   </script>

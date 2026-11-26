@@ -1,5 +1,5 @@
 const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('fs');const {JSDOM,VirtualConsole}=require('jsdom');
-async function setup(editor=true){const html=fs.readFileSync('sports/index.html','utf8'),errors=[];const vc=new VirtualConsole();vc.on('jsdomError',e=>{if(e.type!=='css parsing')errors.push(e.message);});const dom=new JSDOM(html,{runScripts:'outside-only',url:'https://test.local/sports/',pretendToBeVisual:true,virtualConsole:vc});const w=dom.window;w.RapliAdminAccess={isEditor:()=>editor};w.RapliSharedCollection={canEdit:()=>editor,changed:()=>{}};w.HTMLElement.prototype.scrollIntoView=function(){};w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};w.HTMLDialogElement.prototype.close=function(){this.open=false;this.dispatchEvent(new w.Event('close'));};w.matchMedia=()=>({matches:false,addEventListener(){},removeEventListener(){}});for(const f of ['collection-extras.js','collection-stats.js','stats-visuals.js','rainbow.js'])w.eval(fs.readFileSync('sports/'+f,'utf8'));const inline=[...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)].filter(m=>!m[1].includes('src='));for(const m of inline)w.eval(m[2]);for(const f of ['card-tools.js','color-theme.js','collection-extras-ui.js'])w.eval(fs.readFileSync('sports/'+f,'utf8'));await new Promise(r=>setTimeout(r,20));const $=id=>w.document.getElementById(id),change=(id,value)=>{$(id).value=value;$(id).dispatchEvent(new w.Event('change',{bubbles:true}));};return {w,dom,$,change,errors};}
+async function setup(editor=true){const html=fs.readFileSync('sports/index.html','utf8'),errors=[];const vc=new VirtualConsole();vc.on('jsdomError',e=>{if(e.type!=='css parsing')errors.push(e.message);});const dom=new JSDOM(html,{runScripts:'outside-only',url:'https://test.local/sports/',pretendToBeVisual:true,virtualConsole:vc});const w=dom.window;w.RapliAdminAccess={isEditor:()=>editor};w.RapliSharedCollection={canEdit:()=>editor,changed:()=>{}};w.HTMLElement.prototype.scrollIntoView=function(){};w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};w.HTMLDialogElement.prototype.close=function(){this.open=false;this.dispatchEvent(new w.Event('close'));};w.matchMedia=()=>({matches:false,addEventListener(){},removeEventListener(){}});for(const f of ['collection-extras.js','collection-stats.js','stats-visuals.js','rainbow.js','museum-studio.js'])w.eval(fs.readFileSync('sports/'+f,'utf8'));const inline=[...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)].filter(m=>!m[1].includes('src='));for(const m of inline)w.eval(m[2]);for(const f of ['card-tools.js','color-theme.js','collection-extras-ui.js'])w.eval(fs.readFileSync('sports/'+f,'utf8'));await new Promise(r=>setTimeout(r,20));const $=id=>w.document.getElementById(id),change=(id,value)=>{$(id).value=value;$(id).dispatchEvent(new w.Event('change',{bubbles:true}));};return {w,dom,$,change,errors};}
 const cards=[{id:'a',status:'own',player:'Tyrese Maxey',brand:'Topps',team:'Philadelphia 76ers',tags:['Topps Chrome','Orange Refractor'],reference:'#41',numbered:true,serial:'12',printRun:'99',season:'2025',rookie:true,graded:true,gradeScore:'10',gradeOrg:'PSA'},{id:'b',status:'wishlist',player:'Sakina Karchaoui',brand:'Topps',reference:'#12',tags:['Blue Refractor'],dream:true,wishStage:'ordered',legendary:true},{id:'c',status:'own',player:'James Harden',brand:'Panini',numbered:true,serial:'1',printRun:'1',uniqueKind:'plate'}];
 test('full catalogue integration: views, search, editor fields, readonly and gold grading',async()=>{const s=await setup();try{s.w.RapliModuleBridge.previewState({records:cards,logos:[]});s.change('sportsViewSelect','plates');assert.match(s.$('resultsLabel').textContent,/1 carte/);s.change('sportsViewSelect','all');s.$('filterSearch').value='Topps Maxey 12/99';s.$('filterSearch').dispatchEvent(new s.w.Event('input',{bubbles:true}));assert.match(s.$('resultsLabel').textContent,/1 carte/);assert.ok(s.w.document.querySelector('.grading-perfect'));s.$('filterSearch').value='Maxey 2/99';s.$('filterSearch').dispatchEvent(new s.w.Event('input',{bubbles:true}));assert.match(s.$('resultsLabel').textContent,/0 carte/);s.w.RapliExtrasBridge.openCard(cards[0]);assert.ok(s.$('cardDialog').open);assert.equal(s.$('uniqueKind').disabled,true);s.w.RapliExtrasBridge.openCard(cards[1]);assert.equal(s.$('wishStage').value,'ordered');s.change('wishStage','shipping');assert.equal(s.w.RapliExtrasUI.cardFields().wishStage,'shipping');assert.deepEqual(s.errors,[]);}finally{await new Promise(r=>setTimeout(r,100));s.dom.window.close();}});
 test('visitors cannot write new settings',async()=>{const s=await setup(false);try{assert.equal(s.w.document.querySelector('[data-view="stats"]'),null);assert.equal([...s.w.document.querySelectorAll('.section-nav .tabs button')].some(b=>b.textContent==='ARRIVÉES'),false);await assert.rejects(s.w.RapliExtrasBridge.saveCard({id:'bad'}));assert.deepEqual(s.errors,[]);}finally{await new Promise(r=>setTimeout(r,100));s.dom.window.close();}});
@@ -488,6 +488,7 @@ test('museum lights use classified parallels in saved order, with custom overrid
  try{
   const profiles=[['Red Prizm','parallel'],['Gold','parallel'],['Mystery','parallel'],['Green','insert'],['Black','parallel'],['Custom','parallel','#abcdef']];
   const logos=profiles.map(([name,category,spotlightColor])=>({id:'tag:'+name,name,type:'tag',categories:[category],spotlightColor}));
+  logos.push({id:'settings:museum',config:{global:{autoTint:true}}});
   const cases=[[[], '#ffffff'],[['Green'],'#ffffff'],[['Mystery'],'#ffffff'],[['Mystery','Gold'],'#ebc16d'],
    [['Red Prizm','Gold'],'#ed676a'],[['Black'],'#a3b0bd'],[['Gold','Custom'],'#abcdef']];
   const records=cases.map(([tags],id)=>({...cards[2],id:String(id),tags}));
@@ -501,5 +502,27 @@ test('museum lights use classified parallels in saved order, with custom overrid
   s.$('cardActionsMenu').querySelector('[data-card-tool="stats"]').click();
   assert.ok(s.w.document.querySelector('.card-statistics-dialog').open);
   assert.deepEqual(s.errors,[]);
+ }finally{s.dom.window.close();}
+});
+
+test('museum defaults to neutral white and keeps per-parallel overrides after restoring shared settings',async()=>{
+ const s=await setup();
+ try{
+  const tag={id:'tag:gold',type:'tag',name:'Gold',categories:['parallel']};
+  const records=[{...cards[0],tags:['Gold']}];
+  s.w.RapliModuleBridge.previewState({records,logos:[tag]});
+  s.change('sportsDisplaySelect','museum');
+  const setting=name=>s.$('cardGrid').querySelector('.sports-gallery-media').style.getPropertyValue(name);
+  assert.equal(setting('--lamp'),'#ffffff');
+  const config={global:{power:40,finish:'chrome'},overrides:{'tag:gold':{tint:'#abcdef'}}};
+  await s.w.RapliMuseumBridge.save(config);
+  assert.equal(setting('--lamp'),'#abcdef');
+  assert.equal(setting('--beam-power'),'0.4');
+  assert.equal(setting('--base-surface'),'var(--base-chrome)');
+  const snapshot=s.w.RapliModuleBridge.getState();
+  s.w.RapliModuleBridge.previewState({records,logos:[tag]});
+  assert.equal(setting('--lamp'),'#ffffff');
+  s.w.RapliModuleBridge.previewState(snapshot);
+  assert.equal(setting('--lamp'),'#abcdef');
  }finally{s.dom.window.close();}
 });

@@ -37,6 +37,10 @@
   width:100%; margin-inline:auto; gap:0; overflow-x:auto; padding-bottom:clamp(24px,5vh,60px);
   scroll-snap-type:x proximity; overscroll-behavior-x:contain; scrollbar-width:none;
   background:transparent;
+  --edge-fade:clamp(16px,4vw,72px);
+  --rail-mask:linear-gradient(to right,transparent,#0006 calc(var(--edge-fade) * .4),#000 var(--edge-fade),#000 calc(100% - var(--edge-fade)),#0006 calc(100% - var(--edge-fade) * .4),transparent);
+  -webkit-mask-image:var(--rail-mask);
+  mask-image:var(--rail-mask);
 }
 #cardGrid.museum-view .museum-strip::-webkit-scrollbar {display:none; width:0; height:0}
 #collectionPanel #cardGrid.museum-view.is-gallery-layout .museum-strip .sports-gallery-tile {

@@ -132,25 +132,22 @@ html[data-rapli-shared-state="ready"]:has(#collectionPanel:not(.is-rainbow-consu
   --museum-wall:#191a1c;
   --museum-fade-start:clamp(88px,11vh,135px);
   --museum-header-fade:clamp(245px,33vh,385px);
-  --museum-footer-fade:clamp(58px,9vh,100px);
   @media(max-width:750px) {
     --museum-fade-start:150px;
     --museum-header-fade:310px;
-    --museum-footer-fade:68px;
   }
   & .app-shell {
     box-sizing:border-box; min-height:100dvh; margin:0 auto;
     display:flex; flex-direction:column; isolation:isolate;
     padding-bottom:clamp(12px,2vh,24px); border-color:#36383c;
   }
-  /* Fade the wall over the site's own background at both ends. */
+  /* Fade the wall over the site's own background at the top. */
   & .app-shell::after {
     content:""; position:absolute; inset:0; z-index:-1; pointer-events:none; border-radius:inherit;
     background-color:var(--museum-wall);
     background-image:var(--museum-bricks);
     background-size:auto,192px 80px;
-    --wall-fade:linear-gradient(to bottom,transparent var(--museum-fade-start),#000 var(--museum-header-fade),
-      #000 calc(100% - var(--museum-footer-fade)),transparent);
+    --wall-fade:linear-gradient(to bottom,transparent var(--museum-fade-start),#000 var(--museum-header-fade));
     -webkit-mask-image:var(--wall-fade); mask-image:var(--wall-fade);
   }
   @supports (top:anchor(--museum-search center)) {
@@ -169,7 +166,6 @@ html[data-rapli-shared-state="ready"]:has(#collectionPanel:not(.is-rainbow-consu
     background:transparent;
   }
   & .collection-pickers label {color:#294957; text-shadow:0 1px 2px #fffc}
-  & .app-shell > .footer {margin-top:0; border-color:transparent}
 }
 @media(min-width:751px) {
   .sports-catalogue-controls {align-items:end; --control-height:40px}

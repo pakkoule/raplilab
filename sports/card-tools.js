@@ -19,6 +19,9 @@
     const players=bridge.players(card);
     return {title:players.map(p=>p.name).filter(Boolean).join(' / ')||card.player||'Carte',rows:[
       ['Statut',card.status==='own'?'Possédée':card.dream?'Wishlist · Dans mes rêves':'Wishlist'],
+      ['Suivi',card.status==='wishlist'?({ordered:'Commandée',shipping:'En attente de livraison'})[card.wishStage]||'':''],
+      ['Type 1/1',card.numbered&&Number(card.printRun)===1?(card.uniqueKind==='plate'?'Printing Plate'+(card.plateColor?' · '+card.plateColor:''):card.uniqueKind==='oneofone'?'Véritable One of One':'À vérifier'):''],
+      ['Provenance',card.source],['Lien',card.sourceUrl],
       ['Marque',card.brand],['Équipe',card.team],['Sport',card.sport],
       ['Pays',[...new Set(players.map(p=>bridge.country(p.nationality)).filter(Boolean))].join(' / ')],
       ['Référence',card.reference],['Tags',(card.tags||[]).join(' · ')],
@@ -28,6 +31,22 @@
       ['Grading',card.graded?[card.gradeOrg,card.gradeScore].filter(Boolean).join(' ')||'Gradée':'']
     ].filter(row=>row[1])};
   }
+  function collectionCardStats(card, allCards, players){
+  const normalize=v=>String(v??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().toLowerCase();
+  const names=c=>[...new Set(players(c).map(p=>normalize(p.name)).filter(Boolean))];
+  const roster=new Set(names(card));
+  const pool=allCards.filter(c=>(c.status==='own'||c.status==='wishlist')&&(card.demo||!c.demo));
+  const count=rows=>({own:rows.filter(c=>c.status==='own').length,wishlist:rows.filter(c=>c.status==='wishlist').length,total:rows.length});
+  const groups=[];
+  if(roster.size)groups.push({label:'Athlète(s) en commun',...count(pool.filter(c=>names(c).some(n=>roster.has(n))))});
+  for(const [key,label] of [['team','Même équipe'],['brand','Même marque'],['sport','Même sport'],['season','Même saison']]){
+    const value=normalize(card[key]);if(value)groups.push({label,...count(pool.filter(c=>normalize(c[key])===value))});
+  }
+  const ref=normalize(card.reference),brand=normalize(card.brand);
+  if(ref&&brand&&roster.size)groups.push({label:'Même référence, marque et athlète(s)',...count(pool.filter(c=>normalize(c.reference)===ref&&normalize(c.brand)===brand&&names(c).some(n=>roster.has(n))))});
+  const printRun=Number(card.printRun);
+  return {groups,collection:count(pool),printRun:card.numbered&&Number.isSafeInteger(printRun)&&printRun>0?printRun:null};
+}
   // PDF 1.4, A4 portrait, one RGB JPEG per page. Byte offsets are measured on
   // encoded bytes (not JS string length); each page gets its own image stream.
   function jpegPdf(pages){
@@ -49,9 +68,66 @@
     put(`trailer\n<< /Size ${offsets.length} /Root 1 0 R >>\nstartxref\n${start}\n%%EOF\n`);
     return new Blob(chunks,{type:'application/pdf'});
   }
-  if(typeof module!=='undefined'&&module.exports){module.exports={cardInfo,cleanName,jpegPdf,normalizeSeason,referenceText};return;}
+  if(typeof module!=='undefined'&&module.exports){module.exports={cardInfo,cleanName,jpegPdf,normalizeSeason,referenceText,collectionCardStats};return;}
   root.RapliCardTools={normalizeSeason,referenceText};
   const bridge=root.RapliCardToolsBridge;if(!bridge)return;
+  // Delegate to the current strip because navigation can replace its DOM.
+  let mousePan=null, blockClick=false;
+  function endMousePan(){
+    if(!mousePan)return;
+    const {strip,id,dragging}=mousePan;
+    mousePan=null;
+    strip.classList.remove('is-panning');
+    if(strip.hasPointerCapture(id))strip.releasePointerCapture(id);
+    blockClick=dragging;
+  }
+  window.addEventListener('pointerdown',event=>{
+    endMousePan();
+    blockClick=false;
+    const strip=event.target.closest?.('.museum-strip');
+    if(event.pointerType!=='mouse'||event.button!==0||!strip||strip.scrollWidth<=strip.clientWidth)return;
+    mousePan={strip,id:event.pointerId,x:event.clientX,left:strip.scrollLeft,dragging:false};
+  },true);
+  window.addEventListener('pointermove',event=>{
+    if(!mousePan||event.pointerId!==mousePan.id)return;
+    if(!(event.buttons&1)||!mousePan.strip.isConnected){endMousePan();return;}
+    const {strip,id,x,left}=mousePan;
+    const delta=event.clientX-x;
+    if(!mousePan.dragging){
+      if(Math.abs(delta)<5)return;
+      mousePan.dragging=true;
+      strip.classList.add('is-panning');
+      strip.setPointerCapture(id);
+    }
+    strip.scrollLeft=left-delta;
+    event.preventDefault();
+  },true);
+  for(const type of ['pointerup','pointercancel','lostpointercapture']){
+    window.addEventListener(type,event=>{
+      if(mousePan?.id===event.pointerId && (type!=='lostpointercapture'||event.target===mousePan.strip))endMousePan();
+    },true);
+  }
+  window.addEventListener('blur',endMousePan);
+  window.addEventListener('click',event=>{
+    if(!blockClick||event.detail===0)return;
+    blockClick=false;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+  },true);
+  document.addEventListener('dragstart',event=>{
+    if(event.target.closest?.('.museum-strip'))event.preventDefault();
+  });
+  document.addEventListener('wheel',event=>{
+    const strip=event.target.closest?.('.museum-strip');
+    if(!strip||event.ctrlKey||event.shiftKey||event.deltaX||!event.deltaY)return;
+    const unit=event.deltaMode===1?16:event.deltaMode===2?strip.clientWidth:1;
+    const limit=strip.scrollWidth-strip.clientWidth;
+    const next=Math.max(0,Math.min(limit,strip.scrollLeft+event.deltaY*unit));
+    if(Math.abs(next-strip.scrollLeft)<0.5)return;
+    event.preventDefault();
+    strip.scrollLeft=next;
+  },{passive:false});
+
   const imageSource=value=>/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(value||'');
   function bytesOf(source){const raw=atob(source.split(',')[1]);return Uint8Array.from(raw,ch=>ch.charCodeAt(0));}
   function download(blob,name){
@@ -137,6 +213,35 @@
       const group=bridge.rainbow(raw.id);return '<section><h3>'+esc(group.name)+'</h3><p>'+group.owned+' / '+group.total+' possédées</p><div class="rainbow-version-grid">'+group.entries.map(entry=>'<article class="rainbow-version" data-status="'+esc(entry.status)+'"><h4>'+esc(entry.label)+'</h4><p>'+({own:'Possédée',wishlist:'Wishlist',missing:'Manquante'})[entry.status]+'</p>'+(entry.card?'<div class="cards-grid">'+bridge.cardMarkup(entry.card)+'</div>':'<div class="rainbow-version-missing">Version non associée à une carte</div>')+'</article>').join('')+'</div></section>';
     }).join('');if(!rainbowDialog.open)rainbowDialog.showModal();
   }
+  let statsDialog;
+  function cardStatistics(card){
+    if(!statsDialog){
+      statsDialog=document.createElement('dialog');statsDialog.className='card-summary-dialog card-statistics-dialog';
+      statsDialog.setAttribute('aria-labelledby','card-stats-title');document.body.append(statsDialog);
+      statsDialog.addEventListener('click',event=>{if(event.target===statsDialog||event.target.closest('[data-card-stats-close]'))statsDialog.close();});
+    }
+    const stats=collectionCardStats(card,bridge.collectionCards(),bridge.players);
+    const info=cardInfo(card,bridge);
+    const date=value=>{if(!value)return 'Non renseignée';const parsed=new Date(Number(value)||value);return Number.isNaN(parsed.getTime())?'Non renseignée':parsed.toLocaleDateString('fr-FR');};
+    const metric=(label,value)=>'<div class="card-stat-metric"><small>'+esc(label)+'</small><strong>'+esc(value)+'</strong></div>';
+    const groups=stats.groups.map(group=>{
+      const ratio=group.total?Math.round(group.own/group.total*100):0;
+      return '<section class="card-stat-group"><div><strong>'+esc(group.label)+'</strong><b>'+group.total+'</b></div>'+
+        '<div class="card-stat-track" aria-hidden="true"><span style="width:'+ratio+'%"></span></div>'+
+        '<p>'+group.own+' OWN · '+group.wishlist+' Wishlist</p></section>';
+    }).join('');
+    const rainbows=bridge.cardRainbows(card).map(raw=>bridge.rainbow(raw.id)).filter(Boolean);
+    const rainbowMarkup=rainbows.length?'<h3>Rainbows associés</h3>'+rainbows.map(group=>'<section class="card-stat-group"><div><strong>'+esc(group.name)+'</strong><b>'+group.owned+' / '+group.total+'</b></div><div class="card-stat-track"><span style="width:'+Math.max(0,Math.min(100,Number(group.percent)||0))+'%"></span></div><p>'+esc(group.percent)+' % possédées</p></section>').join(''):'';
+    statsDialog.innerHTML='<header><div><small class="card-stats-eyebrow">STATISTIQUES DE LA CARTE</small><h2 id="card-stats-title">'+esc(info.title)+'</h2><p>'+esc([card.brand,card.reference,card.season].filter(Boolean).join(' · '))+'</p></div><button type="button" data-card-stats-close aria-label="Fermer les statistiques">×</button></header>'+
+      '<div class="card-stat-metrics">'+metric('Statut',card.status==='own'?'OWN':card.dream?'DREAMLIST':'WISHLIST')+
+      metric('Tirage déclaré',stats.printRun===null?'Non renseigné':stats.printRun.toLocaleString('fr-FR'))+
+      metric('Numéro',card.numbered&&card.printRun?[card.serial||'',card.printRun].join('/'):'—')+
+      metric('Ajoutée le',date(card.createdAt))+'</div>'+
+      '<h3>Dans ta collection</h3><p class="card-stat-note">Sur '+stats.collection.total+' cartes OWN et Wishlist, carte affichée comprise. Les groupes peuvent se recouper.</p>'+
+      (groups||'<p>Aucun critère de comparaison renseigné.</p>')+rainbowMarkup+
+      '<p class="card-stat-note">Données de la collection uniquement, sans estimation de cote ni de rareté mondiale.</p>';
+    if(!statsDialog.open)statsDialog.showModal();
+  }
   let dialog;
   function summary(card){
     if(!dialog){dialog=document.createElement('dialog');dialog.className='card-summary-dialog';dialog.setAttribute('aria-labelledby','card-summary-title');document.body.append(dialog);dialog.addEventListener('click',e=>{if(e.target===dialog||e.target.closest('[data-summary-close]'))dialog.close();});}
@@ -172,11 +277,13 @@
     const link=event.target.closest('#cardGrid [data-card-group], .rainbow-versions-dialog [data-card-group]');
     if(link){event.preventDefault();event.stopImmediatePropagation();if(rainbowDialog?.open)rainbowDialog.close();bridge.navigate(link.dataset.cardGroup,link.dataset.groupLabel);return;}
     const action=event.target.closest('[data-card-tool], [data-rainbow-pdf]');if(!action)return;
+    if(action.closest('#cardActionsMenu'))root.RapliCardMenu?.close?.(true);
     event.preventDefault();event.stopImmediatePropagation();if(action.disabled)return;action.disabled=true;
     try{
       if(action.hasAttribute('data-rainbow-pdf')){const group=bridge.rainbow(action.dataset.rainbowPdf);if(group)await pdfDownload(group);}
       else{const card=bridge.card(action.dataset.cardTarget||action.closest('[data-card-id]')?.dataset.cardId);if(!card)return;
         if(action.dataset.cardTool==='summary')summary(card);
+        if(action.dataset.cardTool==='stats')cardStatistics(card);
         if(action.dataset.cardTool==='copy')await copyReference(card,action);
         if(action.dataset.cardTool==='rainbows')rainbowVersions(card);
         if(action.dataset.cardTool==='png')await pngDownload(card);

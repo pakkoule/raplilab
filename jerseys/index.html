@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#f3f4f6">
+  <meta name="description" content="Rapli Jerseys — collection de maillots de sport, bientôt disponible dans Rapli Lab.">
+  <title>Rapli Lab</title>
+  <link rel="icon" type="image/png" href="../assets/rapli-lab-favicon.png">
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png">
+  <style>
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap');
+  *{box-sizing:border-box}
+  :root{font-family:Poppins,system-ui,-apple-system,sans-serif;color:#26475b;background:#f5f8fa}
+  html{scroll-behavior:smooth}
+  body{margin:0;min-height:100vh;background:linear-gradient(150deg,#f5fbf8 0%,#f4f8fc 52%,#faf6f7 100%)}
+  .app-shell{
+    width:min(1120px,calc(100% - 48px));max-width:1120px;
+    margin:27px auto 42px;padding:0 27px 40px;
+    border:1px solid #d9e5ed;border-radius:21px;
+    background:linear-gradient(145deg,#fff,#f7fafb 65%,#f6f9fb);
+    box-shadow:0 14px 42px rgba(40,80,103,.08);
+  }
+  .topline{height:5px;margin:0 -27px;border-radius:20px 20px 0 0;
+    background:linear-gradient(90deg,#8bdfc5,#c7e2f1 42%,#e7d4e9 75%,#efddba)}
+  .jerseys-collection-header{margin-top:10px}
+  .jerseys-start{margin:30px auto 0;padding:36px clamp(18px,5vw,50px);
+    max-width:780px;text-align:center;position:relative;
+    border:1px solid #d7e8e7;border-radius:20px;
+    background:linear-gradient(135deg,rgba(246,255,251,.96),rgba(244,249,255,.96),rgba(255,250,244,.9));
+    box-shadow:0 10px 26px rgba(34,77,103,.065)}
+  .jerseys-symbol{display:grid;place-items:center;width:72px;height:72px;margin:0 auto 16px;
+    border:1px solid #b9deda;border-radius:20px;font-size:33px;
+    background:linear-gradient(140deg,#e9fcf6,#e8f4ff 60%,#f9ebf3)}
+  .jerseys-kicker{font-size:10px;letter-spacing:.18em;font-weight:900;color:#43817e}
+  h1{margin:8px 0 13px;font-size:clamp(22px,5vw,35px);font-weight:900;letter-spacing:.045em;color:#245466}
+  .jerseys-start p{max-width:540px;margin:0 auto;font-size:13px;line-height:1.75;color:#587386}
+  .jerseys-note{margin:22px auto 0;max-width:540px;padding:12px 15px;
+    border-radius:11px;background:#fff;border:1px solid #dae9eb;
+    color:#617a88;font-weight:650;font-size:11px;line-height:1.6}
+  @media(max-width:750px){
+    .app-shell{width:calc(100% - 16px);padding:0 11px 26px;margin:8px auto 18px;border-radius:15px}
+    .topline{margin:0 -11px;border-radius:14px 14px 0 0}
+    .jerseys-start{margin-top:18px;padding:25px 16px}
+    .jerseys-start p{font-size:12px}
+    .jerseys-symbol{width:62px;height:62px;font-size:29px}
+  }
+  </style>
+  <link rel="stylesheet" href="../shared/collection-navigation.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="app-shell">
+    <div class="topline" aria-hidden="true"></div>
+    <header class="jerseys-collection-header">
+      <div class="rapli-collection-brand" aria-label="Rapli Lab"><img src="../assets/rapli-archives-logo-header-transparent.webp" alt="Rapli Lab" width="102" height="72"></div>
+      <nav class="jerseys-collection-tabs" role="tablist" aria-label="Collections Rapli Lab">
+        <a role="tab" aria-selected="false" class="jerseys-collection-tab" href="../#own" target="_top">OWN</a>
+        <a role="tab" aria-selected="false" class="jerseys-collection-tab" href="../#wishlist" target="_top">WISHLIST</a>
+        <span role="tab" aria-selected="true" tabindex="0" class="jerseys-collection-tab is-active">JERSEYS</span>
+      </nav>
+    </header>
+    <section class="jerseys-start" aria-labelledby="jerseys-title">
+      <div class="jerseys-start-header">
+        <div class="jerseys-symbol" aria-hidden="true">👕</div>
+        <div>
+          <span class="jerseys-kicker">RAPLI LAB · JERSEYS</span>
+          <h1 id="jerseys-title">COLLECTION DE MAILLOTS</h1>
+          <p>Les logos des équipes et des compétitions sont partagés avec Rapli Sports. Un écusson historique peut être choisi automatiquement selon la saison du maillot.</p>
+        </div>
+      </div>
+      <div class="jerseys-logo-note" id="jerseysLogoStatus" role="status" aria-live="polite">Connexion à la bibliothèque de logos Sports…</div>
+      <div class="jerseys-preview-layout">
+        <form class="jerseys-preview-controls" id="jerseysPreviewForm" autocomplete="off" onsubmit="return false">
+          <h2>PERSONNALISER UNE TUILE</h2>
+          <p>Prévisualisation uniquement. Les sélections réutilisent directement les logos Sports et ne créent pas de nouvelle fiche de maillot.</p>
+          <label>ÉQUIPE
+            <select id="jerseyTeam" aria-label="Équipe pour le maillot"><option value="">Chargement des équipes…</option></select>
+          </label>
+          <label>COMPÉTITION
+            <select id="jerseyCompetition" aria-label="Compétition pour le maillot"><option value="">Chargement des compétitions…</option></select>
+          </label>
+          <label>SAISON
+            <input id="jerseySeason" type="text" inputmode="numeric" maxlength="9" placeholder="2024/2025" aria-label="Saison du maillot">
+          </label>
+          <div class="jerseys-controls-title">VARIANTES DE LOGO (FACULTATIVES)</div>
+          <div class="jerseys-variant-grid">
+            <label>Logo équipe<select id="jerseyTeamVariant" aria-label="Variante du logo équipe"><option value="auto">Automatique</option></select></label>
+            <label>Logo compétition<select id="jerseyCompetitionVariant" aria-label="Variante du logo compétition"><option value="auto">Automatique</option></select></label>
+          </div>
+          <div class="jerseys-controls-title">FLOCAGE · NOM ET NUMÉRO</div>
+          <div class="jerseys-variant-grid">
+            <label>NOM AU DOS<input id="jerseyLetteringName" type="text" maxlength="40" value="JOUEUR" aria-label="Nom du flocage"></label>
+            <label>NUMÉRO<input id="jerseyLetteringNumber" type="text" inputmode="numeric" maxlength="3" value="10" aria-label="Numéro du flocage"></label>
+          </div>
+          <label>POLICE DU NOM
+            <select id="jerseyLetteringFont" aria-label="Police du nom"><option value="">Par défaut · Poppins</option></select>
+          </label>
+          <label>POLICE DU NUMÉRO
+            <select id="jerseyLetteringNumberFont" aria-label="Police du numéro"><option value="same">Même police que le nom</option></select>
+          </label>
+          <label>COULEUR DU FLOCAGE
+            <input id="jerseyLetteringColor" type="color" value="#ffffff" aria-label="Couleur du flocage">
+          </label>
+          <a class="jerseys-library-link" href="../#jersey-fonts" target="_top">＋ IMPORTER UNE POLICE DANS LA BIBLIOTHÈQUE</a>
+          <div class="jerseys-font-status" id="jerseysFontStatus" role="status" aria-live="polite">Chargement des polices de flocage…</div>
+          <button id="jerseysLogoRefresh" type="button">↻ ACTUALISER LA BIBLIOTHÈQUE</button>
+        </form>
+        <div class="jerseys-card-preview" role="group" aria-label="Aperçu d’une tuile Jerseys">
+          <header>
+            <div class="jerseys-logo-slot">
+              <img id="jerseyTeamLogo" alt="" hidden>
+              <span id="jerseyTeamFallback" class="jerseys-logo-fallback">—</span>
+              <small id="jerseyTeamLabel">ÉQUIPE</small>
+            </div>
+            <div class="jerseys-logo-slot">
+              <small id="jerseyCompetitionLabel">COMPÉTITION</small>
+              <img id="jerseyCompetitionLogo" alt="" hidden>
+              <span id="jerseyCompetitionFallback" class="jerseys-logo-fallback">—</span>
+            </div>
+          </header>
+          <div class="jerseys-preview-illustration" aria-label="Aperçu du flocage au dos du maillot">
+              <div class="jerseys-shirt-back" id="jerseyShirtBack">
+                <div class="jerseys-shirt-neck" aria-hidden="true"></div>
+                <span class="jerseys-flocage-name" id="jerseyLetteringNamePreview">JOUEUR</span>
+                <strong class="jerseys-flocage-number" id="jerseyLetteringNumberPreview">10</strong>
+              </div>
+            </div>
+          <footer>
+            <strong id="jerseyPreviewTeam">Équipe à sélectionner</strong>
+            <span id="jerseyPreviewCompetition">Compétition à sélectionner</span>
+            <span id="jerseyPreviewSeason">SAISON À DÉFINIR</span>
+          </footer>
+          <p class="jerseys-card-flag">APERÇU · AUCUN MAILLOT ENREGISTRÉ</p>
+        </div>
+      </div>
+      <div class="jerseys-implementation-note">Les équipes, les compétitions et leurs variantes historiques restent administrées dans la bibliothèque de Rapli Sports. Les futures fiches Jerseys pourront enregistrer leurs références sans dupliquer les images. Aucune donnée Sports n’est modifiée ici.</div>
+    </section>
+  </main>
+  <script src="../shared/jerseys-logo-library.js" defer></script>
+  <script src="../shared/jersey-fonts.js" defer></script>
+  <script src="app.js" defer></script>
+  <script src="font-preview.js" defer></script>
+</body>
+</html>

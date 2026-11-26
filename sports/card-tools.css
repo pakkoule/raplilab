@@ -101,3 +101,98 @@
 .card-summary-navigation button:disabled{opacity:.4;cursor:default}
 .card-summary-navigation span{font:800 11px Poppins,sans-serif;color:#54738b;white-space:nowrap}
 @media(max-width:420px){.card-summary-navigation{gap:5px;padding:7px}.card-summary-navigation button{padding:8px 7px;font-size:10px}}
+
+/* PR #4 — align the reference with the first line of the athlete name.
+   Never center against the whole block: country flags and multi-player labels
+   can occupy a second line. JavaScript reduces only names that need more room. */
+.cards-grid .card-item .card-athlete .player-name-reference{
+  align-items:start;
+}
+.cards-grid .card-item .card-athlete .card-reference-actions{
+  align-self:start;
+}
+.cards-grid .card-item .card-athlete .player{
+  min-width:0;
+}
+
+/* PR #4: a single accessible three-dot menu for every card. */
+/* Bottom-right control belongs to the badge row, not the athlete heading. */
+.cards-grid .card-item .card-bottom{
+ display:flex;align-items:center;flex-wrap:nowrap;min-width:0;gap:7px;
+}
+.cards-grid .card-item .card-bottom>.card-status-badges{
+ flex:1 1 auto;min-width:0;display:flex;flex-wrap:wrap;
+}
+.cards-grid .card-item .card-bottom>.card-kebab-wrap{
+ flex:0 0 auto;align-self:center;margin-left:auto;position:relative;
+}
+.sports-card-menu-trigger{
+ display:grid;place-items:center;box-sizing:border-box;
+ width:32px;height:32px;min-width:32px;min-height:32px;
+ margin:0;padding:0 0 4px;
+ border:1px solid #adcbd2;border-radius:11px;
+ background:linear-gradient(125deg,#def8f0,#e3ecff 54%,#f8e7e2);
+ color:#254d66;font:900 25px/1 Poppins,system-ui,sans-serif;
+ box-shadow:0 2px 6px #25415e20;cursor:pointer;
+}
+.sports-card-menu-trigger:hover,.sports-card-menu-trigger[aria-expanded="true"]{
+ border-color:#68bbaa;background:linear-gradient(110deg,#c5f4e5,#d4e3ff,#fae3d5);
+}
+.sports-card-menu-trigger:focus-visible{outline:2px solid #237dc9;outline-offset:2px}
+.sports-gallery-tile>.sports-card-menu-trigger{position:absolute;top:8px;right:8px;z-index:6}
+.sports-gallery-tile>.card-summary-button{right:49px;z-index:5}
+.sports-card-actions-menu{
+ position:fixed;z-index:2147483000;box-sizing:border-box;
+ max-height:min(440px,calc(100dvh - 20px));overflow-y:auto;
+ display:grid;gap:2px;padding:7px;
+ border:1px solid #b3d0d9;border-radius:15px;
+ background:linear-gradient(145deg,#fff,#f3fbf9 55%,#f3f1fc);
+ box-shadow:0 14px 36px #153b5942,0 2px 8px #153b5920;
+ color:#2a4e67;font-family:Poppins,system-ui,sans-serif;
+}
+.sports-card-actions-menu[hidden]{display:none!important}
+.sports-card-actions-menu button[role="menuitem"]{
+ display:flex;align-items:center;gap:10px;width:100%;
+ min-height:39px;min-width:0;padding:9px 11px;
+ border:0;border-radius:9px;background:transparent;
+ color:#2b516a;text-align:left;font:750 12px/1.25 Poppins,system-ui,sans-serif;cursor:pointer;
+}
+.sports-card-actions-menu button:hover,.sports-card-actions-menu button:focus-visible{
+ background:linear-gradient(100deg,#daf5e8,#e2eaff);outline:none;
+}
+.sports-card-actions-menu button.is-danger{color:#ac3e49}
+.sports-card-actions-menu button.is-danger:hover{background:#fff0f1}
+.sports-card-actions-menu button:disabled{opacity:.5;cursor:progress}
+.sports-card-menu-icon{
+ display:grid;place-items:center;flex:0 0 24px;width:24px;height:24px;
+ border:1px solid #c7d8e2;border-radius:7px;background:#ffffff90;
+ font:900 17px/1 Poppins,system-ui,sans-serif;
+}
+.sports-card-menu-divider{height:1px;background:#d9e5ed;margin:4px 5px}
+.rainbow-versions-dialog .card-kebab-wrap{display:none!important}
+@media(max-width:520px){
+ .sports-card-menu-trigger{width:29px;min-width:29px;height:29px;min-height:29px;font-size:23px}
+ .sports-gallery-tile>.sports-card-menu-trigger{top:7px;right:7px}
+ .sports-gallery-tile>.card-summary-button{right:43px}
+ .sports-card-actions-menu button[role="menuitem"]{min-height:42px;font-size:12px}
+}
+
+/* Stable, deferred card photos: fallback remains until its image decodes. */
+#cardGrid img[data-card-photo][hidden],
+#cardGrid [data-card-photo-fallback][hidden]{display:none!important}
+
+.card-statistics-dialog{width:min(660px,94vw)}
+.card-stats-eyebrow{font:700 10px Poppins,sans-serif;color:#537687;letter-spacing:.1em}
+.card-statistics-dialog header p{margin:4px 0 0;font-size:12px;color:#537687;overflow-wrap:anywhere}
+.card-statistics-dialog h3{font:700 14px Poppins,sans-serif;margin:18px 0 6px}
+.card-stat-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.card-stat-metric{display:grid;gap:4px;min-width:0;padding:11px;border:1px solid #b6cfd5;border-radius:10px;background:#ffffffb0;overflow-wrap:anywhere}
+.card-stat-metric small{font-size:10px;color:#54738b;font-weight:600}
+.card-stat-metric strong{font-size:16px}
+.card-stat-note{font-size:11px;color:#537687;margin:5px 0 12px}
+.card-stat-group{padding:8px 10px;margin:6px 0;border:1px solid #d0e0e2;border-radius:9px;background:#ffffff80}
+.card-stat-group>div:first-child{display:flex;justify-content:space-between;gap:10px;font-size:12px}
+.card-stat-group strong{overflow-wrap:anywhere;min-width:0}
+.card-stat-group p{font-size:10px;margin:4px 0 0;color:#537687}
+.card-stat-track{margin-top:5px;height:7px;overflow:hidden;border-radius:10px;background:#ddd6ee}
+.card-stat-track>span{display:block;height:100%;border-radius:10px;background:#80c7ad}

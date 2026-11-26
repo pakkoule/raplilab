@@ -1,8 +1,8 @@
 {
   "id": "/",
-  "name": "Rapli Lab",
-  "short_name": "Rapli Lab",
-  "description": "Collection Rapli Sports",
+  "name": "Rapli Archives",
+  "short_name": "Rapli Archives",
+  "description": "Cartes et maillots",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

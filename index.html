@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#0d2039">
-  <meta name="description" content="Rapli Sports et Rapli Regatta réunis dans un même espace personnel.">
-  <title>Rapli Lab</title>
+  <meta name="description" content="Collection de cartes de sport.">
+  <title>Rapli Archives</title>
   <link rel="icon" type="image/x-icon" sizes="16x16 32x32" href="/assets/rapli-archives-favicon.ico">
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=20261117">
   <link rel="manifest" href="/site.webmanifest">
@@ -144,9 +144,6 @@ body[data-active="sports"] .portal-header{background:linear-gradient(115deg,#0b2
 
 
 /* RapliLab workspaces — espaces actifs. */
-body[data-active="regatta"]{--accent:#03bac8;--frame-bg:#ebf7f6;--frame-border:#bedede}
-body[data-active="regatta"] .portal-header{background:linear-gradient(120deg,#102c3f,#006174 53%,#112a40)}
-.product-tab[data-product="regatta"][aria-selected="true"]{background-color:rgba(0,200,212,.16)!important}
 @media(min-width:801px){.product-tabs{grid-template-columns:repeat(2,minmax(0,1fr));width:min(100%,1018px)}}
 /* Mobile: both workspaces stay accessible and compact. */
 @media(max-width:800px){
@@ -398,7 +395,17 @@ html[data-rapli-role="editor"] #rapli-admin-login{display:none}
  #rapli-admin-message{max-width:150px}
  .portal-footer .global-cloud-controls{margin-left:0}
 }
-/* Rapli Lab single-workspace presentation: Regatta stays in DOM and cloud sync. */
+/* Switching iframes does not recreate them: user input and scroll stay in memory. */
+.frame-wrap>section:not([hidden]){
+  animation:rapli-workspace-enter .18s cubic-bezier(.2,.65,.3,1) both;
+}
+@keyframes rapli-workspace-enter{
+  from{opacity:.62;transform:translateY(3px)}
+  to{opacity:1;transform:translateY(0)}
+}
+@media(prefers-reduced-motion:reduce){
+  .frame-wrap>section:not([hidden]){animation:none}
+}
 /* Removing the header must not remove the backing tabs used by cloud sync. */
 .portal-hidden-navigation{display:none!important}
 .portal-nav-strip{justify-content:center;overflow:visible}
@@ -452,6 +459,11 @@ html[data-rapli-role="editor"] #rapli-admin-login{display:none}
   <script defer src="shared/ios-input-focus.js"></script>
   <!-- Keep session callback handling at the top-level after admin magic-link redirects. -->
   <script defer src="shared/admin-access.js"></script>
+<style>
+html.museum-presenting, html.museum-presenting body {overflow:hidden}
+html.museum-presenting #frame-sports {position:fixed;inset:0;width:100%;height:100%;height:100dvh;z-index:2147483600;border:0}
+html.museum-presenting :is(.frame-wrap,.portal,#panel-sports){transform:none!important;animation:none!important;overflow:visible}
+</style>
 </head>
 <body data-active="sports">
   <div class="portal">
@@ -461,17 +473,11 @@ html[data-rapli-role="editor"] #rapli-admin-login{display:none}
           <button type="button" id="tab-sports" class="product-tab" data-product="sports" role="tab" aria-selected="true" aria-controls="panel-sports" tabindex="0" title="Rapli Sports — collection de cartes">
             <img src="sports/assets/logo.png" alt="Rapli Sports" draggable="false">
           </button>
-          <button type="button" id="tab-regatta" class="product-tab" data-product="regatta" role="tab" aria-selected="false" aria-controls="panel-regatta" tabindex="-1" title="Rapli Regatta — journal de courses">
-            <img src="regatta/assets/logo.webp" alt="Rapli Regatta" draggable="false">
-          </button>
         </nav>
     </div>
     <div class="frame-wrap">
       <section id="panel-sports" role="tabpanel" aria-label="Rapli Sports">
-        <iframe id="frame-sports" class="app-frame" data-src="sports/index.html" title="Rapli Sports — cartes de sport" loading="eager"></iframe>
-      </section>
-      <section id="panel-regatta" role="tabpanel" aria-labelledby="tab-regatta" hidden>
-        <iframe id="frame-regatta" class="app-frame" data-src="regatta/index.html" title="Rapli Regatta — journal de courses" allow="clipboard-read; clipboard-write" loading="lazy"></iframe>
+        <iframe allowfullscreen id="frame-sports" class="app-frame" data-src="sports/index.html" title="Rapli Sports — cartes de sport" loading="eager"></iframe>
       </section>
     </div>
 
@@ -479,24 +485,29 @@ html[data-rapli-role="editor"] #rapli-admin-login{display:none}
   <script>
   (() => {
     'use strict';
-    const projects=['sports','regatta'];
-    // Both workspaces are available to visitors and verified editors via Profile navigation.
-    const visibleProjects=['sports','regatta'];
+    const projects=['sports'];
     const tabs=Object.fromEntries(projects.map(n=>[n,document.getElementById('tab-'+n)]));
     const panels=Object.fromEntries(projects.map(n=>[n,document.getElementById('panel-'+n)]));
     const frames=Object.fromEntries(projects.map(n=>[n,document.getElementById('frame-'+n)]));
-    const names={sports:'Sports',regatta:'Regatta'};
     let current='sports';
-    const fromHash=()=>visibleProjects.includes(location.hash.slice(1).toLowerCase())?location.hash.slice(1).toLowerCase():'sports';
+    const sportsViewFromHash=()=>location.hash.slice(1).toLowerCase()==='wishlist'?'wishlist':'own';
+    function routeSportsView(){
+      const frame=frames.sports;
+      if(frame?.src&&frame.contentWindow)frame.contentWindow.postMessage({
+        type:'RAPLI_LAB_NAVIGATION',view:sportsViewFromHash(),
+        palette:
+          location.hash.slice(1).toLowerCase()==='jersey-fonts'?'jersey-font':null
+      },location.origin);
+    }
     function activity(name,active){
       const frame=frames[name];
       if(frame?.contentWindow&&frame.src)try{frame.contentWindow.postMessage({type:'RAPLI_APP_ACTIVITY',active},location.origin)}catch(_){}
     }
     function select(name,hash=false,focus=false){
-      if(!visibleProjects.includes(name))name='sports';
+      if(!projects.includes(name))name='sports';
       current=name;
       const frame=frames[name];
-      if(!frame.src&&frame.dataset.src){frame.src=frame.dataset.src;delete frame.dataset.src;}
+      if(!frame.getAttribute('src')&&frame.dataset.src){frame.src=frame.dataset.src;delete frame.dataset.src;}
       document.body.dataset.active=name;
       for(const project of projects){
         const active=project===name;
@@ -505,8 +516,9 @@ html[data-rapli-role="editor"] #rapli-admin-login{display:none}
         panels[project].hidden=!active;frames[project].hidden=!active;
         activity(project,active);
       }
-      document.title='Rapli Lab';
+      document.title='Rapli Archives';
       if(hash&&location.hash!=='#'+name)history.pushState({project:name},'','#'+name);
+      if(name==='sports')routeSportsView();
       if(focus)tabs[name].focus();
     }
     for(const name of projects){
@@ -519,15 +531,19 @@ html[data-rapli-role="editor"] #rapli-admin-login{display:none}
         if(event.key==='End')next=projects[projects.length-1];
         if(next){event.preventDefault();select(next,true,true);}
       });
-      frames[name].addEventListener('load',()=>activity(name,name===current));
+      frames[name].addEventListener('load',()=>{
+        activity(name,name===current);
+        if(name==='sports'){
+          if(current==='sports')routeSportsView();
+        }
+      });
     }
-    window.addEventListener('popstate',()=>select(fromHash()));
-    window.addEventListener('hashchange',()=>select(fromHash()));
-    select(fromHash());
+    window.addEventListener('popstate',()=>select('sports'));
+    window.addEventListener('hashchange',()=>select('sports'));
+    select('sports');
 
   })();
   </script>
-  <script defer src="shared/retired-cleanup.js"></script>
 </body>
 </html>
 

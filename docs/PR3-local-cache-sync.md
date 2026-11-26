@@ -2,7 +2,6 @@
 
 ## Comportement
 
-- Sports et Regatta affichent leur dernier état IndexedDB avant la vérification réseau.
 - Une réouverture dans la minute suivant une vérification réussie utilise seulement le cache (aucune lecture de collection). Après expiration, elle vérifie uniquement `state_revision`. Une révision identique ne déclenche ni restauration des tuiles, ni lecture complète, ni téléchargement d'images.
 - Tri, recherche, pagination et vues restent locaux.
 - Fin du polling à 20 secondes et de l'abonnement Realtime permanent. Vérification au retour au premier plan, au rétablissement réseau, ou avec le bouton ↻ du pied de page. Les événements automatiques sont regroupés et limités à une vérification toutes les 60 secondes, y compris entre rechargements. Deux appareils laissés ouverts nécessitent un retour au premier plan ou ↻.
@@ -27,7 +26,6 @@ Les deux fonctions sont `SECURITY INVOKER`, avec `search_path` vide, privilèges
 
 `npm ci && npm test` (Node 18+) : dix scénarios couvrant les appels au redémarrage, la réutilisation des images, la reprise d'une file hors connexion, deux appareils, les suppressions, les conflits et les modifications pendant un envoi.
 
-Tests SQL transactionnels avec ROLLBACK : ajout ciblé, modifications sur deux fiches, répétition idempotente, conflit, suppression, lecture publique, refus d'accès à une autre collection et absence de permission d'écriture anonyme. Les 56 cartes / 107 logos Sports et les 4 courses / 1 réglage Regatta, ainsi que leurs révisions, étaient inchangés après les tests.
 
 Contrôle de syntaxe JS et `git diff --check` effectués. Les avis sécurité Supabase n'ont pas de nouvelle alerte après cette migration (alertes historiques inchangées).
 
@@ -35,7 +33,6 @@ Le navigateur Chromium local ne peut pas démarrer dans l'environnement (socket 
 
 ## Réduction des appels supplémentaires
 
-- Un seul client Supabase et une vérification de session partagés entre portail, Sports et Regatta. En consultation sans session, aucun appel `getUser`. Les vérifications simultanées sont regroupées ; les événements de session identiques ne relancent pas la vérification pendant une minute. La session locale ne donne jamais de droit d’édition sans validation serveur.
 - Cache valide : aucune lecture de collection dans la minute suivant une lecture/écriture confirmée. Le marqueur est lié au module et à la révision ; ↻ force toujours une vérification. Les changements d’un autre appareil peuvent donc attendre jusqu’au prochain retour au premier plan après cette minute, ou un clic sur ↻. Aucun polling.
 - Cache vide : lecture du delta directement, sans requête préalable de révision.
 - Tests supplémentaires : partage de client, visiteur sans requête d’authentification, vérifications regroupées, propagation de la déconnexion, validation serveur, expiration du cache et contournement manuel de son délai.

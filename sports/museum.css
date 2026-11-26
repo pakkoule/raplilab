@@ -182,3 +182,21 @@ html[data-rapli-shared-state="ready"]:has(#collectionPanel:not(.is-rainbow-consu
     box-sizing:border-box; height:40px!important; min-height:40px!important; margin-block:0!important;
   }
 }
+
+/* Group navigation shares the projector row, keeping the exhibition at its usual height. */
+#cardGrid.museum-view:has(> .sports-gallery-back) {
+  display:grid;
+  grid-template-columns:max-content minmax(0,1fr);
+  gap:0;
+}
+#cardGrid.museum-view > .museum-strip {grid-area:1 / 1 / 2 / -1;min-width:0}
+#cardGrid.museum-view > :is(.sports-gallery-back,.sports-gallery-breadcrumb) {
+  grid-row:1;align-self:start;justify-self:start;z-index:1;margin:4px 0 0;
+}
+#cardGrid.museum-view > .sports-gallery-back {grid-column:1}
+#cardGrid.museum-view > .sports-gallery-breadcrumb {
+  grid-column:2;min-width:0;max-width:calc(100% - 52px);box-sizing:border-box;margin-left:6px;
+  overflow:hidden;white-space:nowrap;text-overflow:ellipsis;
+  border:0;border-radius:8px;background:#202428e8;color:#f5f7f8;font-size:12px;
+}
+#cardGrid.museum-view > .sports-gallery-breadcrumb .sports-group-active-pill {display:none}

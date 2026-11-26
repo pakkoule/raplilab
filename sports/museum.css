@@ -3,23 +3,23 @@
   grid-column:2; grid-row:1; display:flex; gap:6px; min-width:0; align-items:end;
 }
 .collection-pickers label {
-  display:grid; gap:2px; flex:1 1 0; min-width:0;
+  display:grid; gap:2px; flex:0 0 auto; min-width:max-content;
   color:#537184; font:700 9px Poppins,sans-serif; letter-spacing:.08em;
 }
 .collection-pickers select {
-  box-sizing:border-box; width:100%; min-width:0; height:39px; padding:4px;
+  box-sizing:border-box; width:auto; min-width:max-content; height:39px; padding:4px 8px;
   border:1px solid #a9cdd2; border-radius:11px;
   background:linear-gradient(120deg,#edfaf6,#f4f5fc,#fbf0e3);
   color:#194962; font:800 12px Poppins,sans-serif;
 }
 @media(min-width:1001px){
-  .sports-catalogue-controls {grid-template-columns:max-content minmax(230px,295px) max-content minmax(150px,1fr) minmax(112px,145px) 42px}
+  #collectionPanel .sports-catalogue-controls {grid-template-columns:max-content max-content max-content minmax(150px,1fr) minmax(112px,145px) 42px}
 }
 @media(min-width:751px) and (max-width:1000px){
-  .sports-catalogue-controls {grid-template-columns:max-content minmax(240px,1fr) minmax(130px,1fr) 40px}
+  #collectionPanel .sports-catalogue-controls {grid-template-columns:max-content max-content minmax(130px,1fr) 40px}
 }
 @media(max-width:750px){
-  .collection-pickers {order:1; flex:1 0 100%}
+  .collection-pickers {order:1; flex:1 0 100%; flex-wrap:wrap}
   .collection-pickers select {font-size:16px; height:42px}
   .sports-catalogue-controls>.sports-catalogue-search {flex-basis:100%!important}
 }

@@ -200,3 +200,16 @@ html[data-rapli-shared-state="ready"]:has(#collectionPanel:not(.is-rainbow-consu
   border:0;border-radius:8px;background:#202428e8;color:#f5f7f8;font-size:12px;
 }
 #cardGrid.museum-view > .sports-gallery-breadcrumb .sports-group-active-pill {display:none}
+
+/* Size the exhibition from the space left by the actual toolbar. */
+html[data-rapli-shared-state="ready"]:not(.museum-immersive):has(#collectionPanel:not(.is-rainbow-consultation) .museum-strip) {
+  & .app-shell {height:100vh;height:100dvh}
+  & .app-shell > main, & main > section:has(> #collectionPanel), & #collectionPanel,
+  & #cardGrid.museum-view {min-height:0;flex:1 1 0}
+  & #cardGrid.museum-view {margin-bottom:0;grid-template-rows:minmax(0,1fr)}
+  & #cardGrid.museum-view .museum-strip {height:100%;min-height:0;box-sizing:border-box}
+  & .museum-strip .sports-gallery-card-action,
+  & #cardGrid.museum-view.is-gallery-layout .museum-strip .sports-gallery-media {
+    height:100%;min-height:0;
+  }
+}

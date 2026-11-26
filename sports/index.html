@@ -3041,6 +3041,11 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
   <link rel="stylesheet" href="../shared/collection-navigation.css">
 <link rel="stylesheet" href="museum.css">
 <link rel="stylesheet" href="museum-studio.css">
+<style>
+.rapli-profile-sync {display:flex;align-items:center;gap:8px;border-top:1px solid #b8c8c9;padding:10px 4px 2px;font-size:12px;line-height:1.45}
+.rapli-profile-sync span {flex:1;min-width:0}
+#rapliProfileMenu .rapli-profile-sync button {display:grid;place-items:center;flex:none;padding:0}
+</style>
 </head>
 <body>
   <div class="app-shell">
@@ -3082,6 +3087,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
             <button id="rapliProfileLogin" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg><span>Connexion administrateur</span></button>
             <button id="rapliProfileLogout" type="button" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4H5v16h4M13 8l4 4-4 4M17 12H9"/></svg><span>Se déconnecter</span></button>
             <div id="rapliProfileMessage" class="rapli-profile-message" role="status" aria-live="polite">Consultation libre</div>
+            <div class="rapli-profile-sync"><span id="rapli-shared-status-sports" role="status" aria-live="polite">Chargement de la collection…</span></div>
           </div>
         </div>
         </div>
@@ -3118,7 +3124,7 @@ html[data-rapli-shared-state="ready"] #rapliSharedLoading{display:none!important
         </div>
       </section>
     </main>
-    <footer class="footer"><span>© RAPLI SPORTS · PERSONAL COLLECTION</span><span id="rapli-shared-status-sports" role="status" aria-live="polite">Chargement de la collection…</span></footer>
+
   </div>
   <dialog id="cardDialog" class="modal" aria-labelledby="cardDialogTitle">
     <form id="cardForm" novalidate>

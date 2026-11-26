@@ -102,3 +102,5 @@ html.custom-page-finish.museum-metal:not(:has(#cardGrid.museum-view)) .app-shell
  .museum-sample {position:relative;height:230px}
  #museumStudio input,#museumStudio select {font-size:16px}
 }
+
+#cardGrid.museum-view .extras-mini-badges {display:none!important}
